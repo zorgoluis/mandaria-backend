@@ -4,17 +4,17 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
-- **Versión del paquete:** 1.4.0 (V1.4-A Drivers, Vehicles & Assignments).
-- **Rama activa:** `V1_4-Repartidores_Vehiculos`, creada desde `QA` para V1.4-A y publicada en origin por solicitud del propietario. Sin merge a QA/main.
+- **Versión del paquete:** 1.5.0 (V1.5-A Delivery Requests).
+- **Rama activa:** `v1.5-delivery_request`, creada por el propietario desde QA tras el merge de V1.4 (PR #3). V1.5 publicada en origin por solicitud del propietario; sin merge a QA/main.
 - **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git. Entrega V1.2 en `V1_2-Proveedores_Reparto`.
-- **Objetivo actual:** V1.4-A Drivers, Vehicles y asignaciones sobre V1.0–V1.2. V1.5 (Delivery Requests) no iniciado.
+- **Objetivo actual:** V1.5-A DeliveryRequest B2B (qué transportar) sobre V1.0–V1.4. V1.6 (distancia/cotización) no iniciado.
 - **Herramientas:** scripts npm ampliados con OpenAPI exportable, matriz de acceso, Oxlint y configuración Prisma de pruebas; entrega autorizada en la rama actual.
-- **Estado funcional V1.4-A:** implementado y verificado localmente el 2026-09-15; 31 pruebas unitarias/HTTP y 63 E2E correctos; validación HTTP manual 16/16 y regresión V1.2 13/13.
-- **Definition of Done:** requisitos V1.4-A verificados localmente (ver VERIFICATION.md). Docker/Compose heredado sigue pospuesto por el propietario; no se declara ejecutado.
+- **Estado funcional V1.5-A:** implementado y verificado localmente el 2026-09-15; 40 pruebas unitarias/HTTP y 85 E2E correctos (ejecuciones completas intermitentemente afectadas por una caída nativa previa de workers en Windows, ver VERIFICATION.md); validación HTTP V1.5 10/10 y regresiones HTTP V1.4 16/16 y V1.2 13/13.
+- **Definition of Done:** requisitos V1.5-A verificados localmente (ver VERIFICATION.md). Docker/Compose heredado sigue pospuesto por el propietario; no se declara ejecutado.
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
 - **Base local configurada:** `mandaria_db`; base separada para E2E: `mandaria_test`.
 - **Configuración:** `.env` local, ignorado por Git. El propietario corrigió el acceso y las verificaciones posteriores pasaron. No copiar sus valores a esta bitácora.
-- **Servidor:** detenido. Con autorización del propietario se detuvo el backend previo (PID 30660, `node --env-file=.env dist/main.js`) que bloqueaba la DLL de Prisma; no se reinició. La compilación V1.4 se levantó temporalmente para validar y se detuvo. Reiniciar con `npm run build` + `npm run start:prod` (mandaria-frontend lo usaba).
+- **Servidor:** detenido. La compilación V1.5 se levantó temporalmente con `node dist/main.js` para validar y se detuvo; no había otro backend activo. Reiniciar con `npm run build` + `npm run start:prod` (mandaria-frontend lo usa).
 - **Validación PROVIDER_ADMIN/memberships:** cerrada el 2026-09-15 en rama `QA` con autenticación real. Escenario local reproducible `npm run db:seed:local-provider-admins` (LOCAL/TEST ONLY) y `npm run verify:provider-admins`. Tests: 23 unitarias/HTTP y 45 E2E.
 
 ## Arquitectura y decisiones vigentes
@@ -42,6 +42,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - V1.4: Driver = perfil logístico de un User DRIVER existente (userId único, sin credenciales). Vehicle pertenece al proveedor (identifier único por proveedor). DriverVehicleAssignment conserva historial; asignación vigente única por Driver y Vehicle vía índices parciales; FKs compuestas impiden cruzar proveedores. Rutas de proveedor siempre con AccessGuard + RolesGuard(PROVIDER_ADMIN) + ProviderMembershipGuard; recursos de otro proveedor → 404.
 - Admin Providers: sólo SUPER_ADMIN. Perfil: AccessGuard + RolesGuard + ProviderMembershipGuard. Sin membership se devuelve 403 aun si el JWT sigue vigente; tokens B2B devuelven 401.
 - `/provider/profile?providerId=UUID` selecciona una asociación; omitir ID sólo funciona con una membership. `/provider/profiles` lista asociaciones propias. Perfiles de proveedores suspendidos siguen consultables; no hay operaciones logísticas.
+- V1.5: DeliveryRequest = demanda de un IntegrationClient (ownership desde el JWT B2B, nunca del body). Sin providerId/driverId/vehicleId: la unión con la oferta pertenece a Dispatch. Estados CREATED/CANCELLED; inmutable salvo cancelación; sin PATCH/DELETE.
+- V1.5: stops como snapshot (sin FKs externas), exactamente PICKUP #1 y DROPOFF #2 en la API aunque el modelo es 1:N; packages genéricos (≥1, sin carrito); DeliveryFinancialContext 1:1 con NUMERIC(14,2) y ISO 4217: PREPAID (Driver paga 0; valor opcional) y COURIER_ADVANCE (Driver adelanta y recupera; valor > 0 obligatorio). No hay deliveryFee, wallet ni créditos.
+- V1.5: publicId `MDR-NNNNNN` desde la secuencia `DeliveryRequest_publicId_seq` dentro de la transacción. Idempotency-Key obligatoria con ApiIdempotencyRecord reutilizable (único por IntegrationClient + key, hash SHA-256 de payload normalizado, sin payload): replay 200, conflicto 409, concurrencia bloqueada por el índice único dentro de la misma transacción atómica.
+- V1.5: rutas `/delivery-requests` (scopes V1.1 deliveries:create/read/cancel, independientes) y `/admin/delivery-requests` (SUPER_ADMIN lectura/cancelación). Recursos ajenos → 404. PROVIDER_ADMIN/DRIVER → 403 admin y 401 B2B. Creación limitada a 60/min por IP. Logs con IDs y actor, sin datos personales.
 - Paginación nueva reutilizable page/pageSize (default 1/20, máximo 100 por página), filtros type/status/search y orden estable. No se cambió el contrato de listados V1.1.
 
 ## Mapa de archivos
@@ -67,6 +71,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 | `prisma/migrations/20260915000400_drivers_vehicles/migration.sql` | Migración V1.4 con FKs compuestas, índices parciales y CHECK |
 | `scripts/local-driver-users.ts`, `scripts/verify-drivers-vehicles-local.ts` | LOCAL/TEST ONLY: Users DRIVER y validación manual V1.4 |
 | `test/drivers-vehicles.e2e-spec.ts`, `test/driver-self.e2e-spec.ts`, `test/logistics.spec.ts` | Pruebas V1.4 |
+| `src/delivery-requests/`, `src/idempotency/` | V1.5: DeliveryRequest B2B/admin e idempotencia reutilizable |
+| `prisma/migrations/20260915000500_delivery_requests/migration.sql` | Migración V1.5: tablas, secuencia publicId, CHECK e índices |
+| `scripts/verify-delivery-requests-local.ts` | LOCAL/TEST ONLY: validación HTTP real V1.5 |
+| `test/delivery-requests-validation.e2e-spec.ts`, `test/delivery-requests-b2b.e2e-spec.ts`, `test/delivery-requests.spec.ts` | Pruebas V1.5 |
 | `Dockerfile`, `docker-compose.yml` | Preparación para uso futuro, ejecución pendiente |
 
 ## Verificaciones históricas del Core
@@ -88,10 +96,12 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 
 1. Verificar Docker build y Compose sólo cuando el propietario indique retomar Docker. Hasta entonces no declarar satisfecha toda la Definition of Done original.
 2. Mantener la bitácora actualizada conforme lleguen nuevas solicitudes.
-3. V1.5+: DeliveryRequest/Delivery, quotes, tarifas, mapas, despacho, tracking/GPS, Socket.IO, wallets/créditos, KYC/documentos, integración operativa con Coita Eats, mandados, paquetería y fletes siguen fuera del alcance. No comenzar sin solicitud.
+3. V1.6+: distancia/mapas, quotes/tarifas/deliveryFee, elegibilidad de vehículo, Dispatch (proveedor/Driver), tracking/GPS, Socket.IO, ciclo de entrega completo, múltiples stops, wallets/créditos/pagos, KYC/documentos, integración operativa con Coita Eats, mandados y fletes siguen fuera del alcance. No comenzar sin solicitud.
 4. Recuperación/restablecimiento de contraseña, verificación de correo y auditoría persistente: preparación arquitectónica, sin infraestructura implementada.
 5. En modelos futuros, los créditos pertenecen al proveedor; los vehículos son recursos operativos y los repartidores realizan entregas.
 6. Deuda V1.4: provisión/invitación de Users DRIVER por API; política de la asignación vigente al suspender un Driver o dejar un vehículo no ACTIVE (hoy se conserva hasta desasignar); sin eliminación/transferencia de Drivers/Vehicles.
+7. Deuda V1.5: retención de ApiIdempotencyRecord; rate limit de creación por IP (no por cliente); precisión de 2 decimales para goodsValue; datos personales de stops sin cifrado ni retención definidos; orden de packages no preservado.
+8. Caída nativa intermitente de workers Vitest/Prisma en Windows (0xC0000409), previa a V1.5: investigar en Linux/Docker y con volcado de memoria antes de confiar en ejecuciones E2E completas locales.
 
 ## Cómo retomar
 
@@ -236,3 +246,22 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Contenido:** implementación, migración, pruebas, scripts locales y documentación de la entrada anterior.
 - **Verificación previa:** revisión de archivos publicables sin valores de `.env`; pruebas no repetidas tras la verificación final ya registrada (31 unitarias, 63 E2E, build/lint/docs:check correctos).
 - **Destino:** origin/V1_4-Repartidores_Vehiculos (rama nueva). Sin merge.
+
+### 2026-09-15 — V1.5-A Delivery Requests
+
+- **Solicitud:** DeliveryRequest B2B con stops, packages, contexto financiero (PREPAID/COURIER_ADVANCE), publicId MDR, Idempotency-Key con hash, scopes existentes, aislamiento B2B, administración SUPER_ADMIN y cancelación. Sin V1.6+.
+- **Inspección:** reutilizados IntegrationGuard (estado de cliente/credencial por request), IntegrationScopesGuard y catálogo de scopes V1.1 (los tres deliveries:* ya existían), ThrottlerGuard, logging por eventos, ApiErrors/paginación. No existía idempotencia ni secuencias. `/integrations/:id` es alias admin con UUID, por eso se usó `/delivery-requests`.
+- **Prisma:** enums DeliveryRequestStatus, DeliveryStopType, PackageCategory, GoodsPaymentMode; modelos DeliveryRequest, DeliveryStop, DeliveryPackage, DeliveryFinancialContext y ApiIdempotencyRecord. Migración `20260915000500_delivery_requests` (diff Prisma + SQL): secuencia publicId, CHECK de publicId, cancelación, stops, packages, dinero/moneda y hash; índices por cliente+fecha, externalReference, status+fecha, fecha, unique publicId y unique cliente+key. Sin drift (base `mandaria_drift_16d9b6b2_test`).
+- **Implementación:** IdempotencyService genérico (JSON canónico + SHA-256, ledger primero en la transacción, P2002 → replay/409); normalización con reglas cruzadas (layout de stops, COURIER_ADVANCE, goodsValue > 0, dinero 2 decimales); controllers B2B/admin; respuestas B2B sin UUID internos; `Idempotent-Replayed`; ApiErrorDescriptions para descripciones B2B con el mismo esquema de error. IntegrationsModule exporta IntegrationAuthService. Swagger 1.5.0.
+- **Bug encontrado y corregido:** omitir `financialContext` devolvía 500 (`@ValidateNested` no rechaza ausencia); añadido `@IsObject()`. Detectado por la E2E de validación.
+- **Ajuste de regresión:** la E2E V1.4 de Swagger fijaba la versión `1.4.0`; ahora compara con package.json.
+- **Verificaciones:** prisma validate, db:generate, build, tsc --noEmit, Oxlint, ESLint, docs:openapi/docs:check; migración aplicada a mandaria_db y mandaria_test; verify-migrations con V1.4 → V1.5 preservando drivers/vehículos/asignaciones (bases `mandaria_clean_7a0f2299c3_test` y `mandaria_upgrade_7a0f2299c3_test`); npm test 40 PASS (+9); test:e2e 85 PASS (+22: 7 validación + 15 B2B); mutaciones (detalle sin scope de cliente, sin registro de idempotencia, publicId con COUNT+1) detectadas; HTTP local verify:delivery-requests 10/10 (MDR-000001…000004) con auditoría y logs sin datos personales ni secretos; regresiones verify:drivers-vehicles 16/16 y verify:provider-admins 13/13.
+- **Hallazgo no resuelto:** caídas nativas intermitentes de workers E2E en Windows (`Worker exited unexpectedly`, código 0xC0000409). Reproducido con el archivo V1.4 drivers-vehicles solo bajo carga, así que es previo a V1.5. Descartados memoria y max_connections; limitar workers no lo corrige. Cada archivo pasa por separado y hay ejecuciones completas 85/85, pero no toda ejecución completa es limpia. Detalle en VERIFICATION.md.
+- **Pendientes:** punto 7 de pendientes; investigar la caída nativa E2E en Linux/Docker; Docker sin ejecutar. Sin commit/push.
+
+### 2026-09-15 — Publicación de V1.5-A
+
+- **Solicitud:** commit y push de V1.5-A a la rama actual `v1.5-delivery_request`.
+- **Contenido:** implementación, migración, pruebas, script de validación local y documentación de la entrada anterior.
+- **Verificación previa:** archivos publicables revisados sin valores de `.env`; pruebas no repetidas tras la verificación registrada (40 unitarias; 85 E2E en ejecuciones limpias, con la caída nativa intermitente de workers documentada como pendiente).
+- **Destino:** origin/v1.5-delivery_request. Sin merge.

@@ -1,6 +1,6 @@
 {
   "name": "mandaria-backend",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Mandaria independent logistics platform core",
   "author": "",
   "private": true,
@@ -41,7 +41,8 @@
     "pretest:e2e": "npm run build",
     "postinstall": "prisma generate",
     "verify:provider-admins": "tsx scripts/verify-provider-admins-local.ts",
-    "verify:drivers-vehicles": "tsx scripts/verify-drivers-vehicles-local.ts"
+    "verify:drivers-vehicles": "tsx scripts/verify-drivers-vehicles-local.ts",
+    "verify:delivery-requests": "tsx scripts/verify-delivery-requests-local.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.4",

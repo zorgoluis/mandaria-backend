@@ -11,47 +11,57 @@ const descriptions: Record<number, string> = {
   500: 'Error interno sanitizado; no se exponen SQL ni credenciales.',
 };
 export function ApiErrors(...statuses: number[]) {
-  return applyDecorators(
-    ...statuses.map((status) =>
-      ApiResponse({
-        status,
-        description: descriptions[status],
-        schema: {
-          type: 'object',
-          required: [
-            'statusCode',
-            'code',
-            'message',
-            'errors',
-            'timestamp',
-            'path',
-          ],
-          properties: {
-            statusCode: { type: 'integer', example: status },
-            code: {
-              type: 'string',
-              example: status === 400 ? 'VALIDATION_ERROR' : 'HTTP_' + status,
-            },
-            message: {
-              type: 'string',
-              example:
-                status === 400
-                  ? 'Validation failed'
-                  : status === 403
-                    ? 'Forbidden resource'
-                    : 'Request failed',
-            },
-            errors: {
-              type: 'array',
-              items: { type: 'string' },
-              example:
-                status === 400 ? ['maxDrivers must not be less than 1'] : [],
-            },
-            timestamp: { type: 'string', format: 'date-time' },
-            path: { type: 'string', example: '/api/v1/admin/providers' },
-          },
-        },
-      }),
+  return ApiErrorDescriptions(
+    Object.fromEntries(
+      statuses.map((status) => [status, descriptions[status]]),
     ),
+  );
+}
+/** Same error schema with endpoint-specific descriptions (e.g. B2B tokens, idempotency). */
+export function ApiErrorDescriptions(custom: Record<number, string>) {
+  return applyDecorators(
+    ...Object.keys(custom)
+      .map(Number)
+      .map((status) =>
+        ApiResponse({
+          status,
+          description: custom[status],
+          schema: {
+            type: 'object',
+            required: [
+              'statusCode',
+              'code',
+              'message',
+              'errors',
+              'timestamp',
+              'path',
+            ],
+            properties: {
+              statusCode: { type: 'integer', example: status },
+              code: {
+                type: 'string',
+                example: status === 400 ? 'VALIDATION_ERROR' : 'HTTP_' + status,
+              },
+              message: {
+                type: 'string',
+                example:
+                  status === 400
+                    ? 'Validation failed'
+                    : status === 403
+                      ? 'Forbidden resource'
+                      : 'Request failed',
+              },
+              errors: {
+                type: 'array',
+                items: { type: 'string' },
+                example:
+                  status === 400 ? ['maxDrivers must not be less than 1'] : [],
+              },
+              timestamp: { type: 'string', format: 'date-time' },
+              path: { type: 'string', example: '/api/v1/admin/providers' },
+            },
+          },
+        }),
+      ),
   );
 }

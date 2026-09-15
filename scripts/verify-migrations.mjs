@@ -153,13 +153,70 @@ try {
       ]),
     );
   const v12Snapshot = fullSnapshot();
-  prisma(upgradeDb, ['migrate', 'deploy']);
+  sql(upgradeDb, [
+    '-f',
+    'prisma/migrations/20260915000400_drivers_vehicles/migration.sql',
+  ]);
+  prisma(upgradeDb, [
+    'migrate',
+    'resolve',
+    '--applied',
+    '20260915000400_drivers_vehicles',
+  ]);
   assert.deepEqual(fullSnapshot(), v12Snapshot);
-  for (const table of ['Driver', 'Vehicle', 'DriverVehicleAssignment'])
+  // V1.4 fixtures: driver with an active assignment and a closed history row.
+  const driverUserId = randomUUID();
+  const driverId = randomUUID();
+  const vehicleId = randomUUID();
+  sql(upgradeDb, [
+    '-c',
+    `
+    INSERT INTO "User" (id,email,"passwordHash",role,"updatedAt") VALUES ('${driverUserId}','driver@example.test','${hash}','DRIVER',now());
+    INSERT INTO "Driver" (id,"providerId","userId",name,status,availability,"updatedAt") VALUES ('${driverId}','${providerId}','${driverUserId}','Carlos','ACTIVE','AVAILABLE',now());
+    INSERT INTO "Vehicle" (id,"providerId",identifier,type,status,"updatedAt") VALUES ('${vehicleId}','${providerId}','MOTO-01','MOTORCYCLE','ACTIVE',now());
+    INSERT INTO "DriverVehicleAssignment" (id,"providerId","driverId","vehicleId","assignedAt","unassignedAt") VALUES
+      ('${randomUUID()}','${providerId}','${driverId}','${vehicleId}',now() - interval '2 days',now() - interval '1 day'),
+      ('${randomUUID()}','${providerId}','${driverId}','${vehicleId}',now(),NULL);
+  `,
+  ]);
+  v12Tables.push('Driver', 'Vehicle', 'DriverVehicleAssignment');
+  const v14Snapshot = fullSnapshot();
+  prisma(upgradeDb, ['migrate', 'deploy']);
+  assert.deepEqual(fullSnapshot(), v14Snapshot);
+  for (const table of [
+    'DeliveryRequest',
+    'DeliveryStop',
+    'DeliveryPackage',
+    'DeliveryFinancialContext',
+    'ApiIdempotencyRecord',
+  ])
     assert.equal(
       sql(upgradeDb, ['-c', `SELECT count(*) FROM "${table}"`]),
       '0',
     );
+  for (const db of [cleanDb, upgradeDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('DeliveryRequest_publicId_check','DeliveryRequest_cancellation_check','DeliveryStop_values_check','DeliveryPackage_values_check','DeliveryFinancialContext_goods_check','ApiIdempotencyRecord_hash_check')",
+      ]),
+      '6',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_sequences WHERE sequencename = 'DeliveryRequest_publicId_seq'",
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname IN ('ApiIdempotencyRecord_integrationClientId_key_key','DeliveryRequest_publicId_key')",
+      ]),
+      '2',
+    );
+  }
   for (const db of [cleanDb, upgradeDb]) {
     assert.equal(
       sql(db, [
@@ -222,7 +279,7 @@ try {
   );
   prisma(upgradeDb, ['migrate', 'deploy']);
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, limits and memberships preserved; V1.4 constraints present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles and assignments preserved; V1.4/V1.5 constraints and publicId sequence present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(
