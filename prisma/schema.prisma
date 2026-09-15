@@ -29,6 +29,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   refreshTokens RefreshToken[]
+  providerMemberships ProviderMembership[]
 }
 model RefreshToken {
   id String @id @default(uuid()) @db.Uuid
@@ -63,4 +64,44 @@ model IntegrationCredential {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([clientId])
+}
+
+enum ProviderType {
+  FLEET
+  INDEPENDENT
+}
+enum ProviderStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+enum ProviderMemberRole {
+  OWNER
+  ADMIN
+}
+model DeliveryProvider {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  code String @unique
+  type ProviderType
+  status ProviderStatus @default(PENDING)
+  maxDrivers Int
+  maxVehicles Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  memberships ProviderMembership[]
+  @@index([type, status])
+  @@index([createdAt, id])
+}
+model ProviderMembership {
+  id String @id @default(uuid()) @db.Uuid
+  providerId String @db.Uuid
+  userId String @db.Uuid
+  role ProviderMemberRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@unique([providerId, userId])
+  @@index([userId, providerId])
 }

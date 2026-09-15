@@ -1,4 +1,85 @@
-# Verificación de Mandaria V1.1
+# Verificación de Mandaria V1.2
+
+Fecha: 2026-09-15. Node.js 24.15.0, PostgreSQL 18 local, rama `V1_2-Proveedores_Reparto`, paquete 1.2.0.
+
+## Resultado V1.2
+
+Definition of Done crítica V1.2 comprobada localmente. No se ejecutó Docker, conforme a la instrucción vigente del propietario.
+
+| Verificación | Resultado |
+|---|---|
+| Prisma Generate | PASS, tras detener backend anterior que bloqueaba la DLL |
+| Migración en mandaria_db y mandaria_test | PASS |
+| Instalación desde base vacía | PASS |
+| V1.0 → V1.1 → V1.2 con snapshots de datos | PASS, datos anteriores conservados |
+| Build | PASS |
+| ESLint | PASS |
+| Tests unitarios/HTTP | 21 PASS |
+| E2E PostgreSQL | 36 PASS: 7 Core + 14 B2B + 15 Providers |
+| SUPER_ADMIN crea FLEET/INDEPENDENT y defaults | PASS |
+| Defaults personalizados por configuración y límites explícitos | PASS |
+| Códigos únicos normalizados, campos/IDs/límites inválidos | PASS |
+| Paginación, filtros combinados y orden estable | PASS |
+| Edición de límites, transiciones e idempotencia | PASS |
+| Membresías múltiples y rechazo de duplicado concurrente | PASS |
+| Retirar membership sin eliminar User | PASS |
+| PROVIDER_ADMIN consulta su perfil | PASS |
+| Provider A Admin → Provider B | 403 comprobado en E2E y HTTP local |
+| IntegrationToken → Admin Providers y Provider | 401 comprobado |
+| PROVIDER_ADMIN → administración B2B | 403 comprobado |
+| Rol global/active actual y pérdida de membership | PASS con JWT emitido antes del cambio |
+| Multi-provider: selección explícita y perfiles propios | PASS |
+| Swagger versión/esquemas/descripciones/permisos/errores | PASS |
+| Logging de eventos sin secretos de fixtures | PASS |
+| Flujo local con login humano real | PASS, verify-providers-local.mjs |
+
+Bases aisladas conservadas: `mandaria_clean_e0cd1120c3_test` y `mandaria_upgrade_e0cd1120c3_test`. El snapshot tras V1.1 de User, RefreshToken, IntegrationClient e IntegrationCredential se comparó exactamente después de V1.2. No se borraron ni resetearon bases existentes.
+
+## Archivos V1.2
+
+### Creados
+
+- `src/providers/providers.module.ts`
+- `src/providers/providers.service.ts`
+- `src/providers/providers.dto.ts`
+- `src/providers/providers.responses.ts`
+- `src/providers/provider.select.ts`
+- `src/providers/admin-providers.controller.ts`
+- `src/providers/provider.controller.ts`
+- `src/providers/provider-members.service.ts`
+- `src/providers/provider-access.service.ts`
+- `src/providers/provider-membership.guard.ts`
+- `src/common/pagination.dto.ts`
+- `src/common/api-errors.decorator.ts`
+- `prisma/migrations/20260915000300_delivery_providers/migration.sql`
+- `scripts/verify-migrations.mjs` (evolución del verificador anterior)
+- `scripts/verify-providers-local.mjs`
+- `test/providers.spec.ts`
+- `test/providers.e2e-spec.ts`
+
+### Modificados
+
+- `prisma/schema.prisma`: DeliveryProvider, ProviderMembership, enums y relación reversa en User.
+- `src/app.module.ts`, `src/config/environment.ts`, `src/setup.ts`: módulo, defaults y versión OpenAPI.
+- `.env.example`, `docker-compose.yml`, `scripts/init-local.mjs`: defaults opcionales de límites.
+- `scripts/verify-migrations-v11.mjs`: alias compatible del verificador común.
+- `package.json`, `package-lock.json`: versión 1.2.0; sin dependencias nuevas.
+- `README.md`, `BITACORA.md`, `VERIFICATION.md`: operación, decisiones y evidencia.
+
+## Decisiones y límites V1.2
+
+- ProviderMembership es muchos-a-muchos; global PROVIDER_ADMIN y rol local OWNER/ADMIN son independientes. No se crean ni elevan usuarios al asignar.
+- `/provider/profile` omite ID sólo con una membership; varias devuelven 409 y requieren elegir providerId. Un proveedor ajeno/inexistente devuelve 403. `/provider/profiles` sólo consulta las memberships del User autenticado.
+- Suspender conserva consulta del perfil y datos. No hay endpoints operativos; V1.3 deberá incorporar controles de estado para sus operaciones.
+- Límites de 1 a 10000 en API y CHECK SQL. No se cuentan recursos inexistentes. No se implementó conversión automática de tipo.
+- No se agregó Driver, Vehicle, Wallet, IntegrationClient↔Provider ni ninguna función V1.3+.
+- Rate limiting en memoria y auditoría en logs siguen como deuda heredada. La gestión general de usuarios no se amplía.
+- Swagger de Providers se amplió con detalles y errores. La mejora general pendiente del OpenAPI B2B anterior no se incluyó.
+- Docker sólo recibió defaults de configuración; no fue ejecutado. No se provocó una caída física de PostgreSQL.
+
+---
+
+# Histórico: verificación de Mandaria V1.1
 
 Fecha: 2026-09-15. Node.js 24.15.0, PostgreSQL 18 local, rama `v1-cliente_b2b_integracion_api`, paquete 1.1.0.
 

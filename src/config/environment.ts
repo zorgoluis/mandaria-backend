@@ -26,6 +26,30 @@ const schema = z.object({
     .max(2592000)
     .default(604800),
   CORS_ORIGINS: z.string().default(''),
+  DEFAULT_FLEET_MAX_DRIVERS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(10000)
+    .default(10),
+  DEFAULT_FLEET_MAX_VEHICLES: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(10000)
+    .default(10),
+  DEFAULT_INDEPENDENT_MAX_DRIVERS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(10000)
+    .default(1),
+  DEFAULT_INDEPENDENT_MAX_VEHICLES: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(10000)
+    .default(2),
 });
 export function validateEnvironment(input: Record<string, unknown>) {
   const result = schema.safeParse(input);
