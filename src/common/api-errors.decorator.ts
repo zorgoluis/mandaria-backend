@@ -5,8 +5,8 @@ const descriptions: Record<number, string> = {
   400: 'Validación fallida: UUID, campos, límites o consulta inválidos. No se aceptan campos desconocidos.',
   401: 'Se requiere access JWT humano válido; un token B2B no es válido aquí.',
   403: 'Rol global insuficiente o falta membership del proveedor solicitado.',
-  404: 'Proveedor, usuario o membership no encontrado.',
-  409: 'Conflicto: código/membership duplicado, transición inválida, usuario no elegible o selección de proveedor ambigua.',
+  404: 'Proveedor, usuario, membership, Driver, Vehicle o asignación no encontrado. Recursos de otro proveedor se reportan como no encontrados.',
+  409: 'Conflicto: duplicado, transición inválida, usuario no elegible, límite maxDrivers/maxVehicles alcanzado, Driver/Vehicle no elegible u ocupado, o selección de proveedor ambigua.',
   429: 'Límite de peticiones por IP excedido (100/minuto).',
   500: 'Error interno sanitizado; no se exponen SQL ni credenciales.',
 };

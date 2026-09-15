@@ -35,6 +35,7 @@ import {
   UpdateProviderDto,
 } from './providers.dto.js';
 import {
+  ProviderCapacityResponse,
   ProviderMemberPageResponse,
   ProviderMemberResponse,
   ProviderPageResponse,
@@ -68,7 +69,7 @@ export class AdminProvidersController {
   @ApiOperation({
     summary: 'Listar proveedores con filtros y paginación',
     description:
-      'Sólo SUPER_ADMIN. Combina type, status y search (nombre/código, sin distinguir mayúsculas). page=1, pageSize=20; máximo 100. Orden estable createdAt DESC, id DESC. items y total se leen en el mismo snapshot. Una página vacía devuelve 200.',
+      'Sólo SUPER_ADMIN. Combina type, status y search (nombre/código, sin distinguir mayúsculas). page=1, pageSize=20; máximo 100. Orden estable createdAt DESC, id DESC. items y total se leen en el mismo snapshot. Cada item incluye usage (drivers/vehicles count/max) calculado en la misma consulta. Una página vacía devuelve 200.',
   })
   list(@Query() query: ProviderListQueryDto) {
     return this.providers.list(query);
@@ -92,7 +93,7 @@ export class AdminProvidersController {
   @ApiOperation({
     summary: 'Editar datos y límites administrativos',
     description:
-      'Sólo SUPER_ADMIN. Requiere al menos name, code, maxDrivers o maxVehicles. Campos omitidos se conservan. Límites enteros de 1 a 10000; aún no se cuentan repartidores/vehículos. type y status NO son editables aquí; los estados tienen acciones explícitas y la conversión de tipo queda para otra versión.',
+      'Sólo SUPER_ADMIN. Requiere al menos name, code, maxDrivers o maxVehicles. Campos omitidos se conservan. Límites enteros de 1 a 10000; desde V1.4 no pueden quedar por debajo de los Drivers/Vehicles existentes (409). type y status NO son editables aquí; los estados tienen acciones explícitas y la conversión de tipo queda para otra versión.',
   })
   update(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -100,6 +101,18 @@ export class AdminProvidersController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.providers.update(id, dto, req.user.id);
+  }
+  @Get(':id/capacity')
+  @ApiOkResponse({ type: ProviderCapacityResponse })
+  @ApiErrors(404)
+  @ApiParam({ name: 'id', format: 'uuid', description: 'DeliveryProvider.id' })
+  @ApiOperation({
+    summary: 'Consultar uso de límites del proveedor',
+    description:
+      'Sólo SUPER_ADMIN. Devuelve drivers y vehicles como count/max con conteos agregados en PostgreSQL, sin cargar registros. count incluye todos los estados porque en V1.4 no existe eliminación.',
+  })
+  capacity(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.providers.capacity(id);
   }
   @Post(':id/activate')
   @HttpCode(200)
@@ -126,7 +139,7 @@ export class AdminProvidersController {
   @ApiOperation({
     summary: 'Suspender proveedor activo',
     description:
-      'Sólo SUPER_ADMIN. ACTIVE → SUSPENDED. Repetir en SUSPENDED devuelve 200; PENDING → SUSPENDED devuelve 409. No elimina al proveedor, memberships ni usuarios. Sus administradores conservan consulta del perfil para conocer el estado.',
+      'Sólo SUPER_ADMIN. ACTIVE → SUSPENDED. Repetir en SUSPENDED devuelve 200; PENDING → SUSPENDED devuelve 409. No elimina al proveedor, memberships, usuarios, Drivers ni Vehicles. En la misma transacción pasa a OFFLINE a sus Drivers AVAILABLE/BUSY y bloquea nuevas asignaciones. Sus administradores conservan consulta del perfil.',
   })
   suspend(
     @Param('id', new ParseUUIDPipe()) id: string,

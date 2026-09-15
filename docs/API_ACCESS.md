@@ -20,14 +20,29 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/providers/{id} | bearer | SUPER_ADMIN | — | Consultar proveedor por ID |
 | PATCH | /api/v1/admin/providers/{id} | bearer | SUPER_ADMIN | — | Editar datos y límites administrativos |
 | POST | /api/v1/admin/providers/{id}/activate | bearer | SUPER_ADMIN | — | Activar o reactivar proveedor |
+| GET | /api/v1/admin/providers/{id}/capacity | bearer | SUPER_ADMIN | — | Consultar uso de límites del proveedor |
 | POST | /api/v1/admin/providers/{id}/suspend | bearer | SUPER_ADMIN | — | Suspender proveedor activo |
+| GET | /api/v1/admin/providers/{providerId}/drivers | bearer | SUPER_ADMIN | — | Listar Drivers del proveedor |
+| POST | /api/v1/admin/providers/{providerId}/drivers | bearer | SUPER_ADMIN | — | Crear Driver para un User DRIVER existente |
+| GET | /api/v1/admin/providers/{providerId}/drivers/{driverId} | bearer | SUPER_ADMIN | — | Consultar Driver |
+| PATCH | /api/v1/admin/providers/{providerId}/drivers/{driverId} | bearer | SUPER_ADMIN | — | Editar nombre o estado del Driver |
+| GET | /api/v1/admin/providers/{providerId}/drivers/{driverId}/assignments | bearer | SUPER_ADMIN | — | Historial de vehículos del Driver |
+| POST | /api/v1/admin/providers/{providerId}/drivers/{driverId}/vehicle | bearer | SUPER_ADMIN | — | Asignar vehículo al Driver |
+| DELETE | /api/v1/admin/providers/{providerId}/drivers/{driverId}/vehicle | bearer | SUPER_ADMIN | — | Desasignar vehículo vigente |
 | GET | /api/v1/admin/providers/{providerId}/members | bearer | SUPER_ADMIN | — | Listar memberships administrativas |
 | POST | /api/v1/admin/providers/{providerId}/members | bearer | SUPER_ADMIN | — | Asociar administrador existente |
 | DELETE | /api/v1/admin/providers/{providerId}/members/{membershipId} | bearer | SUPER_ADMIN | — | Retirar administrador de este proveedor |
+| GET | /api/v1/admin/providers/{providerId}/vehicles | bearer | SUPER_ADMIN | — | Listar vehículos del proveedor |
+| POST | /api/v1/admin/providers/{providerId}/vehicles | bearer | SUPER_ADMIN | — | Crear vehículo del proveedor |
+| GET | /api/v1/admin/providers/{providerId}/vehicles/{vehicleId} | bearer | SUPER_ADMIN | — | Consultar vehículo |
+| PATCH | /api/v1/admin/providers/{providerId}/vehicles/{vehicleId} | bearer | SUPER_ADMIN | — | Editar datos o estado del vehículo |
+| GET | /api/v1/admin/providers/{providerId}/vehicles/{vehicleId}/assignments | bearer | SUPER_ADMIN | — | Historial de Drivers del vehículo |
 | POST | /api/v1/auth/login | Pública | — | — | AuthController_login |
 | POST | /api/v1/auth/logout | Pública | — | — | AuthController_logout |
 | GET | /api/v1/auth/me | bearer | — | — | AuthController_me |
 | POST | /api/v1/auth/refresh | Pública | — | — | AuthController_refresh |
+| PATCH | /api/v1/driver/availability | bearer | DRIVER | — | Cambiar mi disponibilidad |
+| GET | /api/v1/driver/me | bearer | DRIVER | — | Consultar mi perfil de repartidor |
 | GET | /api/v1/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |
 | POST | /api/v1/integrations | bearer | SUPER_ADMIN | — | AdminIntegrationsController_create[1] |
 | GET | /api/v1/integrations/{id} | bearer | SUPER_ADMIN | — | AdminIntegrationsController_get[1] |
@@ -40,7 +55,20 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/integrations/me | integration-bearer | — | — | IntegrationsController_me |
 | GET | /api/v1/integrations/scope-check | integration-bearer | — | deliveries:read | Authorization probe for deliveries:read; does not access or implement deliveries |
 | POST | /api/v1/integrations/token | Pública | — | — | Exchange Client Credentials for a short-lived B2B token; no refresh token |
+| GET | /api/v1/provider/capacity | bearer | PROVIDER_ADMIN | — | Consultar uso de Drivers y Vehicles de mi proveedor |
+| GET | /api/v1/provider/drivers | bearer | PROVIDER_ADMIN | — | Listar Drivers de mi proveedor |
+| POST | /api/v1/provider/drivers | bearer | PROVIDER_ADMIN | — | Crear Driver en mi proveedor |
+| GET | /api/v1/provider/drivers/{driverId} | bearer | PROVIDER_ADMIN | — | Consultar Driver de mi proveedor |
+| PATCH | /api/v1/provider/drivers/{driverId} | bearer | PROVIDER_ADMIN | — | Editar nombre o estado de un Driver de mi proveedor |
+| GET | /api/v1/provider/drivers/{driverId}/assignments | bearer | PROVIDER_ADMIN | — | Historial de vehículos del Driver |
+| POST | /api/v1/provider/drivers/{driverId}/vehicle | bearer | PROVIDER_ADMIN | — | Asignar vehículo de mi proveedor |
+| DELETE | /api/v1/provider/drivers/{driverId}/vehicle | bearer | PROVIDER_ADMIN | — | Desasignar vehículo vigente |
 | GET | /api/v1/provider/profile | bearer | PROVIDER_ADMIN | — | Consultar perfil de un proveedor asociado |
 | GET | /api/v1/provider/profiles | bearer | PROVIDER_ADMIN | — | Identificar mis proveedores asociados |
+| GET | /api/v1/provider/vehicles | bearer | PROVIDER_ADMIN | — | Listar vehículos de mi proveedor |
+| POST | /api/v1/provider/vehicles | bearer | PROVIDER_ADMIN | — | Crear vehículo en mi proveedor |
+| GET | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Consultar vehículo de mi proveedor |
+| PATCH | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Editar vehículo de mi proveedor |
+| GET | /api/v1/provider/vehicles/{vehicleId}/assignments | bearer | PROVIDER_ADMIN | — | Historial de Drivers del vehículo |
 | GET | /api/v1/users | bearer | SUPER_ADMIN | — | UsersController_list |
 | GET | /health | Pública | — | — | HealthController_check |

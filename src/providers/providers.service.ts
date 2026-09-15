@@ -13,9 +13,24 @@ import {
   ProviderListQueryDto,
   UpdateProviderDto,
 } from './providers.dto.js';
-import { providerSelect } from './provider.select.js';
+import { providerSelect, providerUsageSelect } from './provider.select.js';
 import { pageResult } from '../common/pagination.dto.js';
 
+function withUsage<
+  T extends {
+    maxDrivers: number;
+    maxVehicles: number;
+    _count: { drivers: number; vehicles: number };
+  },
+>({ _count, ...provider }: T) {
+  return {
+    ...provider,
+    usage: {
+      drivers: { count: _count.drivers, max: provider.maxDrivers },
+      vehicles: { count: _count.vehicles, max: provider.maxVehicles },
+    },
+  };
+}
 @Injectable()
 export class ProvidersService {
   private readonly logger = new Logger(ProvidersService.name);
@@ -77,7 +92,7 @@ export class ProvidersService {
       [
         this.prisma.deliveryProvider.findMany({
           where,
-          select: providerSelect,
+          select: providerUsageSelect,
           skip: (query.page - 1) * query.pageSize,
           take: query.pageSize,
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -86,7 +101,16 @@ export class ProvidersService {
       ],
       { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
     );
-    return pageResult(items, total, query);
+    return pageResult(items.map(withUsage), total, query);
+  }
+  async capacity(id: string) {
+    const provider = await this.prisma.deliveryProvider.findUnique({
+      where: { id },
+      select: providerUsageSelect,
+    });
+    if (!provider) throw new NotFoundException('Provider not found');
+    const { usage } = withUsage(provider);
+    return { providerId: id, ...usage };
   }
   async get(id: string) {
     const provider = await this.prisma.deliveryProvider.findUnique({
@@ -107,6 +131,23 @@ export class ProvidersService {
           select: providerSelect,
         });
         if (!previous) throw new NotFoundException('Provider not found');
+        // The row lock above also serializes with Driver/Vehicle creation.
+        if (
+          dto.maxDrivers !== undefined &&
+          dto.maxDrivers <
+            (await tx.driver.count({ where: { providerId: id } }))
+        )
+          throw new ConflictException(
+            'maxDrivers cannot be below current drivers',
+          );
+        if (
+          dto.maxVehicles !== undefined &&
+          dto.maxVehicles <
+            (await tx.vehicle.count({ where: { providerId: id } }))
+        )
+          throw new ConflictException(
+            'maxVehicles cannot be below current vehicles',
+          );
         const current = await tx.deliveryProvider.update({
           where: { id },
           data: dto,
@@ -151,14 +192,22 @@ export class ProvidersService {
         target === 'ACTIVE' ? ['PENDING', 'SUSPENDED'] : ['ACTIVE'];
       if (!allowed.includes(current.status))
         throw new ConflictException('Invalid provider status transition');
-      return {
-        provider: await tx.deliveryProvider.update({
-          where: { id },
-          data: { status: target },
-          select: providerSelect,
-        }),
-        changed: true,
-      };
+      const provider = await tx.deliveryProvider.update({
+        where: { id },
+        data: { status: target },
+        select: providerSelect,
+      });
+      // A suspended provider offers no capacity: its drivers cannot stay AVAILABLE/BUSY.
+      const offline =
+        target === 'SUSPENDED'
+          ? (
+              await tx.driver.updateMany({
+                where: { providerId: id, availability: { not: 'OFFLINE' } },
+                data: { availability: 'OFFLINE' },
+              })
+            ).count
+          : 0;
+      return { provider, changed: true, offline };
     });
     if (result.changed)
       this.logger.log({
@@ -166,6 +215,15 @@ export class ProvidersService {
           target === 'ACTIVE' ? 'PROVIDER_ACTIVATED' : 'PROVIDER_SUSPENDED',
         providerId: id,
         actorId,
+      });
+    if ('offline' in result && result.offline)
+      this.logger.log({
+        event: 'DRIVER_AVAILABILITY_CHANGED',
+        providerId: id,
+        actorId,
+        to: 'OFFLINE',
+        drivers: result.offline,
+        reason: 'PROVIDER_SUSPENDED',
       });
     return result.provider;
   }

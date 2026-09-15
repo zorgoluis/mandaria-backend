@@ -72,9 +72,35 @@ export class PaginationResponse {
   @ApiProperty({ example: 1, description: 'Cero cuando no hay resultados.' })
   totalPages!: number;
 }
+export class ProviderUsageItemResponse {
+  @ApiProperty({
+    example: 3,
+    description:
+      'Registros existentes en cualquier estado (PENDING/SUSPENDED/INACTIVE incluidos).',
+  })
+  count!: number;
+  @ApiProperty({ example: 10 }) max!: number;
+}
+export class ProviderUsageResponse {
+  @ApiProperty({ type: ProviderUsageItemResponse })
+  drivers!: ProviderUsageItemResponse;
+  @ApiProperty({ type: ProviderUsageItemResponse })
+  vehicles!: ProviderUsageItemResponse;
+}
+export class ProviderListItemResponse extends ProviderResponse {
+  @ApiProperty({
+    type: ProviderUsageResponse,
+    description:
+      'Conteos calculados en la misma consulta del listado (sin N+1).',
+  })
+  usage!: ProviderUsageResponse;
+}
 export class ProviderPageResponse extends PaginationResponse {
-  @ApiProperty({ type: ProviderResponse, isArray: true })
-  items!: ProviderResponse[];
+  @ApiProperty({ type: ProviderListItemResponse, isArray: true })
+  items!: ProviderListItemResponse[];
+}
+export class ProviderCapacityResponse extends ProviderUsageResponse {
+  @ApiProperty({ format: 'uuid' }) providerId!: string;
 }
 export class ProviderProfilePageResponse extends PaginationResponse {
   @ApiProperty({ type: ProviderProfileResponse, isArray: true })

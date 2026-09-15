@@ -15,6 +15,6 @@ import { ProviderMembershipGuard } from './provider-membership.guard.js';
     ProviderAccessService,
     ProviderMembershipGuard,
   ],
-  exports: [ProvidersService, ProviderMembershipGuard],
+  exports: [ProvidersService, ProviderAccessService, ProviderMembershipGuard],
 })
 export class ProvidersModule {}

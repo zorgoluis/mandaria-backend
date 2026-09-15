@@ -9,6 +9,10 @@ export const providerSelect = {
   createdAt: true,
   updatedAt: true,
 } as const;
+export const providerUsageSelect = {
+  ...providerSelect,
+  _count: { select: { drivers: true, vehicles: true } },
+} as const;
 export const memberSelect = {
   id: true,
   providerId: true,
