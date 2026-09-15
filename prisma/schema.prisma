@@ -220,6 +220,8 @@ model DeliveryRequest {
   publicId String @unique
   integrationClientId String @db.Uuid
   externalReference String?
+  /// V1.6: existing V1.5 rows migrate to LOCAL_DELIVERY (the only service offered).
+  serviceType ServiceType @default(LOCAL_DELIVERY)
   status DeliveryRequestStatus @default(CREATED)
   requestedAt DateTime @default(now())
   cancelledAt DateTime?
@@ -230,6 +232,7 @@ model DeliveryRequest {
   stops DeliveryStop[]
   packages DeliveryPackage[]
   financialContext DeliveryFinancialContext?
+  quotes DeliveryQuote[]
   @@index([integrationClientId, requestedAt, id])
   @@index([externalReference])
   @@index([status, requestedAt])
@@ -292,4 +295,116 @@ model ApiIdempotencyRecord {
   createdAt DateTime @default(now())
   integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
   @@unique([integrationClientId, key])
+}
+
+/// Service catalogue. Only LOCAL_DELIVERY exists in V1.6; ERRAND/INTERCITY/FREIGHT are future values.
+enum ServiceType {
+  LOCAL_DELIVERY
+}
+enum ServiceZoneStatus {
+  ACTIVE
+  INACTIVE
+}
+enum RatePlanStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+/// Pricing strategy. BASE_PLUS_DISTANCE is planned but not implemented.
+enum RateCalculationType {
+  DISTANCE_BANDS
+}
+enum DeliveryQuoteStatus {
+  OFFERED
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+/// Operating area. boundary is a validated GeoJSON Polygon/MultiPolygon; the bbox columns
+/// pre-filter candidates in SQL before the exact point-in-polygon check (PostGIS-replaceable).
+model ServiceZone {
+  id String @id @default(uuid()) @db.Uuid
+  code String @unique
+  name String
+  status ServiceZoneStatus @default(INACTIVE)
+  currency String @db.Char(3)
+  boundary Json
+  minLatitude Decimal @db.Decimal(9, 6)
+  maxLatitude Decimal @db.Decimal(9, 6)
+  minLongitude Decimal @db.Decimal(9, 6)
+  maxLongitude Decimal @db.Decimal(9, 6)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ratePlans RatePlan[]
+  quotes DeliveryQuote[]
+  @@index([status, minLatitude, maxLatitude, minLongitude, maxLongitude])
+}
+/// Versioned tariff for ServiceZone + ServiceType. Only DRAFT is editable; at most one ACTIVE.
+model RatePlan {
+  id String @id @default(uuid()) @db.Uuid
+  serviceZoneId String @db.Uuid
+  serviceType ServiceType
+  version Int
+  status RatePlanStatus @default(DRAFT)
+  calculationType RateCalculationType @default(DISTANCE_BANDS)
+  quoteValidityMinutes Int
+  currency String @db.Char(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  activatedAt DateTime?
+  deactivatedAt DateTime?
+  serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
+  bands RateBand[]
+  quotes DeliveryQuote[]
+  @@unique([serviceZoneId, serviceType, version])
+  @@unique([id, serviceZoneId])
+  @@index([serviceZoneId, serviceType, status])
+}
+/// Distance band [minDistanceMeters, maxDistanceMeters): min inclusive, max exclusive.
+model RateBand {
+  id String @id @default(uuid()) @db.Uuid
+  ratePlanId String @db.Uuid
+  minDistanceMeters Int
+  maxDistanceMeters Int
+  amount Decimal @db.Decimal(14, 2)
+  currency String @db.Char(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ratePlan RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Restrict)
+  quotes DeliveryQuote[]
+  @@unique([ratePlanId, minDistanceMeters])
+  @@unique([id, ratePlanId])
+}
+/// Immutable price snapshot for a DeliveryRequest. Only status and its timestamps change.
+model DeliveryQuote {
+  id String @id @default(uuid()) @db.Uuid
+  /// MQ-000001; generated from sequence "DeliveryQuote_publicId_seq".
+  publicId String @unique
+  deliveryRequestId String @db.Uuid
+  serviceType ServiceType
+  serviceZoneId String @db.Uuid
+  ratePlanId String @db.Uuid
+  rateBandId String @db.Uuid
+  distanceMeters Int
+  durationSeconds Int
+  amount Decimal @db.Decimal(14, 2)
+  currency String @db.Char(3)
+  routingProvider String
+  routeCalculatedAt DateTime
+  status DeliveryQuoteStatus @default(OFFERED)
+  expiresAt DateTime
+  acceptedAt DateTime?
+  expiredAt DateTime?
+  cancelledAt DateTime?
+  cancellationReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Restrict)
+  serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
+  ratePlan RatePlan @relation(fields: [ratePlanId, serviceZoneId], references: [id, serviceZoneId], onDelete: Restrict)
+  rateBand RateBand @relation(fields: [rateBandId, ratePlanId], references: [id, ratePlanId], onDelete: Restrict)
+  @@index([deliveryRequestId, createdAt])
+  @@index([status, expiresAt])
+  @@index([createdAt, id])
+  @@index([serviceZoneId, createdAt])
 }

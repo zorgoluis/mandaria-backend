@@ -1,3 +1,52 @@
+# Verificación V1.6-A — Routing, Service Zones, Rate Plans & Delivery Quotes (2026-09-15)
+
+Rama `1.6-routing_services_plan`, paquete 1.6.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado.
+
+| Verificación | Resultado |
+|---|---|
+| Línea base previa (V1.5 en QA) | Prisma/build/tsc/lint/docs PASS; 40 unitarias; E2E 75/85 por caída nativa conocida |
+| Prisma validate / generate / drift | PASS / PASS / vacío |
+| Migración `20260915000600_routing_pricing_quotes` en mandaria_db y mandaria_test (sin reset) | PASS |
+| Limpia + V1.0 → … → V1.5 → V1.6 con fixtures V1.5 | PASS; serviceType = LOCAL_DELIVERY; índices parciales, triggers y secuencia MQ presentes |
+| Build / TypeScript / Oxlint / ESLint / docs:check | PASS |
+| npm test | 52 PASS (40 + 12 V1.6) |
+| npm run test:e2e | 100/100 PASS (suite completa y cada archivo por separado) |
+| GeoJSON inválido (tipo, anillo abierto, <4 puntos, rangos, autointersección, área 0) | PASS 400 |
+| Punto en polígono (dentro, borde, fuera, hueco, MultiPolygon) | PASS |
+| Zonas: solape, contacto, anidada → 409; disjunta → ACTIVE; boundary ACTIVE → 409 | PASS |
+| RatePlan: DRAFT editable, ACTIVE/INACTIVE inmutables (API 409 y triggers SQL) | PASS |
+| Versionado, clonación, activación atómica (ACTIVE anterior → INACTIVE) | PASS |
+| 5 creaciones y 5 activaciones concurrentes | PASS: versiones 1–5 únicas, 1 ACTIVE |
+| Huecos, solapes, inicio ≠ 0, monto ≤ 0, moneda distinta, TTL 0/−5/121/10081 | PASS 400/422 |
+| Bandas 0/1999/2000/3999/4000/9999 → 35/35/40/40/50/70; 10000 y 11400 → DISTANCE_NOT_SUPPORTED | PASS |
+| Quote OFFERED (MQ, snapshot, TTL 15 min, sin IDs internos) | PASS |
+| OFFERED vigente reutilizada sin routing; ACCEPTED devuelta | PASS |
+| Aceptación idempotente; precio congelado tras nueva versión de tarifa (50.00 vs 80.00) | PASS |
+| Expiración con reloj simulado: lectura EXPIRED, accept 409 QUOTE_EXPIRED, nueva Quote con nuevo routing; ACCEPTED no expira | PASS |
+| OUT_OF_SERVICE_AREA (pickup/dropoff), CROSS_ZONE_NOT_SUPPORTED, zona INACTIVE, RATE_CONFIGURATION_UNAVAILABLE sin llamar routing | PASS |
+| ROUTE_NOT_FOUND, ROUTING_UNAVAILABLE (timeout, 503, respuesta inválida, error inesperado), reintento posterior 201 | PASS |
+| RATE_CONFIGURATION_INVALID (hueco inyectado en SQL) | PASS 503 |
+| Fallo no crea Quote ni cambia la solicitud (sigue CREATED) | PASS |
+| Adaptador Google con HTTP simulado: normalización, field mask, key sólo en header, sin rutas, 429/5xx/timeout/red con 1 reintento, 4xx/respuesta inválida sin reintento, sin key sin llamada | PASS |
+| Cancelar solicitud: OFFERED → CANCELLED, accept 409, cotizar 409; ACCEPTED preservada | PASS |
+| 20 cotizaciones concurrentes | PASS: 1 × 201 + 19 × 200, 1 llamada de routing, 1 Quote |
+| 10 aceptaciones concurrentes | PASS: 10 × 200, 1 ACCEPTED, 1 evento |
+| Cotización vs cancelación en carrera | PASS: ninguna OFFERED en solicitud cancelada |
+| Índices únicos parciales y trigger de snapshot (inserción/actualización directa) | PASS rechazadas |
+| Separación goodsValue/COURIER_ADVANCE vs amount | PASS |
+| Aislamiento B2B (cotizar, leer, aceptar, listar ajenas) | PASS 404 |
+| Scopes quotes:create/read/accept independientes; deliveries:* sin quotes → 403 | PASS |
+| PROVIDER_ADMIN/DRIVER → admin zonas/planes/Quotes 403; humanos en B2B 401; B2B en admin 401; sin accept/edición/borrado admin | PASS |
+| Mutaciones M1 (sin bloqueo) / M2 (sin expiración) / M3 (max inclusivo) / M4 (sin aislamiento) | Detectadas (1 / 2 / 2 / 1 pruebas fallan) |
+| Validación de entorno: local_fake y google sin key rechazados en producción | PASS |
+| HTTP local `verify:delivery-quotes` con ROUTING_PROVIDER=local_fake | 9/9 PASS: MDR-000037 → 4509 m → 4–6 km → MQ-000001 → $50.00 MXN → ACCEPTED |
+| HTTP local `verify:delivery-quotes` con ROUTING_PROVIDER=google (rutas reales) | 9/9 PASS: MDR-000046 → 5829 m (Google) → 4–6 km → MQ-000004 → $50.00 MXN → ACCEPTED; 3 ROUTING_CALCULATED (234/89/77 ms), 0 ROUTING_FAILED, key ausente de logs |
+| Regresión HTTP V1.5 / V1.4 / V1.2 | 10/10, 16/16, 13/13 PASS |
+| Logs reales | Eventos de Quote/routing con reasonCode; sin coordenadas, direcciones, contactos, secretos ni JWT; 0 request_failed |
+| Google Routes real (`routing:check-google`) | PASS el 2026-09-15 tras configurar el propietario GOOGLE_ROUTES_API_KEY: 1 llamada real a computeRoutes, 5829 m / 1408 s / 302 ms, travelMode DRIVE; la key no se imprimió |
+
+---
+
 # Verificación V1.5-A — Delivery Requests (2026-09-15)
 
 Rama `v1.5-delivery_request`, paquete 1.5.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado.

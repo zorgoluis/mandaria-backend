@@ -26,6 +26,20 @@ const schema = z.object({
     .max(2592000)
     .default(604800),
   CORS_ORIGINS: z.string().default(''),
+  // V1.6 routing. local_fake is LOCAL/TEST ONLY and rejected in production.
+  ROUTING_PROVIDER: z.enum(['google', 'local_fake']).default('google'),
+  GOOGLE_ROUTES_API_KEY: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.string().min(20).max(200).optional(),
+  ),
+  GOOGLE_ROUTES_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(1000)
+    .max(15000)
+    .default(5000),
+  GOOGLE_ROUTES_MAX_RETRIES: z.coerce.number().int().min(0).max(2).default(1),
+  GOOGLE_ROUTES_TRAVEL_MODE: z.enum(['DRIVE', 'TWO_WHEELER']).default('DRIVE'),
   DEFAULT_FLEET_MAX_DRIVERS: z.coerce
     .number()
     .int()
@@ -66,6 +80,14 @@ export function validateEnvironment(input: Record<string, unknown>) {
     ]).size !== 3
   )
     throw new Error('JWT secrets must differ');
+  if (env.NODE_ENV === 'production') {
+    if (env.ROUTING_PROVIDER === 'local_fake')
+      throw new Error(
+        'ROUTING_PROVIDER=local_fake is not allowed in production',
+      );
+    if (env.ROUTING_PROVIDER === 'google' && !env.GOOGLE_ROUTES_API_KEY)
+      throw new Error('GOOGLE_ROUTES_API_KEY is required in production');
+  }
   for (const origin of env.CORS_ORIGINS.split(',').filter(Boolean)) {
     let url: URL;
     try {

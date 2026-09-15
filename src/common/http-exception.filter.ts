@@ -30,13 +30,23 @@ export class HttpErrorFilter implements ExceptionFilter {
         ? body.message
         : undefined;
     const errors = status === 400 && Array.isArray(message) ? message : [];
+    // Domain errors (DomainException) carry a stable code such as OUT_OF_SERVICE_AREA.
+    const domainCode =
+      typeof body === 'object' &&
+      body &&
+      'code' in body &&
+      typeof body.code === 'string'
+        ? body.code
+        : undefined;
     if (status >= 500) this.logger.error({ event: 'request_failed', status });
     ctx
       .getResponse<Response>()
       .status(status)
       .json({
         statusCode: status,
-        code: errors.length ? 'VALIDATION_ERROR' : `HTTP_${status}`,
+        code: errors.length
+          ? 'VALIDATION_ERROR'
+          : (domainCode ?? `HTTP_${status}`),
         message:
           status >= 500
             ? 'Service unavailable'

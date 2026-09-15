@@ -37,7 +37,7 @@ export class CreateCredentialDto {
   @IsOptional()
   @IsArray()
   @ArrayUnique()
-  @ArrayMaxSize(4)
+  @ArrayMaxSize(INTEGRATION_SCOPES.length)
   @IsIn(INTEGRATION_SCOPES, { each: true })
   scopes?: string[];
   @ApiPropertyOptional({

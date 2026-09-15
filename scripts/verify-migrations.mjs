@@ -181,18 +181,92 @@ try {
   ]);
   v12Tables.push('Driver', 'Vehicle', 'DriverVehicleAssignment');
   const v14Snapshot = fullSnapshot();
-  prisma(upgradeDb, ['migrate', 'deploy']);
+  sql(upgradeDb, [
+    '-f',
+    'prisma/migrations/20260915000500_delivery_requests/migration.sql',
+  ]);
+  prisma(upgradeDb, [
+    'migrate',
+    'resolve',
+    '--applied',
+    '20260915000500_delivery_requests',
+  ]);
   assert.deepEqual(fullSnapshot(), v14Snapshot);
-  for (const table of [
-    'DeliveryRequest',
+  // V1.5 fixtures: a delivery request with stops, package, financial context and idempotency record.
+  const deliveryRequestId = randomUUID();
+  sql(upgradeDb, [
+    '-c',
+    `
+    INSERT INTO "DeliveryRequest" (id,"publicId","integrationClientId","externalReference",status,"updatedAt") VALUES ('${deliveryRequestId}','MDR-000001','${integrationId}','ORDER-1842','CREATED',now());
+    INSERT INTO "DeliveryStop" (id,"deliveryRequestId",type,sequence,address,latitude,longitude,"contactName","contactPhone","updatedAt") VALUES
+      ('${randomUUID()}','${deliveryRequestId}','PICKUP',1,'Origen',16.7614,-93.3743,'A','9610000001',now()),
+      ('${randomUUID()}','${deliveryRequestId}','DROPOFF',2,'Destino',16.77,-93.36,'B','9610000002',now());
+    INSERT INTO "DeliveryPackage" (id,"deliveryRequestId",category,description,quantity,"updatedAt") VALUES ('${randomUUID()}','${deliveryRequestId}','FOOD','Pedido',2,now());
+    INSERT INTO "DeliveryFinancialContext" (id,"deliveryRequestId","goodsValue","goodsPaymentMode",currency,"updatedAt") VALUES ('${randomUUID()}','${deliveryRequestId}',450.00,'COURIER_ADVANCE','MXN',now());
+    INSERT INTO "ApiIdempotencyRecord" (id,"integrationClientId",key,operation,"requestHash","resourceType","resourceId") VALUES ('${randomUUID()}','${integrationId}','migration-key-001','delivery_requests.create','${hash}','DeliveryRequest','${deliveryRequestId}');
+  `,
+  ]);
+  v12Tables.push(
     'DeliveryStop',
     'DeliveryPackage',
     'DeliveryFinancialContext',
     'ApiIdempotencyRecord',
-  ])
+  );
+  const requestColumns = `SELECT json_agg(json_build_object('id', id, 'publicId', "publicId", 'status', status, 'externalReference', "externalReference") ORDER BY id) FROM "DeliveryRequest"`;
+  const v15Snapshot = {
+    ...fullSnapshot(),
+    request: sql(upgradeDb, ['-c', requestColumns]),
+  };
+  prisma(upgradeDb, ['migrate', 'deploy']);
+  assert.deepEqual(
+    { ...fullSnapshot(), request: sql(upgradeDb, ['-c', requestColumns]) },
+    v15Snapshot,
+  );
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      `SELECT "serviceType" FROM "DeliveryRequest" WHERE id='${deliveryRequestId}'`,
+    ]),
+    'LOCAL_DELIVERY',
+  );
+  for (const table of ['ServiceZone', 'RatePlan', 'RateBand', 'DeliveryQuote'])
     assert.equal(
       sql(upgradeDb, ['-c', `SELECT count(*) FROM "${table}"`]),
       '0',
+    );
+  for (const db of [cleanDb, upgradeDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname IN ('RatePlan_active_zone_service_key','DeliveryQuote_offered_request_key','DeliveryQuote_accepted_request_key') AND indexdef LIKE '%WHERE%'",
+      ]),
+      '3',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('RateBand_draft_only','RatePlan_immutable','DeliveryQuote_immutable')",
+      ]),
+      '3',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_sequences WHERE sequencename = 'DeliveryQuote_publicId_seq'",
+      ]),
+      '1',
+    );
+  }
+  for (const [table, rows] of [
+    ['DeliveryRequest', '1'],
+    ['DeliveryStop', '2'],
+    ['DeliveryPackage', '1'],
+    ['DeliveryFinancialContext', '1'],
+    ['ApiIdempotencyRecord', '1'],
+  ])
+    assert.equal(
+      sql(upgradeDb, ['-c', `SELECT count(*) FROM "${table}"`]),
+      rows,
     );
   for (const db of [cleanDb, upgradeDb]) {
     assert.equal(
@@ -279,7 +353,7 @@ try {
   );
   prisma(upgradeDb, ['migrate', 'deploy']);
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles and assignments preserved; V1.4/V1.5 constraints and publicId sequence present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments and delivery requests preserved; V1.4-V1.6 constraints, triggers and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

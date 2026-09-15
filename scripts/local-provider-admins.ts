@@ -29,24 +29,28 @@ export const LOCAL_PROVIDER_ADMIN_DEFAULTS = {
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 
 /** Throws unless the environment is explicitly non-production and the database is local. */
-export function assertLocalSeedAllowed(
+/** Throws unless NODE_ENV is development/test and DATABASE_URL points to localhost. */
+export function assertLocalDatabaseAllowed(
   env: Record<string, string | undefined>,
+  label = 'Local PROVIDER_ADMIN seed',
 ) {
   const nodeEnv = env.NODE_ENV ?? 'development';
   if (!['development', 'test'].includes(nodeEnv))
-    throw new Error(
-      'Local PROVIDER_ADMIN seed refused: NODE_ENV must be development or test',
-    );
+    throw new Error(`${label} refused: NODE_ENV must be development or test`);
   let host: string;
   try {
     host = new URL(env.DATABASE_URL ?? '').hostname;
   } catch {
-    throw new Error('Local PROVIDER_ADMIN seed refused: invalid DATABASE_URL');
+    throw new Error(`${label} refused: invalid DATABASE_URL`);
   }
   if (!LOCAL_HOSTS.has(host))
-    throw new Error(
-      'Local PROVIDER_ADMIN seed refused: DATABASE_URL host must be localhost',
-    );
+    throw new Error(`${label} refused: DATABASE_URL host must be localhost`);
+}
+
+export function assertLocalSeedAllowed(
+  env: Record<string, string | undefined>,
+) {
+  assertLocalDatabaseAllowed(env);
   const password = env[LOCAL_PROVIDER_ADMIN_PASSWORD_VAR];
   if (!password || password.length < 16 || password.length > 128)
     throw new Error(

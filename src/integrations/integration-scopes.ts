@@ -12,6 +12,8 @@ import type { IntegrationRequest } from './integration.guard.js';
 
 export const INTEGRATION_SCOPES = [
   'quotes:create',
+  'quotes:read',
+  'quotes:accept',
   'deliveries:create',
   'deliveries:read',
   'deliveries:cancel',

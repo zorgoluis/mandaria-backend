@@ -4,17 +4,17 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
-- **Versión del paquete:** 1.5.0 (V1.5-A Delivery Requests).
-- **Rama activa:** `v1.5-delivery_request`, creada por el propietario desde QA tras el merge de V1.4 (PR #3). V1.5 publicada en origin por solicitud del propietario; sin merge a QA/main.
+- **Versión del paquete:** 1.6.0 (V1.6-A Routing, Service Zones, Rate Plans & Delivery Quotes).
+- **Rama activa:** `1.6-routing_services_plan`, creada por el propietario desde QA tras el merge de V1.5 (PR #4). V1.6 publicada en origin por solicitud del propietario; sin merge a QA/main.
 - **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git. Entrega V1.2 en `V1_2-Proveedores_Reparto`.
-- **Objetivo actual:** V1.5-A DeliveryRequest B2B (qué transportar) sobre V1.0–V1.4. V1.6 (distancia/cotización) no iniciado.
+- **Objetivo actual:** V1.6-A cotización LOCAL_DELIVERY (zonas, routing, tarifas versionadas, Quotes) sobre V1.0–V1.5. V1.7 (Dispatch) no iniciado.
 - **Herramientas:** scripts npm ampliados con OpenAPI exportable, matriz de acceso, Oxlint y configuración Prisma de pruebas; entrega autorizada en la rama actual.
-- **Estado funcional V1.5-A:** implementado y verificado localmente el 2026-09-15; 40 pruebas unitarias/HTTP y 85 E2E correctos (ejecuciones completas intermitentemente afectadas por una caída nativa previa de workers en Windows, ver VERIFICATION.md); validación HTTP V1.5 10/10 y regresiones HTTP V1.4 16/16 y V1.2 13/13.
-- **Definition of Done:** requisitos V1.5-A verificados localmente (ver VERIFICATION.md). Docker/Compose heredado sigue pospuesto por el propietario; no se declara ejecutado.
+- **Estado funcional V1.6-A:** implementado y verificado localmente el 2026-09-15; 52 pruebas unitarias/HTTP y 100 E2E correctos (suite completa limpia en la verificación final; la caída nativa intermitente de workers en Windows sigue documentada); validación HTTP V1.6 9/9 y regresiones HTTP V1.5 10/10, V1.4 16/16 y V1.2 13/13.
+- **Definition of Done:** requisitos V1.6-A verificados localmente (ver VERIFICATION.md), incluida una llamada real a Google Routes tras configurar el propietario la API key. Docker/Compose heredado sigue pospuesto por el propietario; no se declara ejecutado.
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
 - **Base local configurada:** `mandaria_db`; base separada para E2E: `mandaria_test`.
 - **Configuración:** `.env` local, ignorado por Git. El propietario corrigió el acceso y las verificaciones posteriores pasaron. No copiar sus valores a esta bitácora.
-- **Servidor:** detenido. La compilación V1.5 se levantó temporalmente con `node dist/main.js` para validar y se detuvo; no había otro backend activo. Reiniciar con `npm run build` + `npm run start:prod` (mandaria-frontend lo usa).
+- **Servidor:** detenido. La compilación V1.6 se levantó temporalmente con `ROUTING_PROVIDER=local_fake node dist/main.js` para validar y se detuvo. Reiniciar con `npm run build` + `npm run start:prod` (definir ROUTING_PROVIDER/GOOGLE_ROUTES_API_KEY según el caso; mandaria-frontend lo usa).
 - **Validación PROVIDER_ADMIN/memberships:** cerrada el 2026-09-15 en rama `QA` con autenticación real. Escenario local reproducible `npm run db:seed:local-provider-admins` (LOCAL/TEST ONLY) y `npm run verify:provider-admins`. Tests: 23 unitarias/HTTP y 45 E2E.
 
 ## Arquitectura y decisiones vigentes
@@ -46,6 +46,11 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - V1.5: stops como snapshot (sin FKs externas), exactamente PICKUP #1 y DROPOFF #2 en la API aunque el modelo es 1:N; packages genéricos (≥1, sin carrito); DeliveryFinancialContext 1:1 con NUMERIC(14,2) y ISO 4217: PREPAID (Driver paga 0; valor opcional) y COURIER_ADVANCE (Driver adelanta y recupera; valor > 0 obligatorio). No hay deliveryFee, wallet ni créditos.
 - V1.5: publicId `MDR-NNNNNN` desde la secuencia `DeliveryRequest_publicId_seq` dentro de la transacción. Idempotency-Key obligatoria con ApiIdempotencyRecord reutilizable (único por IntegrationClient + key, hash SHA-256 de payload normalizado, sin payload): replay 200, conflicto 409, concurrencia bloqueada por el índice único dentro de la misma transacción atómica.
 - V1.5: rutas `/delivery-requests` (scopes V1.1 deliveries:create/read/cancel, independientes) y `/admin/delivery-requests` (SUPER_ADMIN lectura/cancelación). Recursos ajenos → 404. PROVIDER_ADMIN/DRIVER → 403 admin y 401 B2B. Creación limitada a 60/min por IP. Logs con IDs y actor, sin datos personales.
+- V1.6: DeliveryRequest.serviceType (enum ServiceType, sólo LOCAL_DELIVERY; default para filas V1.5). Se omite del hash de idempotencia mientras sea el default, preservando reintentos V1.5. Sólo servicio inmediato; expiresAt de Quote ≠ scheduledFor (futuro).
+- V1.6: ServiceZone con boundary GeoJSON Polygon/MultiPolygon validado y bbox; geometría encapsulada en `src/geo/geometry.ts` (bordes cuentan como dentro, huecos excluyen), sin PostGIS. Activación rechaza zonas que intersequen o toquen otra ACTIVE (advisory lock); boundary editable sólo INACTIVE.
+- V1.6: RatePlan versionado DRAFT → ACTIVE → INACTIVE, índice único parcial (1 ACTIVE por zona+servicio), activación atómica, triggers de inmutabilidad (bandas sólo en DRAFT, estructura fija fuera de DRAFT). RateBand [min, max) en metros enteros, contiguas desde 0, NUMERIC(14,2). TTL LOCAL_DELIVERY 1–120 min (recomendado 15; DB 1–10080).
+- V1.6: RoutingProvider (token ROUTING_PROVIDER) con GoogleRoutingProvider (Routes API computeRoutes, key sólo en header, field mask, timeout por intento, ≤ 1 reintento transitorio por defecto) y local_fake LOCAL/TEST ONLY rechazado en producción. ROUTE_NOT_FOUND vs ROUTING_UNAVAILABLE; nunca fallback Haversine.
+- V1.6: DeliveryQuote snapshot inmutable (trigger) con MQ publicId por secuencia; FKs compuestas banda∈plan∈zona; índices parciales 1 OFFERED y 1 ACCEPTED por solicitud; expiración perezosa (lectura informa EXPIRED, escritura persiste). Cotización con FOR UPDATE de la DeliveryRequest (reutiliza OFFERED/ACCEPTED sin routing; configuración de tarifa comprobada antes de routing). Cancelar solicitud cancela OFFERED y conserva ACCEPTED. Errores de dominio con `code` estable (422/503/409). Scopes quotes:create/read/accept independientes.
 - Paginación nueva reutilizable page/pageSize (default 1/20, máximo 100 por página), filtros type/status/search y orden estable. No se cambió el contrato de listados V1.1.
 
 ## Mapa de archivos
@@ -75,6 +80,11 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 | `prisma/migrations/20260915000500_delivery_requests/migration.sql` | Migración V1.5: tablas, secuencia publicId, CHECK e índices |
 | `scripts/verify-delivery-requests-local.ts` | LOCAL/TEST ONLY: validación HTTP real V1.5 |
 | `test/delivery-requests-validation.e2e-spec.ts`, `test/delivery-requests-b2b.e2e-spec.ts`, `test/delivery-requests.spec.ts` | Pruebas V1.5 |
+| `src/geo/`, `src/service-zones/`, `src/routing/`, `src/rate-plans/`, `src/delivery-quotes/` | V1.6: geometría, zonas, RoutingProvider/Google, tarifas y Quotes |
+| `src/common/domain-error.ts`, `src/common/public-id.ts` | Errores de dominio con code estable; publicId MDR/MQ por secuencia |
+| `prisma/migrations/20260915000600_routing_pricing_quotes/migration.sql` | Migración V1.6: tablas, índices parciales, CHECK, triggers y secuencia MQ |
+| `scripts/local-pricing.ts`, `scripts/seed-local-pricing.ts`, `scripts/verify-delivery-quotes-local.ts`, `scripts/check-google-routes.ts` | LOCAL/TEST ONLY: zonas/tarifa placeholder, validación HTTP V1.6 y comprobación manual de Google |
+| `test/pricing.spec.ts`, `test/pricing-admin.e2e-spec.ts`, `test/delivery-quotes.e2e-spec.ts` | Pruebas V1.6 |
 | `Dockerfile`, `docker-compose.yml` | Preparación para uso futuro, ejecución pendiente |
 
 ## Verificaciones históricas del Core
@@ -96,12 +106,13 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 
 1. Verificar Docker build y Compose sólo cuando el propietario indique retomar Docker. Hasta entonces no declarar satisfecha toda la Definition of Done original.
 2. Mantener la bitácora actualizada conforme lleguen nuevas solicitudes.
-3. V1.6+: distancia/mapas, quotes/tarifas/deliveryFee, elegibilidad de vehículo, Dispatch (proveedor/Driver), tracking/GPS, Socket.IO, ciclo de entrega completo, múltiples stops, wallets/créditos/pagos, KYC/documentos, integración operativa con Coita Eats, mandados y fletes siguen fuera del alcance. No comenzar sin solicitud.
+3. V1.7+: Dispatch (proveedor/Driver/vehículo), hunting, elegibilidad y tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, scheduling, PostGIS, tracking/GPS, Socket.IO, ciclo de entrega completo, múltiples stops, wallets/créditos/pagos, KYC/documentos e integración operativa con Coita Eats siguen fuera del alcance. No comenzar sin solicitud.
 4. Recuperación/restablecimiento de contraseña, verificación de correo y auditoría persistente: preparación arquitectónica, sin infraestructura implementada.
 5. En modelos futuros, los créditos pertenecen al proveedor; los vehículos son recursos operativos y los repartidores realizan entregas.
 6. Deuda V1.4: provisión/invitación de Users DRIVER por API; política de la asignación vigente al suspender un Driver o dejar un vehículo no ACTIVE (hoy se conserva hasta desasignar); sin eliminación/transferencia de Drivers/Vehicles.
 7. Deuda V1.5: retención de ApiIdempotencyRecord; rate limit de creación por IP (no por cliente); precisión de 2 decimales para goodsValue; datos personales de stops sin cifrado ni retención definidos; orden de packages no preservado.
 8. Caída nativa intermitente de workers Vitest/Prisma en Windows (0xC0000409), previa a V1.5: investigar en Linux/Docker y con volcado de memoria antes de confiar en ejecuciones E2E completas locales.
+9. Deuda V1.6: transacción retenida durante routing (considerar single-flight a escala); definir boundaries oficiales y tarifas comerciales (seed = placeholders); métricas agregadas de routing; rate limit de cotización por IP; guardia SQL para borrado manual de bandas no usadas en planes ACTIVE.
 
 ## Cómo retomar
 
@@ -265,3 +276,22 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Contenido:** implementación, migración, pruebas, script de validación local y documentación de la entrada anterior.
 - **Verificación previa:** archivos publicables revisados sin valores de `.env`; pruebas no repetidas tras la verificación registrada (40 unitarias; 85 E2E en ejecuciones limpias, con la caída nativa intermitente de workers documentada como pendiente).
 - **Destino:** origin/v1.5-delivery_request. Sin merge.
+
+### 2026-09-15 — V1.6-A Routing, Service Zones, Rate Plans & Delivery Quotes
+
+- **Solicitud:** ServiceType LOCAL_DELIVERY, ServiceZone con boundary, RoutingProvider/Google Routes, RatePlan versionado con DISTANCE_BANDS, DeliveryQuote con TTL, aceptación, concurrencia, errores de dominio, auditoría y administración. Sin Dispatch.
+- **Inspección y línea base:** validaciones previas correctas (Prisma, build, tsc, lint, ESLint, docs:check, 40 unitarias); E2E 75/85 por la caída nativa conocida. Contrato V1.5 real reutilizado: DeliveryRequest/Stops (Decimal 9,6), IdempotencyService, secuencias publicId, IntegrationGuard/Scopes, catálogo con `quotes:create` reservado, logging JSON.
+- **Diferencias respecto a la especificación (documentadas):** (1) configuración de tarifa se comprueba antes de routing para no pagar llamadas no tarificables; (2) cotización idempotente por DeliveryRequest (bloqueo de fila) en vez de Idempotency-Key, sin segundo sistema; (3) POST de cotización devuelve la ACCEPTED existente si la hay; (4) errores de dominio 422/503/409 con `code`; SERVICE_ZONE_AMBIGUOUS añadido como defensa; (5) sin endpoint de cancelación directa de Quote (CANCELLED sólo vía cancelación de la solicitud); (6) sin aceptación por SUPER_ADMIN.
+- **Prisma:** enums ServiceType, ServiceZoneStatus, RatePlanStatus, RateCalculationType, DeliveryQuoteStatus; modelos ServiceZone, RatePlan, RateBand, DeliveryQuote; columna DeliveryRequest.serviceType con default. Migración `20260915000600_routing_pricing_quotes` con secuencia MQ, índices parciales (ACTIVE plan, OFFERED/ACCEPTED quote), CHECK y triggers `RateBand_draft_only`, `RatePlan_immutable`, `DeliveryQuote_immutable`. Sin drift (`mandaria_drift_1817ccb1_test`).
+- **Bugs/ajustes encontrados:** banda con monto "0" pasaba el DTO y habría chocado con el CHECK (500) → validación 400 en servicio; carrera de activación vs reemplazo de boundary → bloqueo de fila adicional; `pg_advisory_xact_lock` devuelve void (Prisma no lo deserializa) → `SELECT 1 FROM pg_advisory_xact_lock`. Test: la FK compuesta impide borrar bandas usadas (comportamiento deseado); fixtures ajustados.
+- **Cambios V1.5:** cancelación de DeliveryRequest ahora transaccional con bloqueo de fila e invalidación de Quotes; `serviceType` en create/response; publicId MDR vía helper común; HttpErrorFilter expone `code` de DomainException; catálogo de scopes `quotes:read`/`quotes:accept` y `ArrayMaxSize` ligado al catálogo.
+- **Verificaciones:** prisma validate/generate, build, tsc, Oxlint, ESLint, docs:openapi/docs:check; migración en mandaria_db y mandaria_test; verify-migrations V1.5 → V1.6 con datos (`mandaria_clean_6e3d764371_test`/`mandaria_upgrade_6e3d764371_test`); npm test 52 PASS (+12); E2E 100/100 completa y por archivo (+15: 4 pricing-admin, 11 delivery-quotes); mutaciones M1–M4 (sin bloqueo de cotización, sin chequeo de expiración, banda con max inclusivo, lectura sin aislamiento) detectadas; seed local-pricing; HTTP verify:delivery-quotes 9/9 con local_fake (MDR-000037 → 4509 m → 4–6 km → MQ-000001 → $50.00 → ACCEPTED); regresiones HTTP V1.5 10/10, V1.4 16/16, V1.2 13/13; logs sin coordenadas, direcciones, contactos ni secretos.
+- **Google Routes real:** el propietario configuró GOOGLE_ROUTES_API_KEY en el .env local; `npm run routing:check-google` PASS (5829 m, 1408 s, 302 ms, DRIVE) y `verify:delivery-quotes` 9/9 con ROUTING_PROVIDER=google (MDR-000046 → 5829 m → banda 4–6 km → MQ-000004 → $50.00 MXN → ACCEPTED; latencias 234/89/77 ms) sin imprimir la key. Las pruebas automatizadas siguen usando un RoutingProvider falso para no consumir cuota.
+- **No verificado:** Docker. Sin commit/push.
+
+### 2026-09-15 — Publicación de V1.6-A
+
+- **Solicitud:** commit y push de V1.6-A a la rama actual `1.6-routing_services_plan`.
+- **Contenido:** implementación, migración, pruebas, scripts locales y documentación de la entrada anterior, incluida la evidencia de Google Routes real.
+- **Verificación previa:** archivos publicables revisados sin valores de `.env` ni GOOGLE_ROUTES_API_KEY; pruebas no repetidas tras la verificación final registrada (52 unitarias, 100 E2E, build/lint/docs:check correctos).
+- **Destino:** origin/1.6-routing_services_plan. Sin merge.

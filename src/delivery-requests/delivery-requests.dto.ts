@@ -28,6 +28,7 @@ import {
   DeliveryStopType,
   GoodsPaymentMode,
   PackageCategory,
+  ServiceType,
 } from '@prisma/client';
 import { PaginationQueryDto } from '../common/pagination.dto.js';
 
@@ -196,6 +197,15 @@ export class DeliveryFinancialContextDto {
   currency!: string;
 }
 export class CreateDeliveryRequestDto {
+  @ApiPropertyOptional({
+    enum: ServiceType,
+    default: 'LOCAL_DELIVERY',
+    description:
+      'V1.6: sólo LOCAL_DELIVERY (servicio inmediato; sin programación). Omitirlo equivale a LOCAL_DELIVERY.',
+  })
+  @ValidateIf(defined)
+  @IsEnum(ServiceType)
+  serviceType?: ServiceType;
   @ApiPropertyOptional({
     example: 'ORDER-1842',
     maxLength: 100,

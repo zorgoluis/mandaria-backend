@@ -10,6 +10,9 @@ import { HealthModule } from './health/health.module.js';
 import { ProvidersModule } from './providers/providers.module.js';
 import { DriversModule } from './drivers/drivers.module.js';
 import { DeliveryRequestsModule } from './delivery-requests/delivery-requests.module.js';
+import { ServiceZonesModule } from './service-zones/service-zones.module.js';
+import { RatePlansModule } from './rate-plans/rate-plans.module.js';
+import { DeliveryQuotesModule } from './delivery-quotes/delivery-quotes.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
@@ -21,6 +24,9 @@ import { DeliveryRequestsModule } from './delivery-requests/delivery-requests.mo
     ProvidersModule,
     DriversModule,
     DeliveryRequestsModule,
+    ServiceZonesModule,
+    RatePlansModule,
+    DeliveryQuotesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

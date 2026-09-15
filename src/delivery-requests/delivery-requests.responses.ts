@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  ServiceType,
   DeliveryRequestStatus,
   DeliveryStopType,
   GoodsPaymentMode,
@@ -51,6 +52,8 @@ class DeliveryRequestBase {
   publicId!: string;
   @ApiPropertyOptional({ nullable: true, example: 'ORDER-1842' })
   externalReference!: string | null;
+  @ApiProperty({ enum: ServiceType, example: 'LOCAL_DELIVERY' })
+  serviceType!: ServiceType;
   @ApiProperty({ enum: DeliveryRequestStatus, example: 'CREATED' })
   status!: DeliveryRequestStatus;
   @ApiProperty({
