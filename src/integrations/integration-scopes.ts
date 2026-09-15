@@ -4,8 +4,10 @@ import {
   ForbiddenException,
   Injectable,
   SetMetadata,
+  applyDecorators,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ApiExtension } from '@nestjs/swagger';
 import type { IntegrationRequest } from './integration.guard.js';
 
 export const INTEGRATION_SCOPES = [
@@ -17,7 +19,10 @@ export const INTEGRATION_SCOPES = [
 export type IntegrationScope = (typeof INTEGRATION_SCOPES)[number];
 const SCOPES_METADATA = 'integration:scopes';
 export const IntegrationScopes = (...scopes: IntegrationScope[]) =>
-  SetMetadata(SCOPES_METADATA, scopes);
+  applyDecorators(
+    SetMetadata(SCOPES_METADATA, scopes),
+    ApiExtension('x-scopes', scopes),
+  );
 
 @Injectable()
 export class IntegrationScopesGuard implements CanActivate {

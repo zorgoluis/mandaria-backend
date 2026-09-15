@@ -4,12 +4,13 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
-- **Versión del paquete:** 1.1.0.
-- **Rama activa de V1.1:** `v1-cliente_b2b_integracion_api` (nombre encontrado al iniciar la tarea; se respetó).
-- **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git, rama `main`, con seguimiento de `origin/main`.
-- **Objetivo actual:** V1.1 Clientes B2B e Integraciones API sobre el Core V1.0.
-- **Estado funcional V1.1:** implementado y verificado localmente el 2026-09-15; 18 pruebas unitarias/HTTP y 21 E2E correctos.
-- **Definition of Done:** requisitos críticos V1.1 verificados. La verificación Docker/Compose heredada de V1.0 sigue pospuesta por el propietario y no se declara realizada.
+- **Versión del paquete:** 1.2.0.
+- **Rama activa de V1.2:** `V1_2-Proveedores_Reparto` (nombre encontrado al iniciar la tarea; se respetó).
+- **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git. Entrega V1.2 en `V1_2-Proveedores_Reparto`.
+- **Objetivo actual:** V1.2 Proveedores de Reparto sobre Core V1.0 e integraciones B2B V1.1.
+- **Herramientas:** scripts npm ampliados con OpenAPI exportable, matriz de acceso, Oxlint y configuración Prisma de pruebas; entrega autorizada en la rama actual.
+- **Estado funcional V1.2:** implementado y verificado localmente el 2026-09-15; 21 pruebas unitarias/HTTP y 36 E2E correctos.
+- **Definition of Done:** requisitos críticos V1.2 verificados. Docker/Compose heredado sigue pospuesto por el propietario; no se declara ejecutado.
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
 - **Base local configurada:** `mandaria_db`; base separada para E2E: `mandaria_test`.
 - **Configuración:** `.env` local, ignorado por Git. El propietario corrigió el acceso y las verificaciones posteriores pasaron. No copiar sus valores a esta bitácora.
@@ -34,6 +35,12 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - Overrides de seguridad: multer `^2.3.0` y deepmerge-ts `^8.0.0`; migraciones y E2E fueron comprobados tras instalarlos.
 - Rate limiting en memoria para una instancia. Antes de escalar, evaluar almacenamiento compartido y proxies confiables.
 - Mandaria no comparte código, entidades Prisma ni PostgreSQL con Coita Eats. La comunicación futura será mediante API/webhooks.
+- DeliveryProvider representa oferta logística, separado de IntegrationClient. Tipos FLEET/INDEPENDENT; estados PENDING/ACTIVE/SUSPENDED. No hay relación a integración, Driver, Vehicle o Wallet.
+- ProviderMembership relaciona User existente con uno o varios proveedores. Roles OWNER/ADMIN locales; se exige User activo con rol global PROVIDER_ADMIN al asignar. Par providerId/userId único. Retirar sólo borra la relación.
+- Limits maxDrivers/maxVehicles: enteros 1–10000 con validación DTO y CHECK SQL. Defaults de entorno FLEET 10/10 e INDEPENDENT 1/2. V1.2 no cuenta recursos inexistentes.
+- Admin Providers: sólo SUPER_ADMIN. Perfil: AccessGuard + RolesGuard + ProviderMembershipGuard. Sin membership se devuelve 403 aun si el JWT sigue vigente; tokens B2B devuelven 401.
+- `/provider/profile?providerId=UUID` selecciona una asociación; omitir ID sólo funciona con una membership. `/provider/profiles` lista asociaciones propias. Perfiles de proveedores suspendidos siguen consultables; no hay operaciones logísticas.
+- Paginación nueva reutilizable page/pageSize (default 1/20, máximo 100 por página), filtros type/status/search y orden estable. No se cambió el contrato de listados V1.1.
 
 ## Mapa de archivos
 
@@ -71,7 +78,7 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 
 1. Verificar Docker build y Compose sólo cuando el propietario indique retomar Docker. Hasta entonces no declarar satisfecha toda la Definition of Done original.
 2. Mantener la bitácora actualizada conforme lleguen nuevas solicitudes.
-3. V1.2+: proveedores, flotillas, repartidores, vehículos, deliveries, tarifas, despacho, wallets/créditos, realtime, integración operativa con Coita Eats, mandados, paquetería y fletes. No comenzar sin ampliar el alcance.
+3. V1.3+: Driver/Vehicle y aplicación real de límites. Deliveries, tarifas, despacho, wallets/créditos, realtime, integración operativa con Coita Eats, mandados, paquetería y fletes siguen fuera del alcance. No comenzar sin solicitud.
 4. Recuperación/restablecimiento de contraseña, verificación de correo y auditoría persistente: preparación arquitectónica, sin infraestructura implementada.
 5. En modelos futuros, los créditos pertenecen al proveedor; los vehículos son recursos operativos y los repartidores realizan entregas.
 
@@ -135,3 +142,46 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificación previa:** diff sin errores de formato; `.env` ignorado y archivos publicables sin coincidencias con los secretos locales configurados. No se repitieron las pruebas por tratarse de publicación del código ya verificado (18 unitarias/HTTP y 21 E2E).
 - **Aclaración sobre OpenAPI:** documentación funcional existente; queda pendiente ampliar descripciones por endpoint, ejemplos completos y errores 400/401/403/404/409/429 aplicables. El README contiene actualmente una explicación más completa del flujo. Esta ampliación no está incluida en el commit solicitado.
 - **Destino:** rama actual; sin merge a main. Comprobar sincronización con origin al finalizar el push.
+
+### 2026-09-15 — V1.2 Proveedores de Reparto
+
+- **Solicitud:** DeliveryProvider, límites configurables, estados, administración SUPER_ADMIN, memberships de usuarios y aislamiento cross-provider. Sin lógica V1.3+.
+- **Diagnóstico previo:** V1.0/V1.1 reutilizables; no existía paginación formal. Se respetó la rama `V1_2-Proveedores_Reparto` y se mantuvo PostgreSQL local.
+- **Modelos:** DeliveryProvider y ProviderMembership; enums ProviderType, ProviderStatus y ProviderMemberRole. IDs UUID, timestamps, restricciones de unicidad, FKs RESTRICT y CHECK para límites.
+- **Migración:** `20260915000300_delivery_providers`, incremental. Verificada limpia y en secuencia V1.0 → V1.1 → V1.2. Los registros de User/RefreshToken/IntegrationClient/IntegrationCredential quedaron idénticos al snapshot V1.1.
+- **Bases de evidencia:** `mandaria_clean_e0cd1120c3_test` y `mandaria_upgrade_e0cd1120c3_test`, conservadas. Migración aplicada también a mandaria_db y mandaria_test, sin reset.
+- **Implementación:** módulo providers con servicios separados de CRUD, memberships y acceso; guards humanos reutilizados y ProviderMembershipGuard/CurrentProvider nuevos. No se cambian roles globales al asociar miembros.
+- **Estados:** nace PENDING; activar PENDING/SUSPENDED, suspender ACTIVE; repetir estado actual es idempotente. PATCH no permite cambiar type/status. No existe borrado de proveedores por API.
+- **Configuración:** cuatro DEFAULT_* de límites, opcionales con defaults en configuración y ejemplos. No se agregaron secretos ni dependencias. package.json/package-lock.json/Swagger a 1.2.0.
+- **Swagger:** nuevas operaciones con descripciones extensas en español, permisos, parámetros, ejemplos, paginación y schemas de errores. La ampliación general de OpenAPI B2B mencionada antes sigue siendo un pendiente separado.
+- **Validación:** Prisma generate, build y lint correctos. 21 pruebas unitarias/HTTP y 36 E2E (7 Core, 14 B2B, 15 Providers). Casos de duplicado concurrente, filtros, límites inválidos, roles, suspensión, multi-provider y remoción sin eliminar User correctos.
+- **HTTP local:** SUPER_ADMIN login, FLEET/INDEPENDENT con defaults, límites personalizados, activación/suspensión, creación de User PROVIDER_ADMIN temporal, asociación, login y perfil; acceso A→B 403; B2B→Provider 401; remoción invalida acceso y conserva User. El script limpia sólo sus fixtures.
+- **Proceso local:** se detuvo el backend anterior para liberar la DLL de Prisma y se levantó la compilación V1.2 en puerto 3000. Comprobar que sigue activo al retomar.
+- **Continuidad:** README incluye Delivery Providers y comandos reproducibles. `verify-migrations.mjs` centraliza pruebas de evolución; el script v11 queda como alias compatible.
+- **Pendientes/deuda:** provisión general de usuarios no ampliada; OWNER/ADMIN tienen sólo lectura, auditoría sigue en logs, rate limiting en memoria. V1.3 deberá aplicar límites reales y definir políticas de recursos al suspender/reducir capacidad. No se hizo commit/push de V1.2.
+
+### 2026-09-15 — Entrega de V1.2 a la rama actual
+
+- **Solicitud:** crear commit y subir V1.2 a `V1_2-Proveedores_Reparto` en origin.
+- **Contenido:** implementación 1.2.0, migración incremental, pruebas, Swagger y documentación descritos arriba.
+- **Verificación de publicación:** revisión de archivos publicables y diff; `.env` permanece excluido. Se comprobará la coincidencia de HEAD con la rama remota después del push.
+- **Pruebas:** no repetidas para esta publicación; resultados de implementación conservados: build/lint correctos, 21 pruebas unitarias/HTTP y 36 E2E aprobadas.
+- **Pendientes:** Docker continúa pospuesto; deuda funcional indicada en la entrada anterior. Sin merge a main.
+
+### 2026-09-15 — Comandos npm y documentación exportable
+
+- **Solicitud:** habilitar scripts de build/formato, Oxlint, documentación OpenAPI, Prisma, Docker, arranque y Vitest indicados por el propietario.
+- **Cambios:** scripts solicitados disponibles; alias prisma:generate y lint:eslint conservados. Hooks pretest* mantienen compilación previa para imports de dist. db:migrate ahora usa migrate dev; documentación y verificador antiguo usan deploy para aplicar migraciones existentes.
+- **Documentación:** openapi.cli genera docs/openapi.json sin conectar a PostgreSQL ni abrir HTTP; generate-api-access genera docs/API_ACCESS.md con roles/scopes de decorators compartidos. docs:check compila y compara ambos artefactos con código actual, sin sobrescribirlos.
+- **Prisma:** config principal registra seed; config de pruebas comparte selección validada de TEST_DATABASE_URL con E2E, deriva mandaria_test si falta y rechaza nombre no terminado en _test o la misma base principal. No se modificó schema ni datos del seed existente.
+- **Verificaciones:** npm install de Oxlint (0 vulnerabilidades); build, lint sin advertencias, docs:openapi y docs:check correctos. Comprobación negativa de documento alterado rechazada y archivo restaurado. db:generate/postinstall correctos tras detener backend que bloqueaba DLL; deploy principal/test sin migraciones pendientes; seed idempotente sin cambios.
+- **Tests:** npm test 21 aprobadas, npm run test:e2e 36 aprobadas, npm run test:cov 21 aprobadas; cobertura de líneas 63.27% del conjunto medido por Vitest (sin E2E).
+- **Proceso:** backend reiniciado con npm run start:prod (node dist/main); health HTTP 200. Revisión de archivos publicables sin secretos locales configurados.
+- **No ejecutado:** Docker, resets, migrate dev interactivo, Studio y modos watch/debug. Siguen disponibles para uso explícito; resets destruyen datos. No se repitió instalación limpia completa. Sin commit/push de estos cambios.
+
+### 2026-09-15 — Publicación de comandos npm y OpenAPI
+
+- **Solicitud:** crear commit y subir los cambios de herramientas a la rama actual `V1_2-Proveedores_Reparto`.
+- **Contenido:** comandos npm, Oxlint, exportación OpenAPI/matriz de acceso, configuración Prisma y documentación de la entrada anterior.
+- **Verificación:** diff sin errores de formato y archivos revisados; no se repiten las pruebas de implementación ya registradas. Comprobar sincronización con origin tras el push.
+- **Destino:** origin/V1_2-Proveedores_Reparto, sin merge a main. Docker y resets permanecen sin ejecutar.

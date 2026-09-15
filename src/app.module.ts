@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { IntegrationsModule } from './integrations/integrations.module.js';
 import { HealthModule } from './health/health.module.js';
+import { ProvidersModule } from './providers/providers.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
@@ -15,6 +16,7 @@ import { HealthModule } from './health/health.module.js';
     AuthModule,
     IntegrationsModule,
     HealthModule,
+    ProvidersModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
