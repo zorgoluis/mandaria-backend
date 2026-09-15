@@ -1,6 +1,6 @@
 {
   "name": "mandaria-backend",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Mandaria independent logistics platform core",
   "author": "",
   "private": true,
@@ -25,6 +25,7 @@
     "db:seed": "prisma db seed",
     "db:seed:local-provider-admins": "tsx scripts/seed-local-provider-admins.ts",
     "db:seed:local-driver-users": "tsx scripts/seed-local-driver-users.ts",
+    "db:seed:local-pricing": "tsx scripts/seed-local-pricing.ts",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "docs:openapi": "nest build && node dist/openapi.cli.js && tsx scripts/generate-api-access.ts",
     "docs:check": "tsx scripts/generate-api-access.ts --check",
@@ -42,7 +43,9 @@
     "postinstall": "prisma generate",
     "verify:provider-admins": "tsx scripts/verify-provider-admins-local.ts",
     "verify:drivers-vehicles": "tsx scripts/verify-drivers-vehicles-local.ts",
-    "verify:delivery-requests": "tsx scripts/verify-delivery-requests-local.ts"
+    "verify:delivery-requests": "tsx scripts/verify-delivery-requests-local.ts",
+    "verify:delivery-quotes": "tsx scripts/verify-delivery-quotes-local.ts",
+    "routing:check-google": "tsx scripts/check-google-routes.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.4",

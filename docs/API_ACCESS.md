@@ -6,9 +6,12 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 
 | Método | Ruta | Autenticación | Roles globales | Scopes | Operación |
 |---|---|---|---|---|---|
+| GET | /api/v1/admin/delivery-quotes | bearer | SUPER_ADMIN | — | Listar Quotes |
+| GET | /api/v1/admin/delivery-quotes/{publicId} | bearer | SUPER_ADMIN | — | Consultar cualquier Quote |
 | GET | /api/v1/admin/delivery-requests | bearer | SUPER_ADMIN | — | Listar todas las DeliveryRequests |
 | GET | /api/v1/admin/delivery-requests/{publicId} | bearer | SUPER_ADMIN | — | Consultar cualquier DeliveryRequest |
 | POST | /api/v1/admin/delivery-requests/{publicId}/cancel | bearer | SUPER_ADMIN | — | Cancelar cualquier DeliveryRequest |
+| GET | /api/v1/admin/delivery-requests/{publicId}/quotes | bearer | SUPER_ADMIN | — | Quotes de una DeliveryRequest |
 | GET | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |
 | POST | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | AdminIntegrationsController_create[0] |
 | GET | /api/v1/admin/integrations/{id} | bearer | SUPER_ADMIN | — | AdminIntegrationsController_get[0] |
@@ -40,14 +43,34 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/providers/{providerId}/vehicles/{vehicleId} | bearer | SUPER_ADMIN | — | Consultar vehículo |
 | PATCH | /api/v1/admin/providers/{providerId}/vehicles/{vehicleId} | bearer | SUPER_ADMIN | — | Editar datos o estado del vehículo |
 | GET | /api/v1/admin/providers/{providerId}/vehicles/{vehicleId}/assignments | bearer | SUPER_ADMIN | — | Historial de Drivers del vehículo |
+| GET | /api/v1/admin/rate-plans | bearer | SUPER_ADMIN | — | Listar versiones de RatePlans |
+| POST | /api/v1/admin/rate-plans | bearer | SUPER_ADMIN | — | Crear RatePlan DRAFT |
+| GET | /api/v1/admin/rate-plans/{id} | bearer | SUPER_ADMIN | — | Consultar versión |
+| PATCH | /api/v1/admin/rate-plans/{id} | bearer | SUPER_ADMIN | — | Editar DRAFT |
+| POST | /api/v1/admin/rate-plans/{id}/activate | bearer | SUPER_ADMIN | — | Activar DRAFT |
+| PUT | /api/v1/admin/rate-plans/{id}/bands | bearer | SUPER_ADMIN | — | Reemplazar bandas del DRAFT |
+| POST | /api/v1/admin/rate-plans/{id}/clone | bearer | SUPER_ADMIN | — | Clonar versión a nuevo DRAFT |
+| POST | /api/v1/admin/rate-plans/{id}/deactivate | bearer | SUPER_ADMIN | — | Desactivar versión ACTIVE |
+| POST | /api/v1/admin/rate-plans/{id}/validate | bearer | SUPER_ADMIN | — | Validar bandas |
+| GET | /api/v1/admin/service-zones | bearer | SUPER_ADMIN | — | Listar zonas de servicio |
+| POST | /api/v1/admin/service-zones | bearer | SUPER_ADMIN | — | Crear zona de servicio |
+| GET | /api/v1/admin/service-zones/{id} | bearer | SUPER_ADMIN | — | Consultar zona con boundary |
+| PATCH | /api/v1/admin/service-zones/{id} | bearer | SUPER_ADMIN | — | Renombrar zona |
+| POST | /api/v1/admin/service-zones/{id}/activate | bearer | SUPER_ADMIN | — | Activar zona |
+| PUT | /api/v1/admin/service-zones/{id}/boundary | bearer | SUPER_ADMIN | — | Reemplazar boundary (zona INACTIVE) |
+| POST | /api/v1/admin/service-zones/{id}/deactivate | bearer | SUPER_ADMIN | — | Desactivar zona |
 | POST | /api/v1/auth/login | Pública | — | — | AuthController_login |
 | POST | /api/v1/auth/logout | Pública | — | — | AuthController_logout |
 | GET | /api/v1/auth/me | bearer | — | — | AuthController_me |
 | POST | /api/v1/auth/refresh | Pública | — | — | AuthController_refresh |
+| GET | /api/v1/delivery-quotes/{publicId} | integration-bearer | — | quotes:read | Consultar mi Quote |
+| POST | /api/v1/delivery-quotes/{publicId}/accept | integration-bearer | — | quotes:accept | Aceptar mi Quote |
 | GET | /api/v1/delivery-requests | integration-bearer | — | deliveries:read | Listar mis DeliveryRequests |
 | POST | /api/v1/delivery-requests | integration-bearer | — | deliveries:create | Crear DeliveryRequest (qué transportar) |
 | GET | /api/v1/delivery-requests/{publicId} | integration-bearer | — | deliveries:read | Consultar mi DeliveryRequest |
 | POST | /api/v1/delivery-requests/{publicId}/cancel | integration-bearer | — | deliveries:cancel | Cancelar mi DeliveryRequest |
+| GET | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:read | Historial de Quotes de mi DeliveryRequest |
+| POST | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:create | Cotizar mi DeliveryRequest |
 | PATCH | /api/v1/driver/availability | bearer | DRIVER | — | Cambiar mi disponibilidad |
 | GET | /api/v1/driver/me | bearer | DRIVER | — | Consultar mi perfil de repartidor |
 | GET | /api/v1/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |

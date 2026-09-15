@@ -5,6 +5,7 @@ export const deliveryRequestSummarySelect = {
   publicId: true,
   integrationClientId: true,
   externalReference: true,
+  serviceType: true,
   status: true,
   requestedAt: true,
   cancelledAt: true,

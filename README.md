@@ -1,10 +1,10 @@
-# Mandaria — V1.5 Delivery Requests
+# Mandaria — V1.6 Routing, Service Zones, Rate Plans y Delivery Quotes
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agrega DeliveryRequest B2B (qué transportar) con stops, packages, contexto financiero, idempotencia y administración de lectura/cancelación. No reconstruye Auth humano, no cotiza ni despacha entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. No reconstruye Auth humano ni despacha entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -13,6 +13,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `providers/`: oferta logística, límites administrativos, memberships y acceso aislado por proveedor.
 - `drivers/`, `vehicles/`, `assignments/`: capacidad logística V1.4 (perfiles Driver, vehículos, asignaciones y `/driver`).
 - `delivery-requests/`: demanda B2B V1.5 y administración; `idempotency/`: registro reutilizable de Idempotency-Key.
+- `geo/`, `service-zones/`, `routing/`, `rate-plans/`, `delivery-quotes/`: cotización V1.6 (geometría interna, zonas, RoutingProvider, tarifas y Quotes).
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -39,6 +40,8 @@ Los comandos de desarrollo solicitados están disponibles en `package.json`:
 | `db:seed:local-provider-admins`, `verify:provider-admins` | **LOCAL/TEST ONLY**: escenario PROVIDER_ADMIN A/B/sin membership y su validación HTTP real |
 | `db:seed:local-driver-users`, `verify:drivers-vehicles` | **LOCAL/TEST ONLY**: Users DRIVER locales y validación HTTP real del escenario V1.4 |
 | `verify:delivery-requests` | **LOCAL/TEST ONLY**: validación HTTP real del escenario V1.5 con IntegrationClients locales A/B |
+| `db:seed:local-pricing`, `verify:delivery-quotes` | **LOCAL/TEST ONLY**: zonas/tarifa placeholder y validación HTTP real de cotización V1.6 |
+| `routing:check-google` | Comprobación manual explícita de Google Routes (1 llamada facturable; requiere GOOGLE_ROUTES_API_KEY) |
 | `db:test:deploy` | Aplicar migraciones a la base de pruebas |
 | `test`, `test:watch`, `test:cov`, `test:e2e` | Vitest normal, watch, cobertura y E2E |
 | `db:up`, `db:down` | Docker Compose; disponibles, pero su ejecución local sigue pospuesta |
@@ -149,6 +152,9 @@ La migración `20260915000200_b2b_credentials`:
 | CORS_ORIGINS | Orígenes HTTP/HTTPS exactos separados por comas |
 | BOOTSTRAP_ADMIN_EMAIL/PASSWORD | Sólo para seed y verificaciones con administrador |
 | LOCAL_PROVIDER_ADMIN_PASSWORD | **LOCAL/TEST ONLY**; cuentas PROVIDER_ADMIN del seed local. Nunca en producción |
+| ROUTING_PROVIDER | `google` (por defecto) o `local_fake` (LOCAL/TEST ONLY; rechazado en producción) |
+| GOOGLE_ROUTES_API_KEY | Clave de Google Routes sólo en backend; obligatoria en producción con `google`; nunca versionar |
+| GOOGLE_ROUTES_TIMEOUT_MS, GOOGLE_ROUTES_MAX_RETRIES, GOOGLE_ROUTES_TRAVEL_MODE | Timeout por intento (1000–15000, 5000), reintentos transitorios (0–2, 1), DRIVE/TWO_WHEELER |
 
 Los tres secretos JWT deben ser distintos. La aplicación falla al iniciar ante valores inválidos, sin imprimirlos. CORS vacío deshabilita acceso cross-origin del navegador; no se acepta `*`. CORS no sustituye autenticación server-to-server.
 
@@ -200,11 +206,13 @@ Token responde `accessToken`, `tokenType=Bearer` y `expiresIn`. El consumidor so
 
 Catálogo preparado:
 - `quotes:create`
+- `quotes:read`
+- `quotes:accept`
 - `deliveries:create`
 - `deliveries:read`
 - `deliveries:cancel`
 
-Asignarlos en creación de credencial; por defecto no hay permisos. Desde V1.5, `deliveries:create`, `deliveries:read` y `deliveries:cancel` protegen `/delivery-requests` (ver sección Delivery Requests); `quotes:create` sigue reservado para V1.6. El endpoint `scope-check` requiere deliveries:read y sólo verifica autorización.
+Asignarlos en creación de credencial; por defecto no hay permisos. Desde V1.5, `deliveries:create`, `deliveries:read` y `deliveries:cancel` protegen `/delivery-requests`; desde V1.6, `quotes:create`, `quotes:read` y `quotes:accept` protegen la cotización (ver secciones Delivery Requests y Delivery Quotes). El endpoint `scope-check` requiere deliveries:read y sólo verifica autorización.
 
 Los futuros controllers pueden importar IntegrationsModule y usar:
 
@@ -258,6 +266,10 @@ Prefijo `/api/v1` salvo health/docs:
 | POST | /delivery-requests/:publicId/cancel | Bearer B2B + deliveries:cancel |
 | GET | /admin/delivery-requests, /admin/delivery-requests/:publicId | SUPER_ADMIN |
 | POST | /admin/delivery-requests/:publicId/cancel | SUPER_ADMIN |
+| POST, GET | /delivery-requests/:publicId/quotes | Bearer B2B + quotes:create / quotes:read |
+| GET | /delivery-quotes/:publicId | Bearer B2B + quotes:read |
+| POST | /delivery-quotes/:publicId/accept | Bearer B2B + quotes:accept |
+| * | /admin/service-zones, /admin/rate-plans, /admin/delivery-quotes | SUPER_ADMIN (ver sección V1.6) |
 | POST, GET | /admin/integrations | SUPER_ADMIN |
 | GET, PATCH | /admin/integrations/:id | SUPER_ADMIN |
 | POST, GET | /admin/integrations/:id/credentials | SUPER_ADMIN |
@@ -765,6 +777,127 @@ npm run verify:delivery-requests       # escenario local (LOCAL/TEST ONLY)
 
 Pruebas: `test/delivery-requests-validation.e2e-spec.ts` (contrato, stops, packages, financiero, atomicidad, logs sin datos personales), `test/delivery-requests-b2b.e2e-spec.ts` (publicId concurrente, idempotencia, aislamiento, scopes, suspensión, cancelación, filtros, SUPER_ADMIN, roles, rate limit, Swagger y auditoría) y `test/delivery-requests.spec.ts` (hash canónico, reglas e IdempotencyService).
 
+## Routing, Service Zones, Rate Plans y Delivery Quotes (V1.6-A)
+
+V1.6 responde **¿Mandaria puede realizar este LOCAL_DELIVERY y cuánto cuesta?** No elige proveedor, Driver ni vehículo: eso es Dispatch (V1.7).
+
+```text
+DeliveryRequest (CREATED) → ServiceType LOCAL_DELIVERY
+  → ServiceZone ACTIVE de PICKUP = ServiceZone ACTIVE de DROPOFF
+  → RatePlan ACTIVE (zona + servicio) → RoutingProvider (distancia/duración reales)
+  → RateBand [min, max) → DeliveryQuote OFFERED (MQ-000001) → ACCEPTED
+```
+
+Ejemplo real de la validación local: `MDR-000037 → ruta 4509 m → banda 4000–6000 m → MQ-000001 → $50.00 MXN → ACCEPTED`.
+
+### ServiceType y scheduling
+
+- `DeliveryRequest.serviceType` (enum `ServiceType`) sólo admite `LOCAL_DELIVERY`. La migración asigna ese valor a todas las solicitudes V1.5 existentes (`DEFAULT`, sin reset). En la API es opcional al crear. Se omite del hash de idempotencia mientras sea el valor por defecto, así que los reintentos V1.5 siguen reconociéndose.
+- Sólo servicio **inmediato**; no hay `scheduledFor`. Tres conceptos independientes: `requestedAt` (cuándo se pidió), `expiresAt` de la Quote (cuánto dura el precio) y `scheduledFor` (futuro: cuándo se realizará). **La vigencia de una Quote no indica cuándo se presta el servicio.**
+- Futuro documentado, no implementado: `ERRAND`, `INTERCITY` (política de vigencia propia), `FREIGHT` (vigencias de 24 h o más) y servicios programados. Se añadirán como valores de `ServiceType` sin rediseñar RatePlan ni DeliveryQuote.
+
+### Service Zones
+
+- `ServiceZone`: `code` único, `name`, `status` ACTIVE/INACTIVE (nace INACTIVE), `currency` ISO 4217 inmutable y `boundary` GeoJSON `Polygon`/`MultiPolygon` en orden `[longitude, latitude]`. Las columnas de bounding box se usan como prefiltro SQL.
+- **Estrategia geográfica sin PostGIS:** `src/geo/geometry.ts` concentra la validación (anillos cerrados, ≥ 4 posiciones, rangos, sin autointersecciones, área > 0, máximo 10000 posiciones), el punto en polígono (los bordes cuentan como dentro; los huecos excluyen) y la intersección entre zonas. Ningún controller ni servicio hace geometría por su cuenta. Migrar a PostGIS significa sustituir este módulo por `ST_Covers`/`ST_Intersects`.
+- **Activación:** rechaza con `409 SERVICE_ZONE_OVERLAP` una zona que interseque o toque otra ACTIVE, así cada punto pertenece a lo sumo a una zona. Las activaciones se serializan con advisory lock más bloqueo de fila. Las zonas vecinas no deben compartir borde en V1.6.
+- El boundary sólo se reemplaza con la zona INACTIVE (`409 SERVICE_ZONE_NOT_EDITABLE`). Desactivar una zona hace que las nuevas cotizaciones fallen con `OUT_OF_SERVICE_AREA`; las Quotes existentes conservan su snapshot.
+- Ocozocoautla es una instancia de configuración, sin reglas propias en código. Local: `npm run db:seed:local-pricing` crea `LOCAL_OCOZOCOAUTLA` y `LOCAL_TUXTLA` con **rectángulos aproximados LOCAL/TEST**, no límites oficiales.
+
+### Rate Plans y Rate Bands
+
+- `RatePlan`: `serviceZoneId`, `serviceType`, `version` (1, 2, 3… por zona + servicio), `status` DRAFT → ACTIVE → INACTIVE, `calculationType` (`DISTANCE_BANDS`; `BASE_PLUS_DISTANCE` sólo documentado), `quoteValidityMinutes`, `currency` heredada de la zona, `activatedAt` y `deactivatedAt`.
+- **Vigencia (TTL):** la base admite 1–10080 minutos; la política de `LOCAL_DELIVERY` es 1–120, con 15 recomendado. Configurable por SUPER_ADMIN.
+- **Versionado:** crear un DRAFT (siguiente versión bajo bloqueo de la zona) o clonar una versión, editar el TTL, reemplazar las bandas, validar y activar. Al activar, la versión ACTIVE anterior pasa a INACTIVE **en la misma transacción**. El índice único parcial `RatePlan_active_zone_service_key` garantiza como máximo un ACTIVE aunque haya concurrencia.
+- **Inmutabilidad histórica:** la API sólo edita DRAFT (`409 RATE_PLAN_NOT_EDITABLE`). Los triggers de PostgreSQL rechazan cambios estructurales en planes ACTIVE/INACTIVE, bandas insertadas o modificadas fuera de DRAFT y transiciones distintas de DRAFT→ACTIVE→INACTIVE. No hay DELETE por API; las FKs RESTRICT impiden borrar planes y bandas usados por Quotes.
+- **`RateBand`:** `[minDistanceMeters, maxDistanceMeters)` en metros enteros (**min inclusivo, max exclusivo**), `amount` NUMERIC(14,2) > 0 y `currency` igual a la del plan. Un plan activable empieza en 0 y sus bandas son contiguas, así que 1999 m → primera banda, 2000 m → segunda, 3999 m → segunda y 4000 m → tercera. La distancia máxima soportada es el último `max`, exclusivo: con última banda 8000–10000, 10000 m y 11400 m dan `DISTANCE_NOT_SUPPORTED`.
+- **Validación previa a activar:** huecos, solapes, inicio distinto de 0, rangos inválidos, montos ≤ 0 y monedas distintas → `422 RATE_PLAN_INVALID`. `POST .../validate` informa sin activar.
+
+### Routing
+
+- **Contrato:** `RoutingProvider.calculateRoute(origin, destination)` devuelve `{ distanceMeters, durationSeconds, routingProvider, calculatedAt }`. `DeliveryQuotesService` depende sólo del token `ROUTING_PROVIDER`; los tests lo sustituyen por un fake.
+- **`GoogleRoutingProvider`** (Routes API `computeRoutes`):
+  - La API key va sólo en la cabecera `X-Goog-Api-Key`; nunca en URL, logs, respuestas ni Swagger.
+  - `X-Goog-FieldMask: routes.distanceMeters,routes.duration` limita respuesta y facturación, con `TRAFFIC_UNAWARE` y modo `DRIVE`/`TWO_WHEELER`.
+  - No se guarda la respuesta de Google ni polyline.
+- **Timeout y reintentos:** `GOOGLE_ROUTES_TIMEOUT_MS` por intento (1000–15000, por defecto 5000). `GOOGLE_ROUTES_MAX_RETRIES` (0–2, por defecto 1) reintentos extra sólo ante timeout, error de red, 429 o 5xx, con espera de 200 ms × intento. 4xx y respuestas inválidas no se reintentan.
+- **Errores:** respuesta sin rutas → `ROUTE_NOT_FOUND` (422). Timeout, 5xx, 429, red, 4xx, clave ausente o respuesta inválida → `ROUTING_UNAVAILABLE` (503). **Nunca hay fallback a Haversine** ni precio aproximado.
+- **Configuración:** `ROUTING_PROVIDER=google` (por defecto) exige `GOOGLE_ROUTES_API_KEY` cuando `NODE_ENV=production`. `ROUTING_PROVIDER=local_fake` (línea recta × 1.3) es **LOCAL/TEST ONLY** y se rechaza en producción.
+- **Comprobación real explícita:** `npm run routing:check-google` hace una única llamada facturable con la key de `.env` e imprime sólo distancia, duración y latencia. No forma parte de `npm test` ni de las E2E.
+
+### Delivery Quotes
+
+- **`DeliveryQuote`** es un snapshot inmutable: `publicId` `MQ-000001` (secuencia PostgreSQL, igual que MDR), `deliveryRequestId`, `serviceType`, `serviceZoneId`, `ratePlanId`, `rateBandId`, `distanceMeters`, `durationSeconds`, `amount`, `currency`, `routingProvider`, `routeCalculatedAt`, `expiresAt` y `createdAt`.
+  - Sólo cambian `status` y sus timestamps (`acceptedAt`, `expiredAt`, `cancelledAt`, `cancellationReason`); lo garantiza un trigger.
+  - FKs compuestas aseguran que la banda pertenece al plan y el plan a la zona.
+- **Estados:** OFFERED → ACCEPTED | EXPIRED | CANCELLED; no hay transiciones desde ACCEPTED.
+  - Índices únicos parciales: como máximo una OFFERED y una ACCEPTED por DeliveryRequest.
+  - Una OFFERED con `now >= expiresAt` se informa como EXPIRED en lecturas y filtros, y se persiste EXPIRED al intentar aceptarla o al cotizar de nuevo (sin cron).
+- **Cotizar** (`POST /delivery-requests/:publicId/quotes`) con bloqueo `FOR UPDATE` de la DeliveryRequest:
+  1. La solicitud debe estar CREATED (`409 DELIVERY_REQUEST_NOT_QUOTABLE`).
+  2. Si existe ACCEPTED u OFFERED vigente, se devuelve (200, `Quote-Reused: true`) sin recalcular ni llamar a routing.
+  3. Se marca EXPIRED la vencida.
+  4. Se resuelven las zonas: `OUT_OF_SERVICE_AREA`, `CROSS_ZONE_NOT_SUPPORTED` o `SERVICE_ZONE_AMBIGUOUS` si hay anomalía.
+  5. Se busca el RatePlan ACTIVE: `RATE_CONFIGURATION_UNAVAILABLE` o `RATE_CONFIGURATION_INVALID`. Se comprueba **antes** de llamar a routing para no pagar rutas que no se pueden tarificar.
+  6. Routing, banda (`DISTANCE_NOT_SUPPORTED`) y Quote OFFERED con `expiresAt = createdAt + quoteValidityMinutes` (201).
+- **Idempotencia natural:** 20 cotizaciones simultáneas producen una Quote y una llamada de routing (las demás esperan el bloqueo y reutilizan). No se añadió un segundo sistema de idempotencia: la unicidad es por DeliveryRequest y `Idempotency-Key` sigue siendo la infraestructura V1.5 para crear solicitudes. La transacción tiene un presupuesto igual al peor caso de routing más margen.
+- **Un fallo nunca crea Quote ni cancela la solicitud:** sigue CREATED y puede reintentarse. Nunca se usa `amount = 0` como error.
+- **Aceptar** (`POST /delivery-quotes/:publicId/accept`): OFFERED vigente → ACCEPTED, serializado sobre la solicitud. Repetir es idempotente (200). Si venció: `409 QUOTE_EXPIRED` (queda EXPIRED); cancelada o solicitud cancelada: `409 QUOTE_NOT_ACCEPTABLE`. El precio aceptado queda congelado; los nuevos planes sólo afectan Quotes nuevas. SUPER_ADMIN no acepta en V1.6.
+- **Cancelar la DeliveryRequest** (B2B o admin, misma transacción y bloqueo): las OFFERED vigentes pasan a CANCELLED (`DELIVERY_REQUEST_CANCELLED`) y las vencidas a EXPIRED. Una ACCEPTED **se conserva como historial** y la solicitud queda CANCELLED; en V1.7 Dispatch definirá la política con servicio en curso.
+- **Precio de entrega vs mercancía:** el costo logístico es `acceptedQuote.amount`; no se duplica `deliveryFee` en DeliveryRequest. `goodsValue`/`goodsPaymentMode` (V1.5) siguen independientes: con 450 COURIER_ADVANCE y Quote de 50, la Quote es 50, nunca 500. No hay créditos, wallet ni costo de plataforma al proveedor.
+
+### Endpoints V1.6
+
+| Método | Ruta | Autorización |
+|---|---|---|
+| POST | /delivery-requests/:publicId/quotes | B2B `quotes:create` (30/min por IP) |
+| GET | /delivery-requests/:publicId/quotes | B2B `quotes:read` |
+| GET | /delivery-quotes/:publicId | B2B `quotes:read` |
+| POST | /delivery-quotes/:publicId/accept | B2B `quotes:accept` |
+| GET | /admin/delivery-quotes, /admin/delivery-quotes/:publicId, /admin/delivery-requests/:publicId/quotes | SUPER_ADMIN (lectura) |
+| POST, GET | /admin/service-zones | SUPER_ADMIN |
+| GET, PATCH | /admin/service-zones/:id | SUPER_ADMIN (PATCH sólo name) |
+| PUT | /admin/service-zones/:id/boundary | SUPER_ADMIN (zona INACTIVE) |
+| POST | /admin/service-zones/:id/activate, /deactivate | SUPER_ADMIN |
+| POST, GET | /admin/rate-plans | SUPER_ADMIN |
+| GET, PATCH | /admin/rate-plans/:id | SUPER_ADMIN (PATCH sólo DRAFT) |
+| PUT | /admin/rate-plans/:id/bands | SUPER_ADMIN (DRAFT) |
+| POST | /admin/rate-plans/:id/clone, /validate, /activate, /deactivate | SUPER_ADMIN |
+
+- **Scopes nuevos:** `quotes:read` y `quotes:accept` se suman a `quotes:create` en el catálogo V1.1. Ningún scope implica otro.
+- **Aislamiento:** solicitudes y Quotes de otro IntegrationClient → 404.
+- **Roles humanos:** PROVIDER_ADMIN y DRIVER reciben 403 en toda la administración de zonas, planes y Quotes, y 401 en las rutas B2B.
+- **Formato de error:** los errores de dominio usan `code` estable en la respuesta (p. ej. `{ "statusCode": 422, "code": "OUT_OF_SERVICE_AREA", ... }`); los 5xx mantienen mensaje sanitizado.
+- **Respuesta B2B de Quote:** `publicId`, `deliveryRequestPublicId`, `serviceType`, zona (code/name), distancia, duración, `amount` string, `currency`, `status`, `createdAt`, `expiresAt`, `acceptedAt`, `cancelledAt` y `cancellationReason`. Sin UUID internos, plan, banda ni proveedor de routing; SUPER_ADMIN los ve.
+- **Auditoría (logs JSON):** `DELIVERY_QUOTE_CREATED` (plan, versión, distancia, monto), `DELIVERY_QUOTE_ACCEPTED`, `DELIVERY_QUOTE_EXPIRED`, `DELIVERY_QUOTE_CANCELLED`, `DELIVERY_QUOTE_FAILED` (`reasonCode`), `ROUTING_CALCULATED`/`ROUTING_FAILED` (proveedor, latencia, motivo), `SERVICE_ZONE_*` y `RATE_PLAN_*`, con `actorType`/`actorId`. Nunca incluyen coordenadas, direcciones, contactos, API keys, tokens ni secretos.
+
+### Ejemplo B2B (PowerShell)
+
+```powershell
+$base = 'http://localhost:3000/api/v1'
+$token = (Invoke-RestMethod -Method Post -Uri "$base/integrations/token" -ContentType 'application/json' -Body (@{ clientId = '<CREDENTIAL_ID>'; clientSecret = '<CLIENT_SECRET>' } | ConvertTo-Json)).accessToken
+$h = @{ Authorization = "Bearer $token" }
+# DeliveryRequest creada según V1.5 (MDR-000037) con pickup/dropoff dentro de la zona
+$quote = Invoke-RestMethod -Method Post -Uri "$base/delivery-requests/MDR-000037/quotes" -Headers $h
+$quote | Select-Object publicId, distanceMeters, amount, currency, status, expiresAt
+Invoke-RestMethod -Uri "$base/delivery-quotes/$($quote.publicId)" -Headers $h        # snapshot, sin recalcular
+Invoke-RestMethod -Method Post -Uri "$base/delivery-quotes/$($quote.publicId)/accept" -Headers $h
+```
+
+### Configuración y verificación local (LOCAL/TEST ONLY)
+
+```powershell
+npm run db:deploy
+npm run db:seed:local-pricing          # zonas LOCAL_OCOZOCOAUTLA y LOCAL_TUXTLA + plan v1 (35/40/50/60/70 MXN, 0–10 km, TTL 15)
+npm run build
+$env:ROUTING_PROVIDER='local_fake'; npm run start:prod   # o google con GOOGLE_ROUTES_API_KEY
+npm run verify:delivery-quotes         # otra terminal: 9 comprobaciones HTTP reales
+npm run routing:check-google           # opcional: una llamada real a Google Routes
+```
+
+- Los precios del seed son **placeholders**, no valores comerciales; la configuración de producción la crea un SUPER_ADMIN por API. El seed se niega fuera de development/test o con base no local y no está conectado al flujo de producción.
+- Pruebas: `test/pricing.spec.ts` (geometría, bandas, adaptador Google con HTTP simulado, configuración), `test/pricing-admin.e2e-spec.ts` (zonas, planes, versionado, concurrencia, triggers, roles) y `test/delivery-quotes.e2e-spec.ts` (bandas 0/1999/2000/3999/4000/9999/10000/11400, ciclo de vida, snapshot, expiración con reloj simulado, errores de zona, tarifa y routing, cancelación, 20 cotizaciones y 10 aceptaciones concurrentes, aislamiento, scopes, roles, auditoría y Swagger). `node scripts/verify-migrations.mjs` cubre V1.5 → V1.6 con datos.
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -783,13 +916,18 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - `goodsValue` admite 2 decimales (NUMERIC(14,2)); monedas ISO con 0 o 3 decimales requerirán ajustar precisión/validación.
 - Los stops contienen datos personales operativos sin cifrado a nivel de columna ni política de retención; los logs no los incluyen.
 - El orden de packages en la respuesta es determinista pero no refleja el orden de envío.
+- V1.6: la cotización mantiene abierta una transacción (bloqueo de la DeliveryRequest) durante la llamada de routing, hasta unos 15 s en el peor caso con la configuración por defecto; con alto volumen conviene un mecanismo de single-flight sin conexión retenida.
+- V1.6: geometría planar en grados (adecuada a escala ciudad) sin PostGIS; zonas vecinas no pueden compartir borde; límites de Ocozocoautla/Tuxtla del seed son aproximados y los precios son placeholders.
+- V1.6: Google Routes verificado una vez contra la API real (`routing:check-google` y cotización HTTP con `ROUTING_PROVIDER=google`); las pruebas automatizadas siguen usando respuestas HTTP simuladas y no consumen cuota.
+- V1.6: sin DELETE de bandas por API; a nivel SQL una banda no usada de un plan ACTIVE podría borrarse manualmente (las usadas están protegidas por FK). La cotización detecta la anomalía como RATE_CONFIGURATION_INVALID.
+- V1.6: rate limit de cotización por IP; ROUTING_CALCULATED/FAILED en logs, sin métricas agregadas.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.5 / V1.6+
+## Fuera de V1.6 / V1.7+
 
-No se implementaron distancia, Google Maps, routing, Quote, tarifas/deliveryFee, elegibilidad de vehículo, asignación de proveedor o Driver, despacho/hunting, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/INE/licencias/seguros/documentos/fotografías, planes ni facturación.
+No se implementaron Dispatch (asignación de proveedor, Driver o vehículo), hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. Email, recuperación de contraseña y auditoría persistente siguen pendientes para versiones posteriores.
