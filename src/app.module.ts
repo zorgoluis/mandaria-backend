@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { IntegrationsModule } from './integrations/integrations.module.js';
 import { HealthModule } from './health/health.module.js';
 import { ProvidersModule } from './providers/providers.module.js';
+import { DriversModule } from './drivers/drivers.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
@@ -17,6 +18,7 @@ import { ProvidersModule } from './providers/providers.module.js';
     IntegrationsModule,
     HealthModule,
     ProvidersModule,
+    DriversModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

@@ -10,6 +10,7 @@ import type { AuthenticatedRequest } from '../auth/auth.guards.js';
 import { ApiErrors } from '../common/api-errors.decorator.js';
 import { PaginationQueryDto } from '../common/pagination.dto.js';
 import { ProviderAccessService } from './provider-access.service.js';
+import { ProvidersService } from './providers.service.js';
 import {
   CurrentProvider,
   ProviderMembershipGuard,
@@ -17,6 +18,7 @@ import {
 import type { ProviderProfile } from './provider-membership.guard.js';
 import { ProviderProfileQueryDto } from './providers.dto.js';
 import {
+  ProviderCapacityResponse,
   ProviderProfilePageResponse,
   ProviderProfileResponse,
 } from './providers.responses.js';
@@ -28,7 +30,10 @@ import {
 @Roles('PROVIDER_ADMIN')
 @Controller('provider')
 export class ProviderController {
-  constructor(private readonly access: ProviderAccessService) {}
+  constructor(
+    private readonly access: ProviderAccessService,
+    private readonly providers: ProvidersService,
+  ) {}
   @Get('profile')
   @UseGuards(ProviderMembershipGuard)
   @ApiErrors(409)
@@ -43,6 +48,21 @@ export class ProviderController {
     @CurrentProvider() profile: ProviderProfile,
   ) {
     return profile;
+  }
+  @Get('capacity')
+  @UseGuards(ProviderMembershipGuard)
+  @ApiErrors(409)
+  @ApiOkResponse({ type: ProviderCapacityResponse })
+  @ApiOperation({
+    summary: 'Consultar uso de Drivers y Vehicles de mi proveedor',
+    description:
+      'Requiere PROVIDER_ADMIN activo y membership actual (misma selección providerId que /provider/profile). Devuelve count/max con conteos agregados; count incluye todos los estados.',
+  })
+  capacity(
+    @Query() _query: ProviderProfileQueryDto,
+    @CurrentProvider() profile: ProviderProfile,
+  ) {
+    return this.providers.capacity(profile.id);
   }
   @Get('profiles')
   @ApiOkResponse({ type: ProviderProfilePageResponse })

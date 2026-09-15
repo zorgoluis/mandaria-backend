@@ -1,3 +1,42 @@
+# Verificación V1.4-A — Drivers, Vehicles & Assignments (2026-09-15)
+
+Rama `V1_4-Repartidores_Vehiculos` (local, desde QA), paquete 1.4.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado.
+
+| Verificación | Resultado |
+|---|---|
+| Prisma validate / generate | PASS |
+| Migración `20260915000400_drivers_vehicles` en mandaria_db y mandaria_test (sin reset) | PASS |
+| Instalación limpia + V1.0 → V1.1 → V1.2 → V1.4 con fixtures (`verify-migrations.mjs`) | PASS; datos V1.2 idénticos; índices parciales y constraints presentes |
+| Drift schema ↔ migraciones (`migrate diff`) | Vacío |
+| Build / TypeScript (`tsc --noEmit`) | PASS |
+| Oxlint / ESLint | PASS |
+| docs:openapi / docs:check | PASS |
+| npm test | 31 PASS (23 previas + 8 reglas V1.4) |
+| npm run test:e2e | 63 PASS (45 previas + 11 drivers-vehicles + 7 driver-self) |
+| Admin A → Drivers/Vehicles A | PASS 200/201 |
+| Admin A → Drivers/Vehicles B | PASS 403 por scope; IDs de B → 404 |
+| Admin B ↔ A simétrico | PASS |
+| PROVIDER_ADMIN sin membership (crear/listar) | PASS 403 |
+| Membership sin rol PROVIDER_ADMIN | PASS 403 (defensa en profundidad) |
+| SUPER_ADMIN A/B, capacity y usage en listado | PASS |
+| maxDrivers / maxVehicles (Luis y MOTO-03 → 409; suspendido cuenta; reducir límite → 409) | PASS |
+| Concurrencia: 6 altas con límite 3 | PASS: 3 × 201 + 3 × 409 en Drivers y Vehicles |
+| INDEPENDENT con límites configurables | PASS |
+| Asignar / desasignar / reasignar / historial de Driver y Vehicle | PASS |
+| Driver ocupado, Vehicle ocupado, Driver SUSPENDED, Vehicle INACTIVE/MAINTENANCE/SUSPENDED | PASS 409 |
+| Cross-provider (API proveedor, API admin y FK compuesta en DB) | PASS 404 / error de FK |
+| Asignación concurrente del mismo vehículo | PASS 201 + 409 |
+| DRIVER /driver/me, disponibilidad propia, driverId ajeno → 400 | PASS |
+| Driver suspendido / proveedor suspendido → AVAILABLE | PASS 409; OFFLINE forzado |
+| DRIVER → administración | PASS 403 |
+| IntegrationClient → crear/modificar/asignar Drivers/Vehicles y /driver | PASS 401 |
+| Mutaciones: sin RolesGuard / sin límite maxDrivers / sin scope de vehículo | Detectadas (1 / 3 / 2 pruebas fallan) |
+| HTTP local `verify:drivers-vehicles` (punto 54) | 16/16 PASS, ejecutado 2 veces |
+| Regresión HTTP local `verify:provider-admins` | 13/13 PASS |
+| Logs del backend y salidas | Sin contraseñas, JWT ni clientSecret; 0 request_failed |
+
+---
+
 # Verificación PROVIDER_ADMIN y ProviderMembership (2026-09-15)
 
 Rama `QA`, paquete 1.2.0, Node.js 24.15.0, PostgreSQL 18 local. Validación con autenticación real; sin JWT manuales, bypass ni cambios en guards. Sin migración.

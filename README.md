@@ -1,16 +1,17 @@
-# Mandaria — V1.2 Proveedores de Reparto
+# Mandaria — V1.4 Repartidores, Vehículos y Asignaciones
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Estado y arquitectura
 
-V1.2 agrega DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. No reconstruye Auth humano ni agrega entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agrega Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. No reconstruye Auth humano ni agrega entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
 - `users/`: selección explícita de campos públicos.
 - `integrations/`: clientes externos, administración, credenciales, JWT B2B, scopes.
 - `providers/`: oferta logística, límites administrativos, memberships y acceso aislado por proveedor.
+- `drivers/`, `vehicles/`, `assignments/`: capacidad logística V1.4 (perfiles Driver, vehículos, asignaciones y `/driver`).
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -35,6 +36,7 @@ Los comandos de desarrollo solicitados están disponibles en `package.json`:
 | `db:deploy` | Aplicar únicamente migraciones existentes; usar en instalación y despliegue |
 | `db:seed`, `db:studio` | Bootstrap idempotente de SUPER_ADMIN y explorador de datos |
 | `db:seed:local-provider-admins`, `verify:provider-admins` | **LOCAL/TEST ONLY**: escenario PROVIDER_ADMIN A/B/sin membership y su validación HTTP real |
+| `db:seed:local-driver-users`, `verify:drivers-vehicles` | **LOCAL/TEST ONLY**: Users DRIVER locales y validación HTTP real del escenario V1.4 |
 | `db:test:deploy` | Aplicar migraciones a la base de pruebas |
 | `test`, `test:watch`, `test:cov`, `test:e2e` | Vitest normal, watch, cobertura y E2E |
 | `db:up`, `db:down` | Docker Compose; disponibles, pero su ejecución local sigue pospuesta |
@@ -331,7 +333,7 @@ PENDING → ACTIVE → SUSPENDED
 - PATCH sólo edita name, code y límites. No acepta status ni type, ni cuerpos vacíos.
 - No hay DELETE del proveedor. Suspender conserva proveedor, usuarios y memberships.
 - Un PROVIDER_ADMIN asociado puede consultar perfiles PENDING/SUSPENDED para conocer su estado; esto no habilita ninguna operación logística.
-- maxDrivers/maxVehicles son límites operativos del proveedor, enteros de 1 a 10000. Se validan en DTO y con CHECK en PostgreSQL.
+- maxDrivers/maxVehicles son límites operativos del proveedor, enteros de 1 a 10000. Se validan en DTO y con CHECK en PostgreSQL. Desde V1.4 se aplican al crear Drivers/Vehicles y no pueden fijarse por debajo del uso actual (ver sección V1.4).
 - Todavía no se cuentan Driver/Vehicle, no se cobran ampliaciones y no hay planes, créditos ni Wallet.
 
 Defaults de entorno opcionales (el backend aplica estos valores aunque no existan en .env):
@@ -449,7 +451,7 @@ El guard comprueba la membership actual: retirar la relación bloquea el siguien
 
 Se registran PROVIDER_CREATED, PROVIDER_UPDATED, PROVIDER_ACTIVATED, PROVIDER_SUSPENDED, PROVIDER_MEMBER_ADDED, PROVIDER_MEMBER_REMOVED y PROVIDER_LIMITS_CHANGED. Incluyen IDs y actorId; no passwords/tokens ni datos personales innecesarios.
 
-DeliveryProvider.id queda disponible para relaciones futuras con Drivers, Vehicles y Wallet del proveedor. No hay conversiones automáticas de tipo. V1.3 deberá aplicar límites reales al crear recursos, coordinar altas concurrentes y definir qué ocurre al reducir un límite por debajo del uso existente.
+No hay conversiones automáticas de tipo. Los límites reales, la concurrencia de altas y la reducción de límites se resolvieron en V1.4 (sección Drivers, Vehicles y Assignments). Wallet sigue pendiente.
 
 ### Actualizar y verificar V1.2
 
@@ -531,6 +533,110 @@ Comportamiento documentado:
 Pruebas automatizadas: `test/provider-admin-access.e2e-spec.ts` (casos 1–6 usando el mismo código del seed) y `test/local-provider-admins.spec.ts` (protecciones de entorno).
 
 
+## Drivers, Vehicles y Assignments (V1.4-A)
+
+V1.4 representa **quién puede realizar una entrega y con qué vehículo**. No decide qué entrega realizar: DeliveryRequest, cotización, mapas, despacho, tracking y wallet empiezan en V1.5 o después.
+
+```text
+DeliveryProvider
+├── Drivers   (perfil logístico de un User con rol DRIVER)
+├── Vehicles  (recursos del proveedor, no del Driver)
+└── DriverVehicleAssignments (historial; unassignedAt = null es la asignación vigente)
+```
+
+### Modelo
+
+| Modelo | Campos principales | Restricciones |
+|---|---|---|
+| Driver | providerId, userId, name, status, availability | `userId` único (un perfil por User), FK RESTRICT a User y proveedor, CHECK de nombre 1–100 |
+| Vehicle | providerId, identifier, type, status, brand?, model?, year?, color?, plate? | `(providerId, identifier)` único, identifier `^[A-Z0-9][A-Z0-9_-]{0,29}$`, year 1900–2100, plate opcional sin unicidad |
+| DriverVehicleAssignment | providerId, driverId, vehicleId, assignedAt, unassignedAt | FKs compuestas `(driverId, providerId)` y `(vehicleId, providerId)`; índices únicos parciales: una asignación vigente por Driver y por Vehicle; CHECK `unassignedAt >= assignedAt` |
+
+- **User vs Driver:** User conserva email, contraseña, JWT y rol global. Driver no tiene credenciales. Crear un Driver exige un User existente, activo y con `role = DRIVER`; no se cambia ningún rol (PROVIDER_ADMIN o SUPER_ADMIN → 409). La provisión/invitación de usuarios DRIVER sigue fuera de alcance.
+- **Mismo proveedor garantizado en PostgreSQL:** las FKs compuestas comparten `providerId`, así que una asignación Driver A + Vehicle B es imposible incluso fuera de la API.
+- **INDEPENDENT** usa el mismo modelo: un proveedor con sus propios Drivers y Vehicles, gobernado sólo por maxDrivers/maxVehicles (no hay código que fije "un solo Driver").
+- Migración incremental `20260915000400_drivers_vehicles`; sin reset. Prisma no detecta drift por los índices parciales/CHECK.
+
+### Estados y disponibilidad
+
+| DriverStatus | Transiciones | Efecto |
+|---|---|---|
+| PENDING | → ACTIVE, → SUSPENDED | Estado inicial. Puede recibir vehículo (onboarding) pero no ofrecer disponibilidad |
+| ACTIVE | → SUSPENDED | Único estado que permite AVAILABLE/BUSY |
+| SUSPENDED | → ACTIVE | No recibe nuevos vehículos; queda OFFLINE al suspender |
+
+Volver a PENDING devuelve 409. Salir de ACTIVE fuerza `availability = OFFLINE`.
+
+- **DriverAvailability** `OFFLINE / AVAILABLE / BUSY` sólo se persiste; no hay dispatch. El Driver la cambia para sí mismo; OFFLINE siempre está permitido y AVAILABLE/BUSY requieren Driver ACTIVE **y** proveedor ACTIVE.
+- **Proveedor suspendido:** en la misma transacción de `/suspend`, sus Drivers AVAILABLE/BUSY pasan a OFFLINE; mientras siga suspendido no puede volver a AVAILABLE/BUSY ni asignar vehículos.
+- **VehicleStatus** `ACTIVE / INACTIVE / MAINTENANCE / SUSPENDED`, transiciones libres. Sólo ACTIVE admite nuevas asignaciones. Cambiar el estado **no** cierra la asignación vigente (se decide en V1.5 junto con entregas en curso); se desasigna explícitamente.
+
+### Límites y concurrencia
+
+- **Qué cuenta:** todos los Drivers/Vehicles existentes del proveedor, en cualquier estado. No hay eliminación en V1.4, así que suspender nunca libera cupo (no se puede suspender → crear → suspender para evadir el límite).
+- `POST drivers|vehicles` al alcanzar el límite → 409. `PATCH /admin/providers/:id` con maxDrivers/maxVehicles por debajo del uso actual → 409.
+- **Estrategia:** cada alta abre una transacción que bloquea la fila del proveedor con `SELECT … FOR UPDATE`, cuenta e inserta. Las altas concurrentes del mismo proveedor quedan serializadas; la edición de límites y la suspensión toman el mismo bloqueo. Proveedores distintos no se bloquean entre sí. Se eligió bloqueo de fila frente a SERIALIZABLE para no introducir reintentos por conflictos de serialización.
+- **Asignaciones:** bloqueo proveedor (FOR SHARE) → Driver → Vehicle (FOR UPDATE), siempre en ese orden para evitar deadlocks; los índices únicos parciales son la última defensa (P2002 → 409). Probado: 6 altas concurrentes con límite 3 → exactamente 3 × 201; dos asignaciones simultáneas del mismo vehículo → 201 + 409.
+- Uso visible sin N+1: `GET /admin/providers` incluye `usage` por fila (subconsultas `_count` en la misma consulta), `GET /admin/providers/:id/capacity` y `GET /provider/capacity` devuelven `{ drivers: { count, max }, vehicles: { count, max } }`.
+
+### Endpoints V1.4
+
+Prefijo `/api/v1`, JWT humano. Rutas de proveedor: `AccessGuard → RolesGuard(PROVIDER_ADMIN) → ProviderMembershipGuard`; membership y rol son comprobaciones independientes (quitar el rol a un usuario con membership devuelve 403). `providerId` va en query y sólo selecciona entre memberships propias; nunca concede acceso.
+
+| Método | SUPER_ADMIN (`/admin/providers/:providerId/…`) | PROVIDER_ADMIN (`/provider/…?providerId=`) | Función |
+|---|---|---|---|
+| POST | `drivers` | `drivers` | Crear Driver (userId DRIVER existente, name) |
+| GET | `drivers` | `drivers` | Listar: page/pageSize, status, availability, search (nombre/email) |
+| GET | `drivers/:driverId` | `drivers/:driverId` | Detalle con asignación vigente |
+| PATCH | `drivers/:driverId` | `drivers/:driverId` | name y/o status |
+| POST | `drivers/:driverId/vehicle` | `drivers/:driverId/vehicle` | Asignar `{ vehicleId }` → 201 |
+| DELETE | `drivers/:driverId/vehicle` | `drivers/:driverId/vehicle` | Cerrar asignación vigente → 200 con el registro cerrado |
+| GET | `drivers/:driverId/assignments` | `drivers/:driverId/assignments` | Historial del Driver, assignedAt DESC |
+| POST | `vehicles` | `vehicles` | Crear vehículo |
+| GET | `vehicles` | `vehicles` | Listar: page/pageSize, type, status, search (identifier/placa/marca/modelo) |
+| GET | `vehicles/:vehicleId` | `vehicles/:vehicleId` | Detalle con Driver vigente |
+| PATCH | `vehicles/:vehicleId` | `vehicles/:vehicleId` | Datos (null limpia opcionales) y status |
+| GET | `vehicles/:vehicleId/assignments` | `vehicles/:vehicleId/assignments` | Historial del vehículo |
+| GET | `/admin/providers/:id/capacity` | `/provider/capacity` | count/max |
+
+| Método | Ruta DRIVER | Función |
+|---|---|---|
+| GET | `/driver/me` | User → Driver → Provider → vehículo vigente (sin userId, email ni límites). Sin perfil → 404 |
+| PATCH | `/driver/availability` | `{ "availability": "AVAILABLE" }`; cualquier otro campo (driverId, userId) → 400 |
+
+**Códigos:** 400 validación/campos desconocidos; 401 sin JWT humano (incluye tokens de IntegrationClient); 403 rol global incorrecto o proveedor sin membership; 404 proveedor/Driver/Vehicle/asignación inexistente **o perteneciente a otro proveedor** (no revela existencia); 409 límite alcanzado, User no elegible o con perfil, transición inválida, identifier duplicado en el proveedor, Driver/proveedor suspendido, vehículo no ACTIVE, Driver o vehículo ya asignado; 429 rate limit.
+
+Eventos de log: DRIVER_CREATED, DRIVER_UPDATED, DRIVER_STATUS_CHANGED, DRIVER_AVAILABILITY_CHANGED (con reason DRIVER_NOT_ACTIVE o PROVIDER_SUSPENDED en cambios automáticos), VEHICLE_CREATED, VEHICLE_UPDATED, VEHICLE_STATUS_CHANGED, VEHICLE_ASSIGNED, VEHICLE_UNASSIGNED. Incluyen IDs y actorId; nunca contraseñas ni tokens.
+
+### Ejemplo local (PowerShell)
+
+```powershell
+$base = 'http://localhost:3000/api/v1'
+$h = @{ Authorization = 'Bearer <PROVIDER_ADMIN_A_ACCESS_TOKEN>' }
+$carlos = Invoke-RestMethod -Method Post -Uri "$base/provider/drivers" -Headers $h -ContentType 'application/json' -Body '{"userId":"<DRIVER_USER_UUID>","name":"Carlos"}'
+Invoke-RestMethod -Method Patch -Uri "$base/provider/drivers/$($carlos.id)" -Headers $h -ContentType 'application/json' -Body '{"status":"ACTIVE"}'
+$moto = Invoke-RestMethod -Method Post -Uri "$base/provider/vehicles" -Headers $h -ContentType 'application/json' -Body '{"identifier":"MOTO-01","type":"MOTORCYCLE","plate":"ABC-123"}'
+Invoke-RestMethod -Method Post -Uri "$base/provider/drivers/$($carlos.id)/vehicle" -Headers $h -ContentType 'application/json' -Body (@{ vehicleId = $moto.id } | ConvertTo-Json)
+Invoke-RestMethod -Uri "$base/provider/drivers/$($carlos.id)/assignments" -Headers $h
+Invoke-RestMethod -Method Delete -Uri "$base/provider/drivers/$($carlos.id)/vehicle" -Headers $h
+Invoke-RestMethod -Uri "$base/provider/capacity" -Headers $h
+```
+
+### Escenario y verificación local (LOCAL/TEST ONLY)
+
+```powershell
+npm run db:deploy
+npm run db:seed:local-provider-admins
+npm run db:seed:local-driver-users      # driver-carlos|pedro|jose|luis|mario@mandaria.local, sólo Users DRIVER
+npm run build
+npm run start:prod                      # otra terminal
+npm run verify:drivers-vehicles         # escenario completo sobre "Rápidos de Coita"
+```
+
+- `db:seed:local-driver-users` usa la misma protección (development/test, DB local) y la misma `LOCAL_PROVIDER_ADMIN_PASSWORD` compartida del escenario local. No crea Driver, Vehicle ni asignaciones: eso se hace por API.
+- `verify:drivers-vehicles` es idempotente: fija Provider A en 3/3, crea o reutiliza Carlos/Pedro/José y MOTO-01/MOTO-02/BICI-01, comprueba Luis y MOTO-03 → 409, asigna, reasigna con historial, MAINTENANCE → 409, Driver suspendido y proveedor suspendido → AVAILABLE 409 (restaura ambos), Provider B (Mario/VAN-01), aislamiento A/B, Admin sin membership, SUPER_ADMIN, DRIVER e IntegrationClient (401). Deja el escenario asignado para Mandaria Web; hace 5 logins, esperar 60 s entre ejecuciones.
+
+Pruebas automatizadas V1.4: `test/drivers-vehicles.e2e-spec.ts` (acceso A/B, sin membership, defensa en profundidad de rol, SUPER_ADMIN, límites, INDEPENDENT, concurrencia, asignaciones), `test/driver-self.e2e-spec.ts` (DRIVER, disponibilidad, suspensiones, IntegrationClient, Swagger y logs) y `test/logistics.spec.ts` (reglas de servicio). `node scripts/verify-migrations.mjs` cubre instalación limpia y V1.0 → V1.1 → V1.2 → V1.4 con datos.
 
 ## Docker: preparado, sin ejecución en esta etapa
 
@@ -542,14 +648,17 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 
 - Limitador en memoria para una instancia; antes de escalar usar almacenamiento compartido y configurar proxies confiables.
 - Auditoría actual en logs, sin almacén persistente empresarial.
-- Listados anteriores de Users/Integrations acotados a 100; Providers y memberships ya tienen paginación.
+- Listados anteriores de Users/Integrations acotados a 100; Providers, memberships, Drivers, Vehicles e historiales ya tienen paginación.
+- V1.4 no provee alta/invitación de Users DRIVER por API: se asocian Users existentes (local: seed). Un PROVIDER_ADMIN que conozca el UUID de un User DRIVER sin perfil puede asociarlo; la provisión controlada queda pendiente.
+- Cambiar un vehículo a INACTIVE/MAINTENANCE/SUSPENDED o suspender un Driver no cierra su asignación vigente; la política con entregas en curso se define en V1.5.
+- No existe eliminación ni transferencia de Drivers/Vehicles entre proveedores; por eso todos los registros cuentan para los límites.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.2 / V1.3+
+## Fuera de V1.4 / V1.5+
 
-No se implementaron Driver, DriverProfile, Vehicle, DeliveryRequest, Quote, distancias/mapas, despacho, Socket.IO, Wallet, créditos/recargas, CUSTOMER, apps, GPS, pagos, planes ni facturación.
+No se implementaron DeliveryRequest, Delivery, Quote, tarifas, distancias/mapas, despacho/hunting, Socket.IO de entregas, GPS/tracking, Wallet, créditos/recargas, pagos, CUSTOMER, apps Repartidor/Cliente, KYC/INE/licencias/seguros/documentos/fotografías, planes ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. Email, recuperación de contraseña y auditoría persistente siguen pendientes para versiones posteriores.

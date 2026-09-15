@@ -111,15 +111,78 @@ try {
       ]),
     );
   const v11Snapshot = snapshot();
-  prisma(upgradeDb, ['migrate', 'deploy']);
+  sql(upgradeDb, [
+    '-f',
+    'prisma/migrations/20260915000300_delivery_providers/migration.sql',
+  ]);
+  prisma(upgradeDb, [
+    'migrate',
+    'resolve',
+    '--applied',
+    '20260915000300_delivery_providers',
+  ]);
   assert.deepEqual(snapshot(), v11Snapshot);
+  // V1.2 fixtures: provider with limits and a PROVIDER_ADMIN membership.
+  const providerId = randomUUID();
+  const providerAdminId = randomUUID();
+  const membershipId = randomUUID();
+  sql(upgradeDb, [
+    '-c',
+    `
+    INSERT INTO "User" (id,email,"passwordHash",role,"updatedAt") VALUES ('${providerAdminId}','provider-admin@example.test','${hash}','PROVIDER_ADMIN',now());
+    INSERT INTO "DeliveryProvider" (id,name,code,type,status,"maxDrivers","maxVehicles","updatedAt") VALUES ('${providerId}','Migration provider','MIGRATION_PROVIDER','FLEET','ACTIVE',7,9,now());
+    INSERT INTO "ProviderMembership" (id,"providerId","userId",role,"updatedAt") VALUES ('${membershipId}','${providerId}','${providerAdminId}','OWNER',now());
+  `,
+  ]);
+  const v12Tables = [
+    'User',
+    'RefreshToken',
+    'IntegrationClient',
+    'IntegrationCredential',
+    'DeliveryProvider',
+    'ProviderMembership',
+  ];
+  const fullSnapshot = () =>
+    Object.fromEntries(
+      v12Tables.map((table) => [
+        table,
+        sql(upgradeDb, [
+          '-c',
+          `SELECT json_agg(t ORDER BY id) FROM "${table}" t`,
+        ]),
+      ]),
+    );
+  const v12Snapshot = fullSnapshot();
+  prisma(upgradeDb, ['migrate', 'deploy']);
+  assert.deepEqual(fullSnapshot(), v12Snapshot);
+  for (const table of ['Driver', 'Vehicle', 'DriverVehicleAssignment'])
+    assert.equal(
+      sql(upgradeDb, ['-c', `SELECT count(*) FROM "${table}"`]),
+      '0',
+    );
+  for (const db of [cleanDb, upgradeDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname IN ('DriverVehicleAssignment_active_driver_key','DriverVehicleAssignment_active_vehicle_key') AND indexdef LIKE '%WHERE%unassignedAt%IS NULL%'",
+      ]),
+      '2',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('Driver_name_check','Vehicle_identifier_check','Vehicle_year_check','DriverVehicleAssignment_period_check','DriverVehicleAssignment_driverId_providerId_fkey','DriverVehicleAssignment_vehicleId_providerId_fkey')",
+      ]),
+      '6',
+    );
+  }
   assert.equal(
     sql(upgradeDb, ['-c', 'SELECT count(*) FROM "DeliveryProvider"']),
-    '0',
+    '1',
   );
   assert.equal(
     sql(upgradeDb, ['-c', 'SELECT count(*) FROM "ProviderMembership"']),
-    '0',
+    '1',
   );
   const after = JSON.parse(
     sql(upgradeDb, [
@@ -159,7 +222,7 @@ try {
   );
   prisma(upgradeDb, ['migrate', 'deploy']);
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 upgrade (${upgradeDb}); IDs, hashes, users, sessions and revocations preserved. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, limits and memberships preserved; V1.4 constraints present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

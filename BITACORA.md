@@ -4,17 +4,17 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
-- **Versión del paquete:** 1.2.0.
-- **Rama activa de V1.2:** `V1_2-Proveedores_Reparto` (nombre encontrado al iniciar la tarea; se respetó).
+- **Versión del paquete:** 1.4.0 (V1.4-A Drivers, Vehicles & Assignments).
+- **Rama activa:** `V1_4-Repartidores_Vehiculos`, creada desde `QA` para V1.4-A y publicada en origin por solicitud del propietario. Sin merge a QA/main.
 - **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git. Entrega V1.2 en `V1_2-Proveedores_Reparto`.
-- **Objetivo actual:** V1.2 Proveedores de Reparto sobre Core V1.0 e integraciones B2B V1.1.
+- **Objetivo actual:** V1.4-A Drivers, Vehicles y asignaciones sobre V1.0–V1.2. V1.5 (Delivery Requests) no iniciado.
 - **Herramientas:** scripts npm ampliados con OpenAPI exportable, matriz de acceso, Oxlint y configuración Prisma de pruebas; entrega autorizada en la rama actual.
-- **Estado funcional V1.2:** implementado y verificado localmente el 2026-09-15; 21 pruebas unitarias/HTTP y 36 E2E correctos.
-- **Definition of Done:** requisitos críticos V1.2 verificados. Docker/Compose heredado sigue pospuesto por el propietario; no se declara ejecutado.
+- **Estado funcional V1.4-A:** implementado y verificado localmente el 2026-09-15; 31 pruebas unitarias/HTTP y 63 E2E correctos; validación HTTP manual 16/16 y regresión V1.2 13/13.
+- **Definition of Done:** requisitos V1.4-A verificados localmente (ver VERIFICATION.md). Docker/Compose heredado sigue pospuesto por el propietario; no se declara ejecutado.
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
 - **Base local configurada:** `mandaria_db`; base separada para E2E: `mandaria_test`.
 - **Configuración:** `.env` local, ignorado por Git. El propietario corrigió el acceso y las verificaciones posteriores pasaron. No copiar sus valores a esta bitácora.
-- **Servidor:** detenido el 2026-09-15 tras la validación PROVIDER_ADMIN (se levantó temporalmente con `node dist/main.js`). Iniciar con npm run start:dev o start:prod cuando se necesite.
+- **Servidor:** detenido. Con autorización del propietario se detuvo el backend previo (PID 30660, `node --env-file=.env dist/main.js`) que bloqueaba la DLL de Prisma; no se reinició. La compilación V1.4 se levantó temporalmente para validar y se detuvo. Reiniciar con `npm run build` + `npm run start:prod` (mandaria-frontend lo usaba).
 - **Validación PROVIDER_ADMIN/memberships:** cerrada el 2026-09-15 en rama `QA` con autenticación real. Escenario local reproducible `npm run db:seed:local-provider-admins` (LOCAL/TEST ONLY) y `npm run verify:provider-admins`. Tests: 23 unitarias/HTTP y 45 E2E.
 
 ## Arquitectura y decisiones vigentes
@@ -36,9 +36,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - Overrides de seguridad: multer `^2.3.0` y deepmerge-ts `^8.0.0`; migraciones y E2E fueron comprobados tras instalarlos.
 - Rate limiting en memoria para una instancia. Antes de escalar, evaluar almacenamiento compartido y proxies confiables.
 - Mandaria no comparte código, entidades Prisma ni PostgreSQL con Coita Eats. La comunicación futura será mediante API/webhooks.
-- DeliveryProvider representa oferta logística, separado de IntegrationClient. Tipos FLEET/INDEPENDENT; estados PENDING/ACTIVE/SUSPENDED. No hay relación a integración, Driver, Vehicle o Wallet.
+- DeliveryProvider representa oferta logística, separado de IntegrationClient. Tipos FLEET/INDEPENDENT; estados PENDING/ACTIVE/SUSPENDED. No hay relación a integración ni Wallet; desde V1.4 posee Drivers y Vehicles.
 - ProviderMembership relaciona User existente con uno o varios proveedores. Roles OWNER/ADMIN locales; se exige User activo con rol global PROVIDER_ADMIN al asignar. Par providerId/userId único. Retirar sólo borra la relación.
-- Limits maxDrivers/maxVehicles: enteros 1–10000 con validación DTO y CHECK SQL. Defaults de entorno FLEET 10/10 e INDEPENDENT 1/2. V1.2 no cuenta recursos inexistentes.
+- Limits maxDrivers/maxVehicles: enteros 1–10000 con validación DTO y CHECK SQL. Defaults de entorno FLEET 10/10 e INDEPENDENT 1/2. Desde V1.4 se aplican contando todos los Drivers/Vehicles (cualquier estado) con bloqueo FOR UPDATE del proveedor; no pueden bajarse por debajo del uso.
+- V1.4: Driver = perfil logístico de un User DRIVER existente (userId único, sin credenciales). Vehicle pertenece al proveedor (identifier único por proveedor). DriverVehicleAssignment conserva historial; asignación vigente única por Driver y Vehicle vía índices parciales; FKs compuestas impiden cruzar proveedores. Rutas de proveedor siempre con AccessGuard + RolesGuard(PROVIDER_ADMIN) + ProviderMembershipGuard; recursos de otro proveedor → 404.
 - Admin Providers: sólo SUPER_ADMIN. Perfil: AccessGuard + RolesGuard + ProviderMembershipGuard. Sin membership se devuelve 403 aun si el JWT sigue vigente; tokens B2B devuelven 401.
 - `/provider/profile?providerId=UUID` selecciona una asociación; omitir ID sólo funciona con una membership. `/provider/profiles` lista asociaciones propias. Perfiles de proveedores suspendidos siguen consultables; no hay operaciones logísticas.
 - Paginación nueva reutilizable page/pageSize (default 1/20, máximo 100 por página), filtros type/status/search y orden estable. No se cambió el contrato de listados V1.1.
@@ -61,6 +62,11 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 | `scripts/local-provider-admins.ts`, `scripts/seed-local-provider-admins.ts` | LOCAL/TEST ONLY: escenario PROVIDER_ADMIN A/B/sin membership, protegido contra producción |
 | `scripts/verify-provider-admins-local.ts` | Validación HTTP real de memberships, aislamiento y separación User/Integration JWT |
 | `test/provider-admin-access.e2e-spec.ts` | E2E casos 1–6 de autorización PROVIDER_ADMIN |
+| `src/drivers/`, `src/vehicles/`, `src/assignments/` | V1.4: Driver, Vehicle, asignaciones, `/driver` y controllers admin/proveedor |
+| `src/providers/provider-capacity.ts` | Bloqueo de fila del proveedor para límites y orden de locks |
+| `prisma/migrations/20260915000400_drivers_vehicles/migration.sql` | Migración V1.4 con FKs compuestas, índices parciales y CHECK |
+| `scripts/local-driver-users.ts`, `scripts/verify-drivers-vehicles-local.ts` | LOCAL/TEST ONLY: Users DRIVER y validación manual V1.4 |
+| `test/drivers-vehicles.e2e-spec.ts`, `test/driver-self.e2e-spec.ts`, `test/logistics.spec.ts` | Pruebas V1.4 |
 | `Dockerfile`, `docker-compose.yml` | Preparación para uso futuro, ejecución pendiente |
 
 ## Verificaciones históricas del Core
@@ -82,9 +88,10 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 
 1. Verificar Docker build y Compose sólo cuando el propietario indique retomar Docker. Hasta entonces no declarar satisfecha toda la Definition of Done original.
 2. Mantener la bitácora actualizada conforme lleguen nuevas solicitudes.
-3. V1.3+: Driver/Vehicle y aplicación real de límites. Deliveries, tarifas, despacho, wallets/créditos, realtime, integración operativa con Coita Eats, mandados, paquetería y fletes siguen fuera del alcance. No comenzar sin solicitud.
+3. V1.5+: DeliveryRequest/Delivery, quotes, tarifas, mapas, despacho, tracking/GPS, Socket.IO, wallets/créditos, KYC/documentos, integración operativa con Coita Eats, mandados, paquetería y fletes siguen fuera del alcance. No comenzar sin solicitud.
 4. Recuperación/restablecimiento de contraseña, verificación de correo y auditoría persistente: preparación arquitectónica, sin infraestructura implementada.
 5. En modelos futuros, los créditos pertenecen al proveedor; los vehículos son recursos operativos y los repartidores realizan entregas.
+6. Deuda V1.4: provisión/invitación de Users DRIVER por API; política de la asignación vigente al suspender un Driver o dejar un vehículo no ACTIVE (hoy se conserva hasta desasignar); sin eliminación/transferencia de Drivers/Vehicles.
 
 ## Cómo retomar
 
@@ -209,3 +216,23 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Documentación:** README con sección "Escenario local PROVIDER_ADMIN", variable y comandos. Corregido bloque duplicado de ~264 líneas en README (causado por un reemplazo con `$` en el patrón de code); sin pérdida de contenido.
 - **Verificaciones:** prisma validate, build, Oxlint, ESLint, `tsc --noEmit`, docs:check, db:test:deploy (sin pendientes), npm test 23 PASS, test:e2e 45 PASS.
 - **Observaciones/pendientes:** ProviderMembership no tiene estado propio (activo/suspendido); si se requiere, será cambio de dominio futuro. ProviderMembershipGuard no verifica el rol por sí mismo (depende de RolesGuard en el controller): al reutilizarlo en V1.4 combinarlo siempre con `@Roles('PROVIDER_ADMIN')`. SUPER_ADMIN recibe 403 en `/provider/profile` por diseño. Avisos de Prettier preexistentes en `scripts/generate-api-access.ts` y `scripts/test-database-url.ts` sin tocar. Docker sigue sin ejecutar. Sin commit/push.
+
+### 2026-09-15 — V1.4-A Drivers, Vehicles & Assignments
+
+- **Solicitud:** Driver (perfil logístico de un User DRIVER), Vehicle genérico del proveedor, DriverVehicleAssignment con historial, estados y disponibilidad, maxDrivers/maxVehicles efectivos, administración SUPER_ADMIN/PROVIDER_ADMIN, `/driver/me` y disponibilidad propia. Sin V1.5.
+- **Inspección:** se reutilizan AccessGuard/RolesGuard/ProviderMembershipGuard, PaginationQueryDto, ApiErrors y logging por eventos. No existe API de alta de Users: Driver se asocia a un User DRIVER existente (mismo criterio que memberships). ProviderMembership no se modificó.
+- **Prisma:** enums DriverStatus, DriverAvailability, VehicleType y VehicleStatus; Driver (userId único), Vehicle (`providerId+identifier` único) y DriverVehicleAssignment con FKs compuestas `(driverId,providerId)`/`(vehicleId,providerId)` e índices únicos parciales para la asignación vigente; CHECK de nombre, identifier, año y periodo. Migración `20260915000400_drivers_vehicles` generada con `migrate diff` más SQL manual; `migrate diff` contra una base migrada devuelve vacío (sin drift).
+- **Reglas:** todos los registros cuentan para los límites; bajar límites por debajo del uso → 409; suspender un proveedor pasa sus Drivers AVAILABLE/BUSY a OFFLINE; AVAILABLE/BUSY requieren Driver y proveedor ACTIVE; asignar requiere vehículo ACTIVE, Driver no SUSPENDED, proveedor no SUSPENDED y ambos libres; PENDING puede recibir vehículo; recursos de otro proveedor → 404.
+- **Concurrencia:** `SELECT … FOR UPDATE` sobre DeliveryProvider en altas, edición de límites y suspensión; asignaciones con orden proveedor (SHARE) → Driver → Vehicle; índices parciales como respaldo.
+- **API:** `/admin/providers/:providerId/{drivers,vehicles}` (SUPER_ADMIN), `/provider/{drivers,vehicles}` (AccessGuard → RolesGuard PROVIDER_ADMIN → ProviderMembershipGuard), asignar/desasignar/historial, `/admin/providers/:id/capacity`, `/provider/capacity`, `usage` en el listado admin, `/driver/me` y `/driver/availability`. Swagger 1.4.0; docs/openapi.json y API_ACCESS.md regenerados.
+- **Local:** `db:seed:local-driver-users` (Users DRIVER Carlos/Pedro/José/Luis/Mario, misma protección y contraseña local compartida, sin imprimirla) y `verify:drivers-vehicles` (idempotente). Seed PROVIDER_ADMIN intacto (mismos IDs al reejecutar).
+- **Verificaciones:** prisma validate, db:generate, build, tsc --noEmit, Oxlint, ESLint, docs:openapi y docs:check; migración aplicada a mandaria_db y mandaria_test; verify-migrations (bases `mandaria_clean_8e62fbfc5c_test` y `mandaria_upgrade_8e62fbfc5c_test`, más `mandaria_drift_8d9845bd_test`) con V1.2 → V1.4 preservando proveedores y memberships; npm test 31 PASS; test:e2e 63 PASS (45 previas + 11 drivers-vehicles + 7 driver-self); mutaciones (sin RolesGuard, sin límite, sin scope de vehículo) detectadas; HTTP local V1.4 16/16 dos veces y regresión verify:provider-admins 13/13; logs sin secretos ni 5xx.
+- **Incidencias:** EPERM en prisma generate por un backend ajeno (PID 30660) detenido con autorización; Prettier sobre `src/**` alteró saltos de línea de archivos no relacionados (revertidos); test con scope inexistente `deliveries:write` corregido; aserción antigua de verify-migrations (0 proveedores) ajustada al nuevo fixture V1.2.
+- **Pendientes:** punto 6 de pendientes; Docker sin ejecutar. Sin commit/push.
+
+### 2026-09-15 — Publicación de V1.4-A
+
+- **Solicitud:** commit y push de V1.4-A a la rama actual `V1_4-Repartidores_Vehiculos`.
+- **Contenido:** implementación, migración, pruebas, scripts locales y documentación de la entrada anterior.
+- **Verificación previa:** revisión de archivos publicables sin valores de `.env`; pruebas no repetidas tras la verificación final ya registrada (31 unitarias, 63 E2E, build/lint/docs:check correctos).
+- **Destino:** origin/V1_4-Repartidores_Vehiculos (rama nueva). Sin merge.
