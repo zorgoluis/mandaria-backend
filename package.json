@@ -23,6 +23,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:seed:local-provider-admins": "tsx scripts/seed-local-provider-admins.ts",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "docs:openapi": "nest build && node dist/openapi.cli.js && tsx scripts/generate-api-access.ts",
     "docs:check": "tsx scripts/generate-api-access.ts --check",
@@ -37,7 +38,8 @@
     "pretest:watch": "npm run build",
     "pretest:cov": "npm run build",
     "pretest:e2e": "npm run build",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "verify:provider-admins": "tsx scripts/verify-provider-admins-local.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.4",

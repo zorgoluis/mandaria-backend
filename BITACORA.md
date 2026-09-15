@@ -14,7 +14,8 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
 - **Base local configurada:** `mandaria_db`; base separada para E2E: `mandaria_test`.
 - **Configuración:** `.env` local, ignorado por Git. El propietario corrigió el acceso y las verificaciones posteriores pasaron. No copiar sus valores a esta bitácora.
-- **Servidor:** detenido el 2026-09-15 para liberar la DLL de Prisma. Se deja apagado para que el propietario ejecute sus comandos; iniciar con npm run start:dev cuando termine de generar el cliente.
+- **Servidor:** detenido el 2026-09-15 tras la validación PROVIDER_ADMIN (se levantó temporalmente con `node dist/main.js`). Iniciar con npm run start:dev o start:prod cuando se necesite.
+- **Validación PROVIDER_ADMIN/memberships:** cerrada el 2026-09-15 en rama `QA` con autenticación real. Escenario local reproducible `npm run db:seed:local-provider-admins` (LOCAL/TEST ONLY) y `npm run verify:provider-admins`. Tests: 23 unitarias/HTTP y 45 E2E.
 
 ## Arquitectura y decisiones vigentes
 
@@ -57,6 +58,9 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 | `scripts/create-test-db.mjs` | Crear `mandaria_test` si falta, sin borrar datos |
 | `scripts/test-db.mjs` | Migrar base de pruebas y ejecutar E2E |
 | `scripts/verify-local.mjs` | Verificar endpoints del servidor activo sin imprimir secretos |
+| `scripts/local-provider-admins.ts`, `scripts/seed-local-provider-admins.ts` | LOCAL/TEST ONLY: escenario PROVIDER_ADMIN A/B/sin membership, protegido contra producción |
+| `scripts/verify-provider-admins-local.ts` | Validación HTTP real de memberships, aislamiento y separación User/Integration JWT |
+| `test/provider-admin-access.e2e-spec.ts` | E2E casos 1–6 de autorización PROVIDER_ADMIN |
 | `Dockerfile`, `docker-compose.yml` | Preparación para uso futuro, ejecución pendiente |
 
 ## Verificaciones históricas del Core
@@ -193,3 +197,15 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Acción:** detenido únicamente ese backend; npm run db:generate completó correctamente con Prisma Client 6.19.3.
 - **Resultado:** cliente regenerado; servidor queda apagado para evitar otro bloqueo mientras el propietario ejecuta comandos. PostgreSQL no se detuvo y no se hicieron migraciones ni resets.
 - **Continuidad:** cambio preexistente en package-lock.json conservado. No se repiten tests por esta operación local, sin cambios funcionales; sin commit/push.
+
+### 2026-09-15 — Validación real de PROVIDER_ADMIN y ProviderMembership
+
+- **Solicitud:** cerrar la observación "falta validar PROVIDER_ADMIN y memberships contra una cuenta real". Sin V1.4 ni cambios de dominio.
+- **Inspección:** User/Role, AuthService (login/refresh/me), AccessGuard/RolesGuard, ProviderMembershipGuard/ProviderAccessService, controllers `/admin/providers`, `/provider`, `/users`, `/admin/integrations` (+ alias `/integrations`), schema, seed y E2E existentes. La autorización ya dependía de la membership (consulta `userId` del JWT + `providerId`); no se encontró bug de autorización, por lo que no se modificaron guards, servicios, contratos ni schema. Sin migración.
+- **Escenario local (LOCAL/TEST ONLY):** `scripts/local-provider-admins.ts` + CLI `npm run db:seed:local-provider-admins`. Crea Provider A `LOCAL_RAPIDOS_COITA` y B `LOCAL_MANDADOS_CENTRO` (FLEET, ACTIVE), Admin A→A OWNER, Admin B→B OWNER y un PROVIDER_ADMIN sin membership. Idempotente; no cambia roles de emails existentes. Contraseña en `LOCAL_PROVIDER_ADMIN_PASSWORD` (agregada al `.env` local con `scripts/upgrade-env-local-provider-admins.mjs`, sin imprimirla).
+- **Protección producción:** rechaza NODE_ENV distinto de development/test, DB no local y contraseña igual a la del bootstrap. No está en `prisma db seed`; Docker no copia `scripts/` salvo el entrypoint (sólo migra) y `tsx` es devDependency. Rechazo con NODE_ENV=production comprobado.
+- **Validación HTTP real:** `npm run verify:provider-admins` contra `node dist/main.js` y `mandaria_db`: 13/13 PASS (login, refresh con rechazo de reutilización, /auth/me, A→A 200, A→B 403, B→B 200, B→A 403, sin membership 403, PROVIDER_ADMIN→admin/users/integraciones 403 sin cambios, B2B JWT→superficies humanas 401, SUPER_ADMIN gestiona A/B). Primer intento falló por un bug del script (enviaba campos extra a `/integrations/token` → 400); corregido. Logs del backend y salida sin contraseñas, JWT ni clientSecret.
+- **Pruebas nuevas:** `test/provider-admin-access.e2e-spec.ts` (9 casos: seed idempotente, rechazo de elevación, login/refresh/me, casos 1–6) y `test/local-provider-admins.spec.ts` (2). Prueba de mutación: quitar el filtro `userId` en ProviderAccessService hace fallar casos 2, 3 y 5; código restaurado.
+- **Documentación:** README con sección "Escenario local PROVIDER_ADMIN", variable y comandos. Corregido bloque duplicado de ~264 líneas en README (causado por un reemplazo con `$` en el patrón de code); sin pérdida de contenido.
+- **Verificaciones:** prisma validate, build, Oxlint, ESLint, `tsc --noEmit`, docs:check, db:test:deploy (sin pendientes), npm test 23 PASS, test:e2e 45 PASS.
+- **Observaciones/pendientes:** ProviderMembership no tiene estado propio (activo/suspendido); si se requiere, será cambio de dominio futuro. ProviderMembershipGuard no verifica el rol por sí mismo (depende de RolesGuard en el controller): al reutilizarlo en V1.4 combinarlo siempre con `@Roles('PROVIDER_ADMIN')`. SUPER_ADMIN recibe 403 en `/provider/profile` por diseño. Avisos de Prettier preexistentes en `scripts/generate-api-access.ts` y `scripts/test-database-url.ts` sin tocar. Docker sigue sin ejecutar. Sin commit/push.

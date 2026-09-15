@@ -23,6 +23,8 @@ const content = [
   'CORS_ORIGINS=http://localhost:5173',
   'BOOTSTRAP_ADMIN_EMAIL=admin@mandaria.local',
   `BOOTSTRAP_ADMIN_PASSWORD=${secret()}`,
+  '# LOCAL/TEST ONLY: seeded PROVIDER_ADMIN accounts',
+  `LOCAL_PROVIDER_ADMIN_PASSWORD=${secret()}`,
   '',
 ].join('\n');
 try {

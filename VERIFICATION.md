@@ -1,3 +1,32 @@
+# Verificación PROVIDER_ADMIN y ProviderMembership (2026-09-15)
+
+Rama `QA`, paquete 1.2.0, Node.js 24.15.0, PostgreSQL 18 local. Validación con autenticación real; sin JWT manuales, bypass ni cambios en guards. Sin migración.
+
+| Verificación | Resultado |
+|---|---|
+| Login real PROVIDER_ADMIN (A, B, sin membership) | PASS |
+| Refresh (rotación y rechazo de reutilización) | PASS |
+| /auth/me (rol PROVIDER_ADMIN, activo) | PASS |
+| Admin A → Provider A (/provider/profile, /provider/profiles) | PASS, 200 |
+| Admin A → Provider B / ID inexistente | PASS, 403 |
+| Admin B → B 200; → A 403 | PASS |
+| PROVIDER_ADMIN sin membership | PASS, 403 y lista vacía |
+| userId/providerId duplicado enviados por cliente | PASS, 400 |
+| PROVIDER_ADMIN → /admin/providers, /users | PASS, 403 |
+| PROVIDER_ADMIN → IntegrationClient/credenciales (crear, modificar, suspender, rotar, revocar; alias incluidos) | PASS, 403 sin cambios |
+| IntegrationClient JWT → /provider/*, /admin/providers, /auth/me | PASS, 401 |
+| SUPER_ADMIN administra Provider A y B | PASS |
+| Seed local idempotente y rechazo en producción/DB remota | PASS |
+| Prueba de mutación (sin filtro userId) detectada por E2E | PASS, 3 casos fallan |
+| Prisma validate, build, Oxlint, ESLint, tsc, docs:check | PASS |
+| npm test | 23 PASS |
+| npm run test:e2e | 45 PASS (7 Core, 14 B2B, 15 Providers, 9 PROVIDER_ADMIN) |
+| HTTP local `npm run verify:provider-admins` | 13/13 PASS |
+
+Logs del backend y salidas revisados sin contraseñas, JWT ni clientSecret. Detalle y comandos en README, sección "Escenario local PROVIDER_ADMIN".
+
+---
+
 # Verificación de Mandaria V1.2
 
 Fecha: 2026-09-15. Node.js 24.15.0, PostgreSQL 18 local, rama `V1_2-Proveedores_Reparto`, paquete 1.2.0.
