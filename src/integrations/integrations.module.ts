@@ -15,6 +15,11 @@ import { IntegrationScopesGuard } from './integration-scopes.js';
     IntegrationGuard,
     IntegrationScopesGuard,
   ],
-  exports: [IntegrationGuard, IntegrationScopesGuard, IntegrationsService],
+  exports: [
+    IntegrationGuard,
+    IntegrationAuthService,
+    IntegrationScopesGuard,
+    IntegrationsService,
+  ],
 })
 export class IntegrationsModule {}

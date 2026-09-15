@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { randomBytes, randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { NestFactory } from '@nestjs/core';
 import type { INestApplication, LoggerService } from '@nestjs/common';
@@ -413,7 +414,9 @@ describe.sequential(
 
     it('documents V1.4 schemas, permissions and errors, and logs events without secrets', async () => {
       const docs = (await api().get('/docs-json').expect(200)).body;
-      expect(docs.info.version).toBe('1.4.0');
+      expect(docs.info.version).toBe(
+        JSON.parse(readFileSync('package.json', 'utf8')).version,
+      );
       for (const schema of [
         'DriverResponse',
         'VehicleResponse',

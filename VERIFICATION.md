@@ -1,3 +1,46 @@
+# Verificación V1.5-A — Delivery Requests (2026-09-15)
+
+Rama `v1.5-delivery_request`, paquete 1.5.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado.
+
+| Verificación | Resultado |
+|---|---|
+| Prisma validate / generate | PASS |
+| Migración `20260915000500_delivery_requests` en mandaria_db y mandaria_test (sin reset) | PASS |
+| Instalación limpia + V1.0 → V1.1 → V1.2 → V1.4 → V1.5 con fixtures | PASS; datos V1.4 idénticos; constraints, índices y secuencia presentes |
+| Drift schema ↔ migraciones | Vacío |
+| Build / TypeScript / Oxlint / ESLint / docs:check | PASS |
+| npm test | 40 PASS (31 previas + 9 V1.5) |
+| npm run test:e2e | 85/85 PASS en ejecuciones limpias (63 previas + 7 validación + 15 B2B); cada archivo pasa por separado. **Intermitente:** algunas ejecuciones completas terminan con `Worker exited unexpectedly` (ver nota) |
+| publicId concurrente (20 creaciones simultáneas) | PASS, 20 únicos `MDR-\d{6,}` |
+| Misma key + mismo payload (y payload equivalente normalizado) | PASS, 200 misma solicitud, `Idempotent-Replayed: true` |
+| Misma key + payload distinto | PASS 409, original intacta |
+| Misma key en otro IntegrationClient | PASS, independiente |
+| 10 peticiones concurrentes misma key / 6 con payloads distintos | PASS, 1 × 201 + 9 × 200 / 1 × 201 + 5 × 409; 1 solicitud |
+| Atomicidad (fallo forzado al insertar package) | PASS, 0 filas y key no consumida |
+| Stops: 1 PICKUP + 1 DROPOFF, sequence, coordenadas, dirección/contacto | PASS 400 en inválidos; límites ±90/±180 válidos |
+| Packages: mínimo 1, quantity, peso, dimensiones, categoría, campos de carrito/vehículo | PASS 400; FOOD sin peso/dimensiones 201 |
+| Financiero: PREPAID 450/null/omitido ✅; COURIER_ADVANCE 450 ✅; COURIER_ADVANCE null/0 ❌; 0.1+0.2, 3 decimales, exponente, moneda inválida ❌ | PASS; columna `numeric(…,2)` |
+| integrationClientId/status/publicId/providerId/deliveryFee en body | PASS 400 |
+| Aislamiento A/B (leer, listar, cancelar) | PASS 200 propias / 404 ajenas |
+| Scopes create-only / read-only / cancel-only / quotes-only | PASS, cada uno sólo su operación (403 el resto) |
+| IntegrationClient suspendido con token emitido | PASS 401; reactivado 200 |
+| Cancelación, repetición, concurrencia, sin PATCH/DELETE | PASS; razón/fecha originales; un solo evento |
+| Filtros publicId/externalReference/status/fechas y paginación | PASS |
+| SUPER_ADMIN listar/filtrar/consultar/cancelar; sin crear/editar/eliminar | PASS |
+| PROVIDER_ADMIN / DRIVER | PASS 403 admin, 401 B2B |
+| Rate limit de creación | PASS, petición 61 → 429 |
+| Swagger: scopes, Idempotency-Key, 200/201/409, enums, sin deliveryFee/providerId | PASS |
+| Auditoría CREATED/CANCELLED con actor; logs sin direcciones, contactos, teléfonos ni secretos | PASS (E2E y log real) |
+| Mutaciones: detalle sin scope de cliente / sin registro de idempotencia / publicId COUNT+1 | Detectadas (1 / 5 / 1 pruebas fallan) |
+| HTTP local `verify:delivery-requests` (punto 70) | 10/10 PASS |
+| Regresión HTTP `verify:drivers-vehicles` / `verify:provider-admins` | 16/16 y 13/13 PASS |
+
+Bug corregido: `financialContext` ausente devolvía 500; ahora 400 (`@IsObject`).
+
+**Nota — caída nativa intermitente de workers E2E (no resuelta).** Algunas ejecuciones de `npm run test:e2e` en Windows terminan con un worker de Vitest abortado con código `0xC0000409` (STATUS_STACK_BUFFER_OVERRUN): aborto nativo sin excepción JS, sin evento de Windows Error Reporting ni informe fatal de Node; memoria < 300 MB y pico de 39 conexiones PostgreSQL (se descartaron memoria y max_connections). Afecta a archivos distintos (providers, drivers-vehicles, delivery-requests-b2b) en puntos distintos. **Es previo a V1.5:** se reprodujo con `test/drivers-vehicles.e2e-spec.ts` (V1.4) ejecutado solo bajo carga de CPU artificial. V1.5 aumenta el volumen y lo hace más frecuente. Mediciones de la suite completa: por defecto 4 de 5 ejecuciones con caída; `--maxWorkers=4` 3/5 limpias; `--maxWorkers=2` 1/5 limpias (limitar paralelismo no lo resuelve, no se cambió la configuración). Cada archivo por separado pasa; `delivery-requests-b2b` solo: 6/6 limpias en la última serie y 1 caída en otra. Coincide con incidencias conocidas de Vitest + Prisma (motor nativo) en Windows. No se observó en el backend en ejecución durante las validaciones HTTP. Pendiente: verificar en Linux/Docker y aislar el módulo nativo (volcado de memoria), sin ocultarlo con reintentos.
+
+---
+
 # Verificación V1.4-A — Drivers, Vehicles & Assignments (2026-09-15)
 
 Rama `V1_4-Repartidores_Vehiculos` (local, desde QA), paquete 1.4.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado.

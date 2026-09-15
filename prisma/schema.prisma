@@ -51,6 +51,8 @@ model IntegrationClient {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   credentials IntegrationCredential[]
+  deliveryRequests DeliveryRequest[]
+  idempotencyRecords ApiIdempotencyRecord[]
 }
 model IntegrationCredential {
   id String @id @default(uuid()) @db.Uuid
@@ -187,4 +189,107 @@ model DriverVehicleAssignment {
   vehicle Vehicle @relation(fields: [vehicleId, providerId], references: [id, providerId], onDelete: Restrict)
   @@index([driverId, assignedAt])
   @@index([vehicleId, assignedAt])
+}
+
+enum DeliveryRequestStatus {
+  CREATED
+  CANCELLED
+}
+enum DeliveryStopType {
+  PICKUP
+  DROPOFF
+}
+enum PackageCategory {
+  FOOD
+  GROCERIES
+  MEDICINE
+  DOCUMENT
+  PARCEL
+  MERCHANDISE
+  OTHER
+}
+enum GoodsPaymentMode {
+  PREPAID
+  COURIER_ADVANCE
+}
+/// Demand received from an IntegrationClient: what must be transported. Immutable except
+/// for cancellation. No provider/driver/vehicle relation until Dispatch.
+model DeliveryRequest {
+  id String @id @default(uuid()) @db.Uuid
+  /// MDR-000001; generated from sequence "DeliveryRequest_publicId_seq" inside the creation transaction.
+  publicId String @unique
+  integrationClientId String @db.Uuid
+  externalReference String?
+  status DeliveryRequestStatus @default(CREATED)
+  requestedAt DateTime @default(now())
+  cancelledAt DateTime?
+  cancellationReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  stops DeliveryStop[]
+  packages DeliveryPackage[]
+  financialContext DeliveryFinancialContext?
+  @@index([integrationClientId, requestedAt, id])
+  @@index([externalReference])
+  @@index([status, requestedAt])
+  @@index([requestedAt, id])
+}
+/// Address/contact snapshot; never linked to external restaurant or customer tables.
+model DeliveryStop {
+  id String @id @default(uuid()) @db.Uuid
+  deliveryRequestId String @db.Uuid
+  type DeliveryStopType
+  sequence Int
+  address String
+  latitude Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  contactName String
+  contactPhone String
+  instructions String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  @@unique([deliveryRequestId, sequence])
+}
+model DeliveryPackage {
+  id String @id @default(uuid()) @db.Uuid
+  deliveryRequestId String @db.Uuid
+  category PackageCategory
+  description String
+  quantity Int
+  weightKg Decimal? @db.Decimal(10, 3)
+  lengthCm Decimal? @db.Decimal(8, 2)
+  widthCm Decimal? @db.Decimal(8, 2)
+  heightCm Decimal? @db.Decimal(8, 2)
+  isFragile Boolean @default(false)
+  handlingInstructions String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  @@index([deliveryRequestId])
+}
+/// Value of the goods and who pays for them at pickup. Not a delivery fee, wallet or credit.
+model DeliveryFinancialContext {
+  id String @id @default(uuid()) @db.Uuid
+  deliveryRequestId String @unique @db.Uuid
+  goodsValue Decimal? @db.Decimal(14, 2)
+  goodsPaymentMode GoodsPaymentMode
+  currency String @db.Char(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+}
+/// Reusable B2B idempotency ledger. Stores only a payload hash, never the payload.
+model ApiIdempotencyRecord {
+  id String @id @default(uuid()) @db.Uuid
+  integrationClientId String @db.Uuid
+  key String
+  operation String
+  requestHash String @db.Char(64)
+  resourceType String
+  resourceId String @db.Uuid
+  createdAt DateTime @default(now())
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  @@unique([integrationClientId, key])
 }

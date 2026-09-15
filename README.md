@@ -1,10 +1,10 @@
-# Mandaria — V1.4 Repartidores, Vehículos y Asignaciones
+# Mandaria — V1.5 Delivery Requests
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agrega Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. No reconstruye Auth humano ni agrega entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agrega DeliveryRequest B2B (qué transportar) con stops, packages, contexto financiero, idempotencia y administración de lectura/cancelación. No reconstruye Auth humano, no cotiza ni despacha entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -12,6 +12,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `integrations/`: clientes externos, administración, credenciales, JWT B2B, scopes.
 - `providers/`: oferta logística, límites administrativos, memberships y acceso aislado por proveedor.
 - `drivers/`, `vehicles/`, `assignments/`: capacidad logística V1.4 (perfiles Driver, vehículos, asignaciones y `/driver`).
+- `delivery-requests/`: demanda B2B V1.5 y administración; `idempotency/`: registro reutilizable de Idempotency-Key.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -37,6 +38,7 @@ Los comandos de desarrollo solicitados están disponibles en `package.json`:
 | `db:seed`, `db:studio` | Bootstrap idempotente de SUPER_ADMIN y explorador de datos |
 | `db:seed:local-provider-admins`, `verify:provider-admins` | **LOCAL/TEST ONLY**: escenario PROVIDER_ADMIN A/B/sin membership y su validación HTTP real |
 | `db:seed:local-driver-users`, `verify:drivers-vehicles` | **LOCAL/TEST ONLY**: Users DRIVER locales y validación HTTP real del escenario V1.4 |
+| `verify:delivery-requests` | **LOCAL/TEST ONLY**: validación HTTP real del escenario V1.5 con IntegrationClients locales A/B |
 | `db:test:deploy` | Aplicar migraciones a la base de pruebas |
 | `test`, `test:watch`, `test:cov`, `test:e2e` | Vitest normal, watch, cobertura y E2E |
 | `db:up`, `db:down` | Docker Compose; disponibles, pero su ejecución local sigue pospuesta |
@@ -202,7 +204,7 @@ Catálogo preparado:
 - `deliveries:read`
 - `deliveries:cancel`
 
-Asignarlos en creación de credencial; por defecto no hay permisos. El endpoint `scope-check` requiere deliveries:read y sólo verifica autorización: no implementa entregas.
+Asignarlos en creación de credencial; por defecto no hay permisos. Desde V1.5, `deliveries:create`, `deliveries:read` y `deliveries:cancel` protegen `/delivery-requests` (ver sección Delivery Requests); `quotes:create` sigue reservado para V1.6. El endpoint `scope-check` requiere deliveries:read y sólo verifica autorización.
 
 Los futuros controllers pueden importar IntegrationsModule y usar:
 
@@ -251,6 +253,11 @@ Prefijo `/api/v1` salvo health/docs:
 | POST | /integrations/token | Client Credentials en body |
 | GET | /integrations/me | Bearer B2B |
 | GET | /integrations/scope-check | Bearer B2B + deliveries:read |
+| POST | /delivery-requests | Bearer B2B + deliveries:create + Idempotency-Key |
+| GET | /delivery-requests, /delivery-requests/:publicId | Bearer B2B + deliveries:read |
+| POST | /delivery-requests/:publicId/cancel | Bearer B2B + deliveries:cancel |
+| GET | /admin/delivery-requests, /admin/delivery-requests/:publicId | SUPER_ADMIN |
+| POST | /admin/delivery-requests/:publicId/cancel | SUPER_ADMIN |
 | POST, GET | /admin/integrations | SUPER_ADMIN |
 | GET, PATCH | /admin/integrations/:id | SUPER_ADMIN |
 | POST, GET | /admin/integrations/:id/credentials | SUPER_ADMIN |
@@ -638,6 +645,126 @@ npm run verify:drivers-vehicles         # escenario completo sobre "Rápidos de 
 
 Pruebas automatizadas V1.4: `test/drivers-vehicles.e2e-spec.ts` (acceso A/B, sin membership, defensa en profundidad de rol, SUPER_ADMIN, límites, INDEPENDENT, concurrencia, asignaciones), `test/driver-self.e2e-spec.ts` (DRIVER, disponibilidad, suspensiones, IntegrationClient, Swagger y logs) y `test/logistics.spec.ts` (reglas de servicio). `node scripts/verify-migrations.mjs` cubre instalación limpia y V1.0 → V1.1 → V1.2 → V1.4 con datos.
 
+## Delivery Requests (V1.5-A)
+
+V1.5 representa **qué necesita ser transportado**. No calcula costo (V1.6), no elige proveedor, Driver ni vehículo (Dispatch) y no gestiona el ciclo de entrega.
+
+```text
+DEMANDA                                OFERTA (V1.2–V1.4)
+IntegrationClient                      DeliveryProvider
+      ↓  B2B JWT                       ├── Drivers
+DeliveryRequest (MDR-000123)           └── Vehicles
+├── DeliveryStop[]  (1 PICKUP + 1 DROPOFF, snapshot)
+├── DeliveryPackage[] (≥ 1, genéricos)
+└── DeliveryFinancialContext (valor de mercancía, no envío)
+```
+
+DeliveryRequest no tiene `providerId`, `driverId` ni `vehicleId`: la unión demanda-oferta pertenece a Dispatch.
+
+### Modelo y reglas
+
+| Modelo | Contenido | Reglas / constraints |
+|---|---|---|
+| DeliveryRequest | id (UUID interno), publicId, integrationClientId, externalReference?, status, requestedAt, cancelledAt?, cancellationReason? | publicId único `^MDR-\d{6,}$`; CHECK de consistencia CREATED/CANCELLED; FK RESTRICT al IntegrationClient |
+| DeliveryStop | type, sequence, address, latitude, longitude, contactName, contactPhone, instructions? | `(deliveryRequestId, sequence)` único; lat −90..90, lng −180..180 (NUMERIC(9,6)); textos no vacíos |
+| DeliveryPackage | category, description, quantity, weightKg?, lengthCm?, widthCm?, heightCm?, isFragile, handlingInstructions? | quantity ≥ 1; peso y dimensiones > 0 si se informan (NUMERIC) |
+| DeliveryFinancialContext | goodsValue?, goodsPaymentMode, currency | 1:1; NUMERIC(14,2); `goodsValue > 0` si existe; COURIER_ADVANCE exige valor; currency ISO 4217 |
+| ApiIdempotencyRecord | integrationClientId, key, operation, requestHash, resourceType, resourceId | `(integrationClientId, key)` único; sólo hash SHA-256, nunca el payload |
+
+- **Status:** `CREATED` y `CANCELLED` únicamente. `requestedAt` = momento en que Mandaria acepta la solicitud (sin programación).
+- **Stops como snapshot:** dirección, coordenadas y contacto se copian; no hay relación con restaurantes, direcciones de clientes ni Coita Eats. Exactamente `sequence 1 = PICKUP` y `sequence 2 = DROPOFF` (el orden del array no importa). El modelo 1:N queda preparado para varios stops, pero la API no los habilita. Coordenadas provistas por el cliente; sin Google Maps.
+- **Packages genéricos:** categorías `FOOD, GROCERIES, MEDICINE, DOCUMENT, PARCEL, MERCHANDISE, OTHER`; 1–50 por solicitud. No se replica carrito, productos ni precios (p. ej. `FOOD`, "Pedido preparado", 2). El tipo de vehículo no interviene.
+- **Inmutable:** no hay PATCH ni DELETE de solicitudes, stops, packages o contexto financiero. Para corregir: cancelar y crear otra. Las canceladas permanecen como historial.
+- **externalReference** no es única ni sustituye a Idempotency-Key: `ORDER-1842` puede tener una solicitud CANCELLED y otra CREATED.
+
+### Contexto financiero
+
+| goodsPaymentMode | Significado | goodsValue |
+|---|---|---|
+| `PREPAID` | El origen ya cobró la mercancía. El Driver paga **0** en pickup; Mandaria no procesa ese dinero | Opcional (null permitido); si se envía, > 0 |
+| `COURIER_ADVANCE` | El Driver **adelanta** goodsValue al comercio en pickup y lo **recupera** del destinatario en dropoff | Obligatorio y > 0 |
+
+`goodsValue` se acepta como string decimal (recomendado) o número con hasta 2 decimales, se guarda como NUMERIC(14,2) y se devuelve como string `"450.00"`; nunca se usa float. `currency` es un código ISO 4217 válido (se normaliza a mayúsculas; Mandaria opera principalmente en MXN, sin fijarlo). No existe deliveryFee, wallet ni créditos.
+
+### publicId e idempotencia
+
+- **publicId:** dentro de la transacción de creación se ejecuta `nextval('"DeliveryRequest_publicId_seq"')` y se formatea `MDR-` + 6 dígitos mínimo (`MDR-1000000` tras `MDR-999999`, sin truncar). Las secuencias de PostgreSQL nunca entregan el mismo valor a transacciones concurrentes; un rollback deja huecos, nunca duplicados. El índice único es la última defensa. No se usa `COUNT(*) + 1`.
+- **Idempotency-Key** (header obligatorio, 8–255 caracteres ASCII visibles) con unicidad `IntegrationClient + key`:
+  - Misma key + mismo payload → **200** con la solicitud original y `Idempotent-Replayed: true` (la primera respuesta es 201 con `false`).
+  - Misma key + payload distinto → **409**; la original no cambia.
+  - La misma key en otro IntegrationClient es independiente.
+- **Hash:** SHA-256 de JSON canónico (claves ordenadas) del payload **normalizado**: textos recortados, stops ordenados por sequence, defaults aplicados (`isFragile=false`, opcionales null), dinero en 2 decimales y moneda en mayúsculas. `450`, `"450"` y `"450.00"` son el mismo request.
+- **Concurrencia y atomicidad:** el registro de idempotencia se inserta primero, en la misma transacción que DeliveryRequest, stops, packages y contexto financiero. Una petición simultánea con la misma key queda bloqueada en el índice único hasta que la primera confirma y entonces responde 200 o 409. Si algo falla, todo hace rollback y la key no queda consumida. Probado: 10 peticiones simultáneas → 1 solicitud; fallo forzado al insertar un package → cero filas.
+- Los registros de idempotencia no expiran en V1.5 (retención pendiente).
+
+### Endpoints V1.5
+
+Se usa `/delivery-requests` (no `/integrations/...`, donde `/integrations/:id` es alias administrativo con UUID).
+
+| Método | Ruta | Autorización | Función |
+|---|---|---|---|
+| POST | /delivery-requests | Bearer B2B + `deliveries:create` + `Idempotency-Key` | Crear (201 / 200 replay / 409) |
+| GET | /delivery-requests | Bearer B2B + `deliveries:read` | Listar propias: page, pageSize, publicId, externalReference, status, requestedFrom, requestedTo |
+| GET | /delivery-requests/:publicId | Bearer B2B + `deliveries:read` | Detalle propio; ajena o inexistente → 404 |
+| POST | /delivery-requests/:publicId/cancel | Bearer B2B + `deliveries:cancel` | `{ "reason": "..." }`; CREATED → CANCELLED |
+| GET | /admin/delivery-requests | SUPER_ADMIN | Listar todas; filtros anteriores + integrationClientId |
+| GET | /admin/delivery-requests/:publicId | SUPER_ADMIN | Detalle con IntegrationClient |
+| POST | /admin/delivery-requests/:publicId/cancel | SUPER_ADMIN | Cancelar cualquiera |
+
+- **Ownership B2B:** `integrationClientId` sale del token (IntegrationGuard); enviarlo en body o query responde 400. Las respuestas B2B no exponen UUID internos ni metadata del cliente; los listados son resúmenes sin datos de contacto.
+- **Scopes independientes:** create no concede read ni cancel, y viceversa. Un cliente o credencial suspendido/revocado recibe 401 incluso con un token ya emitido.
+- **Cancelación repetida:** sobre una CANCELLED responde 200 con el estado actual; no reescribe razón ni fecha ni emite otro evento.
+- **Roles:** SUPER_ADMIN lista, consulta y cancela, pero no crea, edita ni elimina. PROVIDER_ADMIN y DRIVER reciben 403 en `/admin/delivery-requests` y 401 en las rutas B2B (un JWT humano no es un token B2B). Tampoco hay rutas `/provider` ni `/driver` para solicitudes.
+- **Rate limit:** creación limitada a 60/min por IP con el ThrottlerGuard existente (las demás rutas conservan sus límites actuales). Sin planes ni cuotas.
+- **Códigos:** 400 validación/key/filtros; 401 token B2B inválido, humano o cliente suspendido; 403 scope o rol; 404 inexistente/ajena; 409 conflicto de idempotencia; 429 límite; 500 sanitizado.
+- **Auditoría:** `DELIVERY_REQUEST_CREATED` (actorType INTEGRATION) y `DELIVERY_REQUEST_CANCELLED` (actorType INTEGRATION o USER con actorId), además de `IDEMPOTENCY_REPLAY` e `IDEMPOTENCY_CONFLICT`. Sólo IDs y publicId: nunca direcciones, contactos, teléfonos, payloads, tokens ni secretos.
+
+### Ejemplo B2B (PowerShell)
+
+```powershell
+$base = 'http://localhost:3000/api/v1'
+# 1. Token (credencial creada por SUPER_ADMIN con deliveries:create/read/cancel; secreto desde el gestor de secretos)
+$token = Invoke-RestMethod -Method Post -Uri "$base/integrations/token" -ContentType 'application/json' -Body (@{ clientId = '<CREDENTIAL_ID>'; clientSecret = '<CLIENT_SECRET>' } | ConvertTo-Json)
+$h = @{ Authorization = "Bearer $($token.accessToken)"; 'Idempotency-Key' = [guid]::NewGuid().ToString() }
+
+# 2. Crear
+$body = @{
+  externalReference = 'ORDER-1842'
+  stops = @(
+    @{ type = 'PICKUP'; sequence = 1; address = 'Restaurante, Av. Central 123'; latitude = 16.753554; longitude = -93.115983; contactName = 'Restaurante'; contactPhone = '9611234567' },
+    @{ type = 'DROPOFF'; sequence = 2; address = 'Cliente, Calle 5 Pte 42'; latitude = 16.759812; longitude = -93.109231; contactName = 'Cliente'; contactPhone = '9617654321'; instructions = 'Tocar timbre' }
+  )
+  packages = @(@{ category = 'FOOD'; description = 'Pedido preparado'; quantity = 2 })
+  financialContext = @{ goodsValue = '450.00'; goodsPaymentMode = 'PREPAID'; currency = 'MXN' }
+} | ConvertTo-Json -Depth 5
+$request = Invoke-RestMethod -Method Post -Uri "$base/delivery-requests" -Headers $h -ContentType 'application/json' -Body $body
+# Reintentar con el mismo $h y $body devuelve el mismo publicId (200).
+
+# 3. Consultar
+$read = @{ Authorization = "Bearer $($token.accessToken)" }
+Invoke-RestMethod -Uri "$base/delivery-requests/$($request.publicId)" -Headers $read
+Invoke-RestMethod -Uri "$base/delivery-requests?externalReference=ORDER-1842&status=CREATED" -Headers $read
+
+# 4. Cancelar
+Invoke-RestMethod -Method Post -Uri "$base/delivery-requests/$($request.publicId)/cancel" -Headers $read -ContentType 'application/json' -Body '{"reason":"El cliente canceló el pedido"}'
+```
+
+### Verificación V1.5
+
+```powershell
+npm run db:deploy
+npm run build
+npm test
+npm run test:e2e
+node scripts/verify-migrations.mjs     # limpia + V1.0 → … → V1.4 → V1.5 con datos
+npm run start:prod                     # otra terminal
+npm run verify:delivery-requests       # escenario local (LOCAL/TEST ONLY)
+```
+
+`verify:delivery-requests` crea o reutiliza IntegrationClients `LOCAL_DELIVERY_CLIENT_A/B`. Emite una credencial temporal con los tres scopes y la revoca al final. Valida ORDER-1842 PREPAID 450 MXN → MDR CREATED, repetición idempotente, 409 con otro Dropoff, COURIER_ADVANCE 450, aislamiento A/B, cancelación, SUPER_ADMIN, PROVIDER_ADMIN/DRIVER bloqueados y suspensión. Las solicitudes quedan como historial. No imprime secretos, tokens ni datos de contacto.
+
+Pruebas: `test/delivery-requests-validation.e2e-spec.ts` (contrato, stops, packages, financiero, atomicidad, logs sin datos personales), `test/delivery-requests-b2b.e2e-spec.ts` (publicId concurrente, idempotencia, aislamiento, scopes, suspensión, cancelación, filtros, SUPER_ADMIN, roles, rate limit, Swagger y auditoría) y `test/delivery-requests.spec.ts` (hash canónico, reglas e IdempotencyService).
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -652,13 +779,17 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.4 no provee alta/invitación de Users DRIVER por API: se asocian Users existentes (local: seed). Un PROVIDER_ADMIN que conozca el UUID de un User DRIVER sin perfil puede asociarlo; la provisión controlada queda pendiente.
 - Cambiar un vehículo a INACTIVE/MAINTENANCE/SUSPENDED o suspender un Driver no cierra su asignación vigente; la política con entregas en curso se define en V1.5.
 - No existe eliminación ni transferencia de Drivers/Vehicles entre proveedores; por eso todos los registros cuentan para los límites.
+- ApiIdempotencyRecord no expira todavía; definir retención antes de volumen alto. El rate limit de creación B2B es por IP (clientes detrás de la misma IP comparten cupo).
+- `goodsValue` admite 2 decimales (NUMERIC(14,2)); monedas ISO con 0 o 3 decimales requerirán ajustar precisión/validación.
+- Los stops contienen datos personales operativos sin cifrado a nivel de columna ni política de retención; los logs no los incluyen.
+- El orden de packages en la respuesta es determinista pero no refleja el orden de envío.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.4 / V1.5+
+## Fuera de V1.5 / V1.6+
 
-No se implementaron DeliveryRequest, Delivery, Quote, tarifas, distancias/mapas, despacho/hunting, Socket.IO de entregas, GPS/tracking, Wallet, créditos/recargas, pagos, CUSTOMER, apps Repartidor/Cliente, KYC/INE/licencias/seguros/documentos/fotografías, planes ni facturación.
+No se implementaron distancia, Google Maps, routing, Quote, tarifas/deliveryFee, elegibilidad de vehículo, asignación de proveedor o Driver, despacho/hunting, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/INE/licencias/seguros/documentos/fotografías, planes ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. Email, recuperación de contraseña y auditoría persistente siguen pendientes para versiones posteriores.
