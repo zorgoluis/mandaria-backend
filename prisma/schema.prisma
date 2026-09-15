@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+enum Role {
+  SUPER_ADMIN
+  PROVIDER_ADMIN
+  DRIVER
+}
+enum IntegrationStatus {
+  ACTIVE
+  INACTIVE
+}
+model User {
+  id String @id @default(uuid()) @db.Uuid
+  email String @unique
+  passwordHash String
+  role Role
+  active Boolean @default(true)
+  emailVerifiedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  refreshTokens RefreshToken[]
+}
+model RefreshToken {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId, revokedAt])
+}
+model IntegrationClient {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  code String @unique
+  status IntegrationStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  credentials IntegrationCredential[]
+}
+model IntegrationCredential {
+  id String @id @default(uuid()) @db.Uuid
+  clientId String @db.Uuid
+  client IntegrationClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  secretHash String @unique
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([clientId])
+}
