@@ -5,7 +5,7 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 ## Estado actual
 
 - **Versión del paquete:** 1.0.1.
-- **Repositorio remoto previsto:** https://github.com/zorgoluis/mandaria-backend.git, rama `main`.
+- **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git, rama `main`, con seguimiento de `origin/main`.
 - **Objetivo:** Core backend de Mandaria V1.0, plataforma independiente de logística y entregas.
 - **Estado funcional:** implementado y verificado localmente el 2026-09-15.
 - **Definition of Done original:** no completamente cerrada; Docker/Compose está pendiente de ejecución por instrucción expresa del propietario.
@@ -104,5 +104,5 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificación previa:** `.env` ignorado por Git; revisión de los 54 archivos publicables sin coincidencias con los secretos locales configurados. No se incluyen node_modules ni dist.
 - **Pruebas:** no repetidas; esta tarea sólo publica el estado ya verificado y actualiza la bitácora.
 - **Ajuste de publicación:** eliminadas líneas vacías sobrantes al final de archivos y agregado `.gitattributes` para conservar LF en scripts shell al clonar desde Windows.
-- **Comprobación de publicación:** tras el push, comparar HEAD con origin/main y comprobar el estado local. Este registro se incluye antes del push; confirmar el resultado mediante Git o el reporte de la tarea.
+- **Resultado:** commit inicial `b977b6e` publicado correctamente en `origin/main`; HEAD y origin/main coincidieron, el directorio de trabajo quedó limpio y `.env` no está versionado. Esta actualización documental registra el resultado después del push inicial.
 - **Pendiente funcional:** Docker/Compose sigue pospuesto por indicación del propietario.
