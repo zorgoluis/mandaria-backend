@@ -14,7 +14,7 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
 - **Base local configurada:** `mandaria_db`; base separada para E2E: `mandaria_test`.
 - **Configuración:** `.env` local, ignorado por Git. El propietario corrigió el acceso y las verificaciones posteriores pasaron. No copiar sus valores a esta bitácora.
-- **Servidor:** se inició en el puerto 3000 durante la implementación. Comprobar si sigue activo antes de iniciar otra instancia; no asumir que los procesos sobreviven entre sesiones.
+- **Servidor:** detenido el 2026-09-15 para liberar la DLL de Prisma. Se deja apagado para que el propietario ejecute sus comandos; iniciar con npm run start:dev cuando termine de generar el cliente.
 
 ## Arquitectura y decisiones vigentes
 
@@ -185,3 +185,11 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Contenido:** comandos npm, Oxlint, exportación OpenAPI/matriz de acceso, configuración Prisma y documentación de la entrada anterior.
 - **Verificación:** diff sin errores de formato y archivos revisados; no se repiten las pruebas de implementación ya registradas. Comprobar sincronización con origin tras el push.
 - **Destino:** origin/V1_2-Proveedores_Reparto, sin merge a main. Docker y resets permanecen sin ejecutar.
+
+### 2026-09-15 — Resolución de EPERM en Prisma generate
+
+- **Solicitud:** resolver error EPERM al reemplazar query_engine-windows.dll.node.
+- **Diagnóstico:** backend iniciado por el agente (PID 26400, node dist/main, puerto 3000) mantenía la DLL cargada.
+- **Acción:** detenido únicamente ese backend; npm run db:generate completó correctamente con Prisma Client 6.19.3.
+- **Resultado:** cliente regenerado; servidor queda apagado para evitar otro bloqueo mientras el propietario ejecuta comandos. PostgreSQL no se detuvo y no se hicieron migraciones ni resets.
+- **Continuidad:** cambio preexistente en package-lock.json conservado. No se repiten tests por esta operación local, sin cambios funcionales; sin commit/push.
