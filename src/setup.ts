@@ -75,4 +75,5 @@ export function setup(app: INestApplication) {
   );
   SwaggerModule.setup('docs', app, doc);
   app.enableShutdownHooks();
+  return doc;
 }

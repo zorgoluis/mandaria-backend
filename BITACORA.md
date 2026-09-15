@@ -8,6 +8,7 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - **Rama activa de V1.2:** `V1_2-Proveedores_Reparto` (nombre encontrado al iniciar la tarea; se respetó).
 - **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git. Entrega V1.2 en `V1_2-Proveedores_Reparto`.
 - **Objetivo actual:** V1.2 Proveedores de Reparto sobre Core V1.0 e integraciones B2B V1.1.
+- **Herramientas:** scripts npm ampliados con OpenAPI exportable, matriz de acceso, Oxlint y configuración Prisma de pruebas; entrega autorizada en la rama actual.
 - **Estado funcional V1.2:** implementado y verificado localmente el 2026-09-15; 21 pruebas unitarias/HTTP y 36 E2E correctos.
 - **Definition of Done:** requisitos críticos V1.2 verificados. Docker/Compose heredado sigue pospuesto por el propietario; no se declara ejecutado.
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
@@ -166,3 +167,21 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificación de publicación:** revisión de archivos publicables y diff; `.env` permanece excluido. Se comprobará la coincidencia de HEAD con la rama remota después del push.
 - **Pruebas:** no repetidas para esta publicación; resultados de implementación conservados: build/lint correctos, 21 pruebas unitarias/HTTP y 36 E2E aprobadas.
 - **Pendientes:** Docker continúa pospuesto; deuda funcional indicada en la entrada anterior. Sin merge a main.
+
+### 2026-09-15 — Comandos npm y documentación exportable
+
+- **Solicitud:** habilitar scripts de build/formato, Oxlint, documentación OpenAPI, Prisma, Docker, arranque y Vitest indicados por el propietario.
+- **Cambios:** scripts solicitados disponibles; alias prisma:generate y lint:eslint conservados. Hooks pretest* mantienen compilación previa para imports de dist. db:migrate ahora usa migrate dev; documentación y verificador antiguo usan deploy para aplicar migraciones existentes.
+- **Documentación:** openapi.cli genera docs/openapi.json sin conectar a PostgreSQL ni abrir HTTP; generate-api-access genera docs/API_ACCESS.md con roles/scopes de decorators compartidos. docs:check compila y compara ambos artefactos con código actual, sin sobrescribirlos.
+- **Prisma:** config principal registra seed; config de pruebas comparte selección validada de TEST_DATABASE_URL con E2E, deriva mandaria_test si falta y rechaza nombre no terminado en _test o la misma base principal. No se modificó schema ni datos del seed existente.
+- **Verificaciones:** npm install de Oxlint (0 vulnerabilidades); build, lint sin advertencias, docs:openapi y docs:check correctos. Comprobación negativa de documento alterado rechazada y archivo restaurado. db:generate/postinstall correctos tras detener backend que bloqueaba DLL; deploy principal/test sin migraciones pendientes; seed idempotente sin cambios.
+- **Tests:** npm test 21 aprobadas, npm run test:e2e 36 aprobadas, npm run test:cov 21 aprobadas; cobertura de líneas 63.27% del conjunto medido por Vitest (sin E2E).
+- **Proceso:** backend reiniciado con npm run start:prod (node dist/main); health HTTP 200. Revisión de archivos publicables sin secretos locales configurados.
+- **No ejecutado:** Docker, resets, migrate dev interactivo, Studio y modos watch/debug. Siguen disponibles para uso explícito; resets destruyen datos. No se repitió instalación limpia completa. Sin commit/push de estos cambios.
+
+### 2026-09-15 — Publicación de comandos npm y OpenAPI
+
+- **Solicitud:** crear commit y subir los cambios de herramientas a la rama actual `V1_2-Proveedores_Reparto`.
+- **Contenido:** comandos npm, Oxlint, exportación OpenAPI/matriz de acceso, configuración Prisma y documentación de la entrada anterior.
+- **Verificación:** diff sin errores de formato y archivos revisados; no se repiten las pruebas de implementación ya registradas. Comprobar sincronización con origin tras el push.
+- **Destino:** origin/V1_2-Proveedores_Reparto, sin merge a main. Docker y resets permanecen sin ejecutar.

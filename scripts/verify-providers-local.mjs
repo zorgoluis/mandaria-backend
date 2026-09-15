@@ -19,7 +19,9 @@ async function call(method, path, expected, body, token) {
       ...(body ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: body ? JSON.stringify(body) : undefined,
+    ...(body && method !== 'GET' && method !== 'HEAD'
+      ? { body: JSON.stringify(body) }
+      : {}),
     signal: AbortSignal.timeout(10000),
   });
   assert.equal(

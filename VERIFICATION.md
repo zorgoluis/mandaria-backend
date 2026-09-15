@@ -201,3 +201,16 @@ Core implementado y verificado localmente. **V1.0 no se declara completamente te
 - Las pruebas E2E limpian sus propios registros; la base `mandaria_test` permanece disponible.
 
 Los comandos reproducibles, endpoints y alcance futuro están en README.md.
+
+## Verificación posterior — Scripts npm (2026-09-15)
+
+- Build, Oxlint (sin advertencias), docs:openapi y docs:check: PASS.
+- docs:check con archivo deliberadamente alterado: rechaza con código 1; original restaurado.
+- Prisma generate y postinstall: PASS después de liberar DLL del backend local.
+- db:deploy y db:test:deploy: PASS, sin migraciones pendientes.
+- db:seed: PASS, SUPER_ADMIN existente conservado.
+- npm test: 21 PASS; npm run test:e2e directo: 36 PASS.
+- npm run test:cov: 21 PASS; líneas 63.27%, statements 64.01%, ramas 50.21%, funciones 39.39% del conjunto medido; no incluye E2E.
+- start:prod con node dist/main: PASS, health HTTP 200.
+- npm install de Oxlint: 0 vulnerabilidades reportadas; revisión de secretos locales en archivos publicables sin coincidencias.
+- No ejecutados: Docker, resets, migrate dev interactivo, Studio, watch/debug ni instalación limpia completa. Format configurado con globs src/test/prisma; se formatearon sólo archivos modificados para evitar cambios ajenos a la solicitud.

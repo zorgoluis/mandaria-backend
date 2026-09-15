@@ -19,6 +19,44 @@ UsersModule exporta el servicio; AuthModule registra el controller de usuarios p
 
 ## Instalación local
 
+### Comandos npm
+
+Los comandos de desarrollo solicitados están disponibles en `package.json`:
+
+| Comandos | Uso |
+|---|---|
+| `build`, `format`, `lint` | Compilar, formatear src/test/prisma y revisar src/test/scripts con Oxlint |
+| `lint:eslint` | Conservar la revisión ESLint anterior como comprobación adicional |
+| `docs:openapi` | Compilar y generar `docs/openapi.json` y `docs/API_ACCESS.md` |
+| `docs:check` | Compilar y detectar documentación ausente o desactualizada, sin sobrescribirla |
+| `start`, `start:dev`, `start:debug`, `start:prod` | Arranque normal, watch, debug y compilado |
+| `db:generate`, `prisma:generate`, `postinstall` | Generar Prisma Client; postinstall se ejecuta automáticamente tras instalar |
+| `db:migrate` | Crear/aplicar migraciones de desarrollo; puede requerir una shadow database |
+| `db:deploy` | Aplicar únicamente migraciones existentes; usar en instalación y despliegue |
+| `db:seed`, `db:studio` | Bootstrap idempotente de SUPER_ADMIN y explorador de datos |
+| `db:test:deploy` | Aplicar migraciones a la base de pruebas |
+| `test`, `test:watch`, `test:cov`, `test:e2e` | Vitest normal, watch, cobertura y E2E |
+| `db:up`, `db:down` | Docker Compose; disponibles, pero su ejecución local sigue pospuesta |
+| `db:reset`, `db:test:reset` | Borrar datos y recrear la base seleccionada; el segundo no pide confirmación |
+
+Los hooks `pretest*` compilan antes de ejecutar Vitest porque las pruebas actuales importan `dist` para conservar metadata de decorators de NestJS. En watch, recompilar los cambios de backend con `npm run build` o mantener `npm run start:dev` en otra terminal.
+
+`prisma.test.config.ts` y E2E usan `TEST_DATABASE_URL` si está definido; en caso contrario derivan `mandaria_test` desde la conexión local. Exigen un nombre terminado en `_test` y diferente de la base principal. Crear la base antes de ejecutar `db:test:deploy`. No usar los comandos de reset sobre datos que se quieran conservar.
+
+La exportación OpenAPI no abre un servidor ni conecta a PostgreSQL. Roles y scopes se exportan desde los mismos decorators que usa la autorización. La matriz resume autenticación Bearer; validaciones adicionales, como refresh tokens en el cuerpo o memberships vigentes, siguen descritas en los endpoints. `docs:check` compara también el OpenAPI contra el código actual, no sólo la matriz contra un JSON anterior.
+
+En Windows, detener el backend antes de `db:generate` o una instalación con `postinstall` si mantiene bloqueada la DLL de Prisma; después volver a iniciarlo. `start:prod` requiere una compilación previa.
+
+```powershell
+npm run db:deploy
+npm run docs:openapi
+npm run docs:check
+npm run lint
+npm test
+npm run db:test:deploy
+npm run test:e2e
+```
+
 Requisitos: Node.js 24, npm 11, PostgreSQL activo y psql. En Windows, psql suele estar en `C:\Program Files\PostgreSQL\18\bin\psql.exe`.
 
 ```powershell
@@ -48,7 +86,7 @@ CREATE DATABASE mandaria_test OWNER mandaria;
 Usar la contraseña elegida en DATABASE_URL, codificando caracteres especiales como URL. La base de desarrollo existente en este equipo se llama `mandaria_db`; respetar su configuración y no recrearla.
 
 ```powershell
-npm run db:migrate
+npm run db:deploy
 npm run db:seed
 npm run start:dev
 ```
@@ -69,7 +107,7 @@ Detener el backend local antes de npm ci/Prisma generate en Windows: el proceso 
 npm ci
 node scripts/upgrade-env-v11.mjs
 npm run prisma:generate
-npm run db:migrate
+npm run db:deploy
 npm run build
 npm run start:prod
 ```
@@ -399,7 +437,7 @@ CREATE DATABASE mandaria_test OWNER mandaria;
 Usar la contraseña elegida en DATABASE_URL, codificando caracteres especiales como URL. La base de desarrollo existente en este equipo se llama `mandaria_db`; respetar su configuración y no recrearla.
 
 ```powershell
-npm run db:migrate
+npm run db:deploy
 npm run db:seed
 npm run start:dev
 ```
@@ -420,7 +458,7 @@ Detener el backend local antes de npm ci/Prisma generate en Windows: el proceso 
 npm ci
 node scripts/upgrade-env-v11.mjs
 npm run prisma:generate
-npm run db:migrate
+npm run db:deploy
 npm run build
 npm run start:prod
 ```
@@ -680,7 +718,7 @@ Detener previamente el backend si Windows bloquea el cliente Prisma:
 
 ```powershell
 npm run prisma:generate
-npm run db:migrate
+npm run db:deploy
 npm run build
 npm run lint
 npm test
