@@ -12,7 +12,12 @@ enum Role {
 }
 enum IntegrationStatus {
   ACTIVE
-  INACTIVE
+  SUSPENDED
+  REVOKED
+}
+enum CredentialStatus {
+  ACTIVE
+  REVOKED
 }
 model User {
   id String @id @default(uuid()) @db.Uuid
@@ -50,6 +55,10 @@ model IntegrationCredential {
   clientId String @db.Uuid
   client IntegrationClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
   secretHash String @unique
+  status CredentialStatus @default(ACTIVE)
+  scopes String[] @default([])
+  expiresAt DateTime?
+  lastUsedAt DateTime?
   revokedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

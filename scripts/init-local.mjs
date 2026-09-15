@@ -12,6 +12,8 @@ const content = [
   `DATABASE_URL=postgresql://mandaria:${password}@localhost:5432/mandaria?schema=public&connect_timeout=5&socket_timeout=5`,
   `JWT_ACCESS_SECRET=${secret()}`,
   `JWT_REFRESH_SECRET=${secret()}`,
+  `INTEGRATION_JWT_SECRET=${secret()}`,
+  'INTEGRATION_ACCESS_TOKEN_EXPIRES_IN=3600',
   'JWT_ACCESS_EXPIRES_IN=900',
   'JWT_REFRESH_EXPIRES_IN=604800',
   'CORS_ORIGINS=http://localhost:5173',

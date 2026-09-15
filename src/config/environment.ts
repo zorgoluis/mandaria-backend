@@ -11,6 +11,13 @@ const schema = z.object({
     .regex(/^postgres(ql)?:\/\//),
   JWT_ACCESS_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
+  INTEGRATION_JWT_SECRET: z.string().min(32),
+  INTEGRATION_ACCESS_TOKEN_EXPIRES_IN: z.coerce
+    .number()
+    .int()
+    .min(60)
+    .max(3600)
+    .default(3600),
   JWT_ACCESS_EXPIRES_IN: z.coerce.number().int().min(60).max(3600).default(900),
   JWT_REFRESH_EXPIRES_IN: z.coerce
     .number()
@@ -27,7 +34,13 @@ export function validateEnvironment(input: Record<string, unknown>) {
       `Invalid environment: ${result.error.issues.map((i) => i.path.join('.') + ': ' + i.message).join('; ')}`,
     );
   const env = result.data;
-  if (env.JWT_ACCESS_SECRET === env.JWT_REFRESH_SECRET)
+  if (
+    new Set([
+      env.JWT_ACCESS_SECRET,
+      env.JWT_REFRESH_SECRET,
+      env.INTEGRATION_JWT_SECRET,
+    ]).size !== 3
+  )
     throw new Error('JWT secrets must differ');
   for (const origin of env.CORS_ORIGINS.split(',').filter(Boolean)) {
     let url: URL;

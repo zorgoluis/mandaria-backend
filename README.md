@@ -1,38 +1,24 @@
-# Mandaria — V1.0 Core Backend
+# Mandaria — V1.1 Clientes B2B e Integraciones API
 
-Plataforma independiente de logística y entregas. Coita Eats será un consumidor externo mediante API; Mandaria no importa su código, entidades ni comparte su PostgreSQL.
+Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
-## Estado de verificación
+## Estado y arquitectura
 
-La implementación del Core está disponible. **No declarar V1.0 terminada hasta verificar todos los puntos de `VERIFICATION.md`.** Por indicación del propietario, el desarrollo y las pruebas actuales se realizan localmente. Los archivos Docker están preparados para uso posterior.
+V1.1 extiende el Core V1.0 con Client Credentials, JWT B2B y scopes. No reconstruye Auth humano ni agrega entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
-## Stack y arquitectura
+- Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
+- `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
+- `users/`: selección explícita de campos públicos.
+- `integrations/`: clientes externos, administración, credenciales, JWT B2B, scopes.
+- `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
+- `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
+- `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
 
-Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL, JWT, Argon2id y OpenAPI. Se eligió NestJS 11 para mantener compatibilidad con Throttler 6; no se forzaron peer dependencies incompatibles.
+UsersModule exporta el servicio; AuthModule registra el controller de usuarios para evitar dependencias circulares. IntegrationsModule reutiliza los guards humanos exclusivamente para administración.
 
-- `auth/`: login, sesiones, guards y roles.
-- `users/`: consultas de usuarios con selección explícita de campos públicos.
-- `integrations/`: clientes externos y credenciales revocables.
-- `health/`: disponibilidad y consulta real a PostgreSQL.
-- `common/`: hashing y filtro global de errores.
-- `config/`: validación centralizada del entorno.
-- `prisma/`: conexión, reintentos y cierre ordenado.
-- `prisma/schema.prisma`, `prisma/migrations/`, `prisma/seed.ts`: modelo, SQL versionado y bootstrap.
-- `test/`: pruebas de servicios y E2E con PostgreSQL real.
-- `scripts/`: inicialización local, migraciones de pruebas y arranque Docker.
+## Instalación local
 
-UsersModule exporta el servicio de usuarios. AuthModule registra también el controller administrativo de usuarios para usar los guards sin crear una dependencia circular.
-
-## Requisitos locales
-
-- Node.js 24 y npm 11.
-- PostgreSQL 17 o 18 instalado y activo.
-- Cliente `psql` en PATH. En Windows normalmente: `C:\Program Files\PostgreSQL\18\bin\psql.exe`.
-- Bases independientes `mandaria` y `mandaria_test` (esta última sólo para pruebas).
-
-## Instalación y configuración
-
-Desde la raíz del proyecto:
+Requisitos: Node.js 24, npm 11, PostgreSQL activo y psql. En Windows, psql suele estar en `C:\Program Files\PostgreSQL\18\bin\psql.exe`.
 
 ```powershell
 npm ci
@@ -40,21 +26,15 @@ node scripts/init-local.mjs
 npm run prisma:generate
 ```
 
-El script crea `.env` con secretos aleatorios y no sobrescribe un archivo existente. También puede copiarse `.env.example` y completarse manualmente. No compartir ni versionar `.env`.
+El inicializador crea `.env` con valores aleatorios sólo si no existe. Ajustar `DATABASE_URL` a la cuenta y base locales; nunca versionar secretos. También se puede completar `.env.example` manualmente.
 
-Ajustar `DATABASE_URL` con el usuario, contraseña y puerto de PostgreSQL local. Codificar caracteres especiales de usuario/contraseña como URL. Los secretos JWT deben ser diferentes y tener al menos 32 caracteres. Las duraciones se expresan en **segundos**; access: 60–3600, refresh: 3600–2592000.
-
-`CORS_ORIGINS` contiene orígenes exactos separados por comas, sin rutas ni barra final. Vacío deshabilita acceso cross-origin desde navegadores. Se rechaza `*` en todos los entornos.
-
-### Crear rol y bases locales
-
-Con una cuenta administradora de PostgreSQL, ejecutar interactivamente:
+Para crear rol/bases por primera vez, conectarse como administrador:
 
 ```powershell
 & 'C:\Program Files\PostgreSQL\18\bin\psql.exe' -h localhost -p 5432 -U postgres -d postgres
 ```
 
-Dentro de psql:
+En psql (no repetir CREATE si ya existen):
 
 ```sql
 CREATE ROLE mandaria LOGIN;
@@ -64,11 +44,7 @@ CREATE DATABASE mandaria_test OWNER mandaria;
 \q
 ```
 
-Usar para el rol la contraseña guardada en `.env` o actualizar `DATABASE_URL`. Estos comandos iniciales se ejecutan una sola vez; no eliminan bases existentes. Si el usuario/base ya existen, utilizarlos tras confirmar que corresponden a Mandaria.
-
-### Migraciones, administrador y backend
-
-Configurar `BOOTSTRAP_ADMIN_EMAIL` y `BOOTSTRAP_ADMIN_PASSWORD` en `.env`. El inicializador ya genera valores locales; leer la contraseña directamente en el archivo. Mínimo 16 y máximo 128 caracteres.
+Usar la contraseña elegida en DATABASE_URL, codificando caracteres especiales como URL. La base de desarrollo existente en este equipo se llama `mandaria_db`; respetar su configuración y no recrearla.
 
 ```powershell
 npm run db:migrate
@@ -76,118 +52,233 @@ npm run db:seed
 npm run start:dev
 ```
 
-El seed se puede repetir: no duplica usuarios ni cambia contraseñas existentes. Rechaza elevar un usuario existente que no sea SUPER_ADMIN o esté inactivo. Eliminar las variables de bootstrap del entorno de despliegue tras aprovisionar al administrador.
+El seed usa `BOOTSTRAP_ADMIN_EMAIL` y `BOOTSTRAP_ADMIN_PASSWORD` (16–128 caracteres). Es idempotente, no cambia contraseñas existentes ni eleva usuarios que no sean SUPER_ADMIN. Retirar las variables de bootstrap del despliegue tras aprovisionar.
 
-Para ejecutar la compilación:
+Para ejecutar la compilación: `npm run build`, después `npm run start:prod`. Detener primero cualquier instancia que ya ocupe el puerto.
+
+- [Health](http://localhost:3000/health)
+- [Swagger](http://localhost:3000/docs)
+- [OpenAPI JSON](http://localhost:3000/docs-json)
+
+## Actualización desde V1.0
+
+Detener el backend local antes de npm ci/Prisma generate en Windows: el proceso puede bloquear la DLL de Prisma.
 
 ```powershell
+npm ci
+node scripts/upgrade-env-v11.mjs
+npm run prisma:generate
+npm run db:migrate
 npm run build
 npm run start:prod
 ```
 
-- Health: [localhost:3000/health](http://localhost:3000/health)
-- Swagger: [localhost:3000/docs](http://localhost:3000/docs)
-- OpenAPI JSON: [localhost:3000/docs-json](http://localhost:3000/docs-json)
+`upgrade-env-v11.mjs` agrega únicamente la configuración B2B faltante y no imprime secretos ni modifica credenciales humanas.
 
-Una configuración inválida impide arrancar y nombra las variables inválidas sin mostrar sus valores. La conexión inicial reintenta diez veces con intervalos de dos segundos.
+La migración `20260915000200_b2b_credentials`:
+- Renombra INACTIVE a SUSPENDED, conservando los registros.
+- Agrega REVOKED al estado de integración.
+- Agrega CredentialStatus ACTIVE/REVOKED, scopes, expiresAt y lastUsedAt.
+- Marca como REVOKED las credenciales que ya tenían revokedAt.
+- Conserva UUID, hashes, usuarios, refresh tokens y timestamps existentes.
+- Da scopes vacíos a credenciales anteriores: no amplía permisos automáticamente.
+
+**Cambios de contrato intencionales:**
+- `/integrations/me` ahora requiere Bearer B2B y no acepta x-api-key.
+- Crear/rotar credenciales entrega `clientId/clientSecret/integrationId`; ya no entrega apiKey.
+- Una API key V1.0 `UUID.secreto` puede adaptarse al intercambio de token usando su UUID como clientId y su segunda parte como clientSecret. El hash previo sigue siendo válido; sus scopes iniciales son vacíos.
+- Las rutas administrativas antiguas `/integrations` siguen como alias de `/admin/integrations`, incluido DELETE de revocación. PATCH acepta INACTIVE como alias de SUSPENDED. Las respuestas usan el estado nuevo.
+- Auth humano mantiene su contrato y sus secretos.
+
+## Variables de entorno
+
+| Variable | Uso |
+|---|---|
+| NODE_ENV, PORT | Entorno y puerto |
+| DATABASE_URL | PostgreSQL propio de Mandaria |
+| JWT_ACCESS_SECRET | Firma de access humano, mínimo 32 caracteres |
+| JWT_REFRESH_SECRET | Firma de refresh humano, mínimo 32 caracteres |
+| JWT_ACCESS_EXPIRES_IN | Segundos, 60–3600; default 900 |
+| JWT_REFRESH_EXPIRES_IN | Segundos, 3600–2592000; default 604800 |
+| INTEGRATION_JWT_SECRET | **Nueva**, firma B2B, mínimo 32 caracteres |
+| INTEGRATION_ACCESS_TOKEN_EXPIRES_IN | **Nueva**, segundos, 60–3600; default 3600 |
+| CORS_ORIGINS | Orígenes HTTP/HTTPS exactos separados por comas |
+| BOOTSTRAP_ADMIN_EMAIL/PASSWORD | Sólo para seed y verificaciones con administrador |
+
+Los tres secretos JWT deben ser distintos. La aplicación falla al iniciar ante valores inválidos, sin imprimirlos. CORS vacío deshabilita acceso cross-origin del navegador; no se acepta `*`. CORS no sustituye autenticación server-to-server.
+
+# B2B Integrations
+
+## User frente a IntegrationClient
+
+| Principal | Autenticación | Destino |
+|---|---|---|
+| Usuario humano | email/password → access + refresh | Administración; futuras apps Cliente/Repartidor |
+| Sistema externo | clientId/clientSecret → access temporal | Integración B2B, por ejemplo Coita Eats Backend |
+
+No hay usuarios ficticios de Coita Eats, refresh B2B, CUSTOMER ni apps móviles en esta versión.
+
+Un IntegrationClient representa a la empresa/sistema. Cada IntegrationCredential pertenece a ese cliente y tiene un UUID independiente.
+
+**Identificadores:**
+- `IntegrationClient.id` identifica al sistema y aparece en las rutas administrativas.
+- `clientId` enviado a `/integrations/token` es **el UUID de la credencial**.
+- La respuesta de creación distingue `integrationId` (sistema) y `clientId` (credencial).
+- La metadata Prisma mantiene `IntegrationCredential.clientId` como FK al sistema por compatibilidad; su campo `id` es el identificador público de credencial. Swagger documenta esta diferencia.
+
+## Flujo completo: Coita Eats
+
+Con un access JWT humano de SUPER_ADMIN obtenido por `POST /api/v1/auth/login`, ejecutar en PowerShell (reemplazar sólo el placeholder):
+
+```powershell
+$base = 'http://localhost:3000/api/v1'
+$userToken = '<USER_ACCESS_TOKEN>'
+$adminHeaders = @{ Authorization = "Bearer $userToken" }
+
+$client = Invoke-RestMethod -Method Post -Uri "$base/admin/integrations" -Headers $adminHeaders -ContentType 'application/json' -Body (@{name='Coita Eats'; code='COITA_EATS'} | ConvertTo-Json)
+
+$credential = Invoke-RestMethod -Method Post -Uri "$base/admin/integrations/$($client.id)/credentials" -Headers $adminHeaders -ContentType 'application/json' -Body (@{scopes=@('quotes:create','deliveries:create','deliveries:read','deliveries:cancel')} | ConvertTo-Json)
+
+# Guardar $credential.clientId y $credential.clientSecret en el gestor
+# de secretos de Coita Eats Backend. No incluirlos en apps ni logs.
+$token = Invoke-RestMethod -Method Post -Uri "$base/integrations/token" -ContentType 'application/json' -Body (@{clientId=$credential.clientId; clientSecret=$credential.clientSecret} | ConvertTo-Json)
+$b2bHeaders = @{ Authorization = "Bearer $($token.accessToken)" }
+Invoke-RestMethod -Uri "$base/integrations/me" -Headers $b2bHeaders
+Invoke-RestMethod -Uri "$base/integrations/scope-check" -Headers $b2bHeaders
+```
+
+El code es único. Si COITA_EATS ya existe, consultarlo y reutilizar su ID en lugar de crearlo de nuevo. No se crea automáticamente una integración de producción ni se hardcodea su secreto.
+
+Token responde `accessToken`, `tokenType=Bearer` y `expiresIn`. El consumidor solicita otro token cuando sea necesario. No obtiene refresh token.
+
+## Scopes
+
+Catálogo preparado:
+- `quotes:create`
+- `deliveries:create`
+- `deliveries:read`
+- `deliveries:cancel`
+
+Asignarlos en creación de credencial; por defecto no hay permisos. El endpoint `scope-check` requiere deliveries:read y sólo verifica autorización: no implementa entregas.
+
+Los futuros controllers pueden importar IntegrationsModule y usar:
+
+```typescript
+@UseGuards(IntegrationGuard, IntegrationScopesGuard)
+@IntegrationScopes('deliveries:create')
+```
+
+El guard exige todos los scopes indicados y no contiene condiciones específicas de Coita Eats. El permiso efectivo es la intersección entre los scopes del token y los actuales de la credencial; un token nunca gana permisos adicionales después de emitirse.
+
+## Rotación, revocación y suspensión
+
+```powershell
+# Crear B conservando A durante la transición
+$replacement = Invoke-RestMethod -Method Post -Uri "$base/admin/integrations/$($client.id)/credentials/$($credential.clientId)/rotate" -Headers $adminHeaders
+# Guardar y desplegar las nuevas credenciales en Coita Eats.
+# Comprobar token + /me con B y después revocar A:
+Invoke-RestMethod -Method Post -Uri "$base/admin/integrations/$($client.id)/credentials/$($credential.clientId)/revoke" -Headers $adminHeaders
+
+# Suspender todos los accesos del sistema
+Invoke-RestMethod -Method Patch -Uri "$base/admin/integrations/$($client.id)" -Headers $adminHeaders -ContentType 'application/json' -Body '{"status":"SUSPENDED"}'
+# Reactivar
+Invoke-RestMethod -Method Patch -Uri "$base/admin/integrations/$($client.id)" -Headers $adminHeaders -ContentType 'application/json' -Body '{"status":"ACTIVE"}'
+```
+
+- Rotar crea un nuevo UUID/secreto y hereda scopes y expiresAt. A continúa activa hasta revocarse explícitamente.
+- Si la credencial venció, generar otra en lugar de rotarla. Puede indicarse expiresAt futuro al crearla; omitirlo permite una credencial sin vencimiento, siempre revocable.
+- El secreto aleatorio de 256 bits aparece sólo en creación/rotación. SHA-256 almacena su hash; no existe recuperación del secreto.
+- Cada petición B2B verifica JWT, emisor, audiencia, tipo, expiración, dueño y estado actual de cliente/credencial en PostgreSQL.
+- Suspender impide nuevos tokens y el uso de los ya emitidos. Reactivar permite reutilizar tokens todavía vigentes cuya credencial siga activa.
+- Revocar la credencial invalida inmediatamente sus tokens en la siguiente autorización. No se necesita blacklist individual.
+- REVOKED en IntegrationClient es terminal; no admite reactivación ni nuevas credenciales. Usar SUSPENDED para pausas reversibles.
+- Los controles se aplican al autorizar cada petición; no cancelan operaciones que ya hayan pasado la autorización.
 
 ## Endpoints
 
-Salvo health y documentación, el prefijo es `/api/v1`.
+Prefijo `/api/v1` salvo health/docs:
 
 | Método | Ruta | Autenticación |
 |---|---|---|
-| POST | /api/v1/auth/login | Pública; email y password |
-| POST | /api/v1/auth/refresh | Refresh JWT en body |
-| POST | /api/v1/auth/logout | Refresh JWT en body; 204 |
-| GET | /api/v1/auth/me | Bearer access JWT |
-| GET | /api/v1/users | SUPER_ADMIN; hasta 100 usuarios |
-| GET | /api/v1/integrations | SUPER_ADMIN; hasta 100 clientes |
-| POST | /api/v1/integrations | SUPER_ADMIN; name y code |
-| PATCH | /api/v1/integrations/:id | SUPER_ADMIN; status ACTIVE/INACTIVE |
-| POST | /api/v1/integrations/:id/credentials | SUPER_ADMIN; entrega API key una sola vez |
-| DELETE | /api/v1/integrations/:id/credentials/:credentialId | SUPER_ADMIN; revoca credencial |
-| GET | /api/v1/integrations/me | x-api-key |
-| GET | /health | Pública; 200 o 503 |
-| GET | /docs | Swagger |
-| GET | /docs-json | OpenAPI |
+| POST | /auth/login | Pública |
+| POST | /auth/refresh | Refresh humano en body |
+| POST | /auth/logout | Refresh humano en body |
+| GET | /auth/me | Bearer humano |
+| GET | /users | SUPER_ADMIN |
+| POST | /integrations/token | Client Credentials en body |
+| GET | /integrations/me | Bearer B2B |
+| GET | /integrations/scope-check | Bearer B2B + deliveries:read |
+| POST, GET | /admin/integrations | SUPER_ADMIN |
+| GET, PATCH | /admin/integrations/:id | SUPER_ADMIN |
+| POST, GET | /admin/integrations/:id/credentials | SUPER_ADMIN |
+| POST | /admin/integrations/:id/credentials/:credentialId/rotate | SUPER_ADMIN |
+| POST | /admin/integrations/:id/credentials/:credentialId/revoke | SUPER_ADMIN |
+| DELETE | /admin/integrations/:id/credentials/:credentialId | Alias de revocación |
+| GET | /health | Pública; backend y DB |
+| GET | /docs, /docs-json | Swagger / OpenAPI |
 
-Login y refresh responden `accessToken`, `refreshToken`, `tokenType` y `expiresIn`. Refresh/logout reciben `{ "refreshToken": "..." }`. No existe registro público.
+Aliases administrativos disponibles en `/integrations`. Listas limitadas a 100 elementos; listado de clientes conserva metadata de hasta 100 credenciales por cliente.
 
-### Sesiones y seguridad
+Swagger distingue **User Bearer Authentication** (`bearer`) de **Integration Bearer Authentication** (`integration-bearer`).
 
-- Contraseñas con Argon2id; no se registran passwords, headers de autorización, bodies ni tokens.
-- Access y refresh usan claves, audiencias y tipos diferentes, HS256 e issuer `mandaria`.
-- Cada refresh tiene UUID y hash SHA-256; una transacción consume el anterior y crea el siguiente. Sólo una solicitud concurrente puede consumirlo.
-- SHA-256 es apropiado para tokens criptográficamente impredecibles y secretos aleatorios de 256 bits; las contraseñas humanas usan Argon2id.
-- Logout revoca el refresh correspondiente. El access JWT ya emitido conserva vigencia hasta expirar; el estado activo y rol del usuario se consultan en cada petición protegida.
-- El consumidor debe serializar refresh y reemplazar ambos tokens de forma atómica. Reutilizar un refresh consumido devuelve 401.
-- Roles iniciales: SUPER_ADMIN, PROVIDER_ADMIN, DRIVER. No existe CUSTOMER.
-- Helmet, body de 16 KiB, DTOs estrictos, errores uniformes y respuestas no almacenables en caché.
-- Límite por IP: 100 peticiones/minuto; login 5/minuto; refresh 20/minuto. Health está exento.
-- Limitador en memoria, adecuado para una instancia inicial. Antes de múltiples réplicas usar almacenamiento compartido y configurar explícitamente proxies confiables; actualmente no se confía en X-Forwarded-For.
-- Logging JSON en ejecución normal: inicio, solicitudes sin query strings ni cuerpos, fallos genéricos, login, logout, refresh y cambios de integración con actorId.
-- En despliegues públicos usar HTTPS y restringir /docs según el entorno. CORS no sustituye autenticación.
-- La base contiene `emailVerifiedAt`; recuperación/restablecimiento/verificación requieren futuros casos de uso, tokens de un solo uso y un adaptador de correo. No hay infraestructura de email en V1.
+## Seguridad y auditoría mínima
 
-### Sistemas externos
+Helmet, DTOs con whitelist/forbidNonWhitelisted/transform, body 16 KiB, respuestas no-store y errores HTTP uniformes. Contraseñas humanas con Argon2id; secretos aleatorios/tokens con SHA-256.
 
-Crear un cliente con `name=Coita Eats`, `code=COITA_EATS` usando el endpoint administrativo. No se crea automáticamente ni comparte credenciales de usuarios.
+Límites por IP: global 100/min, login 5/min, refresh 20/min y token B2B 10/min. Health está exento. Los fallos B2B por ID desconocido, secreto incorrecto, revocación o suspensión usan el mismo 401 genérico. Un DTO mal formado recibe 400; el límite recibe 429.
 
-La API key tiene formato `credentialUUID.secretoAleatorio`; sólo se guarda el hash del secreto. Enviar en `x-api-key`. Para rotar: generar otra credencial, actualizar al consumidor, comprobar `integrations/me` y revocar la anterior. Las dos pueden convivir durante la transición. Desactivar el cliente invalida todas sus credenciales.
+Logging JSON, sin bodies, query strings, headers de autorización, secretos ni tokens. Eventos:
+INTEGRATION_CREATED, INTEGRATION_SUSPENDED, INTEGRATION_ACTIVATED, INTEGRATION_REVOKED, CREDENTIAL_CREATED, CREDENTIAL_ROTATED, CREDENTIAL_REVOKED, INTEGRATION_AUTH_SUCCESS, INTEGRATION_AUTH_FAILED. Los eventos administrativos incluyen actorId y los IDs afectados.
 
-## Pruebas y calidad
+Usar HTTPS en despliegue público. No poner credenciales B2B en frontend/mobile. El access humano conserva vigencia tras logout hasta expirar; estado y rol humanos se vuelven a consultar por petición.
+
+## Pruebas y verificación
 
 ```powershell
 npm run build
 npm run lint
 npm test
-```
-
-Las pruebas unitarias usan dobles de PostgreSQL, JWT real y Argon2 real. **No sustituyen la verificación E2E.**
-
-Con `mandaria_test` ya creada y accesible al mismo usuario de `DATABASE_URL`:
-
-```powershell
 node scripts/create-test-db.mjs
 node scripts/test-db.mjs
 ```
 
-create-test-db crea la base sólo si falta; necesita permiso CREATEDB y psql accesible (o PSQL_PATH). test-db cambia únicamente el nombre de la base a `mandaria_test`, aplica las migraciones versionadas y ejecuta E2E. No usa `db push`, no borra la base ni ejecuta reset. Las pruebas crean registros con identificadores únicos y eliminan solamente sus registros. Para demostrar migraciones desde cero, crear primero una base `mandaria_test` vacía.
+create-test-db crea mandaria_test sólo si falta; requiere psql (o PSQL_PATH) y permiso CREATEDB. test-db cambia el nombre de DATABASE_URL a mandaria_test, migra y ejecuta E2E. Las suites eliminan sólo sus propios registros. Para otra base, usar TEST_DATABASE_URL con nombre terminado en _test, migrarla y ejecutar `npm run test:e2e`.
 
-Alternativamente definir `TEST_DATABASE_URL` apuntando a una base cuyo nombre termine en `_test`, migrarla y ejecutar `npm run test:e2e`. La suite falla explícitamente si falta esta variable.
-
-E2E comprueba health y Swagger, login correcto/incorrecto, campos públicos, roles, usuario inactivo, refresh concurrente, reutilización, logout, separación de credenciales, rotación/revocación de integración, errores sanitizados, body y rate limiting.
-
-## Docker (preparado para uso posterior)
-
-**No es necesario para el desarrollo local actual. Verificación de ejecución pospuesta por indicación del propietario.**
-
-`docker-compose.yml` incluye postgres con volumen persistente y healthcheck, y backend con usuario no root, init, healthcheck y migraciones con reintentos. Las publicaciones de puertos son locales.
-
-Para uso futuro, configurar las variables de `.env`; `POSTGRES_PASSWORD` debe ser hexadecimal para la interpolación segura de la URL de Compose:
+Comprobar instalación desde cero y actualización con fixtures V1.0:
 
 ```powershell
-docker compose config --quiet
-docker compose up -d --build
-docker compose ps
+node scripts/verify-migrations-v11.mjs
 ```
 
-Si PostgreSQL local ocupa 5432, cambiar `POSTGRES_PORT` a 5433 y usar ese puerto en la URL de conexión desde el host. Backend dentro de Compose usa el servicio `postgres:5432`. Para bootstrap, ejecutar `npm run db:seed` desde el host con la URL que corresponde al puerto publicado.
+Crea dos bases con nombres aleatorios terminados en _test y las conserva para inspección. No elimina ni reinicia bases existentes. Verifica conservación de usuarios, refresh tokens, UUID, hashes y estados previos.
 
-No usar `docker compose down -v` salvo que se quiera eliminar deliberadamente la base. En producción, coordinar migraciones como paso de despliegue y usar un gestor de secretos.
+Con el backend activo y bootstrap configurado:
 
-## Fuera de V1.0 / pendiente V1.1+
+```powershell
+node scripts/verify-local.mjs
+node scripts/verify-b2b-local.mjs
+```
 
-Proveedores, flotillas, repartidores, vehículos, deliveries, tarifas, despacho, wallet/créditos, realtime, aplicación de repartidores, mandados, paquetería y fletes. Tampoco hay endpoints de entregas ni webhooks de Coita Eats.
+El segundo ejecuta el flujo B2B completo y elimina únicamente su integración temporal. No imprime secretos. Las pruebas E2E capturan logging y comprueban que no aparecen secretos generados.
 
-Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos y los repartidores realizan entregas. Los futuros módulos se agregarán sin acoplar Auth a esas entidades. Email y auditoría persistente se incorporarán cuando corresponda.
+## Docker: preparado, sin ejecución en esta etapa
 
+Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
 
-## Verificación HTTP local adicional
+Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si PostgreSQL local ocupa 5432, cambiar POSTGRES_PORT a otro puerto y ajustar DATABASE_URL del host. Compose usa internamente postgres:5432. No ejecutar down -v salvo eliminación deliberada de datos.
 
-Con el backend activo y las credenciales de bootstrap en .env, ejecutar node scripts/verify-local.mjs. Comprueba login, perfil, roles, refresh, logout, health y Swagger sin imprimir secretos.
+## Riesgos y deuda técnica
 
-## Dependencias transitivas
+- Limitador en memoria para una instancia; antes de escalar usar almacenamiento compartido y configurar proxies confiables.
+- Auditoría actual en logs, sin almacén persistente empresarial.
+- Listados acotados a 100; paginación completa pendiente.
+- JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
+- Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
+- Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
+- Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-Se fijan overrides de multer (^2.3.0) y deepmerge-ts (^8.0.0) para corregir avisos de seguridad. Las migraciones y E2E fueron repetidas con esas versiones. El detalle de resultados está en VERIFICATION.md.
+## Fuera de V1.1 / V1.2+
+
+No se implementaron DeliveryProvider, Fleet, independientes, DriverProfile, Vehicle, DeliveryRequest, Quotes, distancias, despacho, Socket.IO, Wallet, créditos, CUSTOMER, apps, pagos, planes ni facturación.
+
+Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. Email, recuperación de contraseña y auditoría persistente siguen pendientes para versiones posteriores.

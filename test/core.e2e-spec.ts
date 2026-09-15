@@ -17,6 +17,7 @@ process.env.DATABASE_URL = databaseUrl;
 process.env.NODE_ENV = 'test';
 process.env.JWT_ACCESS_SECRET = randomBytes(48).toString('hex');
 process.env.JWT_REFRESH_SECRET = randomBytes(48).toString('hex');
+process.env.INTEGRATION_JWT_SECRET = randomBytes(48).toString('hex');
 process.env.CORS_ORIGINS = 'http://localhost:5173';
 const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
 const suffix = randomUUID();
@@ -26,9 +27,7 @@ const password = randomBytes(24).toString('base64url');
 let app: INestApplication;
 let accessToken: string;
 let refreshToken: string;
-let clientId: string;
-let apiKey: string;
-let credentialId: string;
+
 const bearer = () => `Bearer ${accessToken}`;
 
 beforeAll(async () => {
@@ -50,8 +49,6 @@ beforeAll(async () => {
 }, 30000);
 
 afterAll(async () => {
-  if (clientId)
-    await prisma.integrationClient.deleteMany({ where: { id: clientId } });
   await prisma.user.deleteMany({
     where: { email: { in: [adminEmail, driverEmail] } },
   });
@@ -158,72 +155,6 @@ describe.sequential('Core with real PostgreSQL', () => {
     await request(app.getHttpServer())
       .post('/api/v1/auth/refresh')
       .send({ refreshToken: next.refreshToken })
-      .expect(401);
-  });
-  it('creates integration and authenticates separately from users', async () => {
-    const created = await request(app.getHttpServer())
-      .post('/api/v1/integrations')
-      .set('Authorization', bearer())
-      .send({
-        name: 'Coita Eats test',
-        code: `TEST_${suffix.replaceAll('-', '').toUpperCase()}`,
-      })
-      .expect(201);
-    clientId = created.body.id;
-    const credential = await request(app.getHttpServer())
-      .post(`/api/v1/integrations/${clientId}/credentials`)
-      .set('Authorization', bearer())
-      .expect(201);
-    apiKey = credential.body.apiKey;
-    credentialId = credential.body.id;
-    await request(app.getHttpServer())
-      .get('/api/v1/integrations/me')
-      .set('x-api-key', apiKey)
-      .expect(200);
-    await request(app.getHttpServer())
-      .get('/api/v1/integrations/me')
-      .set('Authorization', bearer())
-      .expect(401);
-    await request(app.getHttpServer())
-      .get('/api/v1/auth/me')
-      .set('x-api-key', apiKey)
-      .expect(401);
-    await request(app.getHttpServer())
-      .get('/api/v1/integrations/me')
-      .set('x-api-key', apiKey.slice(0, -1) + '!')
-      .expect(401);
-    const listing = await request(app.getHttpServer())
-      .get('/api/v1/integrations')
-      .set('Authorization', bearer())
-      .expect(200);
-    expect(JSON.stringify(listing.body)).not.toContain('secretHash');
-    expect(JSON.stringify(listing.body)).not.toContain(apiKey);
-  });
-  it('supports overlapping credential rotation, revocation and disabling clients', async () => {
-    const second = await request(app.getHttpServer())
-      .post(`/api/v1/integrations/${clientId}/credentials`)
-      .set('Authorization', bearer())
-      .expect(201);
-    await request(app.getHttpServer())
-      .delete(`/api/v1/integrations/${clientId}/credentials/${credentialId}`)
-      .set('Authorization', bearer())
-      .expect(204);
-    await request(app.getHttpServer())
-      .get('/api/v1/integrations/me')
-      .set('x-api-key', apiKey)
-      .expect(401);
-    await request(app.getHttpServer())
-      .get('/api/v1/integrations/me')
-      .set('x-api-key', second.body.apiKey)
-      .expect(200);
-    await request(app.getHttpServer())
-      .patch(`/api/v1/integrations/${clientId}`)
-      .set('Authorization', bearer())
-      .send({ status: 'INACTIVE' })
-      .expect(204);
-    await request(app.getHttpServer())
-      .get('/api/v1/integrations/me')
-      .set('x-api-key', second.body.apiKey)
       .expect(401);
   });
   it('returns sanitized 503 when the database query fails', async () => {

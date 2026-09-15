@@ -4,11 +4,12 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
-- **Versión del paquete:** 1.0.1.
+- **Versión del paquete:** 1.1.0.
+- **Rama activa de V1.1:** `v1-cliente_b2b_integracion_api` (nombre encontrado al iniciar la tarea; se respetó).
 - **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git, rama `main`, con seguimiento de `origin/main`.
-- **Objetivo:** Core backend de Mandaria V1.0, plataforma independiente de logística y entregas.
-- **Estado funcional:** implementado y verificado localmente el 2026-09-15.
-- **Definition of Done original:** no completamente cerrada; Docker/Compose está pendiente de ejecución por instrucción expresa del propietario.
+- **Objetivo actual:** V1.1 Clientes B2B e Integraciones API sobre el Core V1.0.
+- **Estado funcional V1.1:** implementado y verificado localmente el 2026-09-15; 18 pruebas unitarias/HTTP y 21 E2E correctos.
+- **Definition of Done:** requisitos críticos V1.1 verificados. La verificación Docker/Compose heredada de V1.0 sigue pospuesta por el propietario y no se declara realizada.
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
 - **Base local configurada:** `mandaria_db`; base separada para E2E: `mandaria_test`.
 - **Configuración:** `.env` local, ignorado por Git. El propietario corrigió el acceso y las verificaciones posteriores pasaron. No copiar sus valores a esta bitácora.
@@ -24,7 +25,11 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - Contraseñas con Argon2id. Access y refresh JWT tienen secretos, audiencias y tipos separados.
 - Refresh almacenado como hash SHA-256, rotación transaccional de un solo uso y revocación en logout.
 - Logout revoca refresh; access conserva vigencia hasta expirar. Los guards consultan el rol y estado activo actuales en PostgreSQL.
-- Integraciones externas usan `x-api-key`, separadas de usuarios. Sólo se almacena hash del secreto; hay emisión, rotación por coexistencia, revocación y desactivación del cliente.
+- Integraciones externas usan clientId/clientSecret para obtener JWT B2B temporal; `x-api-key` ya no autentica peticiones. clientId público identifica la credencial, no la entidad IntegrationClient.
+- Estados IntegrationClient: ACTIVE, SUSPENDED y REVOKED; revocación terminal. Credenciales: ACTIVE/REVOKED, scopes, expiresAt opcional y lastUsedAt.
+- Rotación genera nueva credencial con mismos scopes/vencimiento y mantiene la anterior hasta revocarla explícitamente. El guard verifica estado de cliente/credencial en cada request y aplica revocación/suspensión también a tokens emitidos.
+- INTEGRATION_JWT_SECRET separado de los dos secretos humanos; INTEGRATION_ACCESS_TOKEN_EXPIRES_IN en segundos (60–3600, default 3600).
+- Administración bajo `/api/v1/admin/integrations`; rutas administrativas V1.0 conservadas como aliases. Se acepta INACTIVE como alias de entrada de SUSPENDED. No existe recuperación del secreto.
 - NestJS 11 se eligió por compatibilidad con Throttler 6. El esqueleto original usaba NestJS 12.
 - Overrides de seguridad: multer `^2.3.0` y deepmerge-ts `^8.0.0`; migraciones y E2E fueron comprobados tras instalarlos.
 - Rate limiting en memoria para una instancia. Antes de escalar, evaluar almacenamiento compartido y proxies confiables.
@@ -66,7 +71,7 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 
 1. Verificar Docker build y Compose sólo cuando el propietario indique retomar Docker. Hasta entonces no declarar satisfecha toda la Definition of Done original.
 2. Mantener la bitácora actualizada conforme lleguen nuevas solicitudes.
-3. V1.1+: proveedores, flotillas, repartidores, vehículos, deliveries, tarifas, despacho, wallets/créditos, realtime, integración operativa con Coita Eats, mandados, paquetería y fletes. No comenzar sin ampliar el alcance.
+3. V1.2+: proveedores, flotillas, repartidores, vehículos, deliveries, tarifas, despacho, wallets/créditos, realtime, integración operativa con Coita Eats, mandados, paquetería y fletes. No comenzar sin ampliar el alcance.
 4. Recuperación/restablecimiento de contraseña, verificación de correo y auditoría persistente: preparación arquitectónica, sin infraestructura implementada.
 5. En modelos futuros, los créditos pertenecen al proveedor; los vehículos son recursos operativos y los repartidores realizan entregas.
 
@@ -106,3 +111,27 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Ajuste de publicación:** eliminadas líneas vacías sobrantes al final de archivos y agregado `.gitattributes` para conservar LF en scripts shell al clonar desde Windows.
 - **Resultado:** commit inicial `b977b6e` publicado correctamente en `origin/main`; HEAD y origin/main coincidieron, el directorio de trabajo quedó limpio y `.env` no está versionado. Esta actualización documental registra el resultado después del push inicial.
 - **Pendiente funcional:** Docker/Compose sigue pospuesto por indicación del propietario.
+
+### 2026-09-15 — V1.1 Clientes B2B e Integraciones API
+
+- **Solicitud:** extender V1.0 con Client Credentials, tokens temporales B2B separados de usuarios, scopes, administración SUPER_ADMIN, rotación, revocación, suspensión y auditoría mínima.
+- **Diagnóstico previo:** existentes IntegrationClient/IntegrationCredential, guards, JWT, logging, configuración y tests reutilizables. No se reconstruyó Auth humano.
+- **Implementación:** IntegrationAuthService, guard Bearer B2B, IntegrationScopes/IntegrationScopesGuard, controller administrativo, DTOs/respuestas Swagger y selects públicos. Logging de eventos sin secretos; token endpoint limitado a 10/min/IP.
+- **Migración:** `20260915000200_b2b_credentials`; renombra INACTIVE a SUSPENDED y agrega estado/scopes/expiración/último uso de credenciales sin recrear tablas. Conserva revocaciones previas.
+- **Configuración:** script upgrade-env-v11 agrega únicamente variables B2B faltantes al `.env` local. `.env.example` queda con campos sensibles vacíos. Los valores anteriores del ejemplo no coincidían con los secretos locales; no se divulgaron sus valores.
+- **Instalación:** npm ci completado tras detener el proceso V1.0 que bloqueaba la DLL de Prisma. Prisma generate y build correctos; auditoría de instalación sin vulnerabilidades.
+- **Validación final:** lint correcto; 18 pruebas unitarias/HTTP y 21 E2E (7 Core + 14 B2B) correctos. Migraciones aplicadas a mandaria_db y mandaria_test.
+- **Preservación:** bases `mandaria_clean_4edab2c526_test` y `mandaria_upgrade_4edab2c526_test` verificadas y conservadas para inspección. Fixtures confirman conservación de usuarios, refresh, IDs, hashes y estados revocados al actualizar desde V1.0.
+- **HTTP local:** verificado cliente temporal → credencial → token → me/scopes → suspensión/rechazo → reactivación → rotación con coexistencia → revocación/rechazo. El script elimina sólo su integración temporal.
+- **Seguridad:** E2E comprueba que secretos generados no aparecen en logs ni metadata; respuestas sin secretHash. Inspección de logs del proceso local sin campos clientSecret/secretHash. Revisar `.env` únicamente mediante herramientas que no impriman valores.
+- **Versión:** package.json y package-lock.json sincronizados a 1.1.0; Swagger 1.1.0.
+- **Continuidad:** README documenta comandos completos, migración del contrato API key y registro de Coita Eats vía SUPER_ADMIN. No se registró una integración de producción ni se modificó Coita Eats.
+- **Pendientes:** Docker sigue sin ejecutar; limitador distribuido, auditoría persistente, paginación y todos los módulos V1.2+ quedan fuera del alcance. No se realizó commit ni push de V1.1 en esta tarea.
+
+### 2026-09-15 — Entrega de V1.1 a la rama actual
+
+- **Solicitud:** crear commit y subir V1.1 a `v1-cliente_b2b_integracion_api` en origin.
+- **Contenido de entrega:** implementación B2B 1.1.0, migración, pruebas, scripts y documentación descritos en la entrada anterior.
+- **Verificación previa:** diff sin errores de formato; `.env` ignorado y archivos publicables sin coincidencias con los secretos locales configurados. No se repitieron las pruebas por tratarse de publicación del código ya verificado (18 unitarias/HTTP y 21 E2E).
+- **Aclaración sobre OpenAPI:** documentación funcional existente; queda pendiente ampliar descripciones por endpoint, ejemplos completos y errores 400/401/403/404/409/429 aplicables. El README contiene actualmente una explicación más completa del flujo. Esta ampliación no está incluida en el commit solicitado.
+- **Destino:** rama actual; sin merge a main. Comprobar sincronización con origin al finalizar el push.

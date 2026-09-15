@@ -1,4 +1,79 @@
-# Verificación de Mandaria Core
+# Verificación de Mandaria V1.1
+
+Fecha: 2026-09-15. Node.js 24.15.0, PostgreSQL 18 local, rama `v1-cliente_b2b_integracion_api`, paquete 1.1.0.
+
+## Resultado V1.1
+
+Requisitos críticos de la Definition of Done V1.1 comprobados localmente. No se ejecutó Docker, conforme a la instrucción vigente del propietario.
+
+| Verificación | Resultado |
+|---|---|
+| Instalación limpia npm ci | PASS; se detuvo el backend V1.0 para liberar la DLL de Prisma |
+| Prisma generate | PASS |
+| Build | PASS |
+| ESLint | PASS |
+| Tests unitarios/HTTP | 18 PASS |
+| Tests E2E con PostgreSQL | 21 PASS: 7 Core + 14 B2B |
+| Migraciones desde base vacía | PASS |
+| Actualización desde esquema y fixtures V1.0 | PASS; usuarios, refresh, UUID, hashes y revocaciones preservados |
+| Migraciones en mandaria_db y mandaria_test | PASS |
+| Credenciales válidas e inválidas, expiración de token/credencial | PASS |
+| Separación User/Integration y SUPER_ADMIN | PASS |
+| Emisión única de secretos y metadata sin hashes/secretos | PASS |
+| Scopes permitidos/denegados y validación del catálogo | PASS |
+| Suspensión y reactivación con token ya emitido | PASS |
+| Rotación con coexistencia y revocación de tokens anteriores | PASS |
+| REVOKED terminal en IntegrationClient | PASS |
+| Rate limiting real del endpoint token | PASS: décima petición permitida, siguiente 429 |
+| Swagger y esquemas Bearer distintos | PASS |
+| Aliases administrativos V1.0, INACTIVE y creación sin body | PASS |
+| Logs sin secretos generados | PASS, captura E2E; logs locales sin campos clientSecret/secretHash |
+| Flujo HTTP en backend local | PASS, script verify-b2b-local.mjs |
+| npm audit durante instalación limpia | 0 vulnerabilidades |
+
+Herramientas reproducibles: README, scripts/verify-migrations-v11.mjs, scripts/test-db.mjs y scripts/verify-b2b-local.mjs.
+
+## Inventario de archivos V1.1
+
+### Creados
+
+- `src/integrations/admin-integrations.controller.ts`
+- `src/integrations/integration-auth.service.ts`
+- `src/integrations/integration-scopes.ts`
+- `src/integrations/integration.select.ts`
+- `prisma/migrations/20260915000200_b2b_credentials/migration.sql`
+- `scripts/upgrade-env-v11.mjs`
+- `scripts/verify-migrations-v11.mjs`
+- `scripts/verify-b2b-local.mjs`
+- `test/b2b.e2e-spec.ts`
+- `test/integration-auth.spec.ts`
+
+### Modificados
+
+- `prisma/schema.prisma`: evolución de las dos entidades existentes y nuevo enum CredentialStatus; ningún modelo nuevo.
+- `src/integrations/integration.guard.ts`, `integrations.controller.ts`, `integrations.dto.ts`, `integrations.module.ts`, `integrations.service.ts`: autenticación, administración, respuestas y scopes B2B.
+- `src/config/environment.ts`, `src/config/environment.spec.ts`, `src/setup.ts`: configuración y Swagger.
+- `test/core.e2e-spec.ts`, `test/http.spec.ts`, `test/services.spec.ts`: conservación de pruebas humanas y sustitución de casos API key por pruebas B2B ampliadas.
+- `.env.example`, `scripts/init-local.mjs`, `docker-compose.yml`: variables B2B.
+- `package.json`, `package-lock.json`: versión 1.1.0, sin dependencias nuevas.
+- `README.md`, `BITACORA.md`, `VERIFICATION.md`: instrucciones, continuidad y resultados.
+- `.env` local no versionado: nuevas variables B2B agregadas sin imprimir ni reemplazar valores existentes.
+
+Bases de verificación conservadas: `mandaria_clean_4edab2c526_test` y `mandaria_upgrade_4edab2c526_test`. No se borró ni reseteó ninguna base existente. Las suites limpian sus propios registros.
+
+## Decisiones y límites V1.1
+
+- El clientId público del intercambio identifica IntegrationCredential.id; la FK histórica clientId sigue apuntando al IntegrationClient. La respuesta de creación añade integrationId para desambiguar.
+- El guard consulta PostgreSQL en cada autorización. Suspensión y revocación afectan tokens emitidos; no cancelan requests que ya pasaron autorización. Reactivar restaura acceso a tokens aún vigentes.
+- Rotación conserva scopes y expiresAt; una credencial vencida requiere generación nueva. El secreto anterior sigue activo hasta revocación explícita.
+- Rutas administrativas previas conservadas; el contrato de autenticación x-api-key y la respuesta apiKey fueron reemplazados de forma intencional y documentada.
+- Rate limiting en memoria, logs sin auditoría persistente, listados acotados a 100 y rotación de claves JWT no automatizada son deuda documentada.
+- No se implementaron módulos de logística, usuarios CUSTOMER, apps, pagos ni facturación.
+- Docker/Compose se actualizó sólo en configuración; su ejecución continúa pendiente por instrucción del propietario. El fallo físico de PostgreSQL no se provocó; health 503 sigue probado mediante fallo de consulta.
+
+---
+
+# Histórico: verificación de Mandaria Core V1.0
 
 Fecha: 2026-09-15. Entorno: Windows, Node.js 24.15.0 y PostgreSQL 18 local.
 

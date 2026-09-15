@@ -4,18 +4,20 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { IntegrationClient } from '@prisma/client';
 import type { Request } from 'express';
-import { IntegrationsService } from './integrations.service.js';
-export type IntegrationRequest = Request & { integration: IntegrationClient };
+import { IntegrationAuthService } from './integration-auth.service.js';
+export type IntegrationRequest = Request & {
+  integration: Awaited<ReturnType<IntegrationAuthService['authenticate']>>;
+};
 @Injectable()
 export class IntegrationGuard implements CanActivate {
-  constructor(private readonly integrations: IntegrationsService) {}
+  constructor(private readonly auth: IntegrationAuthService) {}
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest<IntegrationRequest>();
-    const key = req.headers['x-api-key'];
-    if (typeof key !== 'string') throw new UnauthorizedException();
-    req.integration = await this.integrations.authenticate(key);
+    const parts = req.headers.authorization?.split(' ');
+    if (parts?.length !== 2 || parts[0] !== 'Bearer' || parts[1].length > 8192)
+      throw new UnauthorizedException('Invalid integration credentials');
+    req.integration = await this.auth.authenticate(parts[1]);
     return true;
   }
 }

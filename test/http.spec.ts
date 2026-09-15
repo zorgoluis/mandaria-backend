@@ -8,6 +8,7 @@ import request from 'supertest';
 process.env.DATABASE_URL = 'postgresql://localhost/mandaria_test';
 process.env.JWT_ACCESS_SECRET = randomBytes(48).toString('hex');
 process.env.JWT_REFRESH_SECRET = randomBytes(48).toString('hex');
+process.env.INTEGRATION_JWT_SECRET = randomBytes(48).toString('hex');
 process.env.CORS_ORIGINS = 'http://localhost:5173';
 const query = vi.fn().mockResolvedValue([{ value: 1 }]);
 let app: INestApplication;
@@ -33,7 +34,9 @@ it('serves health and Swagger through the configured routes', async () => {
   await request(app.getHttpServer()).get('/health').expect(200);
   const docs = await request(app.getHttpServer()).get('/docs-json').expect(200);
   expect(docs.body.paths['/api/v1/auth/login']).toBeDefined();
-  expect(docs.body.components.securitySchemes['integration-key']).toBeDefined();
+  expect(
+    docs.body.components.securitySchemes['integration-bearer'],
+  ).toBeDefined();
 });
 it('enforces authentication and rejects unexpected DTO properties', async () => {
   await request(app.getHttpServer()).get('/api/v1/auth/me').expect(401);
