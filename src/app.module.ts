@@ -7,6 +7,12 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { IntegrationsModule } from './integrations/integrations.module.js';
 import { HealthModule } from './health/health.module.js';
+import { ProvidersModule } from './providers/providers.module.js';
+import { DriversModule } from './drivers/drivers.module.js';
+import { DeliveryRequestsModule } from './delivery-requests/delivery-requests.module.js';
+import { ServiceZonesModule } from './service-zones/service-zones.module.js';
+import { RatePlansModule } from './rate-plans/rate-plans.module.js';
+import { DeliveryQuotesModule } from './delivery-quotes/delivery-quotes.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
@@ -15,6 +21,12 @@ import { HealthModule } from './health/health.module.js';
     AuthModule,
     IntegrationsModule,
     HealthModule,
+    ProvidersModule,
+    DriversModule,
+    DeliveryRequestsModule,
+    ServiceZonesModule,
+    RatePlansModule,
+    DeliveryQuotesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

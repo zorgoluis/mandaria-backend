@@ -54,14 +54,26 @@ export function setup(app: INestApplication) {
     app,
     new DocumentBuilder()
       .setTitle('Mandaria Core')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .addApiKey(
-        { type: 'apiKey', in: 'header', name: 'x-api-key' },
-        'integration-key',
+      .setVersion('1.6.0')
+      .addBearerAuth({
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'User Bearer Authentication: human access token',
+      })
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:
+            'Integration Bearer Authentication: token from /integrations/token',
+        },
+        'integration-bearer',
       )
       .build(),
   );
   SwaggerModule.setup('docs', app, doc);
   app.enableShutdownHooks();
+  return doc;
 }

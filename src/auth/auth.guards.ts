@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   Injectable,
   SetMetadata,
+  applyDecorators,
   UnauthorizedException,
   ForbiddenException,
 } from '@nestjs/common';
@@ -12,7 +13,9 @@ import { ConfigService } from '@nestjs/config';
 import { Role } from '@prisma/client';
 import type { Request } from 'express';
 import { UsersService } from '../users/users.service.js';
-export const Roles = (...roles: Role[]) => SetMetadata('roles', roles);
+import { ApiExtension } from '@nestjs/swagger';
+export const Roles = (...roles: Role[]) =>
+  applyDecorators(SetMetadata('roles', roles), ApiExtension('x-roles', roles));
 export type AuthenticatedRequest = Request & {
   user: NonNullable<Awaited<ReturnType<UsersService['findPublic']>>>;
 };

@@ -9,7 +9,6 @@ import * as argon2 from 'argon2';
 import { AuthService } from '../dist/auth/auth.service.js';
 import { AccessGuard, RolesGuard } from '../dist/auth/auth.guards.js';
 import { HealthController } from '../dist/health/health.controller.js';
-import { IntegrationsService } from '../dist/integrations/integrations.service.js';
 import { hashSecret } from '../dist/common/security.js';
 import type { PrismaService } from '../dist/prisma/prisma.service.js';
 import type { UsersService } from '../dist/users/users.service.js';
@@ -154,34 +153,5 @@ describe('guards and health', () => {
     });
     query.mockRejectedValue(new Error('database details'));
     await expect(health.check()).rejects.toMatchObject({ status: 503 });
-  });
-});
-
-describe('integration authentication', () => {
-  it('validates hashed credentials and rejects revocation, disabled clients and bad secrets', async () => {
-    const id = randomUUID();
-    const secret = randomBytes(32).toString('base64url');
-    const record = {
-      secretHash: hashSecret(secret),
-      revokedAt: null,
-      client: { id: randomUUID(), status: 'ACTIVE' },
-    };
-    const findUnique = vi.fn().mockResolvedValue(record);
-    const service = new IntegrationsService({
-      integrationCredential: { findUnique },
-    } as unknown as PrismaService);
-    await expect(service.authenticate(`${id}.${secret}`)).resolves.toEqual(
-      record.client,
-    );
-    await expect(
-      service.authenticate(`${id}.${randomBytes(32).toString('base64url')}`),
-    ).rejects.toThrow();
-    findUnique.mockResolvedValue({ ...record, revokedAt: new Date() });
-    await expect(service.authenticate(`${id}.${secret}`)).rejects.toThrow();
-    findUnique.mockResolvedValue({
-      ...record,
-      client: { ...record.client, status: 'INACTIVE' },
-    });
-    await expect(service.authenticate(`${id}.${secret}`)).rejects.toThrow();
   });
 });

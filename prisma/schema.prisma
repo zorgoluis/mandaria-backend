@@ -12,7 +12,12 @@ enum Role {
 }
 enum IntegrationStatus {
   ACTIVE
-  INACTIVE
+  SUSPENDED
+  REVOKED
+}
+enum CredentialStatus {
+  ACTIVE
+  REVOKED
 }
 model User {
   id String @id @default(uuid()) @db.Uuid
@@ -24,6 +29,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   refreshTokens RefreshToken[]
+  providerMemberships ProviderMembership[]
+  driver Driver?
 }
 model RefreshToken {
   id String @id @default(uuid()) @db.Uuid
@@ -44,14 +51,360 @@ model IntegrationClient {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   credentials IntegrationCredential[]
+  deliveryRequests DeliveryRequest[]
+  idempotencyRecords ApiIdempotencyRecord[]
 }
 model IntegrationCredential {
   id String @id @default(uuid()) @db.Uuid
   clientId String @db.Uuid
   client IntegrationClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
   secretHash String @unique
+  status CredentialStatus @default(ACTIVE)
+  scopes String[] @default([])
+  expiresAt DateTime?
+  lastUsedAt DateTime?
   revokedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([clientId])
+}
+
+enum ProviderType {
+  FLEET
+  INDEPENDENT
+}
+enum ProviderStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+enum ProviderMemberRole {
+  OWNER
+  ADMIN
+}
+model DeliveryProvider {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  code String @unique
+  type ProviderType
+  status ProviderStatus @default(PENDING)
+  maxDrivers Int
+  maxVehicles Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  memberships ProviderMembership[]
+  drivers Driver[]
+  vehicles Vehicle[]
+  @@index([type, status])
+  @@index([createdAt, id])
+}
+model ProviderMembership {
+  id String @id @default(uuid()) @db.Uuid
+  providerId String @db.Uuid
+  userId String @db.Uuid
+  role ProviderMemberRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@unique([providerId, userId])
+  @@index([userId, providerId])
+}
+
+enum DriverStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+enum DriverAvailability {
+  OFFLINE
+  AVAILABLE
+  BUSY
+}
+enum VehicleType {
+  BICYCLE
+  MOTORCYCLE
+  CAR
+  PICKUP
+  VAN
+  TRUCK
+  OTHER
+}
+enum VehicleStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  SUSPENDED
+}
+/// Logistic profile of a User with global role DRIVER. Authentication stays in User.
+model Driver {
+  id String @id @default(uuid()) @db.Uuid
+  providerId String @db.Uuid
+  userId String @unique @db.Uuid
+  name String
+  status DriverStatus @default(PENDING)
+  availability DriverAvailability @default(OFFLINE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  assignments DriverVehicleAssignment[]
+  @@unique([id, providerId])
+  @@index([providerId, status, availability])
+  @@index([providerId, createdAt, id])
+}
+/// Operational resource owned by the provider; drivers only use it through assignments.
+model Vehicle {
+  id String @id @default(uuid()) @db.Uuid
+  providerId String @db.Uuid
+  identifier String
+  type VehicleType
+  status VehicleStatus @default(ACTIVE)
+  brand String?
+  model String?
+  year Int?
+  color String?
+  plate String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  assignments DriverVehicleAssignment[]
+  @@unique([providerId, identifier])
+  @@unique([id, providerId])
+  @@index([providerId, type, status])
+  @@index([providerId, createdAt, id])
+}
+/// Assignment history. unassignedAt = null marks the active assignment; partial unique
+/// indexes in the migration allow one active row per driver and per vehicle.
+/// providerId is shared by both composite FKs, so driver and vehicle must belong to the same provider.
+model DriverVehicleAssignment {
+  id String @id @default(uuid()) @db.Uuid
+  providerId String @db.Uuid
+  driverId String @db.Uuid
+  vehicleId String @db.Uuid
+  assignedAt DateTime @default(now())
+  unassignedAt DateTime?
+  createdAt DateTime @default(now())
+  driver Driver @relation(fields: [driverId, providerId], references: [id, providerId], onDelete: Restrict)
+  vehicle Vehicle @relation(fields: [vehicleId, providerId], references: [id, providerId], onDelete: Restrict)
+  @@index([driverId, assignedAt])
+  @@index([vehicleId, assignedAt])
+}
+
+enum DeliveryRequestStatus {
+  CREATED
+  CANCELLED
+}
+enum DeliveryStopType {
+  PICKUP
+  DROPOFF
+}
+enum PackageCategory {
+  FOOD
+  GROCERIES
+  MEDICINE
+  DOCUMENT
+  PARCEL
+  MERCHANDISE
+  OTHER
+}
+enum GoodsPaymentMode {
+  PREPAID
+  COURIER_ADVANCE
+}
+/// Demand received from an IntegrationClient: what must be transported. Immutable except
+/// for cancellation. No provider/driver/vehicle relation until Dispatch.
+model DeliveryRequest {
+  id String @id @default(uuid()) @db.Uuid
+  /// MDR-000001; generated from sequence "DeliveryRequest_publicId_seq" inside the creation transaction.
+  publicId String @unique
+  integrationClientId String @db.Uuid
+  externalReference String?
+  /// V1.6: existing V1.5 rows migrate to LOCAL_DELIVERY (the only service offered).
+  serviceType ServiceType @default(LOCAL_DELIVERY)
+  status DeliveryRequestStatus @default(CREATED)
+  requestedAt DateTime @default(now())
+  cancelledAt DateTime?
+  cancellationReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  stops DeliveryStop[]
+  packages DeliveryPackage[]
+  financialContext DeliveryFinancialContext?
+  quotes DeliveryQuote[]
+  @@index([integrationClientId, requestedAt, id])
+  @@index([externalReference])
+  @@index([status, requestedAt])
+  @@index([requestedAt, id])
+}
+/// Address/contact snapshot; never linked to external restaurant or customer tables.
+model DeliveryStop {
+  id String @id @default(uuid()) @db.Uuid
+  deliveryRequestId String @db.Uuid
+  type DeliveryStopType
+  sequence Int
+  address String
+  latitude Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  contactName String
+  contactPhone String
+  instructions String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  @@unique([deliveryRequestId, sequence])
+}
+model DeliveryPackage {
+  id String @id @default(uuid()) @db.Uuid
+  deliveryRequestId String @db.Uuid
+  category PackageCategory
+  description String
+  quantity Int
+  weightKg Decimal? @db.Decimal(10, 3)
+  lengthCm Decimal? @db.Decimal(8, 2)
+  widthCm Decimal? @db.Decimal(8, 2)
+  heightCm Decimal? @db.Decimal(8, 2)
+  isFragile Boolean @default(false)
+  handlingInstructions String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  @@index([deliveryRequestId])
+}
+/// Value of the goods and who pays for them at pickup. Not a delivery fee, wallet or credit.
+model DeliveryFinancialContext {
+  id String @id @default(uuid()) @db.Uuid
+  deliveryRequestId String @unique @db.Uuid
+  goodsValue Decimal? @db.Decimal(14, 2)
+  goodsPaymentMode GoodsPaymentMode
+  currency String @db.Char(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+}
+/// Reusable B2B idempotency ledger. Stores only a payload hash, never the payload.
+model ApiIdempotencyRecord {
+  id String @id @default(uuid()) @db.Uuid
+  integrationClientId String @db.Uuid
+  key String
+  operation String
+  requestHash String @db.Char(64)
+  resourceType String
+  resourceId String @db.Uuid
+  createdAt DateTime @default(now())
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  @@unique([integrationClientId, key])
+}
+
+/// Service catalogue. Only LOCAL_DELIVERY exists in V1.6; ERRAND/INTERCITY/FREIGHT are future values.
+enum ServiceType {
+  LOCAL_DELIVERY
+}
+enum ServiceZoneStatus {
+  ACTIVE
+  INACTIVE
+}
+enum RatePlanStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+/// Pricing strategy. BASE_PLUS_DISTANCE is planned but not implemented.
+enum RateCalculationType {
+  DISTANCE_BANDS
+}
+enum DeliveryQuoteStatus {
+  OFFERED
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+/// Operating area. boundary is a validated GeoJSON Polygon/MultiPolygon; the bbox columns
+/// pre-filter candidates in SQL before the exact point-in-polygon check (PostGIS-replaceable).
+model ServiceZone {
+  id String @id @default(uuid()) @db.Uuid
+  code String @unique
+  name String
+  status ServiceZoneStatus @default(INACTIVE)
+  currency String @db.Char(3)
+  boundary Json
+  minLatitude Decimal @db.Decimal(9, 6)
+  maxLatitude Decimal @db.Decimal(9, 6)
+  minLongitude Decimal @db.Decimal(9, 6)
+  maxLongitude Decimal @db.Decimal(9, 6)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ratePlans RatePlan[]
+  quotes DeliveryQuote[]
+  @@index([status, minLatitude, maxLatitude, minLongitude, maxLongitude])
+}
+/// Versioned tariff for ServiceZone + ServiceType. Only DRAFT is editable; at most one ACTIVE.
+model RatePlan {
+  id String @id @default(uuid()) @db.Uuid
+  serviceZoneId String @db.Uuid
+  serviceType ServiceType
+  version Int
+  status RatePlanStatus @default(DRAFT)
+  calculationType RateCalculationType @default(DISTANCE_BANDS)
+  quoteValidityMinutes Int
+  currency String @db.Char(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  activatedAt DateTime?
+  deactivatedAt DateTime?
+  serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
+  bands RateBand[]
+  quotes DeliveryQuote[]
+  @@unique([serviceZoneId, serviceType, version])
+  @@unique([id, serviceZoneId])
+  @@index([serviceZoneId, serviceType, status])
+}
+/// Distance band [minDistanceMeters, maxDistanceMeters): min inclusive, max exclusive.
+model RateBand {
+  id String @id @default(uuid()) @db.Uuid
+  ratePlanId String @db.Uuid
+  minDistanceMeters Int
+  maxDistanceMeters Int
+  amount Decimal @db.Decimal(14, 2)
+  currency String @db.Char(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ratePlan RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Restrict)
+  quotes DeliveryQuote[]
+  @@unique([ratePlanId, minDistanceMeters])
+  @@unique([id, ratePlanId])
+}
+/// Immutable price snapshot for a DeliveryRequest. Only status and its timestamps change.
+model DeliveryQuote {
+  id String @id @default(uuid()) @db.Uuid
+  /// MQ-000001; generated from sequence "DeliveryQuote_publicId_seq".
+  publicId String @unique
+  deliveryRequestId String @db.Uuid
+  serviceType ServiceType
+  serviceZoneId String @db.Uuid
+  ratePlanId String @db.Uuid
+  rateBandId String @db.Uuid
+  distanceMeters Int
+  durationSeconds Int
+  amount Decimal @db.Decimal(14, 2)
+  currency String @db.Char(3)
+  routingProvider String
+  routeCalculatedAt DateTime
+  status DeliveryQuoteStatus @default(OFFERED)
+  expiresAt DateTime
+  acceptedAt DateTime?
+  expiredAt DateTime?
+  cancelledAt DateTime?
+  cancellationReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Restrict)
+  serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
+  ratePlan RatePlan @relation(fields: [ratePlanId, serviceZoneId], references: [id, serviceZoneId], onDelete: Restrict)
+  rateBand RateBand @relation(fields: [rateBandId, ratePlanId], references: [id, ratePlanId], onDelete: Restrict)
+  @@index([deliveryRequestId, createdAt])
+  @@index([status, expiresAt])
+  @@index([createdAt, id])
+  @@index([serviceZoneId, createdAt])
 }
