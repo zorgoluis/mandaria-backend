@@ -1,6 +1,4 @@
-cd /opt/mandaria/backend
-
-cat > src/bootstrap-admin.ts <<'EOF'
+cat > /opt/mandaria/backend/src/bootstrap-admin.ts <<'EOF'
 import 'dotenv/config';
 import { PrismaClient, Role } from '@prisma/client';
 import * as argon2 from 'argon2';
@@ -26,7 +24,9 @@ async function main() {
   }
 
   const existing = await prisma.user.findUnique({
-    where: { email: env.data.BOOTSTRAP_ADMIN_EMAIL },
+    where: {
+      email: env.data.BOOTSTRAP_ADMIN_EMAIL,
+    },
   });
 
   if (existing) {
@@ -43,9 +43,12 @@ async function main() {
   await prisma.user.create({
     data: {
       email: env.data.BOOTSTRAP_ADMIN_EMAIL,
-      passwordHash: await argon2.hash(env.data.BOOTSTRAP_ADMIN_PASSWORD, {
-        type: argon2.argon2id,
-      }),
+      passwordHash: await argon2.hash(
+        env.data.BOOTSTRAP_ADMIN_PASSWORD,
+        {
+          type: argon2.argon2id,
+        },
+      ),
       role: Role.SUPER_ADMIN,
     },
   });
