@@ -217,11 +217,77 @@ try {
     ...fullSnapshot(),
     request: sql(upgradeDb, ['-c', requestColumns]),
   };
-  prisma(upgradeDb, ['migrate', 'deploy']);
+  sql(upgradeDb, [
+    '-f',
+    'prisma/migrations/20260915000600_routing_pricing_quotes/migration.sql',
+  ]);
+  prisma(upgradeDb, [
+    'migrate',
+    'resolve',
+    '--applied',
+    '20260915000600_routing_pricing_quotes',
+  ]);
   assert.deepEqual(
     { ...fullSnapshot(), request: sql(upgradeDb, ['-c', requestColumns]) },
     v15Snapshot,
   );
+  // V1.6.1 fixture: an inactive user with password must survive as DISABLED, never INVITED.
+  const disabledUserId = randomUUID();
+  sql(upgradeDb, [
+    '-c',
+    `INSERT INTO "User" (id,email,"passwordHash",role,active,"updatedAt") VALUES ('${disabledUserId}','disabled@example.test','${hash}','DRIVER',false,now());`,
+  ]);
+  const v16Snapshot = fullSnapshot();
+  prisma(upgradeDb, ['migrate', 'deploy']);
+  assert.deepEqual(fullSnapshot(), v16Snapshot);
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      'SELECT count(*) FROM "User" WHERE "passwordHash" IS NULL',
+    ]),
+    '0',
+  );
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      `SELECT count(*) FROM "User" WHERE id='${disabledUserId}' AND active = false AND "passwordHash"='${hash}'`,
+    ]),
+    '1',
+  );
+  assert.equal(
+    sql(upgradeDb, ['-c', 'SELECT count(*) FROM "UserInvitation"']),
+    '0',
+  );
+  for (const db of [cleanDb, upgradeDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('User_active_password_check','UserInvitation_values_check','UserInvitation_userId_fkey','UserInvitation_providerId_fkey','UserInvitation_createdByUserId_fkey','UserInvitation_revokedByUserId_fkey')",
+      ]),
+      '6',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE (indexname = 'UserInvitation_pending_user_key' AND indexdef LIKE '%WHERE%PENDING%') OR indexname = 'UserInvitation_tokenHash_key'",
+      ]),
+      '2',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname = 'UserInvitation_immutable'",
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT is_nullable FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'passwordHash'",
+      ]),
+      'YES',
+    );
+  }
   assert.equal(
     sql(upgradeDb, [
       '-c',
@@ -353,7 +419,7 @@ try {
   );
   prisma(upgradeDb, ['migrate', 'deploy']);
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments and delivery requests preserved; V1.4-V1.6 constraints, triggers and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests and inactive accounts (as DISABLED) preserved; V1.4-V1.6.1 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

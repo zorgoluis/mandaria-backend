@@ -4,17 +4,17 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
-- **Versión del paquete:** 1.6.0 (V1.6-A Routing, Service Zones, Rate Plans & Delivery Quotes).
-- **Rama activa:** `1.6-routing_services_plan`, creada por el propietario desde QA tras el merge de V1.5 (PR #4). V1.6 publicada en origin por solicitud del propietario; sin merge a QA/main.
+- **Versión del paquete:** 1.6.1 (V1.6.1-A User Provisioning, Invitations & Account Activation).
+- **Rama activa:** `v1.6.1-creation_users`, del propietario (incluye merges de V1.6 en QA/main y sus commits de despliegue `fix`/`fix1`). V1.6.1 commiteada localmente por solicitud del propietario; sin push.
 - **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git. Entrega V1.2 en `V1_2-Proveedores_Reparto`.
-- **Objetivo actual:** V1.6-A cotización LOCAL_DELIVERY (zonas, routing, tarifas versionadas, Quotes) sobre V1.0–V1.5. V1.7 (Dispatch) no iniciado.
+- **Objetivo actual:** V1.6.1-A aprovisionamiento real de PROVIDER_ADMIN/DRIVER por invitación y activación de cuenta sobre V1.0–V1.6. V1.7 (Dispatch) no iniciado.
 - **Herramientas:** scripts npm ampliados con OpenAPI exportable, matriz de acceso, Oxlint y configuración Prisma de pruebas; entrega autorizada en la rama actual.
-- **Estado funcional V1.6-A:** implementado y verificado localmente el 2026-09-15; 52 pruebas unitarias/HTTP y 100 E2E correctos (suite completa limpia en la verificación final; la caída nativa intermitente de workers en Windows sigue documentada); validación HTTP V1.6 9/9 y regresiones HTTP V1.5 10/10, V1.4 16/16 y V1.2 13/13.
-- **Definition of Done:** requisitos V1.6-A verificados localmente (ver VERIFICATION.md), incluida una llamada real a Google Routes tras configurar el propietario la API key. Docker/Compose heredado sigue pospuesto por el propietario; no se declara ejecutado.
+- **Estado funcional V1.6.1-A:** implementado y verificado localmente el 2026-09-16; 69 pruebas unitarias/HTTP y 124 E2E correctos (suite completa y cada archivo; una ejecución completa previa sufrió la caída nativa conocida de workers en Windows); validación HTTP V1.6.1 3/3 y regresiones HTTP V1.6 9/9, V1.5 10/10, V1.4 16/16 y V1.2 13/13. V1.6-A sigue como se documentó.
+- **Definition of Done:** requisitos V1.6.1-A verificados localmente (ver VERIFICATION.md). Envío SMTP real no ejecutado (no hay servidor ni credenciales SMTP configurados; adaptador probado con transporte simulado). Docker sigue pospuesto por el propietario.
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
 - **Base local configurada:** `mandaria_db`; base separada para E2E: `mandaria_test`.
-- **Configuración:** `.env` local, ignorado por Git. El propietario corrigió el acceso y las verificaciones posteriores pasaron. No copiar sus valores a esta bitácora.
-- **Servidor:** detenido. La compilación V1.6 se levantó temporalmente con `ROUTING_PROVIDER=local_fake node dist/main.js` para validar y se detuvo. Reiniciar con `npm run build` + `npm run start:prod` (definir ROUTING_PROVIDER/GOOGLE_ROUTES_API_KEY según el caso; mandaria-frontend lo usa).
+- **Configuración:** `.env` local. **Alerta 2026-09-16:** el commit del propietario `2ccd1c5` («git fix») lo quitó de `.gitignore` y lo versionó con valores reales en un repositorio público (origin/main, QA y ramas de trabajo). Se informó al propietario, que decidió no tocarlo por ahora; se recomienda rotar la API key de Google, los tres secretos JWT y las contraseñas. V1.6.1 no modifica `.env` ni `.gitignore`. No copiar sus valores a esta bitácora.
+- **Servidor:** detenido. Para V1.6.1 se levantó temporalmente `node dist/main.js` con `MAIL_PROVIDER=local_outbox`, `MANDARIA_WEB_URL=http://localhost:5173` y `ROUTING_PROVIDER=local_fake` en variables de proceso (sin editar `.env`) y se detuvo. Producción requiere MAIL_PROVIDER=smtp, SMTP_HOST, MAIL_FROM y MANDARIA_WEB_URL https.
 - **Validación PROVIDER_ADMIN/memberships:** cerrada el 2026-09-15 en rama `QA` con autenticación real. Escenario local reproducible `npm run db:seed:local-provider-admins` (LOCAL/TEST ONLY) y `npm run verify:provider-admins`. Tests: 23 unitarias/HTTP y 45 E2E.
 
 ## Arquitectura y decisiones vigentes
@@ -51,6 +51,11 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - V1.6: RatePlan versionado DRAFT → ACTIVE → INACTIVE, índice único parcial (1 ACTIVE por zona+servicio), activación atómica, triggers de inmutabilidad (bandas sólo en DRAFT, estructura fija fuera de DRAFT). RateBand [min, max) en metros enteros, contiguas desde 0, NUMERIC(14,2). TTL LOCAL_DELIVERY 1–120 min (recomendado 15; DB 1–10080).
 - V1.6: RoutingProvider (token ROUTING_PROVIDER) con GoogleRoutingProvider (Routes API computeRoutes, key sólo en header, field mask, timeout por intento, ≤ 1 reintento transitorio por defecto) y local_fake LOCAL/TEST ONLY rechazado en producción. ROUTE_NOT_FOUND vs ROUTING_UNAVAILABLE; nunca fallback Haversine.
 - V1.6: DeliveryQuote snapshot inmutable (trigger) con MQ publicId por secuencia; FKs compuestas banda∈plan∈zona; índices parciales 1 OFFERED y 1 ACCEPTED por solicitud; expiración perezosa (lectura informa EXPIRED, escritura persiste). Cotización con FOR UPDATE de la DeliveryRequest (reutiliza OFFERED/ACCEPTED sin routing; configuración de tarifa comprobada antes de routing). Cancelar solicitud cancela OFFERED y conserva ACCEPTED. Errores de dominio con `code` estable (422/503/409). Scopes quotes:create/read/accept independientes.
+- V1.6.1: alta de personas sólo por invitación (SUPER_ADMIN → PROVIDER_ADMIN/DRIVER; PROVIDER_ADMIN → DRIVER en proveedores con membership). Ningún administrador define contraseñas ajenas; SUPER_ADMIN sólo por bootstrap. Seeds locales no son aprovisionamiento de producción.
+- V1.6.1: estado de cuenta derivado sin columna nueva: ACTIVE = `active`; INVITED = inactivo sin `passwordHash` (ahora opcional); DISABLED = inactivo con contraseña. CHECK `User_active_password_check`. Login de INVITED → mismo 401 que contraseña incorrecta.
+- V1.6.1: UserInvitation (PENDING/ACCEPTED/REVOKED; EXPIRED derivado de expiresAt, sin cron) con token de 256 bits guardado sólo como SHA-256, TTL configurable (24 h), índice único parcial de una PENDING por User, reenvío que rota el token en la misma fila con enfriamiento bajo bloqueo, revocación idempotente y trigger de inmutabilidad.
+- V1.6.1: membership/Driver se materializan al activar (opción B) para conservar las invariantes V1.2/V1.4; las invitaciones DRIVER pendientes vigentes reservan lugar de maxDrivers. Activación en una transacción con orden de bloqueo proveedor → User → invitación.
+- V1.6.1: MailProvider (`src/mail/`) con SMTP (nodemailer, producción), local_outbox (LOCAL/TEST ONLY, rechazado en producción) y FakeMailProvider en pruebas. Correo tras el commit; fallo → `emailDelivery: FAILED` y resend. Política de contraseña 16–128 compartida (`src/common/password-policy.ts`).
 - Paginación nueva reutilizable page/pageSize (default 1/20, máximo 100 por página), filtros type/status/search y orden estable. No se cambió el contrato de listados V1.1.
 
 ## Mapa de archivos
@@ -85,6 +90,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 | `prisma/migrations/20260915000600_routing_pricing_quotes/migration.sql` | Migración V1.6: tablas, índices parciales, CHECK, triggers y secuencia MQ |
 | `scripts/local-pricing.ts`, `scripts/seed-local-pricing.ts`, `scripts/verify-delivery-quotes-local.ts`, `scripts/check-google-routes.ts` | LOCAL/TEST ONLY: zonas/tarifa placeholder, validación HTTP V1.6 y comprobación manual de Google |
 | `test/pricing.spec.ts`, `test/pricing-admin.e2e-spec.ts`, `test/delivery-quotes.e2e-spec.ts` | Pruebas V1.6 |
+| `src/invitations/`, `src/mail/`, `src/common/password-policy.ts` | V1.6.1: invitaciones, activación, MailProvider/plantilla y política de contraseña |
+| `prisma/migrations/20260916000700_user_invitations/migration.sql` | Migración V1.6.1: UserInvitation, passwordHash opcional, CHECK, índice parcial y trigger |
+| `scripts/verify-user-invitations-local.ts` | LOCAL/TEST ONLY: validación HTTP real V1.6.1 con outbox local |
+| `test/invitations.spec.ts`, `test/user-invitations.e2e-spec.ts`, `test/support/fake-mail.provider.ts` | Pruebas V1.6.1 |
 | `Dockerfile`, `docker-compose.yml` | Preparación para uso futuro, ejecución pendiente |
 
 ## Verificaciones históricas del Core
@@ -295,3 +304,23 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Contenido:** implementación, migración, pruebas, scripts locales y documentación de la entrada anterior, incluida la evidencia de Google Routes real.
 - **Verificación previa:** archivos publicables revisados sin valores de `.env` ni GOOGLE_ROUTES_API_KEY; pruebas no repetidas tras la verificación final registrada (52 unitarias, 100 E2E, build/lint/docs:check correctos).
 - **Destino:** origin/1.6-routing_services_plan. Sin merge.
+
+### 2026-09-16 — V1.6.1-A User Provisioning, Invitations & Account Activation
+
+- **Solicitud:** aprovisionamiento real de PROVIDER_ADMIN y DRIVER por invitación, token seguro de un solo uso, reenvío, revocación, activación transaccional, MailProvider, auditoría, concurrencia, rate limiting, migración, Swagger, contrato API y README. Sin Dispatch, sin tocar Coita Eats. Sin commit/push.
+- **Inspección previa:** rama `v1.6.1-creation_users` con commits del propietario posteriores a V1.6 (`2ccd1c5` versiona `.env` con secretos reales en repositorio público, alertado; `5a2d3cc`/`933374c`/`566ea0b`/`8703f51` Docker y `src/bootstrap-admin.ts`, que compila). User sólo tenía `active` y `passwordHash` obligatorio; memberships y Drivers exigían User activo; auditoría = logs JSON; throttler por IP; sin correo; política de contraseña real 16–128 del bootstrap; `docs/API-CONTRACT.md` vive en mandaria-frontend.
+- **Línea base:** E2E 100/100; unitarias 51/52. Fallo previo: la prueba `NOT_CONFIGURED` de Google leía la API key real del `.env` porque `ConfigService.get` recurre a `process.env` (defecto de aislamiento introducido en V1.6, visible al configurar la key). Corregido con `vi.stubEnv`; nunca llamó a Google (fetch simulado).
+- **Decisiones:** estado de cuenta derivado (sin enum ni cambios a `active`); membership/Driver al activar; EXPIRED derivado; reenvío rota el token en la misma fila; revocar deja el User INVITED y reinvitable; invitaciones DRIVER reservan capacidad; SUPER_ADMIN no invitable; producción exige SMTP y MANDARIA_WEB_URL https (cambio de configuración obligatorio al desplegar).
+- **Prisma:** `User.passwordHash` opcional; enum UserInvitationStatus y modelo UserInvitation. Migración `20260916000700_user_invitations` con `User_active_password_check`, `UserInvitation_values_check`, índice parcial `UserInvitation_pending_user_key` y trigger `UserInvitation_immutable`. Aplicada sin reset en mandaria_db y mandaria_test; drift vacío.
+- **API:** `POST /admin/providers/:providerId/invitations`, `GET /admin/user-invitations[/:id]`, `POST /admin/user-invitations/:id/resend|revoke`, `/provider/driver-invitations` (mismas operaciones con membership), `POST /auth/activate-account`, `GET /users?status`. Dependencia nueva: nodemailer ^10.0.10 (sin dependencias, MIT-0, 0 vulnerabilidades).
+- **Otros cambios:** seeds locales toleran `passwordHash` nulo; bootstrap (`prisma/seed.ts`, `src/bootstrap-admin.ts`) y LoginDto usan la constante compartida de contraseña sin cambiar su comportamiento; fixture de producción válida de `test/pricing.spec.ts` incluye la configuración de correo ahora obligatoria; `verify-migrations.mjs` cubre V1.6 → V1.6.1; `docs/API-CONTRACT.md` de mandaria-frontend actualizado (sólo documentación, sin commit).
+- **Ajustes durante la implementación:** Prettier sobre todo `src/test` cambió finales de línea de ~76 archivos no tocados y reformateó dos pruebas ajenas: revertidos; lint marcó 4 errores en la E2E nueva: corregidos; el script local encontró Provider A local en maxDrivers (3/3, estado del escenario V1.4): el 409 es correcto y el script continúa con Admin B en Provider B.
+- **Verificaciones:** prisma validate; tsc; build; Oxlint; ESLint; Prettier (archivos nuevos); docs:openapi/docs:check; npm test 69 PASS (+17); test:e2e 124/124 completa y por archivo (+24); mutaciones M1–M8 (sin enfriamiento bajo bloqueo, sin recomprobación al activar, sin aislamiento por proveedor, email ACTIVE aceptado, expiración ignorada, reenvío sin rotar token, PROVIDER_ADMIN invitando PROVIDER_ADMIN, reservas ignoradas) detectadas; verify-migrations limpia + V1.0 → V1.6.1 (`mandaria_clean_9564c6135c_test`/`mandaria_upgrade_9564c6135c_test`); `npm run db:seed` sin cambios y sin invitaciones en mandaria_db, y creación/idempotencia en la base limpia; HTTP `verify:user-invitations` 3/3; regresiones HTTP V1.2 13/13, V1.4 16/16, V1.5 10/10, V1.6 9/9; logs con eventos USER_INVITED/ACCEPTED/ACTIVATED/EMAIL_SENT/ACTIVATION_REJECTED sin tokens, hashes, emails, JWT ni `request_failed`; escaneo de secretos en 39 archivos modificados sin coincidencias.
+- **No verificado:** envío por un servidor SMTP real; Docker.
+- **Pendientes:** rotación de secretos expuestos y retiro de `.env` del repositorio (decisión del propietario); configurar SMTP y MANDARIA_WEB_URL en producción antes de desplegar V1.6.1; pantallas de Mandaria Web para invitaciones/activación; recuperación de contraseña y desactivación de cuentas; caída nativa intermitente de workers E2E en Windows.
+
+### 2026-09-16 — Commit de V1.6.1-A
+
+- **Solicitud:** commit de V1.6.1-A en la rama actual `v1.6.1-creation_users` (sin push); después revisar la caída nativa de workers E2E en Windows.
+- **Contenido:** implementación, migración, pruebas, script de validación local y documentación de la entrada anterior. No incluye `.env` ni `.gitignore` (sin cambios) ni `mandaria-frontend/docs/API-CONTRACT.md` (otro repositorio, sin commit).
+- **Verificación previa:** archivos en stage revisados contra los valores de `.env` y el patrón de API key de Google; pruebas no repetidas tras la verificación registrada (69 unitarias, 124 E2E, lint/docs:check correctos).

@@ -223,13 +223,11 @@ describe('GoogleRoutingProvider', () => {
   };
 
   it('normalizes distance/duration and sends the key only in the header with a field mask', async () => {
-    const fetcher = vi
-      .fn()
-      .mockResolvedValue(
-        json(200, {
-          routes: [{ distanceMeters: 4700, duration: '780s', polyline: 'x' }],
-        }),
-      );
+    const fetcher = vi.fn().mockResolvedValue(
+      json(200, {
+        routes: [{ distanceMeters: 4700, duration: '780s', polyline: 'x' }],
+      }),
+    );
     const route = await new GoogleRoutingProvider(
       config(),
       fetcher,
@@ -340,17 +338,23 @@ describe('GoogleRoutingProvider', () => {
   });
   it('reports NOT_CONFIGURED without calling Google when the key is missing', async () => {
     const fetcher = vi.fn();
-    const error = await failure(
-      new GoogleRoutingProvider(
-        config({ GOOGLE_ROUTES_API_KEY: undefined }),
-        fetcher,
-      ).calculateRoute(origin, destination),
-    );
-    expect(error).toMatchObject({
-      code: 'ROUTING_UNAVAILABLE',
-      reason: 'NOT_CONFIGURED',
-    });
-    expect(fetcher).not.toHaveBeenCalled();
+    // ConfigService.get falls back to process.env; a key in the developer's .env must not leak in.
+    vi.stubEnv('GOOGLE_ROUTES_API_KEY', '');
+    try {
+      const error = await failure(
+        new GoogleRoutingProvider(
+          config({ GOOGLE_ROUTES_API_KEY: undefined }),
+          fetcher,
+        ).calculateRoute(origin, destination),
+      );
+      expect(error).toMatchObject({
+        code: 'ROUTING_UNAVAILABLE',
+        reason: 'NOT_CONFIGURED',
+      });
+      expect(fetcher).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
 
@@ -388,6 +392,11 @@ describe('V1.6 configuration and quote views', () => {
         ...base,
         NODE_ENV: 'production',
         GOOGLE_ROUTES_API_KEY: 'k'.repeat(30),
+        // V1.6.1: production also requires real mail delivery.
+        MAIL_PROVIDER: 'smtp',
+        SMTP_HOST: 'smtp.example.com',
+        MAIL_FROM: 'Mandaria <no-reply@example.com>',
+        MANDARIA_WEB_URL: 'https://app.example.com',
       }).ROUTING_PROVIDER,
     ).toBe('google');
     for (const bad of [

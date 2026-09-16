@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+/** Empty variables (common in .env templates) count as unset. */
+const optional = <T extends z.ZodTypeAny>(type: T) =>
+  z.preprocess((v) => (v === '' ? undefined : v), type.optional());
+
 const schema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
@@ -40,6 +44,46 @@ const schema = z.object({
     .default(5000),
   GOOGLE_ROUTES_MAX_RETRIES: z.coerce.number().int().min(0).max(2).default(1),
   GOOGLE_ROUTES_TRAVEL_MODE: z.enum(['DRIVE', 'TWO_WHEELER']).default('DRIVE'),
+  // V1.6.1 user provisioning. local_outbox is LOCAL/TEST ONLY and rejected in production.
+  USER_INVITATION_TTL_HOURS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(168)
+    .default(24),
+  USER_INVITATION_RESEND_COOLDOWN_SECONDS: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(3600)
+    .default(60),
+  MANDARIA_WEB_URL: optional(
+    z
+      .string()
+      .url()
+      .refine((value) => {
+        const url = new URL(value);
+        return (
+          ['http:', 'https:'].includes(url.protocol) &&
+          !url.search &&
+          !url.hash &&
+          !url.username &&
+          !url.password
+        );
+      }, 'must be an http(s) URL without credentials, query or fragment')
+      .transform((value) => value.replace(/\/+$/, '')),
+  ),
+  MAIL_PROVIDER: optional(z.enum(['smtp', 'local_outbox'])),
+  MAIL_FROM: optional(z.string().min(3).max(320)),
+  SMTP_HOST: optional(z.string().min(1).max(255)),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  SMTP_USER: optional(z.string().min(1).max(320)),
+  SMTP_PASSWORD: optional(z.string().min(1).max(1024)),
+  LOCAL_MAIL_OUTBOX_DIR: optional(z.string().min(1).max(1024)),
   DEFAULT_FLEET_MAX_DRIVERS: z.coerce
     .number()
     .int()
@@ -87,6 +131,18 @@ export function validateEnvironment(input: Record<string, unknown>) {
       );
     if (env.ROUTING_PROVIDER === 'google' && !env.GOOGLE_ROUTES_API_KEY)
       throw new Error('GOOGLE_ROUTES_API_KEY is required in production');
+    if (env.MAIL_PROVIDER !== 'smtp')
+      throw new Error('MAIL_PROVIDER=smtp is required in production');
+    if (!env.MANDARIA_WEB_URL?.startsWith('https://'))
+      throw new Error('MANDARIA_WEB_URL must be an https URL in production');
+  }
+  // Development and test default to the local outbox so no real email is ever sent by accident.
+  const mailProvider = env.MAIL_PROVIDER ?? 'local_outbox';
+  if (mailProvider === 'smtp') {
+    if (!env.SMTP_HOST || !env.MAIL_FROM)
+      throw new Error('MAIL_PROVIDER=smtp requires SMTP_HOST and MAIL_FROM');
+    if (!env.SMTP_USER !== !env.SMTP_PASSWORD)
+      throw new Error('SMTP_USER and SMTP_PASSWORD must be set together');
   }
   for (const origin of env.CORS_ORIGINS.split(',').filter(Boolean)) {
     let url: URL;
@@ -98,5 +154,5 @@ export function validateEnvironment(input: Record<string, unknown>) {
     if (!['http:', 'https:'].includes(url.protocol) || url.origin !== origin)
       throw new Error('CORS_ORIGINS must contain exact HTTP origins');
   }
-  return env;
+  return { ...env, MAIL_PROVIDER: mailProvider };
 }

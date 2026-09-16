@@ -35,6 +35,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/providers/{providerId}/drivers/{driverId}/assignments | bearer | SUPER_ADMIN | — | Historial de vehículos del Driver |
 | POST | /api/v1/admin/providers/{providerId}/drivers/{driverId}/vehicle | bearer | SUPER_ADMIN | — | Asignar vehículo al Driver |
 | DELETE | /api/v1/admin/providers/{providerId}/drivers/{driverId}/vehicle | bearer | SUPER_ADMIN | — | Desasignar vehículo vigente |
+| POST | /api/v1/admin/providers/{providerId}/invitations | bearer | SUPER_ADMIN | — | Invitar PROVIDER_ADMIN o DRIVER a un proveedor |
 | GET | /api/v1/admin/providers/{providerId}/members | bearer | SUPER_ADMIN | — | Listar memberships administrativas |
 | POST | /api/v1/admin/providers/{providerId}/members | bearer | SUPER_ADMIN | — | Asociar administrador existente |
 | DELETE | /api/v1/admin/providers/{providerId}/members/{membershipId} | bearer | SUPER_ADMIN | — | Retirar administrador de este proveedor |
@@ -59,6 +60,11 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/admin/service-zones/{id}/activate | bearer | SUPER_ADMIN | — | Activar zona |
 | PUT | /api/v1/admin/service-zones/{id}/boundary | bearer | SUPER_ADMIN | — | Reemplazar boundary (zona INACTIVE) |
 | POST | /api/v1/admin/service-zones/{id}/deactivate | bearer | SUPER_ADMIN | — | Desactivar zona |
+| GET | /api/v1/admin/user-invitations | bearer | SUPER_ADMIN | — | Listar invitaciones |
+| GET | /api/v1/admin/user-invitations/{invitationId} | bearer | SUPER_ADMIN | — | Consultar invitación |
+| POST | /api/v1/admin/user-invitations/{invitationId}/resend | bearer | SUPER_ADMIN | — | Reenviar invitación |
+| POST | /api/v1/admin/user-invitations/{invitationId}/revoke | bearer | SUPER_ADMIN | — | Revocar invitación pendiente |
+| POST | /api/v1/auth/activate-account | Pública | — | — | Activar cuenta invitada |
 | POST | /api/v1/auth/login | Pública | — | — | AuthController_login |
 | POST | /api/v1/auth/logout | Pública | — | — | AuthController_logout |
 | GET | /api/v1/auth/me | bearer | — | — | AuthController_me |
@@ -86,6 +92,11 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/integrations/scope-check | integration-bearer | — | deliveries:read | Authorization probe for deliveries:read; does not access or implement deliveries |
 | POST | /api/v1/integrations/token | Pública | — | — | Exchange Client Credentials for a short-lived B2B token; no refresh token |
 | GET | /api/v1/provider/capacity | bearer | PROVIDER_ADMIN | — | Consultar uso de Drivers y Vehicles de mi proveedor |
+| GET | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Listar invitaciones de repartidores de mi proveedor |
+| POST | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Invitar repartidor a mi proveedor |
+| GET | /api/v1/provider/driver-invitations/{invitationId} | bearer | PROVIDER_ADMIN | — | Consultar invitación de repartidor |
+| POST | /api/v1/provider/driver-invitations/{invitationId}/resend | bearer | PROVIDER_ADMIN | — | Reenviar invitación de repartidor |
+| POST | /api/v1/provider/driver-invitations/{invitationId}/revoke | bearer | PROVIDER_ADMIN | — | Revocar invitación de repartidor |
 | GET | /api/v1/provider/drivers | bearer | PROVIDER_ADMIN | — | Listar Drivers de mi proveedor |
 | POST | /api/v1/provider/drivers | bearer | PROVIDER_ADMIN | — | Crear Driver en mi proveedor |
 | GET | /api/v1/provider/drivers/{driverId} | bearer | PROVIDER_ADMIN | — | Consultar Driver de mi proveedor |
@@ -100,5 +111,5 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Consultar vehículo de mi proveedor |
 | PATCH | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Editar vehículo de mi proveedor |
 | GET | /api/v1/provider/vehicles/{vehicleId}/assignments | bearer | PROVIDER_ADMIN | — | Historial de Drivers del vehículo |
-| GET | /api/v1/users | bearer | SUPER_ADMIN | — | UsersController_list |
+| GET | /api/v1/users | bearer | SUPER_ADMIN | — | Listar usuarios |
 | GET | /health | Pública | — | — | HealthController_check |
