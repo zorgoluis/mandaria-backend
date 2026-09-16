@@ -23,6 +23,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:seed:local": "npm run db:seed:local-provider-admins && npm run db:seed:local-driver-users && npm run db:seed:local-pricing",
     "db:seed:local-provider-admins": "tsx scripts/seed-local-provider-admins.ts",
     "db:seed:local-driver-users": "tsx scripts/seed-local-driver-users.ts",
     "db:seed:local-pricing": "tsx scripts/seed-local-pricing.ts",

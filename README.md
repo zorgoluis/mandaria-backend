@@ -37,6 +37,7 @@ Los comandos de desarrollo solicitados están disponibles en `package.json`:
 | `db:migrate` | Crear/aplicar migraciones de desarrollo; puede requerir una shadow database |
 | `db:deploy` | Aplicar únicamente migraciones existentes; usar en instalación y despliegue |
 | `db:seed`, `db:studio` | Bootstrap idempotente de SUPER_ADMIN y explorador de datos |
+| `db:seed:local` | **LOCAL/TEST ONLY**: ejecuta en orden los tres seeds locales (provider admins → driver users → pricing) |
 | `db:seed:local-provider-admins`, `verify:provider-admins` | **LOCAL/TEST ONLY**: escenario PROVIDER_ADMIN A/B/sin membership y su validación HTTP real |
 | `db:seed:local-driver-users`, `verify:drivers-vehicles` | **LOCAL/TEST ONLY**: Users DRIVER locales y validación HTTP real del escenario V1.4 |
 | `verify:delivery-requests` | **LOCAL/TEST ONLY**: validación HTTP real del escenario V1.5 con IntegrationClients locales A/B |
@@ -645,8 +646,7 @@ Invoke-RestMethod -Uri "$base/provider/capacity" -Headers $h
 
 ```powershell
 npm run db:deploy
-npm run db:seed:local-provider-admins
-npm run db:seed:local-driver-users      # driver-carlos|pedro|jose|luis|mario@mandaria.local, sólo Users DRIVER
+npm run db:seed:local                   # provider admins + driver users + pricing (o cada seed por separado)
 npm run build
 npm run start:prod                      # otra terminal
 npm run verify:drivers-vehicles         # escenario completo sobre "Rápidos de Coita"
