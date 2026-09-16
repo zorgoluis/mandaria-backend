@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
+import { PASSWORD_MAX_LENGTH } from '../common/password-policy.js';
 export class LoginDto {
   @ApiProperty()
   @Transform(({ value }: { value: unknown }) =>
@@ -12,7 +13,7 @@ export class LoginDto {
   @ApiProperty({ format: 'password' })
   @IsString()
   @MinLength(1)
-  @MaxLength(128)
+  @MaxLength(PASSWORD_MAX_LENGTH)
   password!: string;
 }
 export class RefreshDto {

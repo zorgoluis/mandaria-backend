@@ -217,11 +217,112 @@ try {
     ...fullSnapshot(),
     request: sql(upgradeDb, ['-c', requestColumns]),
   };
-  prisma(upgradeDb, ['migrate', 'deploy']);
+  sql(upgradeDb, [
+    '-f',
+    'prisma/migrations/20260915000600_routing_pricing_quotes/migration.sql',
+  ]);
+  prisma(upgradeDb, [
+    'migrate',
+    'resolve',
+    '--applied',
+    '20260915000600_routing_pricing_quotes',
+  ]);
   assert.deepEqual(
     { ...fullSnapshot(), request: sql(upgradeDb, ['-c', requestColumns]) },
     v15Snapshot,
   );
+  // V1.6 fixtures: zone, versioned plan with a band and an accepted quote must survive V1.6.1.
+  const zoneId = randomUUID();
+  const planId = randomUUID();
+  const bandId = randomUUID();
+  sql(upgradeDb, [
+    '-c',
+    `
+    INSERT INTO "ServiceZone" (id,code,name,status,currency,boundary,"minLatitude","maxLatitude","minLongitude","maxLongitude","updatedAt") VALUES ('${zoneId}','MIGRATION_ZONE','Migration zone','ACTIVE','MXN','{"type":"Polygon","coordinates":[[[-93.41,16.73],[-93.34,16.73],[-93.34,16.79],[-93.41,16.79],[-93.41,16.73]]]}',16.73,16.79,-93.41,-93.34,now());
+    INSERT INTO "RatePlan" (id,"serviceZoneId","serviceType",version,status,"quoteValidityMinutes",currency,"updatedAt") VALUES ('${planId}','${zoneId}','LOCAL_DELIVERY',1,'DRAFT',15,'MXN',now());
+    INSERT INTO "RateBand" (id,"ratePlanId","minDistanceMeters","maxDistanceMeters",amount,currency,"updatedAt") VALUES ('${bandId}','${planId}',0,10000,50.00,'MXN',now());
+    UPDATE "RatePlan" SET status='ACTIVE', "activatedAt"=now() WHERE id='${planId}';
+    INSERT INTO "DeliveryQuote" (id,"publicId","deliveryRequestId","serviceType","serviceZoneId","ratePlanId","rateBandId","distanceMeters","durationSeconds",amount,currency,"routingProvider","routeCalculatedAt",status,"expiresAt","acceptedAt","updatedAt") VALUES ('${randomUUID()}','MQ-000001','${deliveryRequestId}','LOCAL_DELIVERY','${zoneId}','${planId}','${bandId}',4700,780,50.00,'MXN','google',now(),'ACCEPTED',now() + interval '15 minutes',now(),now());
+  `,
+  ]);
+  v12Tables.push(
+    'DeliveryRequest',
+    'ServiceZone',
+    'RatePlan',
+    'RateBand',
+    'DeliveryQuote',
+  );
+  // V1.6.1 fixture: an inactive user with password must survive as DISABLED, never INVITED.
+  const disabledUserId = randomUUID();
+  sql(upgradeDb, [
+    '-c',
+    `INSERT INTO "User" (id,email,"passwordHash",role,active,"updatedAt") VALUES ('${disabledUserId}','disabled@example.test','${hash}','DRIVER',false,now());`,
+  ]);
+  const v16Snapshot = fullSnapshot();
+  prisma(upgradeDb, ['migrate', 'deploy']);
+  assert.deepEqual(fullSnapshot(), v16Snapshot);
+  for (const [table, rows] of [
+    ['ServiceZone', '1'],
+    ['RatePlan', '1'],
+    ['RateBand', '1'],
+    ['DeliveryQuote', '1'],
+    ['Vehicle', '1'],
+    ['IntegrationClient', '1'],
+    ['ProviderMembership', '1'],
+    ['Driver', '1'],
+  ])
+    assert.equal(
+      sql(upgradeDb, ['-c', `SELECT count(*) FROM "${table}"`]),
+      rows,
+    );
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      'SELECT count(*) FROM "User" WHERE "passwordHash" IS NULL',
+    ]),
+    '0',
+  );
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      `SELECT count(*) FROM "User" WHERE id='${disabledUserId}' AND active = false AND "passwordHash"='${hash}'`,
+    ]),
+    '1',
+  );
+  assert.equal(
+    sql(upgradeDb, ['-c', 'SELECT count(*) FROM "UserInvitation"']),
+    '0',
+  );
+  for (const db of [cleanDb, upgradeDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('User_active_password_check','UserInvitation_values_check','UserInvitation_userId_fkey','UserInvitation_providerId_fkey','UserInvitation_createdByUserId_fkey','UserInvitation_revokedByUserId_fkey')",
+      ]),
+      '6',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE (indexname = 'UserInvitation_pending_user_key' AND indexdef LIKE '%WHERE%PENDING%') OR indexname = 'UserInvitation_tokenHash_key'",
+      ]),
+      '2',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname = 'UserInvitation_immutable'",
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT is_nullable FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'passwordHash'",
+      ]),
+      'YES',
+    );
+  }
   assert.equal(
     sql(upgradeDb, [
       '-c',
@@ -229,10 +330,11 @@ try {
     ]),
     'LOCAL_DELIVERY',
   );
+  // Exactly the V1.6 pricing fixtures inserted above: the V1.6.1 upgrade adds no pricing rows.
   for (const table of ['ServiceZone', 'RatePlan', 'RateBand', 'DeliveryQuote'])
     assert.equal(
       sql(upgradeDb, ['-c', `SELECT count(*) FROM "${table}"`]),
-      '0',
+      '1',
     );
   for (const db of [cleanDb, upgradeDb]) {
     assert.equal(
@@ -353,7 +455,7 @@ try {
   );
   prisma(upgradeDb, ['migrate', 'deploy']);
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments and delivery requests preserved; V1.4-V1.6 constraints, triggers and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; V1.4-V1.6.1 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

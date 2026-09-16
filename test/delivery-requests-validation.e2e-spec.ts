@@ -389,9 +389,14 @@ describe.sequential(
       await prisma.$executeRawUnsafe(
         'CREATE TRIGGER e2e_force_package_failure BEFORE INSERT ON "DeliveryPackage" FOR EACH ROW EXECUTE FUNCTION e2e_force_package_failure()',
       );
+      // Scoped to this client: other E2E files create stops in parallel.
+      const stopsForClient = () =>
+        prisma.deliveryStop.count({
+          where: { deliveryRequest: { integrationClientId: clients[0] } },
+        });
       const key = randomUUID();
       const before = await countForClient();
-      const stopsBefore = await prisma.deliveryStop.count();
+      const stopsBefore = await stopsForClient();
       try {
         const failed = await create(
           valid({
@@ -412,7 +417,7 @@ describe.sequential(
         );
       }
       expect(await countForClient()).toBe(before);
-      expect(await prisma.deliveryStop.count()).toBe(stopsBefore);
+      expect(await stopsForClient()).toBe(stopsBefore);
       expect(
         await prisma.apiIdempotencyRecord.count({
           where: { integrationClientId: clients[0], key },
