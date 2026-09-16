@@ -1,4 +1,3 @@
-cat > /opt/mandaria/backend/src/bootstrap-admin.ts <<'EOF'
 import 'dotenv/config';
 import { PrismaClient, Role } from '@prisma/client';
 import * as argon2 from 'argon2';
@@ -66,4 +65,3 @@ main()
     process.exitCode = 1;
   })
   .finally(() => prisma.$disconnect());
-EOF
