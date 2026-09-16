@@ -26,7 +26,8 @@ export async function seedLocalDriverUsers(
         'Local seed email belongs to a non DRIVER user; refusing to change roles',
       );
     const samePassword =
-      existing && (await argon2.verify(existing.passwordHash, password));
+      existing?.passwordHash &&
+      (await argon2.verify(existing.passwordHash, password));
     const user = existing
       ? await prisma.user.update({
           where: { id: existing.id },

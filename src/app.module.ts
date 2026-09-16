@@ -13,6 +13,7 @@ import { DeliveryRequestsModule } from './delivery-requests/delivery-requests.mo
 import { ServiceZonesModule } from './service-zones/service-zones.module.js';
 import { RatePlansModule } from './rate-plans/rate-plans.module.js';
 import { DeliveryQuotesModule } from './delivery-quotes/delivery-quotes.module.js';
+import { InvitationsModule } from './invitations/invitations.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
@@ -27,6 +28,7 @@ import { DeliveryQuotesModule } from './delivery-quotes/delivery-quotes.module.j
     ServiceZonesModule,
     RatePlansModule,
     DeliveryQuotesModule,
+    InvitationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

@@ -2,6 +2,10 @@ import 'dotenv/config';
 import { PrismaClient, Role } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { z } from 'zod';
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from '../src/common/password-policy.js';
 const prisma = new PrismaClient();
 async function main() {
   const env = z
@@ -10,7 +14,10 @@ async function main() {
         .string()
         .email()
         .transform((v) => v.trim().toLowerCase()),
-      BOOTSTRAP_ADMIN_PASSWORD: z.string().min(16).max(128),
+      BOOTSTRAP_ADMIN_PASSWORD: z
+        .string()
+        .min(PASSWORD_MIN_LENGTH)
+        .max(PASSWORD_MAX_LENGTH),
     })
     .safeParse(process.env);
   if (!env.success)

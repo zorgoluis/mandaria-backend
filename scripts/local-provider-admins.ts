@@ -107,10 +107,9 @@ export async function seedLocalProviderAdmins(
           throw new Error(
             'Local seed email belongs to a non PROVIDER_ADMIN user; refusing to change roles',
           );
-        const samePassword = await argon2.verify(
-          existing.passwordHash,
-          options.password,
-        );
+        const samePassword =
+          existing.passwordHash !== null &&
+          (await argon2.verify(existing.passwordHash, options.password));
         if (!samePassword)
           await tx.refreshToken.updateMany({
             where: { userId: existing.id, revokedAt: null },

@@ -19,10 +19,13 @@ enum CredentialStatus {
   ACTIVE
   REVOKED
 }
+/// Account state is derived (V1.6.1): active = ACTIVE; inactive without passwordHash = INVITED
+/// (never activated); inactive with passwordHash = DISABLED. A CHECK forbids active without password.
 model User {
   id String @id @default(uuid()) @db.Uuid
   email String @unique
-  passwordHash String
+  /// null only while the account is INVITED; set exclusively by the account owner on activation.
+  passwordHash String?
   role Role
   active Boolean @default(true)
   emailVerifiedAt DateTime?
@@ -31,6 +34,9 @@ model User {
   refreshTokens RefreshToken[]
   providerMemberships ProviderMembership[]
   driver Driver?
+  invitations UserInvitation[] @relation("InvitationUser")
+  createdInvitations UserInvitation[] @relation("InvitationCreator")
+  revokedInvitations UserInvitation[] @relation("InvitationRevoker")
 }
 model RefreshToken {
   id String @id @default(uuid()) @db.Uuid
@@ -95,6 +101,7 @@ model DeliveryProvider {
   memberships ProviderMembership[]
   drivers Driver[]
   vehicles Vehicle[]
+  invitations UserInvitation[]
   @@index([type, status])
   @@index([createdAt, id])
 }
@@ -407,4 +414,46 @@ model DeliveryQuote {
   @@index([status, expiresAt])
   @@index([createdAt, id])
   @@index([serviceZoneId, createdAt])
+}
+
+/// EXPIRED is not persisted: a PENDING invitation whose expiresAt has passed is reported as EXPIRED.
+enum UserInvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+/// Invitation to activate a PROVIDER_ADMIN or DRIVER account for one provider. Stores only the
+/// SHA-256 hash of the activation token. The ProviderMembership or Driver is materialized on
+/// acceptance, so those tables keep holding active users only. At most one PENDING per user.
+model UserInvitation {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  /// Normalized (lowercase) email the invitation was sent to.
+  email String
+  role Role
+  providerId String @db.Uuid
+  /// PROVIDER_ADMIN only: local role of the membership created on acceptance.
+  membershipRole ProviderMemberRole?
+  /// DRIVER only: operational name of the Driver created on acceptance.
+  driverName String?
+  tokenHash String @unique @db.Char(64)
+  status UserInvitationStatus @default(PENDING)
+  expiresAt DateTime
+  /// When the current token was generated (creation or last resend).
+  tokenIssuedAt DateTime
+  resendCount Int @default(0)
+  acceptedAt DateTime?
+  revokedAt DateTime?
+  revokedByUserId String? @db.Uuid
+  createdByUserId String @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation("InvitationUser", fields: [userId], references: [id], onDelete: Restrict)
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  createdBy User @relation("InvitationCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  revokedBy User? @relation("InvitationRevoker", fields: [revokedByUserId], references: [id], onDelete: Restrict)
+  @@index([userId, createdAt])
+  @@index([providerId, role, status, createdAt])
+  @@index([status, expiresAt])
+  @@index([createdAt, id])
 }

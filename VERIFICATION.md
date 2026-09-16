@@ -1,3 +1,62 @@
+# CHECK V1.6.1-A — Validación backend (2026-09-16)
+
+| Verificación | Resultado |
+|---|---|
+| Migración limpia + V1.0 → … → V1.6 → V1.6.1 con usuarios, proveedores, memberships, drivers, vehículos, integraciones, solicitudes, zonas, tarifas y quotes | PASS |
+| HTTP real contra `dist/main.js` (logins reales, outbox local, 3 fases) | 24/24 PASS |
+| Bootstrap (seed y Docker): email INVITED y contraseña de 15 rechazados; creación e idempotencia | PASS |
+| Seeds locales y verify:user-invitations con NODE_ENV=production o base remota | Rechazados |
+| Arranque en producción con local_outbox, sin correo o MANDARIA_WEB_URL http | Rechazado |
+| prisma validate, tsc, build, Oxlint, ESLint, docs:check; unitarias | PASS; 69 |
+| E2E completa | 124/124 en 3 corridas consecutivas |
+
+No verificado: entrega SMTP real.
+
+# Verificación V1.6.1-A — User Provisioning, Invitations & Account Activation (2026-09-16)
+
+Rama `v1.6.1-creation_users`, paquete 1.6.1, Node.js 24.15.0, PostgreSQL 18 local. Docker y SMTP real no ejecutados.
+
+| Verificación | Resultado |
+|---|---|
+| Línea base antes de modificar | E2E 100/100; unitarias 51/52 (fallo de aislamiento de la prueba Google NOT_CONFIGURED con la key real del .env; corregido, sin llamadas a Google) |
+| Prisma validate / drift (migraciones vs schema) | PASS / migración vacía |
+| Migración `20260916000700_user_invitations` en mandaria_db y mandaria_test (sin reset) | PASS |
+| Limpia + V1.0 → … → V1.6 → V1.6.1 con fixtures (incluida cuenta inactiva) | PASS; usuarios y hashes idénticos, inactiva = DISABLED, 0 invitaciones; CHECK, índices, trigger y passwordHash nullable presentes |
+| TypeScript / Build / Oxlint / ESLint / docs:openapi / docs:check | PASS |
+| npm test | 69 PASS (52 + 17 V1.6.1: token/hash, expiración, errores, roles, contraseña, guardas de servicio, plantilla, SMTP simulado, outbox, configuración) |
+| npm run test:e2e | 124/124 PASS en suite completa y en cada archivo (24 V1.6.1). Una corrida completa previa: 113/124 por la caída nativa conocida de workers en Windows |
+| Flujo PROVIDER_ADMIN: invitación → User INVITED sin contraseña → token sólo como SHA-256 → activación Argon2id → membership OWNER → login, /auth/me, /provider/profile A, B 403, refresh, logout | PASS |
+| Flujo DRIVER: PROVIDER_ADMIN A invita → activación → Driver PENDING/OFFLINE en Provider A → login → /driver/me | PASS |
+| Payload de proveedor con role/providerId/membershipRole | 400; providerId ajeno en query 403 |
+| Aislamiento: Admin A → A ✅ / B ❌; Admin B → B ✅ / A ❌; leer/reenviar/revocar invitación ajena | PASS (403 / 404) |
+| DRIVER y PROVIDER_ADMIN en rutas SUPER_ADMIN; PROVIDER_ADMIN sin membership | 403 |
+| IntegrationClient en invitar, listar, detalle, resend, revoke, rutas de proveedor y /users | 401 |
+| Token expirado (now ≥ expiresAt) | 410 INVITATION_EXPIRED, sin activar; listado EXPIRED |
+| Reenvío: token nuevo, anterior 400 INVITATION_TOKEN_INVALID, vigencia reiniciada, mismo User; reenvío inmediato 429 | PASS |
+| Token reutilizado | 409 INVITATION_ALREADY_ACCEPTED |
+| Token revocado; revocar dos veces; reenviar revocada; reinvitar mismo email | 410; 200 idempotente; 409; 201 con el mismo User |
+| Email pendiente (también en mayúsculas), ACTIVE, SUPER_ADMIN, DISABLED | 409 USER_INVITATION_PENDING / USER_ALREADY_ACTIVE / USER_DISABLED, sin Users nuevos ni reactivación |
+| Roles y campos inválidos (SUPER_ADMIN, CUSTOMER, sin membershipRole/driverName, campos cruzados) | 400 |
+| Login de cuenta INVITED | 401 idéntico a contraseña incorrecta |
+| Contraseñas 15 y 129 caracteres; campos extra | 400 sin efectos; 16 caracteres aceptada |
+| Fallo del proveedor de correo | 201 emailDelivery FAILED; resend SENT |
+| Reserva de maxDrivers con invitaciones DRIVER pendientes; PROVIDER_ADMIN no consume lugar | PASS |
+| 20 invitaciones simultáneas mismo email (ruta SUPER_ADMIN y ruta PROVIDER_ADMIN) | 1 201 + 19 409; 1 User; 1 PENDING; 1 correo |
+| 10 reenvíos simultáneos | 1 rotación + 9 INVITATION_RESEND_COOLDOWN; hash = token del último correo |
+| 10 activaciones simultáneas del mismo token | 1 éxito + 9 409; 1 Driver |
+| Rate limits por IP | activación 11.ª 429; creación 21.ª 429; reenvío 11.ª 429 |
+| Invariantes SQL | User activo sin contraseña, segunda PENDING, cambiar proveedor, modificar ACCEPTED y rol SUPER_ADMIN rechazados |
+| Auditoría | Eventos presentes; sin tokens, hashes, contraseñas, emails ni JWT en logs |
+| Mutaciones M1–M8 | 8/8 detectadas |
+| `npm run db:seed` en mandaria_db | «SUPER_ADMIN already exists; unchanged»; 0 invitaciones antes y después |
+| Bootstrap en base limpia de verificación | crea SUPER_ADMIN Argon2id, segunda ejecución sin cambios, 0 invitaciones (email con espacios alrededor rechazado: comportamiento previo sin cambios) |
+| HTTP local `verify:user-invitations` (outbox local) | 3/3 PASS; Provider A local en maxDrivers 3/3 → 409 PROVIDER_DRIVER_LIMIT_REACHED correcto; flujo DRIVER con Admin B en Provider B; cuentas creadas eliminadas; outbox vacío |
+| Regresiones HTTP | verify:provider-admins 13/13, verify:drivers-vehicles 16/16, verify:delivery-requests 10/10, verify:delivery-quotes 9/9 (local_fake) |
+| Logs de las corridas locales | USER_INVITED 3, ACCEPTED 3, ACTIVATED 3, EMAIL_SENT 3, ACTIVATION_REJECTED 2, request_failed 0; 0 tokens, hashes, JWT, emails ni clientSecret |
+| Escaneo de secretos del .env en 39 archivos modificados y en API-CONTRACT.md | 0 coincidencias |
+
+No verificado: entrega por un servidor SMTP real (sin credenciales configuradas; adaptador probado con transporte simulado) y Docker.
+
 # Verificación V1.6-A — Routing, Service Zones, Rate Plans & Delivery Quotes (2026-09-15)
 
 Rama `1.6-routing_services_plan`, paquete 1.6.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado.

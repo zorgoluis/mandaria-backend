@@ -1,10 +1,10 @@
-# Mandaria — V1.6 Routing, Service Zones, Rate Plans y Delivery Quotes
+# Mandaria — V1.6.1 User Provisioning, Invitations y Account Activation
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. No reconstruye Auth humano ni despacha entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). No reconstruye Auth humano ni despacha entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -14,6 +14,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `drivers/`, `vehicles/`, `assignments/`: capacidad logística V1.4 (perfiles Driver, vehículos, asignaciones y `/driver`).
 - `delivery-requests/`: demanda B2B V1.5 y administración; `idempotency/`: registro reutilizable de Idempotency-Key.
 - `geo/`, `service-zones/`, `routing/`, `rate-plans/`, `delivery-quotes/`: cotización V1.6 (geometría interna, zonas, RoutingProvider, tarifas y Quotes).
+- `invitations/`, `mail/`: aprovisionamiento V1.6.1 (invitaciones, activación de cuenta y MailProvider).
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -42,6 +43,7 @@ Los comandos de desarrollo solicitados están disponibles en `package.json`:
 | `db:seed:local-driver-users`, `verify:drivers-vehicles` | **LOCAL/TEST ONLY**: Users DRIVER locales y validación HTTP real del escenario V1.4 |
 | `verify:delivery-requests` | **LOCAL/TEST ONLY**: validación HTTP real del escenario V1.5 con IntegrationClients locales A/B |
 | `db:seed:local-pricing`, `verify:delivery-quotes` | **LOCAL/TEST ONLY**: zonas/tarifa placeholder y validación HTTP real de cotización V1.6 |
+| `verify:user-invitations` | **LOCAL/TEST ONLY**: invitación → correo en outbox local → activación → login real de PROVIDER_ADMIN y DRIVER (V1.6.1) |
 | `routing:check-google` | Comprobación manual explícita de Google Routes (1 llamada facturable; requiere GOOGLE_ROUTES_API_KEY) |
 | `db:test:deploy` | Aplicar migraciones a la base de pruebas |
 | `test`, `test:watch`, `test:cov`, `test:e2e` | Vitest normal, watch, cobertura y E2E |
@@ -156,6 +158,11 @@ La migración `20260915000200_b2b_credentials`:
 | ROUTING_PROVIDER | `google` (por defecto) o `local_fake` (LOCAL/TEST ONLY; rechazado en producción) |
 | GOOGLE_ROUTES_API_KEY | Clave de Google Routes sólo en backend; obligatoria en producción con `google`; nunca versionar |
 | GOOGLE_ROUTES_TIMEOUT_MS, GOOGLE_ROUTES_MAX_RETRIES, GOOGLE_ROUTES_TRAVEL_MODE | Timeout por intento (1000–15000, 5000), reintentos transitorios (0–2, 1), DRIVE/TWO_WHEELER |
+| MANDARIA_WEB_URL | Base de Mandaria Web para `{url}/activate-account?token=…`; sin query, fragmento ni credenciales; https obligatorio en producción |
+| USER_INVITATION_TTL_HOURS, USER_INVITATION_RESEND_COOLDOWN_SECONDS | Vigencia de invitaciones (1–168, 24) y espera mínima entre reenvíos (0–3600, 60) |
+| MAIL_PROVIDER | `smtp` (obligatorio en producción) o `local_outbox` (LOCAL/TEST ONLY; default fuera de producción; rechazado en producción) |
+| MAIL_FROM, SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD | Remitente y relay SMTP; host y remitente obligatorios con smtp; usuario y contraseña juntos; nunca versionar |
+| LOCAL_MAIL_OUTBOX_DIR | **LOCAL/TEST ONLY**; carpeta del outbox local (default `<temp>/mandaria-mail-outbox`) |
 
 Los tres secretos JWT deben ser distintos. La aplicación falla al iniciar ante valores inválidos, sin imprimirlos. CORS vacío deshabilita acceso cross-origin del navegador; no se acepta `*`. CORS no sustituye autenticación server-to-server.
 
@@ -258,7 +265,10 @@ Prefijo `/api/v1` salvo health/docs:
 | POST | /auth/refresh | Refresh humano en body |
 | POST | /auth/logout | Refresh humano en body |
 | GET | /auth/me | Bearer humano |
-| GET | /users | SUPER_ADMIN |
+| GET | /users | SUPER_ADMIN; `status` INVITED/ACTIVE/DISABLED |
+| POST | /auth/activate-account | Pública; token de invitación |
+| POST, GET | /admin/providers/:providerId/invitations, /admin/user-invitations[/:id[/resend\|/revoke]] | SUPER_ADMIN (ver V1.6.1) |
+| POST, GET | /provider/driver-invitations[/:id[/resend\|/revoke]] | PROVIDER_ADMIN + membership |
 | POST | /integrations/token | Client Credentials en body |
 | GET | /integrations/me | Bearer B2B |
 | GET | /integrations/scope-check | Bearer B2B + deliveries:read |
@@ -288,7 +298,7 @@ Swagger distingue **User Bearer Authentication** (`bearer`) de **Integration Bea
 
 Helmet, DTOs con whitelist/forbidNonWhitelisted/transform, body 16 KiB, respuestas no-store y errores HTTP uniformes. Contraseñas humanas con Argon2id; secretos aleatorios/tokens con SHA-256.
 
-Límites por IP: global 100/min, login 5/min, refresh 20/min y token B2B 10/min. Health está exento. Los fallos B2B por ID desconocido, secreto incorrecto, revocación o suspensión usan el mismo 401 genérico. Un DTO mal formado recibe 400; el límite recibe 429.
+Límites por IP: global 100/min, login 5/min, refresh 20/min, token B2B 10/min, activación de cuenta 10/min, creación de invitaciones 20/min y reenvío 10/min. Health está exento. Los fallos B2B por ID desconocido, secreto incorrecto, revocación o suspensión usan el mismo 401 genérico. Un DTO mal formado recibe 400; el límite recibe 429.
 
 Logging JSON, sin bodies, query strings, headers de autorización, secretos ni tokens. Eventos:
 INTEGRATION_CREATED, INTEGRATION_SUSPENDED, INTEGRATION_ACTIVATED, INTEGRATION_REVOKED, CREDENTIAL_CREATED, CREDENTIAL_ROTATED, CREDENTIAL_REVOKED, INTEGRATION_AUTH_SUCCESS, INTEGRATION_AUTH_FAILED. Los eventos administrativos incluyen actorId y los IDs afectados.
@@ -538,6 +548,7 @@ Invoke-RestMethod -Uri "$base/provider/profile" -Headers $h
 
 Reglas del seed:
 - Rechaza `NODE_ENV` distinto de development/test, hosts de base de datos no locales y contraseñas débiles o iguales a la del bootstrap.
+- **No es un mecanismo de aprovisionamiento de producción.** Las cuentas reales se crean por invitación (V1.6.1).
 - No forma parte de `prisma db seed`; `scripts/` no se copia a la imagen Docker (sólo el entrypoint, que únicamente migra) y `tsx` es dependencia de desarrollo.
 - Nunca cambia el rol de un email existente con otro rol. Reactiva las cuentas sembradas, reestablece A/B en ACTIVE y deja exactamente las memberships indicadas (retira otras memberships de esas tres cuentas). Si la contraseña cambió, actualiza el hash y revoca sus refresh tokens.
 - `verify:provider-admins` crea y elimina sólo un IntegrationClient temporal; hace 4 logins, por lo que repetirlo antes de 60 s puede devolver 429.
@@ -898,6 +909,145 @@ npm run routing:check-google           # opcional: una llamada real a Google Rou
 - Los precios del seed son **placeholders**, no valores comerciales; la configuración de producción la crea un SUPER_ADMIN por API. El seed se niega fuera de development/test o con base no local y no está conectado al flujo de producción.
 - Pruebas: `test/pricing.spec.ts` (geometría, bandas, adaptador Google con HTTP simulado, configuración), `test/pricing-admin.e2e-spec.ts` (zonas, planes, versionado, concurrencia, triggers, roles) y `test/delivery-quotes.e2e-spec.ts` (bandas 0/1999/2000/3999/4000/9999/10000/11400, ciclo de vida, snapshot, expiración con reloj simulado, errores de zona, tarifa y routing, cancelación, 20 cotizaciones y 10 aceptaciones concurrentes, aislamiento, scopes, roles, auditoría y Swagger). `node scripts/verify-migrations.mjs` cubre V1.5 → V1.6 con datos.
 
+## Production User Provisioning (V1.6.1-A)
+
+Única vía soportada para que una persona real entre a Mandaria como PROVIDER_ADMIN o DRIVER. Ningún administrador define ni conoce la contraseña de otra persona; no existe `POST /users` con contraseña.
+
+```text
+SUPER_ADMIN
+  → Provider A → invitar PROVIDER_ADMIN (email + membershipRole)
+  → invitar DRIVER (email + driverName)            [también posible]
+
+PROVIDER_ADMIN (con membership en Provider A)
+  → invitar DRIVER sólo en Provider A
+
+Persona invitada
+  → correo: {MANDARIA_WEB_URL}/activate-account?token=…
+  → POST /auth/activate-account { token, password }
+  → cuenta ACTIVE (+ ProviderMembership o Driver)
+  → POST /auth/login normal
+```
+
+SUPER_ADMIN sigue creándose sólo con el bootstrap (`npm run db:seed`, `BOOTSTRAP_ADMIN_EMAIL/PASSWORD`), que no usa invitaciones. No se pueden invitar SUPER_ADMIN. Los seeds locales siguen existiendo para desarrollo, pero **no son un mecanismo de aprovisionamiento de producción**.
+
+### Matriz de roles
+
+| Actor | Puede invitar | Alcance |
+|---|---|---|
+| SUPER_ADMIN | PROVIDER_ADMIN, DRIVER | Cualquier proveedor (`/admin/providers/:providerId/invitations`) |
+| PROVIDER_ADMIN | DRIVER | Sólo proveedores con membership vigente (`/provider/driver-invitations`); el payload no acepta `role` ni `providerId` |
+| DRIVER | — | 403 |
+| IntegrationClient | — | 401 en todas las rutas de usuarios e invitaciones |
+
+La política vive en `src/invitations/invitation-policy.ts` y el servicio la vuelve a comprobar aunque el controller ya limite el rol.
+
+### Estado de la cuenta (INVITED / ACTIVE / DISABLED)
+
+Decisión menos disruptiva: no se agregó columna de estado. `User.active` se conserva (guards, servicios, seeds y pruebas lo usan) y `passwordHash` pasó a ser opcional:
+
+| Estado | Representación | Login |
+|---|---|---|
+| INVITED | `active = false` y `passwordHash IS NULL` (nunca activada) | 401 idéntico a contraseña incorrecta |
+| ACTIVE | `active = true` (CHECK: siempre con `passwordHash`) | Normal |
+| DISABLED | `active = false` con `passwordHash` | 401, como antes |
+
+`GET /users` devuelve `status` derivado y acepta `?status=INVITED|ACTIVE|DISABLED`; la migración conserva todas las cuentas previas (activas → ACTIVE, inactivas → DISABLED). No existe API de desactivación; el comportamiento previo de `active = false` en login, refresh y guards no cambió.
+
+### Ciclo de vida de la invitación
+
+| Estado | Persistido | Significado |
+|---|---|---|
+| PENDING | Sí | Token vigente (`now < expiresAt`) |
+| EXPIRED | **No** | PENDING con `now >= expiresAt`; se calcula en lectura y filtros, sin cron |
+| ACCEPTED | Sí | Cuenta activada; token inservible |
+| REVOKED | Sí | Revocada por un administrador; token inservible |
+
+- **Token:** 256 bits aleatorios (`base64url`, 43 caracteres). Sólo se guarda su SHA-256 (`tokenHash`); el valor en claro existe únicamente en el correo. Nunca se devuelve en respuestas, Swagger ni logs.
+- **Vigencia:** `USER_INVITATION_TTL_HOURS` (default 24, 1–168).
+- **Una sola invitación válida:** índice único parcial `UserInvitation(userId) WHERE status = 'PENDING'`, más bloqueo de fila del User. 20 invitaciones simultáneas al mismo email producen 1 User y 1 invitación (probado).
+- **Reenvío:** rota el token en la misma fila (el enlace anterior deja de funcionar), reinicia `expiresAt`, incrementa `resendCount` y envía un correo nuevo. Sirve para PENDING vigentes o vencidas. Enfriamiento `USER_INVITATION_RESEND_COOLDOWN_SECONDS` (default 60) comprobado bajo bloqueo: reenvíos simultáneos rotan el token una sola vez.
+- **Revocación:** PENDING → REVOKED; repetir es idempotente; ACCEPTED → 409. El User queda INVITED (sin contraseña ni acceso) y el email puede invitarse de nuevo reutilizando el mismo User. No se borra historial.
+- **Activación (transacción única):** token válido y vigente → contraseña Argon2id → User ACTIVE con el rol invitado y `emailVerifiedAt` → ProviderMembership o Driver → invitación ACCEPTED. Cualquier error revierte todo. Estados, token y User se vuelven a comprobar bajo bloqueo: activaciones simultáneas producen un éxito y el resto `INVITATION_ALREADY_ACCEPTED`.
+- **Inmutabilidad (trigger `UserInvitation_immutable`):** usuario, email, rol, proveedor, membershipRole, driverName y creador nunca cambian; una invitación ACCEPTED o REVOKED ya no puede modificarse.
+
+### Membership y Driver: se materializan al activar
+
+Decisión: opción **B** para ambos roles. La invitación guarda `providerId` y `membershipRole` (PROVIDER_ADMIN) o `driverName` (DRIVER); la membership o el Driver se crean en la transacción de activación. Así se preservan las invariantes existentes de V1.2/V1.4 (una membership o un Driver siempre pertenecen a un User activo con el rol correcto), no hace falta limpiar nada al revocar y un proveedor nunca ve en `/provider/drivers` a alguien que aún no aceptó. `POST /admin/providers/:providerId/members` y `POST …/drivers` siguen disponibles para Users que ya estén activos.
+
+Capacidad: una invitación DRIVER PENDING vigente **reserva un lugar**: Drivers + invitaciones DRIVER pendientes vigentes no pueden superar `maxDrivers` (409 `PROVIDER_DRIVER_LIMIT_REACHED`). Al activar se vuelve a comprobar con bloqueo del proveedor.
+
+### Endpoints
+
+| Método | Ruta | Autorización | Resultado |
+|---|---|---|---|
+| POST | /admin/providers/:providerId/invitations | SUPER_ADMIN | 201 invitación + `emailDelivery` |
+| GET | /admin/user-invitations | SUPER_ADMIN | Paginado; filtros `status`, `role`, `providerId`, `search` |
+| GET | /admin/user-invitations/:invitationId | SUPER_ADMIN | Detalle |
+| POST | /admin/user-invitations/:invitationId/resend | SUPER_ADMIN | 200 token rotado + correo |
+| POST | /admin/user-invitations/:invitationId/revoke | SUPER_ADMIN | 200 REVOKED |
+| POST | /provider/driver-invitations[?providerId] | PROVIDER_ADMIN + membership | 201 invitación DRIVER |
+| GET | /provider/driver-invitations[?providerId] | PROVIDER_ADMIN + membership | Sólo invitaciones DRIVER de su proveedor |
+| GET | /provider/driver-invitations/:invitationId | PROVIDER_ADMIN + membership | 404 fuera de su proveedor |
+| POST | /provider/driver-invitations/:invitationId/resend | PROVIDER_ADMIN + membership | Igual que admin |
+| POST | /provider/driver-invitations/:invitationId/revoke | PROVIDER_ADMIN + membership | Igual que admin |
+| POST | /auth/activate-account | Pública (token) | 200 `{status:"ACTIVE", email, role}`; no emite sesión |
+| GET | /users[?status] | SUPER_ADMIN | Incluye `status` derivado |
+
+DTOs: SUPER_ADMIN `{ email, role: PROVIDER_ADMIN|DRIVER, membershipRole? (OWNER|ADMIN, obligatorio con PROVIDER_ADMIN), driverName? (1–100, obligatorio con DRIVER) }`; PROVIDER_ADMIN `{ email, driverName }`; activación `{ token, password }`. Email normalizado (trim + minúsculas) igual que login. La contraseña reutiliza la política real del bootstrap: **16–128 caracteres** (`src/common/password-policy.ts`, compartida por bootstrap, activación y límite de login).
+
+### Errores de dominio (`code`)
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| USER_ALREADY_ACTIVE | 409 | El email pertenece a una cuenta ACTIVE (no se crea otro User) |
+| USER_INVITATION_PENDING | 409 | Ya hay invitación PENDING (vigente o vencida): usar resend |
+| USER_DISABLED | 409 | Cuenta DISABLED: no se reactiva por invitación; requiere política administrativa explícita |
+| PROVIDER_DRIVER_LIMIT_REACHED | 409 | Sin lugar para otro Driver (al invitar, reenviar o activar) |
+| INVITATION_NOT_PENDING | 409 | Reenviar una invitación aceptada/revocada o revocar una aceptada |
+| INVITATION_RESEND_COOLDOWN | 429 | Reenvío antes del enfriamiento |
+| INVITATION_TOKEN_INVALID | 400 | Token desconocido o reemplazado por un reenvío |
+| INVITATION_EXPIRED | 410 | `now >= expiresAt` |
+| INVITATION_REVOKED | 410 | Invitación revocada |
+| INVITATION_ALREADY_ACCEPTED | 409 | Token ya usado |
+| ACCOUNT_NOT_ACTIVATABLE | 409 | La cuenta ya no está INVITED |
+| MAIL_NOT_CONFIGURED | 503 | Falta `MANDARIA_WEB_URL`; no se crea ni rota nada |
+
+El endpoint público trabaja sólo con el token: no acepta email ni revela si una cuenta existe. Los administradores autenticados sí reciben los conflictos útiles de su alcance.
+
+### Correo (MailProvider)
+
+El dominio depende sólo de la interfaz `MailProvider.sendUserInvitation(...)` (`src/mail/`). Adaptadores:
+
+| MAIL_PROVIDER | Uso |
+|---|---|
+| `smtp` | Producción (obligatorio). Cualquier relay SMTP (Resend, SES, Postmark, Mailgun, propio) vía nodemailer; STARTTLS obligatorio en producción salvo `SMTP_SECURE=true`; timeouts; errores reducidos a un código (`EAUTH`, `ECONNECTION`…) |
+| `local_outbox` | **LOCAL/TEST ONLY** y default fuera de producción: escribe cada correo como JSON privado en `LOCAL_MAIL_OUTBOX_DIR` o `<temp del SO>/mandaria-mail-outbox`, fuera del repositorio. Contiene el enlace con token: nunca usar en producción (la configuración lo rechaza) |
+| FakeMailProvider | Sólo pruebas automatizadas (`test/support/fake-mail.provider.ts`); nunca envían correo real |
+
+El correo se envía **después** del commit: si falla, la invitación queda PENDING, la respuesta indica `emailDelivery: "FAILED"` y puede reenviarse. Plantilla en español con proveedor, rol (Administrador de proveedor / Repartidor), botón «Activar cuenta» y fecha de expiración en hora del centro de México; nunca incluye contraseña. Recomendación para Mandaria Web: leer `token` de la URL, eliminarlo del historial (`history.replaceState`) y servir la página con `Referrer-Policy: no-referrer`.
+
+Configuración (ver `.env.example`): `MANDARIA_WEB_URL` (https obligatorio en producción), `USER_INVITATION_TTL_HOURS`, `USER_INVITATION_RESEND_COOLDOWN_SECONDS`, `MAIL_PROVIDER`, `MAIL_FROM`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`/`SMTP_PASSWORD` (juntos), `LOCAL_MAIL_OUTBOX_DIR`. **Actualización de despliegues:** con `NODE_ENV=production` el backend no arranca sin `MAIL_PROVIDER=smtp`, `SMTP_HOST`, `MAIL_FROM` y `MANDARIA_WEB_URL` https.
+
+### Seguridad, límites y auditoría
+
+- Límites por IP: creación 20/min (por ruta), reenvío 10/min, activación 10/min; además el enfriamiento por invitación evita abuso de correo.
+- Bloqueos: proveedor (DRIVER) → User → invitación, en ese orden en invitar, reenviar y activar.
+- Eventos (logs JSON): `USER_INVITED`, `USER_INVITATION_RESENT`, `USER_INVITATION_REVOKED`, `USER_INVITATION_ACCEPTED`, `USER_ACTIVATED`, `PROVIDER_MEMBER_ADDED`/`DRIVER_CREATED` con `source: "invitation"`, `USER_INVITATION_EMAIL_SENT`/`USER_INVITATION_EMAIL_FAILED` (con `reason`) y `USER_ACTIVATION_REJECTED` (con `reason`). Incluyen `invitationId`, `targetUserId`, `role`, `providerId`, `actorId` y marca de tiempo; nunca token, hash, contraseña, email ni JWT (verificado en E2E).
+
+### Verificación local
+
+```powershell
+npm run db:seed
+npm run db:seed:local-provider-admins
+# backend con salida de correo local y URL de Mandaria Web (sin editar .env versionados):
+$env:MAIL_PROVIDER='local_outbox'; $env:MANDARIA_WEB_URL='http://localhost:5173'; node dist/main.js
+npm run verify:user-invitations
+```
+
+El script usa login real (5 logins), lee el token del outbox local como lo haría la persona invitada, comprueba `Admin A → Provider A ✅ / Provider B ❌`, activación, reutilización rechazada y `/driver/me`, y elimina sólo las cuentas que creó. No imprime contraseñas ni tokens.
+
+Pruebas: `test/invitations.spec.ts` (token/hash, expiración, errores, matriz de roles, política de contraseña, validaciones previas a la base, plantilla, SMTP con transporte simulado, outbox local y configuración) y `test/user-invitations.e2e-spec.ts` (flujos PROVIDER_ADMIN y DRIVER completos con login/refresh/logout, aislamiento A/B en ambos sentidos, matriz de roles, IntegrationClient, expirado, reutilizado, revocado, duplicados, ACTIVE/DISABLED, validaciones, fallo de correo, reserva de lugares, concurrencia de invitación/reenvío/activación, rate limits, invariantes SQL y auditoría sin secretos). `node scripts/verify-migrations.mjs` cubre V1.6 → V1.6.1 con datos.
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -909,7 +1059,7 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - Limitador en memoria para una instancia; antes de escalar usar almacenamiento compartido y configurar proxies confiables.
 - Auditoría actual en logs, sin almacén persistente empresarial.
 - Listados anteriores de Users/Integrations acotados a 100; Providers, memberships, Drivers, Vehicles e historiales ya tienen paginación.
-- V1.4 no provee alta/invitación de Users DRIVER por API: se asocian Users existentes (local: seed). Un PROVIDER_ADMIN que conozca el UUID de un User DRIVER sin perfil puede asociarlo; la provisión controlada queda pendiente.
+- V1.4: `POST …/drivers` sigue aceptando el UUID de un User DRIVER activo sin perfil; desde V1.6.1 la vía de alta soportada es la invitación, que crea el Driver al activar.
 - Cambiar un vehículo a INACTIVE/MAINTENANCE/SUSPENDED o suspender un Driver no cierra su asignación vigente; la política con entregas en curso se define en V1.5.
 - No existe eliminación ni transferencia de Drivers/Vehicles entre proveedores; por eso todos los registros cuentan para los límites.
 - ApiIdempotencyRecord no expira todavía; definir retención antes de volumen alto. El rate limit de creación B2B es por IP (clientes detrás de la misma IP comparten cupo).
@@ -921,13 +1071,18 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.6: Google Routes verificado una vez contra la API real (`routing:check-google` y cotización HTTP con `ROUTING_PROVIDER=google`); las pruebas automatizadas siguen usando respuestas HTTP simuladas y no consumen cuota.
 - V1.6: sin DELETE de bandas por API; a nivel SQL una banda no usada de un plan ACTIVE podría borrarse manualmente (las usadas están protegidas por FK). La cotización detecta la anomalía como RATE_CONFIGURATION_INVALID.
 - V1.6: rate limit de cotización por IP; ROUTING_CALCULATED/FAILED en logs, sin métricas agregadas.
+- V1.6.1: no hay recuperación de contraseña ni API para deshabilitar/reactivar cuentas; USER_DISABLED exige una política administrativa futura.
+- V1.6.1: el token viaja en la query de `/activate-account` (contrato pedido); Mandaria Web debe retirarlo del historial y usar `Referrer-Policy: no-referrer`.
+- V1.6.1: el correo se envía tras el commit sin cola ni reintentos automáticos; un fallo se reporta como `emailDelivery: FAILED` y se resuelve con resend.
+- V1.6.1: los límites de invitación son por IP en memoria; administradores autenticados pueden saber si un email ya tiene cuenta (errores útiles de su alcance).
+- V1.6.1: el outbox local guarda enlaces con token en claro en la carpeta temporal; es sólo para desarrollo y se rechaza en producción.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.6 / V1.7+
+## Fuera de V1.6.1 / V1.7+
 
 No se implementaron Dispatch (asignación de proveedor, Driver o vehículo), hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
-Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. Email, recuperación de contraseña y auditoría persistente siguen pendientes para versiones posteriores.
+Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API, Independent Driver (V1.9) y auditoría persistente siguen pendientes.
