@@ -1,3 +1,17 @@
+# CHECK V1.6.1-A — Validación backend (2026-09-16)
+
+| Verificación | Resultado |
+|---|---|
+| Migración limpia + V1.0 → … → V1.6 → V1.6.1 con usuarios, proveedores, memberships, drivers, vehículos, integraciones, solicitudes, zonas, tarifas y quotes | PASS |
+| HTTP real contra `dist/main.js` (logins reales, outbox local, 3 fases) | 24/24 PASS |
+| Bootstrap (seed y Docker): email INVITED y contraseña de 15 rechazados; creación e idempotencia | PASS |
+| Seeds locales y verify:user-invitations con NODE_ENV=production o base remota | Rechazados |
+| Arranque en producción con local_outbox, sin correo o MANDARIA_WEB_URL http | Rechazado |
+| prisma validate, tsc, build, Oxlint, ESLint, docs:check; unitarias | PASS; 69 |
+| E2E completa | 124/124 en 3 corridas consecutivas |
+
+No verificado: entrega SMTP real.
+
 # Verificación V1.6.1-A — User Provisioning, Invitations & Account Activation (2026-09-16)
 
 Rama `v1.6.1-creation_users`, paquete 1.6.1, Node.js 24.15.0, PostgreSQL 18 local. Docker y SMTP real no ejecutados.
