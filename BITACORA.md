@@ -4,13 +4,13 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
-- **Versión del paquete:** 1.6.1 (V1.6.1-A User Provisioning, Invitations & Account Activation).
-- **Rama activa:** `v1.6.1-creation_users`, del propietario (incluye merges de V1.6 en QA/main y sus commits de despliegue `fix`/`fix1`). V1.6.1 commiteada localmente por solicitud del propietario; sin push.
+- **Versión del paquete:** 1.7.0 (V1.7-A Dispatch Engine & Provider Claiming).
+- **Rama activa:** `v1.7-dispatch_engine`, creada por el propietario tras el merge de V1.6.1 (PR #10). V1.7 sin commit ni push (instrucción del propietario).
 - **Repositorio remoto:** https://github.com/zorgoluis/mandaria-backend.git. Entrega V1.2 en `V1_2-Proveedores_Reparto`.
-- **Objetivo actual:** V1.6.1-A aprovisionamiento real de PROVIDER_ADMIN/DRIVER por invitación y activación de cuenta sobre V1.0–V1.6. V1.7 (Dispatch) no iniciado.
+- **Objetivo actual:** V1.7-A Dispatch: Quote ACCEPTED → Dispatch OPEN con candidatos elegibles y claim atómico por proveedor. V1.8 (sockets/web) no iniciado; sin asignación de Driver/Vehicle.
 - **Herramientas:** scripts npm ampliados con OpenAPI exportable, matriz de acceso, Oxlint y configuración Prisma de pruebas; entrega autorizada en la rama actual.
-- **Estado funcional V1.6.1-A:** implementado y verificado localmente el 2026-09-16; 69 pruebas unitarias/HTTP y 124 E2E correctos (suite completa y cada archivo; una ejecución completa previa sufrió la caída nativa conocida de workers en Windows); validación HTTP V1.6.1 3/3 y regresiones HTTP V1.6 9/9, V1.5 10/10, V1.4 16/16 y V1.2 13/13. V1.6-A sigue como se documentó.
-- **Definition of Done:** requisitos V1.6.1-A verificados localmente (ver VERIFICATION.md). Envío SMTP real no ejecutado (no hay servidor ni credenciales SMTP configurados; adaptador probado con transporte simulado). Docker sigue pospuesto por el propietario.
+- **Estado funcional V1.7-A:** implementado y verificado localmente el 2026-09-16; 81 pruebas unitarias; E2E 137/137 ejecutando cada archivo por separado (las corridas completas en paralelo sufren casi siempre la caída nativa conocida de workers en Windows, sin fallos reales); mutaciones 8/8; verify-migrations V1.0 → V1.7 PASS.
+- **Definition of Done:** requisitos V1.7-A verificados localmente (ver VERIFICATION.md). Suite E2E completa limpia no obtenida en una sola corrida por la caída nativa de Windows; cada archivo pasa. Docker sigue pospuesto por el propietario.
 - **Modalidad vigente:** Node.js y PostgreSQL locales; no levantar contenedores.
 - **Base local configurada:** `mandaria_db`; base separada para E2E: `mandaria_test`.
 - **Configuración:** `.env` local. **Alerta 2026-09-16:** el commit del propietario `2ccd1c5` («git fix») lo quitó de `.gitignore` y lo versionó con valores reales en un repositorio público (origin/main, QA y ramas de trabajo). Se informó al propietario, que decidió no tocarlo por ahora; se recomienda rotar la API key de Google, los tres secretos JWT y las contraseñas. V1.6.1 no modifica `.env` ni `.gitignore`. No copiar sus valores a esta bitácora.
@@ -56,6 +56,9 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - V1.6.1: UserInvitation (PENDING/ACCEPTED/REVOKED; EXPIRED derivado de expiresAt, sin cron) con token de 256 bits guardado sólo como SHA-256, TTL configurable (24 h), índice único parcial de una PENDING por User, reenvío que rota el token en la misma fila con enfriamiento bajo bloqueo, revocación idempotente y trigger de inmutabilidad.
 - V1.6.1: membership/Driver se materializan al activar (opción B) para conservar las invariantes V1.2/V1.4; las invitaciones DRIVER pendientes vigentes reservan lugar de maxDrivers. Activación en una transacción con orden de bloqueo proveedor → User → invitación.
 - V1.6.1: MailProvider (`src/mail/`) con SMTP (nodemailer, producción), local_outbox (LOCAL/TEST ONLY, rechazado en producción) y FakeMailProvider en pruebas. Correo tras el commit; fallo → `emailDelivery: FAILED` y resend. Política de contraseña 16–128 compartida (`src/common/password-policy.ts`).
+- V1.7: Dispatch se abre en la misma transacción que acepta la Quote (único por deliveryQuoteId; backfill EXPIRED para ACCEPTED previas). Elegibilidad = proveedor ACTIVE + ProviderServiceCoverage ACTIVE de la ServiceZone y ServiceType de la Quote; candidatos como snapshot. Sin candidatos no falla la aceptación: OPEN sin candidatos y señal derivada noProviderAvailable (sin estado NO_PROVIDER_FOUND).
+- V1.7: estados Dispatch OPEN/CLAIMED/EXPIRED/CANCELLED y candidato OFFERED/CLAIMED/RELEASED (sin EXCLUDED); expiración perezosa con DISPATCH_TTL_MINUTES (10). Claim con bloqueo FOR UPDATE de la fila del Dispatch, índice parcial de un candidato CLAIMED y triggers de transición; liberación sólo del dueño, sin reclamo posterior; cancelación integrada en la cancelación oficial de DeliveryRequest conservando claimedByProviderId.
+- V1.7: vistas de proveedor por access OWNER/OFFER/SUMMARY (contactos, instrucciones y referencias sólo para el dueño; nunca IntegrationClient ni otros candidatos). SUPER_ADMIN, DRIVER e IntegrationClient no reclaman.
 - Paginación nueva reutilizable page/pageSize (default 1/20, máximo 100 por página), filtros type/status/search y orden estable. No se cambió el contrato de listados V1.1.
 
 ## Mapa de archivos
@@ -94,6 +97,9 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 | `prisma/migrations/20260916000700_user_invitations/migration.sql` | Migración V1.6.1: UserInvitation, passwordHash opcional, CHECK, índice parcial y trigger |
 | `scripts/verify-user-invitations-local.ts` | LOCAL/TEST ONLY: validación HTTP real V1.6.1 con outbox local |
 | `test/invitations.spec.ts`, `test/user-invitations.e2e-spec.ts`, `test/support/fake-mail.provider.ts` | Pruebas V1.6.1 |
+| `src/dispatch/` | V1.7: Dispatch, candidatos, coberturas, claim/release y vistas por access |
+| `prisma/migrations/20260917000800_dispatch_engine/migration.sql` | Migración V1.7: tablas, únicos, índice parcial, CHECK, triggers y backfill |
+| `test/dispatch.spec.ts`, `test/dispatch.e2e-spec.ts` | Pruebas V1.7 |
 | `Dockerfile`, `docker-compose.yml` | Preparación para uso futuro, ejecución pendiente |
 
 ## Verificaciones históricas del Core
@@ -336,3 +342,27 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Calidad:** prisma validate, tsc, build, Oxlint, ESLint, docs:check; 69 unitarias; E2E 124/124 en 3 corridas completas consecutivas; verify-migrations PASS.
 - **Observado:** el `.env` local (versionado en repositorio público) contiene ahora configuración SMTP real sin commitear; no se modificó y no se envió correo real.
 - **Pendientes:** entrega SMTP real no validada; una invitación PENDING vencida bloquea invitar el mismo email desde otro proveedor hasta que su creador o SUPER_ADMIN la revoque o reenvíe.
+
+### 2026-09-16 — V1.7-A Dispatch Engine & Provider Claiming
+
+- **Solicitud:** Dispatch automático al aceptar Quote, candidatos elegibles por zona/servicio, claim atómico por PROVIDER_ADMIN, liberación, expiración, cancelación, auditoría, migración, Swagger, contrato API y README. Sin asignación de Driver/Vehicle, sockets, GPS ni V1.8. Sin commit/push.
+- **Inspección:** rama `v1.7-dispatch_engine` (merge de V1.6.1). Aceptación de Quote idempotente por estado (sin Idempotency-Key) y serializada por la fila de la DeliveryRequest; cancelación V1.5 transaccional que ya cancela Quotes OFFERED; DeliveryProvider sin relación con zonas ni tipos de servicio; auditoría en logs JSON; throttler por IP. Las E2E V1.6 insertan Quotes ACCEPTED directamente, por lo que el invariante ACCEPTED ⇒ Dispatch se garantiza con la transacción de aceptación, el único y el backfill, no con un trigger diferido.
+- **Línea base:** 69 unitarias; E2E 122/124 con 1 caída nativa conocida (sin fallos reales).
+- **Prisma:** enums ProviderServiceCoverageStatus, DispatchStatus, DispatchCandidateStatus; modelos ProviderServiceCoverage, Dispatch, DispatchCandidate. Migración `20260917000800_dispatch_engine` aplicada sin reset en mandaria_db (backfill: 4 Quotes ACCEPTED → 4 Dispatch EXPIRED, 0 huérfanas) y mandaria_test; drift vacío.
+- **API:** `GET /provider/dispatches`, `GET /provider/dispatches/:id`, `POST /provider/dispatches/:id/claim`, `POST /provider/dispatches/:id/release`, `GET /provider/service-coverages`, `GET /admin/dispatches[/:id]`, `POST|GET /admin/providers/:providerId/service-coverages`, `PATCH …/service-coverages/:id`. Aceptación y cancelación reutilizan sus endpoints V1.5/V1.6.
+- **Hallazgos durante la implementación:** el claim ignoraba en silencio un `providerId` en el body (seguro, pero ambiguo) → DTO vacío para rechazar cualquier campo con 400; la prueba de concurrencia superaba el límite real de 60 claims/min → bloque con app propia; la operación de listado de coberturas incumplía la convención documental (>60 caracteres) detectada por la E2E V1.2 → descripción completada.
+- **Verificaciones:** prisma validate, tsc, build, Oxlint, ESLint, Prettier (archivos nuevos), docs:openapi/docs:check; 81 unitarias (+12); E2E por archivo 137/137 (+13 dispatch); mutaciones M1–M8 detectadas (claim sin bloqueo, elegibilidad sin estado de proveedor, reclamo tras liberar, expiración ignorada, aceptación sin Dispatch, cancelación sin cerrar Dispatch, detalle sin aislamiento, liberación por no dueño); verify-migrations limpia + V1.0 → V1.7 (`mandaria_clean_841e75113d_test`/`mandaria_upgrade_841e75113d_test`); 7 corridas completas de E2E con 1–2 caídas nativas cada una y 0 pruebas fallidas.
+- **Otros cambios:** `.env.example` con DISPATCH_TTL_MINUTES; verificador de migraciones con backfill y objetos V1.7; `mandaria-frontend/docs/API-CONTRACT.md` con la extensión V1.7 (sólo documentación, sin commit). `.env` del propietario no modificado.
+- **No verificado:** servidor HTTP real con `dist/main.js` para V1.7 (validado con E2E HTTP en proceso y login real); Docker.
+- **Pendientes:** V1.8 (notificaciones/web), asignación de Driver/Vehicle, capacidad real en elegibilidad; caída nativa E2E en Windows.
+
+### 2026-09-16 — CHECK V1.7-A (seguridad, concurrencia y dominio de Dispatch)
+
+- **Solicitud:** intentar romper Quote ACCEPTED → Dispatch → Candidate → Claim → Release con concurrencia y manipulación de IDs; corregir sólo bugs reales. Sin commit/push.
+- **Línea base:** prisma validate, tsc, build, Oxlint, ESLint, docs:check PASS; 81 unitarias; E2E 137/137 por archivo.
+- **Validación real:** validador temporal (fuera del repo) contra `dist/main.js` en 4 arranques (TTL 10 y TTL 1) con logins reales, fixtures locales propios y limpieza total: 24/24 PASS. Concurrencia: 20 aceptaciones simultáneas → 1 Dispatch y 1 DISPATCH_OPENED; A+B simultáneos (3 rondas) → 1 éxito/1 409; 40 claims (20 A + 20 B) → 1 transición, 1 evento; 20 claims del mismo proveedor → 1 evento; 8 liberaciones simultáneas → 1; carrera claim vs release (3 rondas, desenlaces B/B/OPEN) siempre en estado válido; cancelación CLAIMED concurrente con claim y release → CANCELLED coherente.
+- **Seguridad:** C (otra zona) y D (SUSPENDED) sin acceso a lista/detalle/claim/release con IDs conocidos, aleatorios o malformados; Admin A → Provider B por query 403 y por body 400; campos de estado en body 400; DRIVER/SUPER_ADMIN 403 e IntegrationClient 401 en claim, release y listas; respuestas y logs sin JWT, clientSecret, passwordHash, tokenHash ni contactos.
+- **Base de datos:** 0 violaciones en mandaria_db y mandaria_test (un Dispatch por Quote, un candidato por Dispatch+Provider, máximo un CLAIMED, owner con candidatura CLAIMED, ACCEPTED sin Dispatch, Dispatch de Quote no ACCEPTED, solicitud cancelada con Dispatch operativo); verify-migrations V1.6.1 → V1.7 PASS; migrate status al día.
+- **Calidad final:** sin cambios de código durante el CHECK; E2E completa 137/137 sin caídas en una corrida.
+- **Bugs:** ninguno en el producto. Error en el validador (emails de fixtures con mayúsculas frente a login normalizado) corregido en el propio validador.
+- **Riesgos:** caída nativa intermitente de workers E2E en Windows; expiración perezosa sin cron (OPEN vencido se persiste al interactuar); sin notificaciones hasta V1.8.

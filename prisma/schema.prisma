@@ -102,6 +102,8 @@ model DeliveryProvider {
   drivers Driver[]
   vehicles Vehicle[]
   invitations UserInvitation[]
+  serviceCoverages ProviderServiceCoverage[]
+  dispatchCandidates DispatchCandidate[]
   @@index([type, status])
   @@index([createdAt, id])
 }
@@ -240,6 +242,7 @@ model DeliveryRequest {
   packages DeliveryPackage[]
   financialContext DeliveryFinancialContext?
   quotes DeliveryQuote[]
+  dispatches Dispatch[]
   @@index([integrationClientId, requestedAt, id])
   @@index([externalReference])
   @@index([status, requestedAt])
@@ -344,6 +347,7 @@ model ServiceZone {
   updatedAt DateTime @updatedAt
   ratePlans RatePlan[]
   quotes DeliveryQuote[]
+  providerCoverages ProviderServiceCoverage[]
   @@index([status, minLatitude, maxLatitude, minLongitude, maxLongitude])
 }
 /// Versioned tariff for ServiceZone + ServiceType. Only DRAFT is editable; at most one ACTIVE.
@@ -410,6 +414,7 @@ model DeliveryQuote {
   serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
   ratePlan RatePlan @relation(fields: [ratePlanId, serviceZoneId], references: [id, serviceZoneId], onDelete: Restrict)
   rateBand RateBand @relation(fields: [rateBandId, ratePlanId], references: [id, ratePlanId], onDelete: Restrict)
+  dispatch Dispatch?
   @@index([deliveryRequestId, createdAt])
   @@index([status, expiresAt])
   @@index([createdAt, id])
@@ -456,4 +461,81 @@ model UserInvitation {
   @@index([providerId, role, status, createdAt])
   @@index([status, expiresAt])
   @@index([createdAt, id])
+}
+
+enum ProviderServiceCoverageStatus {
+  ACTIVE
+  INACTIVE
+}
+/// V1.7 operational enablement: a provider may take services of serviceType inside serviceZone
+/// only while this row is ACTIVE (and the provider itself is ACTIVE). Managed by SUPER_ADMIN.
+model ProviderServiceCoverage {
+  id String @id @default(uuid()) @db.Uuid
+  providerId String @db.Uuid
+  serviceZoneId String @db.Uuid
+  serviceType ServiceType
+  status ProviderServiceCoverageStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
+  @@unique([providerId, serviceZoneId, serviceType])
+  @@index([serviceZoneId, serviceType, status])
+}
+
+/// EXPIRED is persisted lazily: an OPEN dispatch past expiresAt is reported as EXPIRED and can
+/// never be claimed. There is no NO_PROVIDER status: a dispatch without OFFERED candidates stays
+/// OPEN until it expires and is flagged by the derived field noProviderAvailable.
+enum DispatchStatus {
+  OPEN
+  CLAIMED
+  EXPIRED
+  CANCELLED
+}
+enum DispatchCandidateStatus {
+  OFFERED
+  CLAIMED
+  RELEASED
+}
+/// V1.7: offer of an ACCEPTED quote to eligible providers. Created in the same transaction that
+/// accepts the quote (one per quote). The winner is claimedByProviderId; no Driver/Vehicle yet.
+model Dispatch {
+  id String @id @default(uuid()) @db.Uuid
+  deliveryRequestId String @db.Uuid
+  deliveryQuoteId String @unique @db.Uuid
+  status DispatchStatus @default(OPEN)
+  openedAt DateTime
+  expiresAt DateTime
+  /// Current owner while CLAIMED; kept as history when a CLAIMED dispatch is CANCELLED.
+  claimedByProviderId String? @db.Uuid
+  claimedAt DateTime?
+  expiredAt DateTime?
+  cancelledAt DateTime?
+  cancellationReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  deliveryQuote DeliveryQuote @relation(fields: [deliveryQuoteId], references: [id], onDelete: Cascade)
+  candidates DispatchCandidate[]
+  @@index([deliveryRequestId])
+  @@index([status, expiresAt])
+  @@index([claimedByProviderId, status])
+  @@index([createdAt, id])
+}
+/// Snapshot of the providers a dispatch was offered to. Never recalculated or deleted.
+model DispatchCandidate {
+  id String @id @default(uuid()) @db.Uuid
+  dispatchId String @db.Uuid
+  providerId String @db.Uuid
+  status DispatchCandidateStatus @default(OFFERED)
+  offeredAt DateTime
+  claimedAt DateTime?
+  releasedAt DateTime?
+  releaseReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  @@unique([dispatchId, providerId])
+  @@index([providerId, status, dispatchId])
 }

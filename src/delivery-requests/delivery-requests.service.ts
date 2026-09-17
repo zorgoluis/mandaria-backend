@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { closeDispatchesForCancelledRequest } from '../dispatch/dispatch-policy.js';
 import { pageResult } from '../common/pagination.dto.js';
 import { IdempotencyService } from '../idempotency/idempotency.service.js';
 import {
@@ -224,7 +225,7 @@ export class DeliveryRequestsService {
           >`SELECT id, status FROM "DeliveryRequest" WHERE "publicId" = ${publicId} FOR UPDATE`;
       if (!row) throw new NotFoundException('Delivery request not found');
       if (row.status !== 'CREATED')
-        return { id: row.id, changed: false, quotes: [] };
+        return { id: row.id, changed: false, quotes: [], dispatches: [] };
       const now = new Date();
       await tx.deliveryRequest.update({
         where: { id: row.id },
@@ -250,9 +251,16 @@ export class DeliveryRequestsService {
                   cancellationReason: 'DELIVERY_REQUEST_CANCELLED',
                 },
         });
+      // V1.7: the cancelled service must not stay claimable or claimed operationally.
+      const dispatches = await closeDispatchesForCancelledRequest(
+        tx,
+        row.id,
+        now,
+      );
       return {
         id: row.id,
         changed: true,
+        dispatches,
         quotes: offered.map((q) => ({
           publicId: q.publicId,
           event:
@@ -271,6 +279,16 @@ export class DeliveryRequestsService {
         deliveryRequestId: request.id,
         publicId,
         integrationClientId: request.integrationClientId,
+        actorType: actor.type,
+        actorId,
+      });
+    for (const dispatch of result.dispatches)
+      this.logger.log({
+        event: dispatch.event,
+        dispatchId: dispatch.dispatchId,
+        providerId: dispatch.providerId,
+        deliveryRequestPublicId: publicId,
+        reason: 'DELIVERY_REQUEST_CANCELLED',
         actorType: actor.type,
         actorId,
       });

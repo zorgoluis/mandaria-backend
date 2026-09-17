@@ -30747,12 +30747,3594 @@
           "Auth"
         ]
       }
+    },
+    "/api/v1/provider/dispatches": {
+      "get": {
+        "description": "Sólo Dispatches en los que mi proveedor fue candidato (snapshot tomado al abrirse; no se recalcula). view=AVAILABLE devuelve los reclamables (OPEN, vigentes, candidatura OFFERED) ordenados por expiresAt; view=CLAIMED los que tengo tomados; status filtra por estado efectivo. El detalle expuesto depende de access (OWNER/OFFER/SUMMARY). Requiere JWT humano, rol global PROVIDER_ADMIN (RolesGuard) y membership vigente (ProviderMembershipGuard); son comprobaciones independientes. providerId es opcional sólo con una membership; un proveedor sin membership responde 403.",
+        "operationId": "ProviderDispatchesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "Proveedor que actúa, autorizado por membership. Puede omitirse sólo con exactamente una membership; nunca concede acceso por sí mismo.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "view",
+            "required": false,
+            "in": "query",
+            "description": "AVAILABLE: OPEN, vigente y con candidatura OFFERED de mi proveedor (reclamables). CLAIMED: reclamados actualmente por mi proveedor. ALL: todos los Dispatch en los que mi proveedor fue candidato.",
+            "schema": {
+              "default": "ALL",
+              "type": "string",
+              "enum": [
+                "AVAILABLE",
+                "CLAIMED",
+                "ALL"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Estado efectivo (un OPEN vencido cuenta como EXPIRED). Se combina con view.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "CLAIMED",
+                "EXPIRED",
+                "CANCELLED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderDispatchPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o motivo inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B (IntegrationClient) no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de PROVIDER_ADMIN (SUPER_ADMIN y DRIVER incluidos) o sin membership en el providerId indicado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dispatch inexistente o en el que mi proveedor no fue candidato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar Dispatches de mi proveedor",
+        "tags": [
+          "Provider Dispatches"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/provider/dispatches/{dispatchId}": {
+      "get": {
+        "description": "Aislado por candidatura: un Dispatch ajeno responde 404. Requiere JWT humano, rol global PROVIDER_ADMIN (RolesGuard) y membership vigente (ProviderMembershipGuard); son comprobaciones independientes. providerId es opcional sólo con una membership; un proveedor sin membership responde 403.",
+        "operationId": "ProviderDispatchesController_get",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "Proveedor que actúa, autorizado por membership. Puede omitirse sólo con exactamente una membership; nunca concede acceso por sí mismo.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "description": "Dispatch.id. Si mi proveedor no fue candidato responde 404 igual que un id inexistente.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderDispatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o motivo inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B (IntegrationClient) no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de PROVIDER_ADMIN (SUPER_ADMIN y DRIVER incluidos) o sin membership en el providerId indicado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dispatch inexistente o en el que mi proveedor no fue candidato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar Dispatch de mi proveedor",
+        "tags": [
+          "Provider Dispatches"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/provider/dispatches/{dispatchId}/claim": {
+      "post": {
+        "description": "Sin body (cualquier campo, incluido providerId, se rechaza con 400): el proveedor sale de la membership (providerId en query sólo selecciona entre mis memberships) y debe ser candidato OFFERED de un Dispatch OPEN y vigente, además de seguir elegible. Bloqueo de fila del Dispatch: con claims simultáneos gana exactamente uno y el resto recibe 409 sin cambios. Repetir el claim del propio ganador devuelve 200 sin cambios. No asigna Driver ni Vehicle. SUPER_ADMIN, DRIVER e IntegrationClient no pueden reclamar. 60/min por IP. Requiere JWT humano, rol global PROVIDER_ADMIN (RolesGuard) y membership vigente (ProviderMembershipGuard); son comprobaciones independientes. providerId es opcional sólo con una membership; un proveedor sin membership responde 403.",
+        "operationId": "ProviderDispatchesController_claim",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "Proveedor que actúa, autorizado por membership. Puede omitirse sólo con exactamente una membership; nunca concede acceso por sí mismo.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "description": "Dispatch.id. Si mi proveedor no fue candidato responde 404 igual que un id inexistente.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimDispatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderDispatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o motivo inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B (IntegrationClient) no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de PROVIDER_ADMIN (SUPER_ADMIN y DRIVER incluidos) o sin membership en el providerId indicado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dispatch inexistente o en el que mi proveedor no fue candidato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "DISPATCH_ALREADY_CLAIMED (otro proveedor ganó; también el perdedor de una carrera concurrente) | DISPATCH_EXPIRED (now >= expiresAt; se persiste EXPIRED) | DISPATCH_CANCELLED | DISPATCH_RECLAIM_NOT_ALLOWED (mi proveedor ya lo liberó) | PROVIDER_NOT_ELIGIBLE (proveedor ya no ACTIVE o cobertura de zona/servicio INACTIVE).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de 60 peticiones/minuto por IP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reclamar Dispatch para mi proveedor",
+        "tags": [
+          "Provider Dispatches"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/provider/dispatches/{dispatchId}/release": {
+      "post": {
+        "description": "Sólo el proveedor que tiene el claim. Mi candidatura pasa a RELEASED (con motivo) y no podrá reclamarlo de nuevo. Dentro de la ventana el Dispatch vuelve a OPEN para los demás candidatos OFFERED (si no queda ninguno sigue OPEN hasta vencer); tras expiresAt pasa a EXPIRED. Liberaciones simultáneas o repetidas: una aplica y el resto recibe 409. 20/min por IP. Requiere JWT humano, rol global PROVIDER_ADMIN (RolesGuard) y membership vigente (ProviderMembershipGuard); son comprobaciones independientes. providerId es opcional sólo con una membership; un proveedor sin membership responde 403.",
+        "operationId": "ProviderDispatchesController_release",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "Proveedor que actúa, autorizado por membership. Puede omitirse sólo con exactamente una membership; nunca concede acceso por sí mismo.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "description": "Dispatch.id. Si mi proveedor no fue candidato responde 404 igual que un id inexistente.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseDispatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderDispatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o motivo inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B (IntegrationClient) no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de PROVIDER_ADMIN (SUPER_ADMIN y DRIVER incluidos) o sin membership en el providerId indicado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dispatch inexistente o en el que mi proveedor no fue candidato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "DISPATCH_NOT_CLAIMED_BY_PROVIDER: el Dispatch no está CLAIMED por mi proveedor (liberado, de otro, cancelado o vencido).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de 20 peticiones/minuto por IP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Liberar Dispatch reclamado por mi proveedor",
+        "tags": [
+          "Provider Dispatches"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/provider/service-coverages": {
+      "get": {
+        "description": "Zonas y tipos de servicio en los que mi proveedor recibe Dispatches. Sólo lectura; las administra SUPER_ADMIN. Requiere JWT humano, rol global PROVIDER_ADMIN (RolesGuard) y membership vigente (ProviderMembershipGuard); son comprobaciones independientes. providerId es opcional sólo con una membership; un proveedor sin membership responde 403.",
+        "operationId": "ProviderDispatchesController_coveragesList",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "Proveedor que actúa, autorizado por membership. Puede omitirse sólo con exactamente una membership; nunca concede acceso por sí mismo.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServiceCoverageResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o motivo inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B (IntegrationClient) no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de PROVIDER_ADMIN (SUPER_ADMIN y DRIVER incluidos) o sin membership en el providerId indicado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dispatch inexistente o en el que mi proveedor no fue candidato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar coberturas de mi proveedor",
+        "tags": [
+          "Provider Dispatches"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/dispatches": {
+      "get": {
+        "description": "Sólo SUPER_ADMIN (lectura y auditoría). Filtros status efectivo, providerId (candidato) y deliveryRequestPublicId. Incluye candidatos con su estado y la señal derivada noProviderAvailable. SUPER_ADMIN no reclama ni libera: no actúa como proveedor. Los Dispatch se cancelan con la DeliveryRequest (POST /admin/delivery-requests/:publicId/cancel).",
+        "operationId": "AdminDispatchesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Estado efectivo.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "CLAIMED",
+                "EXPIRED",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "Dispatches en los que este proveedor fue candidato.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "deliveryRequestPublicId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "MDR-000001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDispatchPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo SUPER_ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor, zona, cobertura o Dispatch no encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar Dispatches",
+        "tags": [
+          "Admin Dispatch"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/dispatches/{dispatchId}": {
+      "get": {
+        "description": "Sólo SUPER_ADMIN. Snapshot de candidatos (a quién se ofreció), claim, liberaciones con motivo y cancelación.",
+        "operationId": "AdminDispatchesController_get",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDispatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo SUPER_ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor, zona, cobertura o Dispatch no encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar Dispatch",
+        "tags": [
+          "Admin Dispatch"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/providers/{providerId}/service-coverages": {
+      "post": {
+        "description": "Sólo SUPER_ADMIN. Nace ACTIVE. Un proveedor recibe Dispatches cuando está ACTIVE y tiene cobertura ACTIVE para la ServiceZone y el ServiceType de la Quote aceptada. No afecta Dispatches ya abiertos (snapshot).",
+        "operationId": "AdminDispatchesController_createCoverage",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceCoverageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceCoverageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo SUPER_ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor, zona, cobertura o Dispatch no encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "SERVICE_COVERAGE_EXISTS: el proveedor ya tiene cobertura para esa zona y tipo de servicio (reactivarla con PATCH).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Habilitar proveedor en zona y tipo de servicio",
+        "tags": [
+          "Admin Dispatch"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      },
+      "get": {
+        "description": "Sólo SUPER_ADMIN. Zonas y tipos de servicio (ACTIVE e INACTIVE) que determinan en qué Dispatches es candidato el proveedor. Proveedor inexistente responde 404.",
+        "operationId": "AdminDispatchesController_listCoverages",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServiceCoverageResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo SUPER_ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor, zona, cobertura o Dispatch no encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar coberturas del proveedor",
+        "tags": [
+          "Admin Dispatch"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/providers/{providerId}/service-coverages/{coverageId}": {
+      "patch": {
+        "description": "Sólo SUPER_ADMIN. INACTIVE excluye al proveedor de nuevos Dispatches de esa zona/servicio y hace fallar sus claims pendientes con PROVIDER_NOT_ELIGIBLE. No borra historial.",
+        "operationId": "AdminDispatchesController_updateCoverage",
+        "parameters": [
+          {
+            "name": "providerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "coverageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceCoverageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceCoverageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, filtros o campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo SUPER_ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor, zona, cobertura o Dispatch no encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Activar o desactivar cobertura",
+        "tags": [
+          "Admin Dispatch"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
     }
   },
   "info": {
     "title": "Mandaria Core",
     "description": "",
-    "version": "1.6.1",
+    "version": "1.7.0",
     "contact": {}
   },
   "tags": [],
@@ -34797,6 +38379,748 @@
           "status",
           "email",
           "role"
+        ]
+      },
+      "ZoneRefResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "OCOZOCOAUTLA"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ocozocoautla de Espinosa"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "MyCandidateResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "OFFERED",
+              "CLAIMED",
+              "RELEASED"
+            ],
+            "description": "OFFERED: puede reclamar mientras el Dispatch esté OPEN. CLAIMED: lo tomó (o lo tenía al cancelarse). RELEASED: lo liberó y ya no puede reclamarlo."
+          },
+          "offeredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "claimedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "releasedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "releaseReason": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "offeredAt"
+        ]
+      },
+      "MoneyResponse": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "50.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ]
+      },
+      "RouteResponse": {
+        "type": "object",
+        "properties": {
+          "distanceMeters": {
+            "type": "number",
+            "example": 4700
+          },
+          "durationSeconds": {
+            "type": "number",
+            "example": 780
+          }
+        },
+        "required": [
+          "distanceMeters",
+          "durationSeconds"
+        ]
+      },
+      "StopResponse": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "example": 16.7614
+          },
+          "longitude": {
+            "type": "number",
+            "example": -93.3743
+          },
+          "contactName": {
+            "type": "string",
+            "description": "Sólo access OWNER."
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "Sólo access OWNER."
+          },
+          "instructions": {
+            "type": "object",
+            "nullable": true,
+            "description": "Sólo access OWNER."
+          }
+        },
+        "required": [
+          "address",
+          "latitude",
+          "longitude"
+        ]
+      },
+      "PackageResponse": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "FOOD",
+              "GROCERIES",
+              "MEDICINE",
+              "DOCUMENT",
+              "PARCEL",
+              "MERCHANDISE",
+              "OTHER"
+            ]
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          },
+          "weightKg": {
+            "type": "object",
+            "nullable": true
+          },
+          "isFragile": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string",
+            "description": "Sólo access OWNER."
+          },
+          "handlingInstructions": {
+            "type": "object",
+            "nullable": true,
+            "description": "Sólo access OWNER."
+          }
+        },
+        "required": [
+          "category",
+          "quantity",
+          "isFragile"
+        ]
+      },
+      "GoodsResponse": {
+        "type": "object",
+        "properties": {
+          "paymentMode": {
+            "type": "string",
+            "enum": [
+              "PREPAID",
+              "COURIER_ADVANCE"
+            ]
+          },
+          "value": {
+            "type": "object",
+            "nullable": true,
+            "example": "450.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          },
+          "driverAdvancesGoods": {
+            "type": "boolean",
+            "description": "true con COURIER_ADVANCE: el repartidor adelanta el valor de la mercancía al recoger."
+          }
+        },
+        "required": [
+          "paymentMode",
+          "currency",
+          "driverAdvancesGoods"
+        ]
+      },
+      "ServiceDetailResponse": {
+        "type": "object",
+        "properties": {
+          "deliveryFee": {
+            "description": "Precio logístico congelado de la Quote aceptada.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyResponse"
+              }
+            ]
+          },
+          "route": {
+            "$ref": "#/components/schemas/RouteResponse"
+          },
+          "pickup": {
+            "$ref": "#/components/schemas/StopResponse"
+          },
+          "dropoff": {
+            "$ref": "#/components/schemas/StopResponse"
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageResponse"
+            }
+          },
+          "goods": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoodsResponse"
+              }
+            ]
+          },
+          "deliveryRequestPublicId": {
+            "type": "string",
+            "example": "MDR-000001",
+            "description": "Sólo OWNER."
+          },
+          "externalReference": {
+            "type": "object",
+            "nullable": true,
+            "description": "Sólo OWNER."
+          }
+        },
+        "required": [
+          "deliveryFee",
+          "route",
+          "pickup",
+          "dropoff",
+          "packages"
+        ]
+      },
+      "ProviderDispatchResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "CLAIMED",
+              "EXPIRED",
+              "CANCELLED"
+            ],
+            "description": "Estado efectivo. OPEN: reclamable hasta expiresAt. CLAIMED: tomado por un proveedor (su claim no caduca con expiresAt). EXPIRED: ventana cerrada sin claim vigente (un OPEN vencido se informa EXPIRED aunque aún no se haya persistido). CANCELLED: la DeliveryRequest fue cancelada."
+          },
+          "access": {
+            "type": "string",
+            "enum": [
+              "OWNER",
+              "OFFER",
+              "SUMMARY"
+            ],
+            "description": "OWNER: mi proveedor tiene el claim (detalle completo con contactos). OFFER: puedo reclamarlo (ruta, direcciones, paquetes sin texto libre, tarifa y mercancía; sin contactos, instrucciones ni referencias). SUMMARY: sin detalle del servicio (tomado por otro, vencido, cancelado o liberado por mí). Nunca se exponen el IntegrationClient ni otros candidatos."
+          },
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "LOCAL_DELIVERY"
+            ]
+          },
+          "serviceZone": {
+            "$ref": "#/components/schemas/ZoneRefResponse"
+          },
+          "openedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Fin de la ventana para reclamar (DISPATCH_TTL_MINUTES desde openedAt). Independiente de la vigencia de la Quote."
+          },
+          "claimedByMe": {
+            "type": "boolean"
+          },
+          "claimedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "myCandidate": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MyCandidateResponse"
+              }
+            ]
+          },
+          "service": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServiceDetailResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "access",
+          "serviceType",
+          "serviceZone",
+          "openedAt",
+          "expiresAt",
+          "claimedByMe"
+        ]
+      },
+      "ProviderDispatchPageResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "number",
+            "example": 20
+          },
+          "total": {
+            "type": "number",
+            "example": 1
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 1,
+            "description": "Cero cuando no hay resultados."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderDispatchResponse"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "totalPages",
+          "items"
+        ]
+      },
+      "ClaimDispatchDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ReleaseDispatchDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500,
+            "example": "Sin repartidor disponible en la zona",
+            "description": "Motivo operativo (3-500 caracteres, se recortan espacios). Se conserva en la candidatura y en la auditoría: no incluir datos personales."
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "CoverageZoneResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "example": "ACTIVE"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "status"
+        ]
+      },
+      "ServiceCoverageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "providerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "LOCAL_DELIVERY"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ]
+          },
+          "serviceZone": {
+            "$ref": "#/components/schemas/CoverageZoneResponse"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "providerId",
+          "serviceType",
+          "status",
+          "serviceZone",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AdminRequestRefResponse": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "example": "MDR-000001"
+          },
+          "status": {
+            "type": "string"
+          },
+          "integrationClientId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "publicId",
+          "status",
+          "integrationClientId"
+        ]
+      },
+      "ProviderRefResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code"
+        ]
+      },
+      "AdminQuoteRefResponse": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "example": "MQ-000001"
+          },
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "LOCAL_DELIVERY"
+            ]
+          },
+          "serviceZone": {
+            "$ref": "#/components/schemas/ProviderRefResponse"
+          },
+          "amount": {
+            "type": "string",
+            "example": "50.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          }
+        },
+        "required": [
+          "publicId",
+          "serviceType",
+          "serviceZone",
+          "amount",
+          "currency"
+        ]
+      },
+      "AdminCandidateResponse": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/ProviderRefResponse"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OFFERED",
+              "CLAIMED",
+              "RELEASED"
+            ]
+          },
+          "offeredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "claimedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "releasedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "releaseReason": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "provider",
+          "status",
+          "offeredAt"
+        ]
+      },
+      "AdminDispatchResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "CLAIMED",
+              "EXPIRED",
+              "CANCELLED"
+            ],
+            "description": "Estado efectivo. OPEN: reclamable hasta expiresAt. CLAIMED: tomado por un proveedor (su claim no caduca con expiresAt). EXPIRED: ventana cerrada sin claim vigente (un OPEN vencido se informa EXPIRED aunque aún no se haya persistido). CANCELLED: la DeliveryRequest fue cancelada."
+          },
+          "openedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "claimedByProviderId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Proveedor con el claim. Se conserva como histórico si un Dispatch CLAIMED se cancela; se limpia al liberar."
+          },
+          "claimedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "expiredAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancellationReason": {
+            "type": "object",
+            "nullable": true,
+            "example": "DELIVERY_REQUEST_CANCELLED"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deliveryRequest": {
+            "$ref": "#/components/schemas/AdminRequestRefResponse"
+          },
+          "deliveryQuote": {
+            "$ref": "#/components/schemas/AdminQuoteRefResponse"
+          },
+          "noProviderAvailable": {
+            "type": "boolean",
+            "description": "Señal derivada (no es estado): OPEN sin candidaturas OFFERED; nadie puede reclamarlo y quedará EXPIRED al vencer."
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCandidateResponse"
+            }
+          },
+          "goods": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoodsResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "openedAt",
+          "expiresAt",
+          "createdAt",
+          "updatedAt",
+          "deliveryRequest",
+          "deliveryQuote",
+          "noProviderAvailable",
+          "candidates"
+        ]
+      },
+      "AdminDispatchPageResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "number",
+            "example": 20
+          },
+          "total": {
+            "type": "number",
+            "example": 1
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 1,
+            "description": "Cero cuando no hay resultados."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminDispatchResponse"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "totalPages",
+          "items"
+        ]
+      },
+      "CreateServiceCoverageDto": {
+        "type": "object",
+        "properties": {
+          "serviceZoneId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ServiceZone existente."
+          },
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "LOCAL_DELIVERY"
+            ],
+            "example": "LOCAL_DELIVERY"
+          }
+        },
+        "required": [
+          "serviceZoneId",
+          "serviceType"
+        ]
+      },
+      "UpdateServiceCoverageDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ],
+            "description": "INACTIVE deja de ofrecer nuevos Dispatch y bloquea claims pendientes de ese proveedor en esa zona/servicio."
+          }
+        },
+        "required": [
+          "status"
         ]
       }
     }

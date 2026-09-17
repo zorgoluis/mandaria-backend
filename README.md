@@ -1,10 +1,10 @@
-# Mandaria — V1.6.1 User Provisioning, Invitations y Account Activation
+# Mandaria — V1.7 Dispatch Engine & Provider Claiming
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). No reconstruye Auth humano ni despacha entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agrega el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). No asigna Driver ni Vehicle. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -15,6 +15,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `delivery-requests/`: demanda B2B V1.5 y administración; `idempotency/`: registro reutilizable de Idempotency-Key.
 - `geo/`, `service-zones/`, `routing/`, `rate-plans/`, `delivery-quotes/`: cotización V1.6 (geometría interna, zonas, RoutingProvider, tarifas y Quotes).
 - `invitations/`, `mail/`: aprovisionamiento V1.6.1 (invitaciones, activación de cuenta y MailProvider).
+- `dispatch/`: V1.7 Dispatch, candidatos, coberturas de proveedor, claim y liberación.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -162,6 +163,7 @@ La migración `20260915000200_b2b_credentials`:
 | USER_INVITATION_TTL_HOURS, USER_INVITATION_RESEND_COOLDOWN_SECONDS | Vigencia de invitaciones (1–168, 24) y espera mínima entre reenvíos (0–3600, 60) |
 | MAIL_PROVIDER | `smtp` (obligatorio en producción) o `local_outbox` (LOCAL/TEST ONLY; default fuera de producción; rechazado en producción) |
 | MAIL_FROM, SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD | Remitente y relay SMTP; host y remitente obligatorios con smtp; usuario y contraseña juntos; nunca versionar |
+| DISPATCH_TTL_MINUTES | Minutos que un servicio aceptado es reclamable (1–1440, default 10); independiente de la vigencia de la Quote |
 | LOCAL_MAIL_OUTBOX_DIR | **LOCAL/TEST ONLY**; carpeta del outbox local (default `<temp>/mandaria-mail-outbox`) |
 
 Los tres secretos JWT deben ser distintos. La aplicación falla al iniciar ante valores inválidos, sin imprimirlos. CORS vacío deshabilita acceso cross-origin del navegador; no se acepta `*`. CORS no sustituye autenticación server-to-server.
@@ -269,6 +271,9 @@ Prefijo `/api/v1` salvo health/docs:
 | POST | /auth/activate-account | Pública; token de invitación |
 | POST, GET | /admin/providers/:providerId/invitations, /admin/user-invitations[/:id[/resend\|/revoke]] | SUPER_ADMIN (ver V1.6.1) |
 | POST, GET | /provider/driver-invitations[/:id[/resend\|/revoke]] | PROVIDER_ADMIN + membership |
+| GET | /provider/dispatches, /provider/dispatches/:id, /provider/service-coverages | PROVIDER_ADMIN + membership |
+| POST | /provider/dispatches/:id/claim, /provider/dispatches/:id/release | PROVIDER_ADMIN + membership (ver V1.7) |
+| GET, POST, PATCH | /admin/dispatches[/:id], /admin/providers/:providerId/service-coverages[/:id] | SUPER_ADMIN |
 | POST | /integrations/token | Client Credentials en body |
 | GET | /integrations/me | Bearer B2B |
 | GET | /integrations/scope-check | Bearer B2B + deliveries:read |
@@ -298,7 +303,7 @@ Swagger distingue **User Bearer Authentication** (`bearer`) de **Integration Bea
 
 Helmet, DTOs con whitelist/forbidNonWhitelisted/transform, body 16 KiB, respuestas no-store y errores HTTP uniformes. Contraseñas humanas con Argon2id; secretos aleatorios/tokens con SHA-256.
 
-Límites por IP: global 100/min, login 5/min, refresh 20/min, token B2B 10/min, activación de cuenta 10/min, creación de invitaciones 20/min y reenvío 10/min. Health está exento. Los fallos B2B por ID desconocido, secreto incorrecto, revocación o suspensión usan el mismo 401 genérico. Un DTO mal formado recibe 400; el límite recibe 429.
+Límites por IP: global 100/min, login 5/min, refresh 20/min, token B2B 10/min, activación de cuenta 10/min, creación de invitaciones 20/min, reenvío 10/min, claim de Dispatch 60/min y liberación 20/min. Health está exento. Los fallos B2B por ID desconocido, secreto incorrecto, revocación o suspensión usan el mismo 401 genérico. Un DTO mal formado recibe 400; el límite recibe 429.
 
 Logging JSON, sin bodies, query strings, headers de autorización, secretos ni tokens. Eventos:
 INTEGRATION_CREATED, INTEGRATION_SUSPENDED, INTEGRATION_ACTIVATED, INTEGRATION_REVOKED, CREDENTIAL_CREATED, CREDENTIAL_ROTATED, CREDENTIAL_REVOKED, INTEGRATION_AUTH_SUCCESS, INTEGRATION_AUTH_FAILED. Los eventos administrativos incluyen actorId y los IDs afectados.
@@ -1048,6 +1053,108 @@ El script usa login real (5 logins), lee el token del outbox local como lo harí
 
 Pruebas: `test/invitations.spec.ts` (token/hash, expiración, errores, matriz de roles, política de contraseña, validaciones previas a la base, plantilla, SMTP con transporte simulado, outbox local y configuración) y `test/user-invitations.e2e-spec.ts` (flujos PROVIDER_ADMIN y DRIVER completos con login/refresh/logout, aislamiento A/B en ambos sentidos, matriz de roles, IntegrationClient, expirado, reutilizado, revocado, duplicados, ACTIVE/DISABLED, validaciones, fallo de correo, reserva de lugares, concurrencia de invitación/reenvío/activación, rate limits, invariantes SQL y auditoría sin secretos). `node scripts/verify-migrations.mjs` cubre V1.6 → V1.6.1 con datos.
 
+## Dispatch Engine (V1.7-A)
+
+Responde: una vez aceptada la cotización, ¿qué proveedores pueden realizar el servicio y cuál lo toma?
+
+```text
+IntegrationClient → POST /delivery-quotes/:publicId/accept
+      ↓  (misma transacción)
+DeliveryQuote ACCEPTED + Dispatch OPEN + candidatos (snapshot)
+      ↓
+PROVIDER_ADMIN → GET /provider/dispatches?view=AVAILABLE
+      ↓
+POST /provider/dispatches/:dispatchId/claim  → exactamente 1 gana
+      ↓
+Dispatch CLAIMED (claimedByProviderId)
+```
+
+El IntegrationClient no llama ningún endpoint de dispatch: aceptar la Quote basta. V1.7 no asigna Driver ni Vehicle, no usa disponibilidad/GPS de repartidores ni envía notificaciones.
+
+### Elegibilidad
+
+Un proveedor es candidato cuando, al abrirse el Dispatch:
+
+1. `DeliveryProvider.status = ACTIVE`;
+2. tiene una `ProviderServiceCoverage` **ACTIVE** para la **ServiceZone** de la Quote aceptada (calculada geográficamente en V1.6, nunca por texto de dirección);
+3. y para su **ServiceType** (`LOCAL_DELIVERY` hoy; el motor no está atado a ese valor).
+
+`ProviderServiceCoverage` es el modelo mínimo nuevo (antes no existía relación proveedor–zona–servicio) y representa la habilitación operacional. La administra SUPER_ADMIN:
+
+| Método | Ruta | Uso |
+|---|---|---|
+| POST | /admin/providers/:providerId/service-coverages | `{serviceZoneId, serviceType}` → ACTIVE; 409 `SERVICE_COVERAGE_EXISTS` |
+| GET | /admin/providers/:providerId/service-coverages | Lista |
+| PATCH | /admin/providers/:providerId/service-coverages/:coverageId | `{status: ACTIVE\|INACTIVE}` |
+| GET | /provider/service-coverages | PROVIDER_ADMIN: coberturas propias (lectura) |
+
+Los candidatos se guardan como **snapshot** (`DispatchCandidate`) y no se recalculan: el historial responde a quién se ofreció. La elegibilidad se vuelve a comprobar al reclamar (proveedor suspendido o cobertura desactivada → 409 `PROVIDER_NOT_ELIGIBLE`).
+
+**Sin candidatos:** la aceptación nunca falla por falta de proveedores. El Dispatch se crea OPEN sin candidatos y queda así hasta vencer. No se añadió un estado `NO_PROVIDER_FOUND`: la vista de administración expone la señal derivada `noProviderAvailable` (OPEN sin candidaturas OFFERED; también tras liberaciones que agotan candidatos) y el evento `DISPATCH_OPENED` registra `candidateCount`.
+
+### Estados y transiciones
+
+| Dispatch | Significado |
+|---|---|
+| OPEN | Reclamable hasta `expiresAt` |
+| CLAIMED | Tomado por `claimedByProviderId`; el claim no caduca con `expiresAt` |
+| EXPIRED | Ventana cerrada sin claim (persistencia perezosa: un OPEN vencido se informa EXPIRED y se guarda al intentar reclamar) |
+| CANCELLED | La DeliveryRequest fue cancelada |
+
+| DispatchCandidate | Significado |
+|---|---|
+| OFFERED | Puede reclamar mientras el Dispatch esté OPEN |
+| CLAIMED | Tiene (o tenía al cancelarse) el claim |
+| RELEASED | Liberó el claim; no puede reclamar de nuevo ese Dispatch |
+
+No se añadió `EXCLUDED`: cuando otro proveedor gana, los demás siguen OFFERED como historial y vuelven a poder reclamar si el ganador libera. Transiciones permitidas (trigger SQL): OPEN → CLAIMED/EXPIRED/CANCELLED; CLAIMED → OPEN (liberación en ventana)/EXPIRED (liberación tras la ventana)/CANCELLED. EXPIRED y CANCELLED son terminales.
+
+### Configuración y expiración
+
+`DISPATCH_TTL_MINUTES` (1–1440, default **10**): `openedAt = acceptedAt`, `expiresAt = openedAt + TTL`, independiente de `DeliveryQuote.expiresAt`. No hay cron ni cola: la expiración es perezosa y `now >= expiresAt` impide reclamar.
+
+### Claim, liberación y cancelación
+
+- **Claim** (`POST /provider/dispatches/:dispatchId/claim`, sin body): el proveedor sale de la membership (`?providerId=` sólo elige entre las propias; con varias memberships es obligatorio). Requiere Dispatch OPEN y vigente, candidatura OFFERED y proveedor elegible. Repetir el claim del ganador devuelve 200 sin cambios.
+- **Concurrencia:** la transacción bloquea la fila del Dispatch (`SELECT … FOR UPDATE`); los claims simultáneos se serializan y todos salvo el primero ven CLAIMED → 409 `DISPATCH_ALREADY_CLAIMED` sin escribir. Respaldo en PostgreSQL: índice único parcial de un candidato CLAIMED por Dispatch y trigger que exige que el dueño sea un candidato CLAIMED.
+- **Liberación** (`POST /provider/dispatches/:dispatchId/release`, `{reason}` 3–500): sólo el dueño actual. Su candidatura pasa a RELEASED; en ventana el Dispatch vuelve a OPEN para los demás; tras `expiresAt` pasa a EXPIRED. Liberaciones simultáneas: una aplica, el resto 409.
+- **Cancelación:** integrada en la cancelación oficial de V1.5 (`POST /delivery-requests/:publicId/cancel` y `/admin/delivery-requests/:publicId/cancel`), en la misma transacción. OPEN/CLAIMED → CANCELLED (`DELIVERY_REQUEST_CANCELLED`); un CLAIMED cancelado **conserva `claimedByProviderId`** como historial. Un OPEN ya vencido se cierra como EXPIRED. Nunca quedan DeliveryRequest CANCELLED y Dispatch operativo.
+- **Quién no reclama:** SUPER_ADMIN (403: administra, no actúa como flotilla), DRIVER (403; V1.9) e IntegrationClient (401).
+
+### Consultas de proveedor y exposición de datos
+
+`GET /provider/dispatches` (`view=AVAILABLE|CLAIMED|ALL`, `status` efectivo, paginación) y `GET /provider/dispatches/:dispatchId` sólo muestran Dispatches donde el proveedor fue candidato; uno ajeno responde 404. El detalle depende de `access`:
+
+| access | Cuándo | Incluye |
+|---|---|---|
+| OFFER | OPEN, vigente, candidatura OFFERED | Zona, servicio, tarifa (`deliveryFee`), ruta, direcciones y coordenadas, paquetes sin texto libre, mercancía (`goodsValue`, `goodsPaymentMode`, `driverAdvancesGoods` para COURIER_ADVANCE) |
+| OWNER | Mi proveedor tiene (o tenía al cancelarse) el claim | Lo anterior + contactos, instrucciones, descripción de paquetes, `deliveryRequestPublicId`, `externalReference` |
+| SUMMARY | Cualquier otro caso | Estado y fechas; `service = null` |
+
+Nunca se exponen a proveedores el IntegrationClient, otros candidatos ni secretos. SUPER_ADMIN consulta `GET /admin/dispatches` (filtros status, providerId, deliveryRequestPublicId) y `GET /admin/dispatches/:dispatchId` con candidatos y motivos.
+
+### Errores de dominio
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| DISPATCH_ALREADY_CLAIMED | 409 | Otro proveedor tiene el claim (incluye el perdedor de una carrera) |
+| DISPATCH_EXPIRED | 409 | `now >= expiresAt` sin claim |
+| DISPATCH_CANCELLED | 409 | Servicio cancelado |
+| DISPATCH_RECLAIM_NOT_ALLOWED | 409 | Mi proveedor liberó ese Dispatch |
+| DISPATCH_NOT_CLAIMED_BY_PROVIDER | 409 | Liberar sin tener el claim |
+| PROVIDER_NOT_ELIGIBLE | 409 | Proveedor no ACTIVE o cobertura INACTIVE al reclamar |
+| SERVICE_COVERAGE_EXISTS | 409 | Cobertura duplicada |
+
+### Base de datos y auditoría
+
+- Migración `20260917000800_dispatch_engine`: tablas `ProviderServiceCoverage`, `Dispatch`, `DispatchCandidate`; únicos `Dispatch.deliveryQuoteId`, `DispatchCandidate(dispatchId, providerId)`, `ProviderServiceCoverage(providerId, serviceZoneId, serviceType)`; índice parcial de un candidato CLAIMED por Dispatch; CHECK de coherencia de estados; triggers `Dispatch_guard` (sólo nace OPEN para una Quote ACCEPTED de su solicitud, identidad y ventana inmutables, transiciones válidas) y `DispatchCandidate_guard`.
+- Índices: `Dispatch(status, expiresAt)`, `Dispatch(claimedByProviderId, status)`, `Dispatch(deliveryRequestId)`, `Dispatch(createdAt, id)`, `DispatchCandidate(providerId, status, dispatchId)` y `ProviderServiceCoverage(serviceZoneId, serviceType, status)`; el único `(dispatchId, providerId)` cubre las búsquedas por Dispatch.
+- **Backfill:** las Quotes ACCEPTED anteriores a V1.7 reciben un Dispatch EXPIRED sin candidatos (o CANCELLED si su solicitud ya estaba cancelada), de modo que «ACCEPTED ⇒ Dispatch» se cumple para todos los datos. Nunca se ofrecen.
+- **Invariante ACCEPTED ⇒ Dispatch:** la Quote pasa a ACCEPTED y el Dispatch se inserta en la misma transacción (probado con un fallo forzado: la Quote sigue OFFERED). El único por `deliveryQuoteId` impide un segundo Dispatch en aceptaciones repetidas o simultáneas.
+- Eventos: `DISPATCH_OPENED` (candidateCount, noProviderAvailable), `DISPATCH_CLAIMED`, `DISPATCH_RELEASED` (reason), `DISPATCH_EXPIRED` (reason), `DISPATCH_CANCELLED`, `PROVIDER_COVERAGE_CREATED/UPDATED`, con `dispatchId`, `providerId`, `actorUserId`/`actorId` y marca de tiempo; sin tokens, contactos ni direcciones.
+
+Pruebas: `test/dispatch.spec.ts` (TTL, expiración, reglas de claim, apertura con y sin candidatos, cancelación, exposición por access, autorización del servicio) y `test/dispatch.e2e-spec.ts` (creación automática, candidatos A/B vs C otra zona, D suspendido y F cobertura inactiva, sin candidatos, aceptación repetida y concurrente, atomicidad, claim con login real, aislamiento y roles, múltiples memberships, liberación y no reclamo, liberaciones concurrentes, 3 rondas de 15 claims simultáneos de 5 proveedores, expiración, cancelación OPEN/CLAIMED, invariantes SQL y auditoría).
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -1076,13 +1183,16 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.6.1: el correo se envía tras el commit sin cola ni reintentos automáticos; un fallo se reporta como `emailDelivery: FAILED` y se resuelve con resend.
 - V1.6.1: los límites de invitación son por IP en memoria; administradores autenticados pueden saber si un email ya tiene cuenta (errores útiles de su alcance).
 - V1.6.1: el outbox local guarda enlaces con token en claro en la carpeta temporal; es sólo para desarrollo y se rechaza en producción.
+- V1.7: expiración de Dispatch perezosa (sin cron); un OPEN vencido figura EXPIRED en lecturas y se persiste al intentar reclamar o cancelar. Sin notificaciones: los proveedores consultan `view=AVAILABLE` (sockets en V1.8).
+- V1.7: el claim bloquea la fila del Dispatch; con muy alto volumen conviene medir la contención. La elegibilidad no considera capacidad real (Drivers disponibles) ni cercanía.
+- V1.7: coberturas sólo por SUPER_ADMIN; desactivar una cobertura no retira candidaturas ya ofrecidas, pero sus claims fallan con PROVIDER_NOT_ELIGIBLE.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.6.1 / V1.7+
+## Fuera de V1.7 / V1.8+
 
-No se implementaron Dispatch (asignación de proveedor, Driver o vehículo), hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron asignación de Driver o vehículo, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API, Independent Driver (V1.9) y auditoría persistente siguen pendientes.

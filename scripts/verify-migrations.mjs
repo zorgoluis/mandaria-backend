@@ -275,6 +275,48 @@ try {
       sql(upgradeDb, ['-c', `SELECT count(*) FROM "${table}"`]),
       rows,
     );
+  // V1.7 backfill: the pre-existing ACCEPTED quote gets exactly one never-offered EXPIRED dispatch.
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      `SELECT count(*) FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE q."publicId" = 'MQ-000001' AND d.status = 'EXPIRED' AND d."deliveryRequestId" = '${deliveryRequestId}' AND d."expiredAt" IS NOT NULL`,
+    ]),
+    '1',
+  );
+  assert.equal(
+    sql(upgradeDb, ['-c', 'SELECT count(*) FROM "DispatchCandidate"']),
+    '0',
+  );
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      `SELECT count(*) FROM "DeliveryQuote" q WHERE q.status = 'ACCEPTED' AND NOT EXISTS (SELECT 1 FROM "Dispatch" d WHERE d."deliveryQuoteId" = q.id)`,
+    ]),
+    '0',
+  );
+  for (const db of [cleanDb, upgradeDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('Dispatch_values_check','DispatchCandidate_values_check','Dispatch_deliveryQuoteId_fkey','Dispatch_deliveryRequestId_fkey','DispatchCandidate_dispatchId_fkey','DispatchCandidate_providerId_fkey','ProviderServiceCoverage_providerId_fkey','ProviderServiceCoverage_serviceZoneId_fkey')",
+      ]),
+      '8',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname IN ('Dispatch_deliveryQuoteId_key','DispatchCandidate_dispatchId_providerId_key','ProviderServiceCoverage_providerId_serviceZoneId_serviceTyp_key') OR (indexname = 'DispatchCandidate_claimed_dispatch_key' AND indexdef LIKE '%WHERE%CLAIMED%')",
+      ]),
+      '4',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('Dispatch_guard','DispatchCandidate_guard')",
+      ]),
+      '2',
+    );
+  }
   assert.equal(
     sql(upgradeDb, [
       '-c',
@@ -455,7 +497,7 @@ try {
   );
   prisma(upgradeDb, ['migrate', 'deploy']);
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; V1.4-V1.6.1 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; V1.4-V1.7 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(
