@@ -54,7 +54,7 @@ export function setup(app: INestApplication) {
     app,
     new DocumentBuilder()
       .setTitle('Mandaria Core')
-      .setVersion('1.6.1')
+      .setVersion('1.7.0')
       .addBearerAuth({
         type: 'http',
         scheme: 'bearer',

@@ -1,3 +1,61 @@
+# CHECK V1.7-A — Dispatch Security, Concurrency & Domain Validation (2026-09-16)
+
+| Verificación | Resultado |
+|---|---|
+| Línea base (prisma, tsc, build, Oxlint, ESLint, docs:check; unitarias; E2E por archivo) | PASS; 81; 137/137 |
+| HTTP real contra `dist/main.js` (4 arranques, TTL 10 y 1, logins reales) | 24/24 PASS |
+| OFFERED sin Dispatch; accept → OPEN, openedAt = acceptedAt, expiresAt +10 min | PASS |
+| Quote CANCELLED y EXPIRED no aceptables; sin Dispatch | 409 QUOTE_NOT_ACCEPTABLE / QUOTE_EXPIRED |
+| 20 aceptaciones simultáneas + repetición | 1 Dispatch, 1 evento DISPATCH_OPENED |
+| Candidatos exactos A, B; C otra zona y D SUSPENDED excluidos; snapshot intacto tras desactivar cobertura y suspender | PASS; claims 409 PROVIDER_NOT_ELIGIBLE |
+| No candidatos (IDs conocidos, aleatorios, malformados) | 404/400; nunca listados |
+| A → B (query/body), campos de estado en body | 403 / 400 |
+| DRIVER, SUPER_ADMIN, IntegrationClient | 403, 403, 401 |
+| Claim A+B simultáneo ×3; 40 claims (20+20); 20 del mismo proveedor | 1 éxito por ronda; 1 transición y 1 evento |
+| Liberación: no dueño, reclamo tras liberar, siguiente proveedor, 8 simultáneas | 409, 409, 200, 1 aplica |
+| Carrera claim vs release ×3 | Estados válidos (B, B, OPEN) |
+| Expirado: claims simultáneos; release tras ventana | 409 sin owner y EXPIRED persistido; EXPIRED sin reabrir |
+| Cancelación OPEN (B2B) y CLAIMED (SUPER_ADMIN, también en carrera) | CANCELLED; owner conservado; claim 409 |
+| Respuestas y logs | Sin JWT, clientSecret, passwordHash, tokenHash ni contactos |
+| Invariantes SQL en mandaria_db y mandaria_test | 0 violaciones |
+| verify-migrations V1.6.1 → V1.7 / migrate status | PASS / al día |
+| E2E completa final | 137/137, sin caídas |
+
+Sin bugs de producto; sin cambios de código.
+
+# Verificación V1.7-A — Dispatch Engine & Provider Claiming (2026-09-16)
+
+Rama `v1.7-dispatch_engine`, paquete 1.7.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado.
+
+| Verificación | Resultado |
+|---|---|
+| Línea base antes de modificar | 69 unitarias; E2E 122/124 con 1 caída nativa (sin fallos) |
+| Prisma validate / drift | PASS / vacío |
+| Migración `20260917000800_dispatch_engine` en mandaria_db y mandaria_test (sin reset) | PASS; backfill 4 ACCEPTED → 4 Dispatch EXPIRED, 0 huérfanas |
+| Limpia + V1.0 → … → V1.6.1 → V1.7 con datos | PASS; Quote ACCEPTED previa con 1 Dispatch EXPIRED sin candidatos; CHECK, únicos, índice parcial y triggers presentes |
+| TypeScript / Build / Oxlint / ESLint / docs:check | PASS |
+| npm test | 81 PASS (69 + 12 V1.7) |
+| E2E por archivo | 137/137 (13 V1.7) |
+| E2E suite completa | 7 corridas: 1–2 caídas nativas de worker cada una, 0 pruebas fallidas |
+| Accept → Dispatch OPEN automático, openedAt = acceptedAt, expiresAt = +10 min (≠ vigencia de Quote) | PASS |
+| Candidatos: A, B, P1, P2 sí; C (otra zona), D (SUSPENDED), F (cobertura INACTIVE) no; snapshot no cambia al desactivar cobertura | PASS |
+| Sin proveedores elegibles | Aceptación 200; Dispatch OPEN sin candidatos; noProviderAvailable true |
+| Aceptación repetida y 10 simultáneas | 1 Quote ACCEPTED, 1 Dispatch |
+| Atomicidad (fallo forzado al insertar Dispatch) | 500; Quote sigue OFFERED; 0 Dispatch; reintento 200 con 1 Dispatch |
+| Claim con login real (vista OFFER sin contactos, instrucciones, referencia ni cliente) → CLAIMED (OWNER) | PASS; claim repetido del ganador 200; otro proveedor 409 DISPATCH_ALREADY_CLAIMED y SUMMARY |
+| No candidatos (C, D, F) | 404 en detalle y claim; ausentes del listado |
+| Admin A con providerId B / SUPER_ADMIN / DRIVER / IntegrationClient / body con providerId | 403 / 403 / 403 / 401 / 400 |
+| Varias memberships | sin providerId 409; providerId ajeno 403; providerId propio 200 |
+| Liberación: no dueño 409, no candidato 404, motivo 2/501 caracteres 400; A libera → OPEN; A no reclama (409); B reclama; 5 liberaciones simultáneas → 1 OK + 4 409 | PASS |
+| 3 rondas × 15 claims simultáneos de 5 proveedores | Exactamente 1 ganador por ronda; resto 409; 1 candidato CLAIMED |
+| Expirado: no listado como AVAILABLE, detalle EXPIRED, claim 409 y persistido EXPIRED; liberar tras la ventana → EXPIRED | PASS |
+| Cancelación de DeliveryRequest (B2B y SUPER_ADMIN) | OPEN → CANCELLED; CLAIMED → CANCELLED conservando claimedByProviderId; claim 409 DISPATCH_CANCELLED |
+| Invariantes SQL | Segundo Dispatch por Quote, Dispatch para Quote no ACCEPTED, cambio de expiresAt, CLAIMED sin candidato CLAIMED, dos candidatos CLAIMED, RELEASED → OFFERED e inserción de candidato no OFFERED rechazados |
+| Auditoría | DISPATCH_OPENED/CLAIMED/RELEASED/EXPIRED/CANCELLED y PROVIDER_COVERAGE_CREATED con providerId/actorUserId; sin tokens, clientSecret, contraseñas ni contactos |
+| Mutaciones M1–M8 | 8/8 detectadas |
+
+No verificado: validación HTTP contra `dist/main.js` en ejecución y Docker.
+
 # CHECK V1.6.1-A — Validación backend (2026-09-16)
 
 | Verificación | Resultado |

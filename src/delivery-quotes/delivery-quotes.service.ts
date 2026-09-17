@@ -12,6 +12,7 @@ import { findBand, validateBands } from '../rate-plans/rate-bands.js';
 import { ROUTING_PROVIDER, RoutingError } from '../routing/routing.types.js';
 import type { RoutingProvider } from '../routing/routing.types.js';
 import type { GeoPoint } from '../geo/geometry.js';
+import { openDispatch } from '../dispatch/dispatch-policy.js';
 import {
   AdminDeliveryQuoteListQueryDto,
   DeliveryQuoteListQueryDto,
@@ -106,7 +107,7 @@ export class DeliveryQuotesService {
     private readonly zones: ServiceZonesService,
     private readonly plans: RatePlansService,
     @Inject(ROUTING_PROVIDER) private readonly routing: RoutingProvider,
-    config: ConfigService,
+    private readonly config: ConfigService,
   ) {
     const timeout = config.getOrThrow<number>('GOOGLE_ROUTES_TIMEOUT_MS');
     const retries = config.getOrThrow<number>('GOOGLE_ROUTES_MAX_RETRIES');
@@ -363,7 +364,15 @@ export class DeliveryQuotesService {
         data: { status: 'ACCEPTED', acceptedAt: now },
         select: quoteSelect,
       });
-      return { quote: accepted, kind: 'accepted' as const };
+      // V1.7: same transaction, so an ACCEPTED quote never exists without its dispatch; the
+      // unique deliveryQuoteId makes a repeated acceptance unable to open a second one.
+      const dispatch = await openDispatch(
+        tx,
+        accepted,
+        this.config.getOrThrow<number>('DISPATCH_TTL_MINUTES'),
+        now,
+      );
+      return { quote: accepted, kind: 'accepted' as const, dispatch };
     });
     const base = {
       quotePublicId,
@@ -380,13 +389,27 @@ export class DeliveryQuotesService {
         'Quote has expired; request a new quote',
       );
     }
-    if (outcome.kind === 'accepted')
+    if (outcome.kind === 'accepted') {
       this.logger.log({
         event: 'DELIVERY_QUOTE_ACCEPTED',
         ...base,
         amount: outcome.quote.amount.toFixed(2),
         currency: outcome.quote.currency,
       });
+      this.logger.log({
+        event: 'DISPATCH_OPENED',
+        dispatchId: outcome.dispatch.id,
+        deliveryRequestId: outcome.quote.deliveryRequestId,
+        deliveryQuoteId: outcome.quote.id,
+        serviceZoneId: outcome.quote.serviceZoneId,
+        serviceType: outcome.quote.serviceType,
+        candidateCount: outcome.dispatch.providerIds.length,
+        noProviderAvailable: outcome.dispatch.providerIds.length === 0,
+        expiresAt: outcome.dispatch.expiresAt.toISOString(),
+        actorType: 'INTEGRATION',
+        actorId: integrationClientId,
+      });
+    }
     return outcome.quote;
   }
 

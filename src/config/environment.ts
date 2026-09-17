@@ -84,6 +84,8 @@ const schema = z.object({
   SMTP_USER: optional(z.string().min(1).max(320)),
   SMTP_PASSWORD: optional(z.string().min(1).max(1024)),
   LOCAL_MAIL_OUTBOX_DIR: optional(z.string().min(1).max(1024)),
+  // V1.7 dispatch: how long an accepted service stays claimable by eligible providers.
+  DISPATCH_TTL_MINUTES: z.coerce.number().int().min(1).max(1440).default(10),
   DEFAULT_FLEET_MAX_DRIVERS: z.coerce
     .number()
     .int()

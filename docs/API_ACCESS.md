@@ -12,6 +12,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/delivery-requests/{publicId} | bearer | SUPER_ADMIN | — | Consultar cualquier DeliveryRequest |
 | POST | /api/v1/admin/delivery-requests/{publicId}/cancel | bearer | SUPER_ADMIN | — | Cancelar cualquier DeliveryRequest |
 | GET | /api/v1/admin/delivery-requests/{publicId}/quotes | bearer | SUPER_ADMIN | — | Quotes de una DeliveryRequest |
+| GET | /api/v1/admin/dispatches | bearer | SUPER_ADMIN | — | Listar Dispatches |
+| GET | /api/v1/admin/dispatches/{dispatchId} | bearer | SUPER_ADMIN | — | Consultar Dispatch |
 | GET | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |
 | POST | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | AdminIntegrationsController_create[0] |
 | GET | /api/v1/admin/integrations/{id} | bearer | SUPER_ADMIN | — | AdminIntegrationsController_get[0] |
@@ -39,6 +41,9 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/providers/{providerId}/members | bearer | SUPER_ADMIN | — | Listar memberships administrativas |
 | POST | /api/v1/admin/providers/{providerId}/members | bearer | SUPER_ADMIN | — | Asociar administrador existente |
 | DELETE | /api/v1/admin/providers/{providerId}/members/{membershipId} | bearer | SUPER_ADMIN | — | Retirar administrador de este proveedor |
+| GET | /api/v1/admin/providers/{providerId}/service-coverages | bearer | SUPER_ADMIN | — | Listar coberturas del proveedor |
+| POST | /api/v1/admin/providers/{providerId}/service-coverages | bearer | SUPER_ADMIN | — | Habilitar proveedor en zona y tipo de servicio |
+| PATCH | /api/v1/admin/providers/{providerId}/service-coverages/{coverageId} | bearer | SUPER_ADMIN | — | Activar o desactivar cobertura |
 | GET | /api/v1/admin/providers/{providerId}/vehicles | bearer | SUPER_ADMIN | — | Listar vehículos del proveedor |
 | POST | /api/v1/admin/providers/{providerId}/vehicles | bearer | SUPER_ADMIN | — | Crear vehículo del proveedor |
 | GET | /api/v1/admin/providers/{providerId}/vehicles/{vehicleId} | bearer | SUPER_ADMIN | — | Consultar vehículo |
@@ -92,6 +97,10 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/integrations/scope-check | integration-bearer | — | deliveries:read | Authorization probe for deliveries:read; does not access or implement deliveries |
 | POST | /api/v1/integrations/token | Pública | — | — | Exchange Client Credentials for a short-lived B2B token; no refresh token |
 | GET | /api/v1/provider/capacity | bearer | PROVIDER_ADMIN | — | Consultar uso de Drivers y Vehicles de mi proveedor |
+| GET | /api/v1/provider/dispatches | bearer | PROVIDER_ADMIN | — | Listar Dispatches de mi proveedor |
+| GET | /api/v1/provider/dispatches/{dispatchId} | bearer | PROVIDER_ADMIN | — | Consultar Dispatch de mi proveedor |
+| POST | /api/v1/provider/dispatches/{dispatchId}/claim | bearer | PROVIDER_ADMIN | — | Reclamar Dispatch para mi proveedor |
+| POST | /api/v1/provider/dispatches/{dispatchId}/release | bearer | PROVIDER_ADMIN | — | Liberar Dispatch reclamado por mi proveedor |
 | GET | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Listar invitaciones de repartidores de mi proveedor |
 | POST | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Invitar repartidor a mi proveedor |
 | GET | /api/v1/provider/driver-invitations/{invitationId} | bearer | PROVIDER_ADMIN | — | Consultar invitación de repartidor |
@@ -106,6 +115,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | DELETE | /api/v1/provider/drivers/{driverId}/vehicle | bearer | PROVIDER_ADMIN | — | Desasignar vehículo vigente |
 | GET | /api/v1/provider/profile | bearer | PROVIDER_ADMIN | — | Consultar perfil de un proveedor asociado |
 | GET | /api/v1/provider/profiles | bearer | PROVIDER_ADMIN | — | Identificar mis proveedores asociados |
+| GET | /api/v1/provider/service-coverages | bearer | PROVIDER_ADMIN | — | Consultar coberturas de mi proveedor |
 | GET | /api/v1/provider/vehicles | bearer | PROVIDER_ADMIN | — | Listar vehículos de mi proveedor |
 | POST | /api/v1/provider/vehicles | bearer | PROVIDER_ADMIN | — | Crear vehículo en mi proveedor |
 | GET | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Consultar vehículo de mi proveedor |
