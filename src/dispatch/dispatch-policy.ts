@@ -1,5 +1,6 @@
 import type { DispatchStatus, Prisma, ServiceType } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
+import { cancelActiveAssignments } from '../delivery-assignments/delivery-assignments.service.js';
 
 export const DISPATCH_ERRORS = {
   DISPATCH_EXPIRED: 409,
@@ -8,6 +9,7 @@ export const DISPATCH_ERRORS = {
   DISPATCH_RECLAIM_NOT_ALLOWED: 409,
   DISPATCH_NOT_CLAIMED_BY_PROVIDER: 409,
   PROVIDER_NOT_ELIGIBLE: 409,
+  DISPATCH_HAS_ACTIVE_ASSIGNMENT: 409,
   SERVICE_COVERAGE_EXISTS: 409,
 } as const;
 export type DispatchErrorCode = keyof typeof DISPATCH_ERRORS;
@@ -123,12 +125,14 @@ export async function openDispatch(
 /**
  * Called by the official DeliveryRequest cancellation, inside its transaction (request row already
  * locked). OPEN or CLAIMED dispatches stop being operational: CANCELLED (claim owner kept as
- * history), or EXPIRED when an OPEN window had already closed.
+ * history), or EXPIRED when an OPEN window had already closed. V1.8: ACTIVE delivery assignments
+ * of those dispatches end first as CANCELLED / DELIVERY_CANCELLED (history kept).
  */
 export async function closeDispatchesForCancelledRequest(
   tx: Prisma.TransactionClient,
   deliveryRequestId: string,
   now: Date,
+  actorUserId: string | null = null,
 ) {
   const rows = await tx.$queryRaw<
     {
@@ -138,6 +142,12 @@ export async function closeDispatchesForCancelledRequest(
       claimedByProviderId: string | null;
     }[]
   >`SELECT id, status, "expiresAt", "claimedByProviderId" FROM "Dispatch" WHERE "deliveryRequestId" = ${deliveryRequestId}::uuid AND status IN ('OPEN', 'CLAIMED') FOR UPDATE`;
+  const assignments = await cancelActiveAssignments(
+    tx,
+    rows.map((row) => row.id),
+    now,
+    actorUserId,
+  );
   const events: {
     event: 'DISPATCH_CANCELLED' | 'DISPATCH_EXPIRED';
     dispatchId: string;
@@ -161,5 +171,5 @@ export async function closeDispatchesForCancelledRequest(
       providerId: row.claimedByProviderId,
     });
   }
-  return events;
+  return { events, assignments };
 }

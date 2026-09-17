@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { describe, expect, it, vi } from 'vitest';
 import { Prisma } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 import {
   claimRejection,
   closeDispatchesForCancelledRequest,
@@ -90,6 +91,7 @@ function record(overrides: Record<string, unknown> = {}) {
         currency: 'MXN',
       },
     },
+    deliveryAssignments: [],
     candidates: [
       {
         providerId: 'A',
@@ -240,12 +242,17 @@ describe('opening and cancellation inside the caller transaction', () => {
         },
       ]),
       dispatch: { update },
+      deliveryAssignment: {
+        findMany: vi.fn().mockResolvedValue([]),
+        update: vi.fn(),
+      },
     };
-    const events = await closeDispatchesForCancelledRequest(
+    const { events, assignments } = await closeDispatchesForCancelledRequest(
       t as never,
       'r1',
       at(-1),
     );
+    expect(assignments).toEqual([]);
     expect(events).toEqual([
       { event: 'DISPATCH_CANCELLED', dispatchId: 'open', providerId: null },
       { event: 'DISPATCH_EXPIRED', dispatchId: 'lapsed', providerId: null },
@@ -352,7 +359,10 @@ describe('DispatchService authorization inside the transaction', () => {
     const prisma = { $transaction: (fn: (t: typeof tx) => unknown) => fn(tx) };
     return {
       tx,
-      service: new DispatchService(prisma as unknown as PrismaService),
+      service: new DispatchService(
+        prisma as unknown as PrismaService,
+        new ConfigService({ LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES: 5 }),
+      ),
     };
   };
   const status = (p: Promise<unknown>) =>

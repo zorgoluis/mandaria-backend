@@ -225,7 +225,12 @@ export class DeliveryRequestsService {
           >`SELECT id, status FROM "DeliveryRequest" WHERE "publicId" = ${publicId} FOR UPDATE`;
       if (!row) throw new NotFoundException('Delivery request not found');
       if (row.status !== 'CREATED')
-        return { id: row.id, changed: false, quotes: [], dispatches: [] };
+        return {
+          id: row.id,
+          changed: false,
+          quotes: [],
+          dispatches: { events: [], assignments: [] },
+        };
       const now = new Date();
       await tx.deliveryRequest.update({
         where: { id: row.id },
@@ -256,6 +261,7 @@ export class DeliveryRequestsService {
         tx,
         row.id,
         now,
+        actor.type === 'INTEGRATION' ? null : actor.userId,
       );
       return {
         id: row.id,
@@ -282,7 +288,19 @@ export class DeliveryRequestsService {
         actorType: actor.type,
         actorId,
       });
-    for (const dispatch of result.dispatches)
+    for (const assignment of result.dispatches.assignments)
+      this.logger.log({
+        event: 'DELIVERY_ASSIGNMENT_CANCELLED',
+        assignmentId: assignment.id,
+        dispatchId: assignment.dispatchId,
+        providerId: assignment.providerId,
+        driverId: assignment.driverId,
+        vehicleId: assignment.vehicleId,
+        reason: 'DELIVERY_CANCELLED',
+        actorType: actor.type,
+        actorId,
+      });
+    for (const dispatch of result.dispatches.events)
       this.logger.log({
         event: dispatch.event,
         dispatchId: dispatch.dispatchId,

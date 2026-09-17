@@ -21,6 +21,30 @@ const busy = (subject: 'Driver' | 'Vehicle') =>
       : 'Vehicle is already assigned to another driver',
   );
 
+/**
+ * V1.8: the vehicle a driver operates cannot change while either of them is executing a delivery
+ * assignment; the provider must end that assignment first.
+ */
+async function assertNoDeliveryAssignment(
+  tx: Prisma.TransactionClient,
+  resources: { driverId: string; vehicleId?: string },
+) {
+  const active = await tx.deliveryAssignment.findFirst({
+    where: {
+      status: 'ACTIVE',
+      OR: [
+        { driverId: resources.driverId },
+        ...(resources.vehicleId ? [{ vehicleId: resources.vehicleId }] : []),
+      ],
+    },
+    select: { id: true },
+  });
+  if (active)
+    throw new ConflictException(
+      'Driver or vehicle is executing a delivery assignment',
+    );
+}
+
 @Injectable()
 export class AssignmentsService {
   private readonly logger = new Logger(AssignmentsService.name);
@@ -68,6 +92,7 @@ export class AssignmentsService {
         });
         if (active.some((a) => a.driverId === driverId)) throw busy('Driver');
         if (active.length) throw busy('Vehicle');
+        await assertNoDeliveryAssignment(tx, { driverId, vehicleId });
         return tx.driverVehicleAssignment.create({
           data: { providerId, driverId, vehicleId },
           select: assignmentHistorySelect,
@@ -102,6 +127,7 @@ export class AssignmentsService {
       });
       if (!active)
         throw new NotFoundException('Driver has no active vehicle assignment');
+      await assertNoDeliveryAssignment(tx, { driverId });
       const now = new Date();
       return tx.driverVehicleAssignment.update({
         where: { id: active.id },

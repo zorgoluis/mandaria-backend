@@ -1,10 +1,10 @@
-# Mandaria — V1.7 Dispatch Engine & Provider Claiming
+# Mandaria — V1.8 Provider Driver & Vehicle Assignment
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agrega el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). No asigna Driver ni Vehicle. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agrega la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -16,6 +16,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `geo/`, `service-zones/`, `routing/`, `rate-plans/`, `delivery-quotes/`: cotización V1.6 (geometría interna, zonas, RoutingProvider, tarifas y Quotes).
 - `invitations/`, `mail/`: aprovisionamiento V1.6.1 (invitaciones, activación de cuenta y MailProvider).
 - `dispatch/`: V1.7 Dispatch, candidatos, coberturas de proveedor, claim y liberación.
+- `delivery-assignments/`: V1.8 asignación de Driver y Vehicle al Dispatch reclamado, con historial, reasignación y plazo.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -164,6 +165,7 @@ La migración `20260915000200_b2b_credentials`:
 | MAIL_PROVIDER | `smtp` (obligatorio en producción) o `local_outbox` (LOCAL/TEST ONLY; default fuera de producción; rechazado en producción) |
 | MAIL_FROM, SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD | Remitente y relay SMTP; host y remitente obligatorios con smtp; usuario y contraseña juntos; nunca versionar |
 | DISPATCH_TTL_MINUTES | Minutos que un servicio aceptado es reclamable (1–1440, default 10); independiente de la vigencia de la Quote |
+| LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES | Minutos que el proveedor tiene para asignar Driver y Vehicle tras reclamar un LOCAL_DELIVERY (1–1440, default 5); sólo señal `assignmentOverdue`, sin liberación automática |
 | LOCAL_MAIL_OUTBOX_DIR | **LOCAL/TEST ONLY**; carpeta del outbox local (default `<temp>/mandaria-mail-outbox`) |
 
 Los tres secretos JWT deben ser distintos. La aplicación falla al iniciar ante valores inválidos, sin imprimirlos. CORS vacío deshabilita acceso cross-origin del navegador; no se acepta `*`. CORS no sustituye autenticación server-to-server.
@@ -273,6 +275,8 @@ Prefijo `/api/v1` salvo health/docs:
 | POST, GET | /provider/driver-invitations[/:id[/resend\|/revoke]] | PROVIDER_ADMIN + membership |
 | GET | /provider/dispatches, /provider/dispatches/:id, /provider/service-coverages | PROVIDER_ADMIN + membership |
 | POST | /provider/dispatches/:id/claim, /provider/dispatches/:id/release | PROVIDER_ADMIN + membership (ver V1.7) |
+| POST, GET | /provider/dispatches/:id/assignment[/reassign\|/cancel], /provider/dispatches/:id/assignments, /provider/dispatches/:id/available-drivers\|available-vehicles | PROVIDER_ADMIN + membership (ver V1.8) |
+| GET | /admin/dispatches/:id/assignments | SUPER_ADMIN |
 | GET, POST, PATCH | /admin/dispatches[/:id], /admin/providers/:providerId/service-coverages[/:id] | SUPER_ADMIN |
 | POST | /integrations/token | Client Credentials en body |
 | GET | /integrations/me | Bearer B2B |
@@ -859,7 +863,7 @@ Ejemplo real de la validación local: `MDR-000037 → ruta 4509 m → banda 4000
 - **Idempotencia natural:** 20 cotizaciones simultáneas producen una Quote y una llamada de routing (las demás esperan el bloqueo y reutilizan). No se añadió un segundo sistema de idempotencia: la unicidad es por DeliveryRequest y `Idempotency-Key` sigue siendo la infraestructura V1.5 para crear solicitudes. La transacción tiene un presupuesto igual al peor caso de routing más margen.
 - **Un fallo nunca crea Quote ni cancela la solicitud:** sigue CREATED y puede reintentarse. Nunca se usa `amount = 0` como error.
 - **Aceptar** (`POST /delivery-quotes/:publicId/accept`): OFFERED vigente → ACCEPTED, serializado sobre la solicitud. Repetir es idempotente (200). Si venció: `409 QUOTE_EXPIRED` (queda EXPIRED); cancelada o solicitud cancelada: `409 QUOTE_NOT_ACCEPTABLE`. El precio aceptado queda congelado; los nuevos planes sólo afectan Quotes nuevas. SUPER_ADMIN no acepta en V1.6.
-- **Cancelar la DeliveryRequest** (B2B o admin, misma transacción y bloqueo): las OFFERED vigentes pasan a CANCELLED (`DELIVERY_REQUEST_CANCELLED`) y las vencidas a EXPIRED. Una ACCEPTED **se conserva como historial** y la solicitud queda CANCELLED; en V1.7 Dispatch definirá la política con servicio en curso.
+- **Cancelar la DeliveryRequest** (B2B o admin, misma transacción y bloqueo): las OFFERED vigentes pasan a CANCELLED (`DELIVERY_REQUEST_CANCELLED`) y las vencidas a EXPIRED. Una ACCEPTED **se conserva como historial** y la solicitud queda CANCELLED; desde V1.8 la cancelación cierra además la asignación de Driver y Vehicle ACTIVE con `DELIVERY_CANCELLED`.
 - **Precio de entrega vs mercancía:** el costo logístico es `acceptedQuote.amount`; no se duplica `deliveryFee` en DeliveryRequest. `goodsValue`/`goodsPaymentMode` (V1.5) siguen independientes: con 450 COURIER_ADVANCE y Quote de 50, la Quote es 50, nunca 500. No hay créditos, wallet ni costo de plataforma al proveedor.
 
 ### Endpoints V1.6
@@ -1155,6 +1159,93 @@ Nunca se exponen a proveedores el IntegrationClient, otros candidatos ni secreto
 
 Pruebas: `test/dispatch.spec.ts` (TTL, expiración, reglas de claim, apertura con y sin candidatos, cancelación, exposición por access, autorización del servicio) y `test/dispatch.e2e-spec.ts` (creación automática, candidatos A/B vs C otra zona, D suspendido y F cobertura inactiva, sin candidatos, aceptación repetida y concurrente, atomicidad, claim con login real, aislamiento y roles, múltiples memberships, liberación y no reclamo, liberaciones concurrentes, 3 rondas de 15 claims simultáneos de 5 proveedores, expiración, cancelación OPEN/CLAIMED, invariantes SQL y auditoría).
 
+## Provider Driver & Vehicle Assignment (V1.8-A)
+
+Responde: el proveedor ya reclamó el servicio, ¿**qué Driver y qué Vehicle** de su flotilla lo ejecutan?
+
+```text
+Dispatch CLAIMED (V1.7)
+      ↓
+PROVIDER_ADMIN → GET /provider/dispatches/:id/available-drivers | available-vehicles
+      ↓
+POST /provider/dispatches/:id/assignment  {driverId, vehicleId}
+      ↓
+DeliveryAssignment ACTIVE  (1 por Dispatch, 1 por Driver, 1 por Vehicle)
+      ↓  reassign (motivo)                ↓  cancel (motivo)
+nueva ACTIVE + anterior REASSIGNED    anterior CANCELLED, sin reemplazo
+```
+
+La asignación **no cambia el estado del Dispatch** (sigue CLAIMED) ni crea estados de ejecución. El Driver no acepta ni rechaza: el proveedor decide (V1.8 no tiene Driver App). Nada de GPS, tracking, sockets, push, wallet ni saldos de repartidor.
+
+### Historial, nunca sobrescritura
+
+`DeliveryAssignment` es una tabla de historial: reasignar **no** edita la fila, cierra la anterior e inserta una nueva. `Dispatch` no guarda `driverId`/`vehicleId`.
+
+| status | Significado |
+|---|---|
+| ACTIVE | Ejecuta el servicio ahora (máximo 1 por Dispatch) |
+| REASSIGNED | Reemplazada por otra asignación (`endedAt`, `endReason`, quién) |
+| CANCELLED | Liberada sin reemplazo, o cerrada por la cancelación del servicio |
+
+Las filas cerradas son inmutables y la identidad (`dispatchId`, `providerId`, `driverId`, `vehicleId`, `assignedAt`, `assignedByUserId`) nunca cambia: lo garantizan CHECKs y el trigger `DeliveryAssignment_guard`, no sólo el servicio.
+
+### Elegibilidad del Driver y del Vehicle
+
+Asignables sólo los recursos **del proveedor dueño del claim**: `Driver.status = ACTIVE` con `User.active = true`, `Vehicle.status = ACTIVE`, proveedor ACTIVE, ninguno con otra asignación ACTIVE y respetando el emparejamiento V1.4 (`DriverVehicleAssignment` vigente). Un recurso de otro proveedor responde **404** (no existe para quien pregunta), nunca 403 con detalles. Orden de comprobación: existencia → elegibilidad → ocupación → emparejamiento.
+
+`GET /provider/dispatches/:dispatchId/available-drivers` y `available-vehicles` (paginados) devuelven exactamente esos candidatos, con el vehículo/driver emparejado cuando existe.
+
+### Endpoints
+
+| Método | Ruta | Uso |
+|---|---|---|
+| POST | /provider/dispatches/:dispatchId/assignment | `{driverId, vehicleId}` → 201 ACTIVE |
+| POST | /provider/dispatches/:dispatchId/assignment/reassign | `{driverId, vehicleId, reason, reasonDetail?}` → 200 nueva ACTIVE |
+| POST | /provider/dispatches/:dispatchId/assignment/cancel | `{reason, reasonDetail?}` → 200 CANCELLED |
+| GET | /provider/dispatches/:dispatchId/assignments | Historial del Dispatch (sólo el dueño del claim) |
+| GET | /provider/dispatches/:dispatchId/available-drivers | Drivers asignables |
+| GET | /provider/dispatches/:dispatchId/available-vehicles | Vehicles asignables |
+| GET | /admin/dispatches/:dispatchId/assignments | SUPER_ADMIN: historial completo (auditoría) |
+
+Sólo **PROVIDER_ADMIN con membership** asigna; el proveedor sale de la membership (`?providerId=` sólo elige entre las propias). SUPER_ADMIN y DRIVER reciben 403 (el admin no opera flotillas ajenas; el Driver es V1.9) y el IntegrationClient 401: el cliente B2B no elige repartidor. `reason` ∈ `DRIVER_UNAVAILABLE | VEHICLE_ISSUE | OPERATIONAL_CHANGE | OTHER` (`OTHER` exige `reasonDetail` de 3–500); `DELIVERY_CANCELLED` está reservado a la cancelación oficial y es 400 si lo envía un proveedor.
+
+### Plazo de asignación
+
+`LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES` (1–1440, default **5**), por ServiceType (cada tipo nuevo añade su variable). `assignmentDeadline = claimedAt + TTL` y la señal derivada `assignmentOverdue` (CLAIMED sin asignación ACTIVE y `now > deadline`) aparecen en el detalle del Dispatch. **No** libera ni reasigna automáticamente: es visibilidad operativa, sin cron.
+
+### Contexto de pago del servicio
+
+La asignación devuelve `paymentContext` con datos V1.5/V1.6, sin mezclar dinero logístico y mercancía: `deliveryFee` (lo que cobra el proveedor), `goodsValue`, `goodsPaymentMode`, `driverAdvancesGoods` y `driverAdvanceAmount`. Con `COURIER_ADVANCE` el repartidor adelanta la mercancía al comercio y la recupera al entregar; **Mandaria no mueve ese dinero ni valida si el repartidor tiene efectivo** — es responsabilidad del proveedor. V1.8 no crea wallet, saldo ni crédito.
+
+### Protección del servicio en curso
+
+- **Liberar el Dispatch** (`/release`) con asignación ACTIVE → 409 `DISPATCH_HAS_ACTIVE_ASSIGNMENT`; hay que cancelar la asignación primero (queda auditado quién y por qué). Respaldo en `dispatch_guard`: la fila no puede salir de CLAIMED con una asignación ACTIVE.
+- **Cancelar la DeliveryRequest** (B2B o admin) cierra en la misma transacción la asignación ACTIVE con `endReason = DELIVERY_CANCELLED`, conservando el historial.
+- **Emparejamiento V1.4:** asignar o desasignar el vehículo de un Driver que está ejecutando una entrega → 409; primero se cierra la asignación de entrega.
+
+### Errores de dominio
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| DISPATCH_NOT_CLAIMED_BY_PROVIDER | 409 | El Dispatch no está CLAIMED por mi proveedor |
+| DISPATCH_ALREADY_ASSIGNED | 409 | Ya hay una asignación ACTIVE (usar reassign) |
+| NO_ACTIVE_ASSIGNMENT | 409 | Reasignar o cancelar sin asignación ACTIVE |
+| ASSIGNMENT_UNCHANGED | 409 | Reasignar al mismo Driver y Vehicle |
+| PROVIDER_NOT_ACTIVE | 409 | Proveedor suspendido |
+| DRIVER_NOT_ELIGIBLE / VEHICLE_NOT_ELIGIBLE | 409 | Recurso no ACTIVE (o cuenta del Driver inactiva) |
+| DRIVER_BUSY / VEHICLE_BUSY | 409 | Ya ejecuta otra entrega |
+| DRIVER_VEHICLE_MISMATCH | 409 | Contradice el emparejamiento V1.4 |
+| DISPATCH_HAS_ACTIVE_ASSIGNMENT | 409 | Liberar el claim con asignación ACTIVE |
+| ASSIGNMENT_CONFLICT | 409 | Carrera resuelta por PostgreSQL (perdedor de un empate) |
+
+### Base de datos y auditoría
+
+- Migración `20260917000900_delivery_assignments`: tabla `DeliveryAssignment` (crea 0 filas para datos existentes), FKs compuestas `(driverId, providerId)` y `(vehicleId, providerId)` que hacen imposible mezclar flotillas, **tres índices únicos parciales** `WHERE status = 'ACTIVE'` (por Dispatch, por Driver y por Vehicle), CHECKs de coherencia (`ACTIVE` sin datos de cierre; cerradas con `endedAt >= assignedAt` y motivo; `OTHER` con detalle), trigger `DeliveryAssignment_guard` (nace ACTIVE para un Dispatch CLAIMED del mismo proveedor; identidad inmutable; filas cerradas congeladas) y `dispatch_guard` ampliado con `DISPATCH_HAS_ACTIVE_ASSIGNMENT`.
+- Concurrencia: la transacción bloquea el Dispatch, el proveedor (SHARE), el Driver y el Vehicle en orden fijo; 10 asignaciones simultáneas sobre un Dispatch dejan exactamente 1 ACTIVE y 9 → 409, y el mismo Driver o Vehicle no puede quedar en dos Dispatches. Dos **reasignaciones** simultáneas no compiten: se serializan y la segunda parte de la nueva ACTIVE, de modo que el historial encadena los cambios (ambas responden 200) y sigue existiendo exactamente 1 ACTIVE.
+- Eventos: `DELIVERY_ASSIGNMENT_CREATED`, `DELIVERY_ASSIGNMENT_REASSIGNED` (recursos anteriores y nuevos, motivo) y `DELIVERY_ASSIGNMENT_CANCELLED`, con `assignmentId`, `dispatchId`, `providerId`, `driverId`, `vehicleId` y `actorUserId`; sin tokens, contraseñas, contactos del cliente ni montos de mercancía.
+
+Pruebas: `test/delivery-assignments.spec.ts` (plazo, TTL por ServiceType, contexto de pago, emparejamiento, guardas del servicio, cierre por cancelación) y `test/delivery-assignments.e2e-spec.ts` (recursos asignables y asignación con contexto de pago, aislamiento por proveedor y por dueño del claim, roles, emparejamiento V1.4 en ambos sentidos, recursos ocupados, reasignación con historial, protección de `/release`, cancelación del servicio, `assignmentOverdue`, 10 asignaciones simultáneas, carreras por Driver y por Vehicle, invariantes e inmutabilidad en PostgreSQL y auditoría sin secretos).
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -1167,7 +1258,7 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - Auditoría actual en logs, sin almacén persistente empresarial.
 - Listados anteriores de Users/Integrations acotados a 100; Providers, memberships, Drivers, Vehicles e historiales ya tienen paginación.
 - V1.4: `POST …/drivers` sigue aceptando el UUID de un User DRIVER activo sin perfil; desde V1.6.1 la vía de alta soportada es la invitación, que crea el Driver al activar.
-- Cambiar un vehículo a INACTIVE/MAINTENANCE/SUSPENDED o suspender un Driver no cierra su asignación vigente; la política con entregas en curso se define en V1.5.
+- Cambiar un vehículo a INACTIVE/MAINTENANCE/SUSPENDED o suspender un Driver no cierra su asignación de entrega ACTIVE (V1.8): impide asignarlos de nuevo, pero el servicio en curso sigue con ellos hasta que el proveedor reasigne o cancele.
 - No existe eliminación ni transferencia de Drivers/Vehicles entre proveedores; por eso todos los registros cuentan para los límites.
 - ApiIdempotencyRecord no expira todavía; definir retención antes de volumen alto. El rate limit de creación B2B es por IP (clientes detrás de la misma IP comparten cupo).
 - `goodsValue` admite 2 decimales (NUMERIC(14,2)); monedas ISO con 0 o 3 decimales requerirán ajustar precisión/validación.
@@ -1183,16 +1274,20 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.6.1: el correo se envía tras el commit sin cola ni reintentos automáticos; un fallo se reporta como `emailDelivery: FAILED` y se resuelve con resend.
 - V1.6.1: los límites de invitación son por IP en memoria; administradores autenticados pueden saber si un email ya tiene cuenta (errores útiles de su alcance).
 - V1.6.1: el outbox local guarda enlaces con token en claro en la carpeta temporal; es sólo para desarrollo y se rechaza en producción.
-- V1.7: expiración de Dispatch perezosa (sin cron); un OPEN vencido figura EXPIRED en lecturas y se persiste al intentar reclamar o cancelar. Sin notificaciones: los proveedores consultan `view=AVAILABLE` (sockets en V1.8).
+- V1.7: expiración de Dispatch perezosa (sin cron); un OPEN vencido figura EXPIRED en lecturas y se persiste al intentar reclamar o cancelar. Sin notificaciones: los proveedores consultan `view=AVAILABLE` (sockets pendientes, V1.9+).
 - V1.7: el claim bloquea la fila del Dispatch; con muy alto volumen conviene medir la contención. La elegibilidad no considera capacidad real (Drivers disponibles) ni cercanía.
 - V1.7: coberturas sólo por SUPER_ADMIN; desactivar una cobertura no retira candidaturas ya ofrecidas, pero sus claims fallan con PROVIDER_NOT_ELIGIBLE.
+- V1.8: `assignmentOverdue` es sólo una señal; no hay cron que libere, reasigne ni notifique el vencimiento del plazo, y no existe métrica agregada de incumplimiento.
+- V1.8: el Driver no acepta ni rechaza la asignación (no hay Driver App hasta V1.9) y no se comprueba su disponibilidad real, su cercanía ni su efectivo para `COURIER_ADVANCE`; el proveedor asume esa responsabilidad.
+- V1.8: la asignación no crea estados de ejecución (recogido/en camino/entregado); el Dispatch permanece CLAIMED hasta que el ciclo de vida de la entrega exista.
+- V1.8: un Driver o Vehicle sólo ejecuta una entrega a la vez (índices únicos parciales); entregas agrupadas o multi-stop operativo requerirán relajar esa regla deliberadamente.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.7 / V1.8+
+## Fuera de V1.8 / V1.9+
 
-No se implementaron asignación de Driver o vehículo, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron Driver App, aceptación/rechazo por el repartidor, Drivers independientes, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API, Independent Driver (V1.9) y auditoría persistente siguen pendientes.

@@ -317,6 +317,43 @@ try {
       '2',
     );
   }
+  // V1.8: assignments are a new history table; the upgrade creates no rows for existing data.
+  assert.equal(
+    sql(upgradeDb, ['-c', 'SELECT count(*) FROM "DeliveryAssignment"']),
+    '0',
+  );
+  for (const db of [cleanDb, upgradeDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('DeliveryAssignment_values_check','DeliveryAssignment_reason_check','DeliveryAssignment_dispatchId_fkey','DeliveryAssignment_providerId_fkey','DeliveryAssignment_driverId_providerId_fkey','DeliveryAssignment_vehicleId_providerId_fkey','DeliveryAssignment_assignedByUserId_fkey','DeliveryAssignment_endedByUserId_fkey')",
+      ]),
+      '8',
+    );
+    // One ACTIVE per dispatch, per driver and per vehicle, enforced by PostgreSQL.
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname IN ('DeliveryAssignment_active_dispatch_key','DeliveryAssignment_active_driver_key','DeliveryAssignment_active_vehicle_key') AND indexdef LIKE '%WHERE%ACTIVE%'",
+      ]),
+      '3',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname = 'DeliveryAssignment_guard'",
+      ]),
+      '1',
+    );
+    // A claimed dispatch cannot be released or expired while an assignment is ACTIVE.
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_proc WHERE proname = 'dispatch_guard' AND prosrc LIKE '%DISPATCH_HAS_ACTIVE_ASSIGNMENT%'",
+      ]),
+      '1',
+    );
+  }
   assert.equal(
     sql(upgradeDb, [
       '-c',
@@ -497,7 +534,7 @@ try {
   );
   prisma(upgradeDb, ['migrate', 'deploy']);
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; V1.4-V1.7 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; V1.4-V1.8 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

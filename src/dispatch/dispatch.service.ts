@@ -5,7 +5,12 @@ import type {
   DispatchStatus,
   ServiceType,
 } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service.js';
+import {
+  assignmentDeadline,
+  assignmentTtlMinutes,
+} from '../delivery-assignments/assignment-policy.js';
 import { pageResult } from '../common/pagination.dto.js';
 import {
   claimRejection,
@@ -18,6 +23,7 @@ import {
   dispatchSelect,
   providerDispatchView,
 } from './dispatch.select.js';
+import type { DispatchRecord } from './dispatch.select.js';
 
 type LockedDispatch = {
   id: string;
@@ -38,6 +44,8 @@ const REJECTION_MESSAGES: Record<DispatchErrorCode, string> = {
   PROVIDER_NOT_ELIGIBLE:
     'Provider is no longer eligible for this service zone and type',
   SERVICE_COVERAGE_EXISTS: 'Coverage already exists',
+  DISPATCH_HAS_ACTIVE_ASSIGNMENT:
+    'Cancel the active delivery assignment before releasing the dispatch',
 };
 const reject = (code: DispatchErrorCode) =>
   dispatchError(code, REJECTION_MESSAGES[code]);
@@ -58,7 +66,20 @@ function statusWhere(
 @Injectable()
 export class DispatchService {
   private readonly logger = new Logger(DispatchService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+  ) {}
+
+  /** Assignment deadline (claimedAt + ServiceType TTL) and whether the owner is overdue. */
+  private deadline(dispatch: DispatchRecord, now: Date) {
+    return assignmentDeadline(
+      dispatch,
+      dispatch.deliveryAssignments.length > 0,
+      assignmentTtlMinutes(this.config, dispatch.deliveryQuote.serviceType),
+      now,
+    );
+  }
 
   /** Dispatches where the provider was a candidate (claim owners always are). */
   async listForProvider(
@@ -96,7 +117,9 @@ export class DispatchService {
           : [{ createdAt: 'desc' }, { id: 'desc' }],
     });
     return pageResult(
-      items.map((d) => providerDispatchView(d, providerId, now)),
+      items.map((d) =>
+        providerDispatchView(d, providerId, now, this.deadline(d, now)),
+      ),
       total,
       query,
     );
@@ -109,7 +132,13 @@ export class DispatchService {
     });
     // Non-candidates get the same 404 as an unknown id: ids cannot be probed.
     if (!dispatch) throw new NotFoundException('Dispatch not found');
-    return providerDispatchView(dispatch, providerId);
+    const now = new Date();
+    return providerDispatchView(
+      dispatch,
+      providerId,
+      now,
+      this.deadline(dispatch, now),
+    );
   }
 
   /**
@@ -191,6 +220,17 @@ export class DispatchService {
         dispatch.claimedByProviderId !== providerId
       )
         throw reject('DISPATCH_NOT_CLAIMED_BY_PROVIDER');
+      // V1.8: resources must be freed first; the dispatch trigger enforces this in SQL too.
+      if (
+        await tx.deliveryAssignment.findFirst({
+          where: { dispatchId, status: 'ACTIVE' },
+          select: { id: true },
+        })
+      )
+        throw dispatchError(
+          'DISPATCH_HAS_ACTIVE_ASSIGNMENT',
+          'Cancel the active delivery assignment before releasing the dispatch',
+        );
       const now = new Date();
       await tx.dispatchCandidate.update({
         where: { dispatchId_providerId: { dispatchId, providerId } },
