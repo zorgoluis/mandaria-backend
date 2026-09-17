@@ -1,3 +1,86 @@
+# CHECK V1.8-A — Assignment Concurrency, Isolation & Integrity (2026-09-17)
+
+Rama `v1.8-provider_driver_vehicle_assignment`, paquete 1.8.0. Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (puerto 3011, base `mandaria_test`, `ROUTING_PROVIDER=local_fake`), con fixtures propios, logins reales y limpieza total. Sin cambios de código.
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Línea base (prisma validate, migrate status, tsc, build, Oxlint, ESLint, docs:check; 91 unitarias; E2E por archivo) | PASS; 91; 148/148 |
+| 2 | Asignación básica Carlos + MOTO-03 (API y DB) | 201 ACTIVE; Dispatch sigue CLAIMED con `assignment` |
+| 3 | `driverId` de proveedor B | 404 sin detalles; 0 asignaciones |
+| 4 | `vehicleId` de proveedor B | 404 |
+| 5 | Admin de B sobre asignación de A (crear, reasignar, cancelar, `?providerId=A`) | 409 DISPATCH_NOT_CLAIMED_BY_PROVIDER ×3 y 403; la ACTIVE de A intacta |
+| 6 | Rol DRIVER (crear, reasignar, cancelar) | 403 / 403 / 403 |
+| 7 | SUPER_ADMIN como flotilla | 403 / 403 / 403; sólo lectura de auditoría (historial y `activeAssignment`) |
+| 8 | IntegrationClient (token B2B) en las 4 rutas | 401 ×4 |
+| 9 | 12 asignaciones simultáneas al mismo Dispatch con combinaciones distintas | 1 × 201, 11 × 409; 1 ACTIVE en DB |
+| 10 | Carlos a dos Dispatches CLAIMED en paralelo | 1 × 201 + 1 × 409 DRIVER_BUSY; Carlos ACTIVE en exactamente 1 |
+| 11 | MOTO-03/MOTO-07 a dos Dispatches en paralelo | 1 × 201 + 1 × 409 VEHICLE_BUSY; vehículo ACTIVE en exactamente 1 |
+| 12 | Alta contención: 16 peticiones concurrentes sobre 4 Dispatches | 4 × 201, 12 × 409 (DISPATCH_ALREADY_ASSIGNED/DRIVER_BUSY); 1 ACTIVE por Dispatch; 0 grupos duplicados en DB |
+| 13 | Reasignación Carlos+MOTO-03 → Pedro+MOTO-07 | anterior REASSIGNED con `endedAt` y motivo; nueva ACTIVE; 2 filas |
+| 14 | Dos reasignaciones simultáneas | Se serializan (200 + 200, la segunda parte de la nueva ACTIVE); historial REASSIGNED,REASSIGNED,REASSIGNED,ACTIVE con exactamente 1 ACTIVE |
+| 15 | Reasignar hacia un recurso que se ocupa en paralelo | 1 aplica, la otra 409 DRIVER_BUSY; 1 ACTIVE por Driver y por Vehicle |
+| 16 | Cancelación de asignación | 200 CANCELLED con motivo; Driver y Vehicle vuelven a los listados asignables; segunda cancelación 409 NO_ACTIVE_ASSIGNMENT |
+| 17 | Reutilizar Carlos y MOTO-03 en otro servicio | 201 |
+| 18 | `/release` con asignación ACTIVE | 409 DISPATCH_HAS_ACTIVE_ASSIGNMENT; Dispatch sigue CLAIMED con su dueño |
+| 19 | Cancelar asignación y después liberar | 200 → OPEN; asignar sin claim 409 (reglas V1.7 intactas) |
+| 20 | Cancelación oficial de la DeliveryRequest (B2B) | Asignación CANCELLED/DELIVERY_CANCELLED, Dispatch CANCELLED, recursos libres; sin ACTIVE huérfana |
+| 21 | Driver SUSPENDED y Driver con cuenta inactiva | 409 DRIVER_NOT_ELIGIBLE ×2 |
+| 22 | Vehículo en MAINTENANCE | 409 VEHICLE_NOT_ELIGIBLE |
+| 23 | Driver de otro proveedor con ID válido y conocido (crear y reasignar) | 404 / 404 |
+| 24 | Vehículo de otro proveedor con ID válido y conocido | 404 |
+| 25 | Contexto de pago COURIER_ADVANCE | `deliveryFee` 60.00, `goodsValue` 800.00, `driverAdvancesGoods` true, `driverAdvanceAmount` 800.00 en la asignación y en el detalle del Dispatch |
+| 26 | Pedido PREPAID | `driverAdvancesGoods` false y `driverAdvanceAmount` null: nunca se presenta como adelanto del repartidor |
+| 27 | Plazo de asignación | `claimedAt` + 5 min, distinto de `expiresAt` del Dispatch (+60 min) y anterior a él |
+| 28 | Plazo vencido forzado | `assignmentOverdue` true; Dispatch y candidatura siguen CLAIMED (sin auto-release); asignar sigue permitido y la señal vuelve a false |
+| 29 | Historial Carlos → Pedro → Luis | 3 filas REASSIGNED,REASSIGNED,ACTIVE; API 3 con la ACTIVE primero |
+| 30 | Auditoría | CREATED/REASSIGNED/CANCELLED con assignmentId, dispatchId, providerId, driverId, vehicleId y actorUserId; 0 secretos (contraseña, JWT humano y B2B, clientSecret, teléfono del cliente) en 2372 líneas de log |
+| 31 | Invariantes forzadas en SQL | Segunda ACTIVE por Dispatch/Driver/Vehicle (únicos parciales), asignación de otro proveedor o sobre Dispatch no CLAIMED (DELIVERY_ASSIGNMENT_INVALID), cambio de identidad y reapertura de fila cerrada (DELIVERY_ASSIGNMENT_IMMUTABLE) y salida de CLAIMED con ACTIVE (DISPATCH_HAS_ACTIVE_ASSIGNMENT): todas rechazadas |
+| 31b | Escaneo de invariantes en `mandaria_db` y `mandaria_test` | 0 violaciones en 13 consultas (incluidas las V1.7) + objetos presentes (3 índices parciales, 8 constraints, trigger, dispatch_guard); fixtures del CHECK sin residuo |
+| 32 | verify-migrations limpia + V1.0 → … → V1.7 → V1.8 con datos, sin reset | PASS; `migrate status` al día |
+| 33 | Regresión V1.0–V1.7 (claim, release, memberships, Drivers/Vehicles, cancelación, Quotes, invitaciones) | E2E por archivo 148/148 (delivery-quotes y delivery-requests-b2b sufrieron la caída nativa de workers en Windows y pasaron 11/11 y 15/15 al repetirlos) |
+| 34 | Calidad final | prisma validate, tsc, build, Oxlint, ESLint, docs:check PASS; 91 unitarias |
+| — | Servidor durante el CHECK | 0 respuestas 5xx y 0 excepciones; 0 respuestas 429 (reinicios del validador para no consumir el límite por IP) |
+
+Resultado real: **30/30** comprobaciones por HTTP + escaneo de base de datos sin violaciones. Sin bugs de producto; sin cambios de código. Dos expectativas del validador estaban mal y se corrigieron en el propio validador: dos reasignaciones simultáneas pueden responder 200 las dos (se serializan) y en el detalle del Dispatch el bloque `goods` usa cadenas decimales con `currency` hermano (forma V1.7), mientras `paymentContext` usa objetos `{amount, currency}`. Ambos comportamientos quedaron documentados (README y contrato de la web).
+
+No verificado: Docker; entrega SMTP real; comportamiento con reloj del sistema desplazado hacia atrás (el CHECK constraint `endedAt >= assignedAt` lo rechazaría).
+
+# Verificación V1.8-A — Provider Driver & Vehicle Assignment (2026-09-17)
+
+Rama `v1.8-provider_driver_vehicle_assignment`, paquete 1.8.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado.
+
+| Verificación | Resultado |
+|---|---|
+| Línea base antes de modificar | 81 unitarias; E2E 137/137 por archivo |
+| Prisma validate / migrate status / drift | PASS / al día / vacío |
+| Migración `20260917000900_delivery_assignments` en mandaria_db y mandaria_test (sin reset) | PASS; 0 filas creadas; datos V1.0–V1.7 intactos |
+| Limpia + V1.0 → … → V1.7 → V1.8 con datos | PASS; DeliveryAssignment vacía, 8 constraints, 3 índices únicos parciales ACTIVE, trigger y `dispatch_guard` con DISPATCH_HAS_ACTIVE_ASSIGNMENT |
+| TypeScript / Build / Oxlint / ESLint / docs:check | PASS |
+| docs:openapi | 1.8.0; +7 rutas y +12 esquemas; 0 rutas o esquemas eliminados |
+| npm test | 91 PASS (81 + 10 V1.8) |
+| E2E por archivo | 148/148 (13 V1.8); 1 caída nativa de worker en delivery-requests-b2b, 15/15 al repetir |
+| Arranque real `dist/main.js` (puerto 3010) | health 200; OpenAPI 1.8.0; 7 rutas de asignación mapeadas |
+| Recursos asignables: sólo del dueño del claim, ACTIVE, con cuenta activa y libres; excluidos Driver suspendido, Driver con cuenta inactiva, Driver de otro proveedor, vehículo en taller y vehículo ajeno | PASS; emparejamiento V1.4 incluido |
+| Asignar → 1 ACTIVE con `paymentContext` (deliveryFee 60.00, goodsValue, COURIER_ADVANCE, driverAdvancesGoods true, driverAdvanceAmount) | PASS; Dispatch sigue CLAIMED con `assignment` y `assignmentDeadline` |
+| Segunda asignación al mismo Dispatch | 409 DISPATCH_ALREADY_ASSIGNED |
+| Driver/Vehicle de otro proveedor o UUID inexistente | 404 (nunca 403 con detalles) |
+| Proveedor candidato no dueño / SUPER_ADMIN / DRIVER / IntegrationClient / `providerId` o `status` en body / `?providerId=` ajeno | 409 DISPATCH_NOT_CLAIMED_BY_PROVIDER / 403 / 403 / 401 / 400 / 403 |
+| Emparejamiento V1.4 en ambos sentidos (driver emparejado con otro vehículo y vehículo emparejado con otro driver) | 409 DRIVER_VEHICLE_MISMATCH; sin ACTIVE creada |
+| Recursos ocupados y no elegibles | 409 DRIVER_BUSY / VEHICLE_BUSY / DRIVER_NOT_ELIGIBLE (suspendido y cuenta inactiva) / VEHICLE_NOT_ELIGIBLE |
+| Reasignación: mismo par, motivos inválidos (2/501 caracteres, OTHER sin detalle, DELIVERY_CANCELLED) | 409 ASSIGNMENT_UNCHANGED / 400 |
+| Reasignación válida | Anterior REASSIGNED con endedAt y motivo; nueva ACTIVE; 2 filas en historial; recursos anteriores liberados |
+| Liberar Dispatch con asignación ACTIVE → cancelar → liberar | 409 DISPATCH_HAS_ACTIVE_ASSIGNMENT (sigue CLAIMED); CANCELLED con motivo; segunda cancelación 409 NO_ACTIVE_ASSIGNMENT; release 200 → OPEN; asignar sin claim 409 |
+| Cancelación de la DeliveryRequest (SUPER_ADMIN) con asignación ACTIVE | Asignación CANCELLED con endReason DELIVERY_CANCELLED; Dispatch CANCELLED; historial conservado; recursos libres para el siguiente Dispatch |
+| Emparejamiento V1.4 durante la entrega (asignar y desasignar vehículo del Driver) | 409 en ambos; permitido tras cerrar la asignación de entrega |
+| Plazo: CLAIMED sin asignar tras TTL (5 min, reloj adelantado) | `assignmentOverdue` true; false tras asignar |
+| 10 asignaciones simultáneas sobre un Dispatch | 1 × 201 y 9 × 409 (DISPATCH_ALREADY_ASSIGNED/ASSIGNMENT_CONFLICT); exactamente 1 ACTIVE en DB |
+| Carreras por recurso: mismo Driver y mismo Vehicle en dos Dispatches | 1 × 201 por carrera; 1 ACTIVE por Driver y por Vehicle |
+| Invariantes en PostgreSQL | Segunda ACTIVE por Dispatch/Driver/Vehicle, asignación para Dispatch no CLAIMED o de otro proveedor (DELIVERY_ASSIGNMENT_INVALID), cambio de driverId y reapertura de una fila cerrada (DELIVERY_ASSIGNMENT_IMMUTABLE) y salida de CLAIMED con ACTIVE (DISPATCH_HAS_ACTIVE_ASSIGNMENT) rechazados |
+| Auditoría | DELIVERY_ASSIGNMENT_CREATED/REASSIGNED/CANCELLED con assignmentId, dispatchId, providerId, driverId, vehicleId y actorUserId; sin JWT, clientSecret, contraseñas, tokens ni teléfonos del cliente |
+| Mutaciones M1–M10 | 10/10 detectadas |
+
+No verificado: validación funcional completa por HTTP contra `dist/main.js` en ejecución (cubierta por E2E HTTP en proceso con logins reales) y Docker.
+
 # CHECK V1.7-A — Dispatch Security, Concurrency & Domain Validation (2026-09-16)
 
 | Verificación | Resultado |

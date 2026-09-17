@@ -66,6 +66,19 @@ export const dispatchSelect = {
       },
     },
   },
+  deliveryAssignments: {
+    where: { status: 'ACTIVE' },
+    take: 1,
+    select: {
+      id: true,
+      assignedAt: true,
+      assignedByUserId: true,
+      driver: { select: { id: true, name: true } },
+      vehicle: {
+        select: { id: true, identifier: true, type: true, plate: true },
+      },
+    },
+  },
   candidates: {
     orderBy: [{ offeredAt: 'asc' }, { providerId: 'asc' }],
     select: {
@@ -98,6 +111,10 @@ export function providerDispatchView(
   dispatch: DispatchRecord,
   providerId: string,
   now = new Date(),
+  deadline: {
+    assignmentDeadline: Date | null;
+    assignmentOverdue: boolean;
+  } = { assignmentDeadline: null, assignmentOverdue: false },
 ) {
   const status = effectiveDispatchStatus(dispatch, now);
   const mine = dispatch.candidates.find((c) => c.providerId === providerId);
@@ -121,6 +138,9 @@ export function providerDispatchView(
     claimedByMe: owner,
     claimedAt: owner ? dispatch.claimedAt : null,
     cancelledAt: dispatch.cancelledAt,
+    // V1.8: who executes the service; only the claim owner sees it.
+    assignment: owner ? (dispatch.deliveryAssignments[0] ?? null) : null,
+    ...deadline,
     myCandidate: mine
       ? {
           status: mine.status as DispatchCandidateStatus,
@@ -196,6 +216,11 @@ function goodsView(
         value: decimal(financial.goodsValue),
         currency: financial.currency,
         driverAdvancesGoods: financial.goodsPaymentMode === 'COURIER_ADVANCE',
+        // Money the driver must advance to the merchant at pickup (never moved by Mandaria).
+        driverAdvanceAmount:
+          financial.goodsPaymentMode === 'COURIER_ADVANCE'
+            ? decimal(financial.goodsValue)
+            : null,
       }
     : null;
 }
@@ -228,6 +253,7 @@ export function adminDispatchView(dispatch: DispatchRecord, now = new Date()) {
       currency: dispatch.deliveryQuote.currency,
     },
     // Derived signal instead of a status: nobody can currently claim this OPEN dispatch.
+    activeAssignment: dispatch.deliveryAssignments[0] ?? null,
     noProviderAvailable:
       status === 'OPEN' &&
       !dispatch.candidates.some((c) => c.status === 'OFFERED'),

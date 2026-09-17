@@ -14,6 +14,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/delivery-requests/{publicId}/quotes | bearer | SUPER_ADMIN | — | Quotes de una DeliveryRequest |
 | GET | /api/v1/admin/dispatches | bearer | SUPER_ADMIN | — | Listar Dispatches |
 | GET | /api/v1/admin/dispatches/{dispatchId} | bearer | SUPER_ADMIN | — | Consultar Dispatch |
+| GET | /api/v1/admin/dispatches/{dispatchId}/assignments | bearer | SUPER_ADMIN | — | Historial de asignaciones de un Dispatch |
 | GET | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |
 | POST | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | AdminIntegrationsController_create[0] |
 | GET | /api/v1/admin/integrations/{id} | bearer | SUPER_ADMIN | — | AdminIntegrationsController_get[0] |
@@ -99,6 +100,12 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/provider/capacity | bearer | PROVIDER_ADMIN | — | Consultar uso de Drivers y Vehicles de mi proveedor |
 | GET | /api/v1/provider/dispatches | bearer | PROVIDER_ADMIN | — | Listar Dispatches de mi proveedor |
 | GET | /api/v1/provider/dispatches/{dispatchId} | bearer | PROVIDER_ADMIN | — | Consultar Dispatch de mi proveedor |
+| POST | /api/v1/provider/dispatches/{dispatchId}/assignment | bearer | PROVIDER_ADMIN | — | Asignar Driver y Vehicle a mi Dispatch |
+| POST | /api/v1/provider/dispatches/{dispatchId}/assignment/cancel | bearer | PROVIDER_ADMIN | — | Liberar Driver y Vehicle sin reemplazo |
+| POST | /api/v1/provider/dispatches/{dispatchId}/assignment/reassign | bearer | PROVIDER_ADMIN | — | Reasignar Driver y Vehicle |
+| GET | /api/v1/provider/dispatches/{dispatchId}/assignments | bearer | PROVIDER_ADMIN | — | Historial de asignaciones de mi proveedor |
+| GET | /api/v1/provider/dispatches/{dispatchId}/available-drivers | bearer | PROVIDER_ADMIN | — | Drivers asignables para mi Dispatch |
+| GET | /api/v1/provider/dispatches/{dispatchId}/available-vehicles | bearer | PROVIDER_ADMIN | — | Vehicles asignables para mi Dispatch |
 | POST | /api/v1/provider/dispatches/{dispatchId}/claim | bearer | PROVIDER_ADMIN | — | Reclamar Dispatch para mi proveedor |
 | POST | /api/v1/provider/dispatches/{dispatchId}/release | bearer | PROVIDER_ADMIN | — | Liberar Dispatch reclamado por mi proveedor |
 | GET | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Listar invitaciones de repartidores de mi proveedor |

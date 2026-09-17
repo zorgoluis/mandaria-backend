@@ -35,6 +35,8 @@ model User {
   providerMemberships ProviderMembership[]
   driver Driver?
   invitations UserInvitation[] @relation("InvitationUser")
+  deliveryAssignmentsCreated DeliveryAssignment[] @relation("DeliveryAssignmentAssignedBy")
+  deliveryAssignmentsEnded DeliveryAssignment[] @relation("DeliveryAssignmentEndedBy")
   createdInvitations UserInvitation[] @relation("InvitationCreator")
   revokedInvitations UserInvitation[] @relation("InvitationRevoker")
 }
@@ -104,6 +106,7 @@ model DeliveryProvider {
   invitations UserInvitation[]
   serviceCoverages ProviderServiceCoverage[]
   dispatchCandidates DispatchCandidate[]
+  deliveryAssignments DeliveryAssignment[]
   @@index([type, status])
   @@index([createdAt, id])
 }
@@ -158,6 +161,7 @@ model Driver {
   provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
   user User @relation(fields: [userId], references: [id], onDelete: Restrict)
   assignments DriverVehicleAssignment[]
+  deliveryAssignments DeliveryAssignment[]
   @@unique([id, providerId])
   @@index([providerId, status, availability])
   @@index([providerId, createdAt, id])
@@ -178,6 +182,7 @@ model Vehicle {
   updatedAt DateTime @updatedAt
   provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
   assignments DriverVehicleAssignment[]
+  deliveryAssignments DeliveryAssignment[]
   @@unique([providerId, identifier])
   @@unique([id, providerId])
   @@index([providerId, type, status])
@@ -517,6 +522,7 @@ model Dispatch {
   deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
   deliveryQuote DeliveryQuote @relation(fields: [deliveryQuoteId], references: [id], onDelete: Cascade)
   candidates DispatchCandidate[]
+  deliveryAssignments DeliveryAssignment[]
   @@index([deliveryRequestId])
   @@index([status, expiresAt])
   @@index([claimedByProviderId, status])
@@ -538,4 +544,51 @@ model DispatchCandidate {
   provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
   @@unique([dispatchId, providerId])
   @@index([providerId, status, dispatchId])
+}
+
+/// ACTIVE: the driver and vehicle currently operating the dispatch. REASSIGNED: replaced by a newer
+/// assignment. CANCELLED: ended without replacement (unassign or delivery cancellation).
+/// Execution states (picked up, in transit, delivered) belong to later versions.
+enum DeliveryAssignmentStatus {
+  ACTIVE
+  REASSIGNED
+  CANCELLED
+}
+enum DeliveryAssignmentEndReason {
+  DRIVER_UNAVAILABLE
+  VEHICLE_ISSUE
+  OPERATIONAL_CHANGE
+  DELIVERY_CANCELLED
+  OTHER
+}
+/// V1.8: which driver and vehicle of the claim owner execute a CLAIMED dispatch. Rows are never
+/// overwritten: reassignment ends the ACTIVE row and inserts a new one, keeping the history.
+/// Composite FKs force driver and vehicle to belong to providerId; partial unique indexes allow one
+/// ACTIVE row per dispatch, per driver and per vehicle; a trigger requires providerId to be the
+/// dispatch claim owner.
+model DeliveryAssignment {
+  id String @id @default(uuid()) @db.Uuid
+  dispatchId String @db.Uuid
+  providerId String @db.Uuid
+  driverId String @db.Uuid
+  vehicleId String @db.Uuid
+  status DeliveryAssignmentStatus @default(ACTIVE)
+  assignedAt DateTime
+  assignedByUserId String @db.Uuid
+  endedAt DateTime?
+  endedByUserId String? @db.Uuid
+  endReason DeliveryAssignmentEndReason?
+  endReasonDetail String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  driver Driver @relation(fields: [driverId, providerId], references: [id, providerId], onDelete: Restrict)
+  vehicle Vehicle @relation(fields: [vehicleId, providerId], references: [id, providerId], onDelete: Restrict)
+  assignedBy User @relation("DeliveryAssignmentAssignedBy", fields: [assignedByUserId], references: [id], onDelete: Restrict)
+  endedBy User? @relation("DeliveryAssignmentEndedBy", fields: [endedByUserId], references: [id], onDelete: Restrict)
+  @@index([dispatchId, assignedAt])
+  @@index([providerId, status, assignedAt])
+  @@index([driverId, assignedAt])
+  @@index([vehicleId, assignedAt])
 }
