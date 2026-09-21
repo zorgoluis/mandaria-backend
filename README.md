@@ -1,10 +1,10 @@
-# Mandaria — V1.8 Provider Driver & Vehicle Assignment
+# Mandaria — V1.9 Independent Drivers
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agrega la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -17,6 +17,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `invitations/`, `mail/`: aprovisionamiento V1.6.1 (invitaciones, activación de cuenta y MailProvider).
 - `dispatch/`: V1.7 Dispatch, candidatos, coberturas de proveedor, claim y liberación.
 - `delivery-assignments/`: V1.8 asignación de Driver y Vehicle al Dispatch reclamado, con historial, reasignación y plazo.
+- `independent-drivers/`: V1.9 perfil independiente, vehículos propios y las operaciones `take`/`release` del repartidor.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -166,6 +167,7 @@ La migración `20260915000200_b2b_credentials`:
 | MAIL_FROM, SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD | Remitente y relay SMTP; host y remitente obligatorios con smtp; usuario y contraseña juntos; nunca versionar |
 | DISPATCH_TTL_MINUTES | Minutos que un servicio aceptado es reclamable (1–1440, default 10); independiente de la vigencia de la Quote |
 | LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES | Minutos que el proveedor tiene para asignar Driver y Vehicle tras reclamar un LOCAL_DELIVERY (1–1440, default 5); sólo señal `assignmentOverdue`, sin liberación automática |
+| INDEPENDENT_DRIVER_MAX_VEHICLES | Vehículos propios que SUPER_ADMIN puede dar de alta a un repartidor independiente (1–100, default 3); cuentan todos, sea cual sea su estado |
 | LOCAL_MAIL_OUTBOX_DIR | **LOCAL/TEST ONLY**; carpeta del outbox local (default `<temp>/mandaria-mail-outbox`) |
 
 Los tres secretos JWT deben ser distintos. La aplicación falla al iniciar ante valores inválidos, sin imprimirlos. CORS vacío deshabilita acceso cross-origin del navegador; no se acepta `*`. CORS no sustituye autenticación server-to-server.
@@ -1246,6 +1248,154 @@ La asignación devuelve `paymentContext` con datos V1.5/V1.6, sin mezclar dinero
 
 Pruebas: `test/delivery-assignments.spec.ts` (plazo, TTL por ServiceType, contexto de pago, emparejamiento, guardas del servicio, cierre por cancelación) y `test/delivery-assignments.e2e-spec.ts` (recursos asignables y asignación con contexto de pago, aislamiento por proveedor y por dueño del claim, roles, emparejamiento V1.4 en ambos sentidos, recursos ocupados, reasignación con historial, protección de `/release`, cancelación del servicio, `assignmentOverdue`, 10 asignaciones simultáneas, carreras por Driver y por Vehicle, invariantes e inmutabilidad en PostgreSQL y auditoría sin secretos).
 
+## Independent Drivers (V1.9-A)
+
+Hasta V1.8 todo servicio se ejecutaba a través de un proveedor: el Dispatch se abre, un proveedor lo **reclama** y su administrador asigna Driver y Vehicle de su flotilla. V1.9 agrega un segundo modelo que **convive** con el anterior sin modificarlo: un repartidor habilitado por Mandaria **toma** el servicio por su cuenta, con un vehículo propio. Los dos caminos terminan en la misma `DeliveryAssignment`, no en motores paralelos.
+
+```text
+                    Dispatch OPEN
+                          │
+          ┌───────────────┴───────────────┐
+      Provider                      Independent Driver
+       CLAIM                              TAKE
+          │                                 │
+  (después) asignar Driver+Vehicle   claim + assignment atómicos
+          └───────────────┬───────────────┘
+                   EXACTAMENTE UNO
+                          ↓
+                 DeliveryAssignment ACTIVE
+```
+
+### El independiente no es un proveedor ficticio
+
+No se crea un `DeliveryProvider` de una persona, ni un ProviderMembership de sí mismo. La capacidad es explícita: `IndependentDriverProfile`, una extensión 1:1 del `Driver` existente que **no duplica** nada que ya viva en él (nombre, estado, disponibilidad, proveedor). Estados: `PENDING`, `APPROVED`, `SUSPENDED`, `REJECTED`. V1.9 no tiene alta pública, así que SUPER_ADMIN crea el perfil directamente en `APPROVED`; `PENDING` queda reservado para el onboarding futuro, que podrá usarse sin migrar datos.
+
+`ProviderType.INDEPENDENT` (V1.2) es otra cosa y no cambia: describe a un proveedor pequeño de una sola persona, con su flotilla y sus administradores. El repartidor independiente de V1.9 no tiene proveedor en su contexto de ejecución.
+
+### Los dos contextos de una misma persona
+
+Un `Driver` pertenece siempre a un proveedor (V1.4) y el aprovisionamiento de cuentas sigue siendo V1.6.1: V1.9 **no crea** Users ni Drivers, sólo habilita a uno existente. Por eso la misma persona puede operar en dos contextos, y **el contexto lo decide la ruta, nunca el payload**:
+
+| Contexto | Quién actúa | Ruta | Recursos que puede usar |
+|---|---|---|---|
+| Flotilla | PROVIDER_ADMIN del proveedor con el claim | `POST /provider/dispatches/:id/assignment` | Driver y Vehicle **de ese proveedor** |
+| Independiente | el propio repartidor (rol DRIVER) | `POST /driver/dispatches/:id/take` | sólo **sus** vehículos |
+
+No hay ambigüedad posible ni fuga entre contextos: un vehículo pertenece a un proveedor **XOR** a un perfil independiente (`Vehicle_owner_check`), la pertenencia se relee en la base de datos en cada operación y el trigger `delivery_assignment_guard` la comprueba por modo. Usar un vehículo de la flotilla en un `take` responde 404, y asignar un vehículo independiente desde una ruta de proveedor también. Un repartidor suspendido como independiente conserva intacto su perfil de flotilla, y al revés.
+
+### Vehículos propios
+
+SUPER_ADMIN da de alta los vehículos del repartidor siguiendo el patrón de los vehículos de proveedor. Quedan con `providerId` nulo e `independentDriverProfileId` del repartidor; el identificador es único dentro del repartidor (índice único parcial), el límite lo fija `INDEPENDENT_DRIVER_MAX_VEHICLES` y cuentan todos los vehículos, sea cual sea su estado. Así:
+
+```text
+Carlos — Independent Driver
+  MOTO-CARLOS-01  MOTORCYCLE  ACTIVE
+  AUTO-CARLOS-01  CAR         ACTIVE
+```
+
+V1.9 no implementa verificación documental del vehículo ni del repartidor.
+
+### Qué servicios admiten independientes
+
+No se asume que todo servicio pueda tomarlo un independiente. `SERVICE_EXECUTION_MODES` (en `independent-driver-policy.ts`) declara el modo por `ServiceType` y es **exhaustivo por construcción**: agregar un ServiceType no compila hasta decidir su modo, de forma que ningún servicio futuro queda disponible para independientes por omisión.
+
+| ServiceType | Modo | Motivo |
+|---|---|---|
+| `LOCAL_DELIVERY` | `BOTH` | Un paquete dentro de una zona es exactamente lo que hace un repartidor por cuenta propia, y V1.6 lo tarifa igual sin importar quién lo lleve. |
+
+Un servicio declarado `FLEET` no aparecería en el listado del repartidor y su `take` respondería 409 `DISPATCH_NOT_OPEN_TO_INDEPENDENT`. Freight y los demás tipos siguen fuera de alcance.
+
+### Elegibilidad para tomar un servicio
+
+Perfil independiente `APPROVED` + User activo + Driver `ACTIVE` + **ninguna** asignación ACTIVE (de cualquier modelo) + vehículo propio `ACTIVE` y libre + Dispatch `OPEN` dentro de su ventana + ServiceType que admita independientes + no haberlo liberado antes. V1.9 **no** introduce presencia en tiempo real: no existen ONLINE/OFFLINE ni heartbeat, porque no hay Driver App.
+
+### Endpoints
+
+| Método | Ruta | Rol | Qué hace |
+|---|---|---|---|
+| GET | `/admin/independent-drivers` | SUPER_ADMIN | Lista perfiles con su Driver y número de vehículos |
+| GET/POST | `/admin/drivers/:driverId/independent` | SUPER_ADMIN | Consulta / habilita (idempotente; reaprobar rehabilita) |
+| POST | `/admin/drivers/:driverId/independent/suspend` y `/reject` | SUPER_ADMIN | Retira la habilitación con motivo obligatorio |
+| GET/POST | `/admin/drivers/:driverId/independent/vehicles` | SUPER_ADMIN | Lista / da de alta vehículos propios |
+| PATCH | `/admin/drivers/:driverId/independent/vehicles/:vehicleId` | SUPER_ADMIN | Edita detalles o estado |
+| GET | `/driver/me` | DRIVER | Agrega `independent` y `activeDeliveryAssignment` |
+| GET | `/driver/vehicles` | DRIVER | Mis vehículos propios |
+| GET | `/driver/dispatches/available` | DRIVER | Servicios que puedo tomar (paginado) |
+| GET | `/driver/dispatches/:dispatchId` | DRIVER | Detalle de uno ofrecido o tomado por mí |
+| POST | `/driver/dispatches/:dispatchId/take` | DRIVER | Tomar el servicio (`vehicleId`) |
+| POST | `/driver/dispatches/:dispatchId/release` | DRIVER | Liberarlo con motivo obligatorio |
+
+Sólo SUPER_ADMIN habilita o suspende: PROVIDER_ADMIN no puede, un DRIVER no puede autoaprobarse y un token B2B no sirve en ninguna de estas rutas (401). SUPER_ADMIN tiene visibilidad y auditoría, pero **no** puede tomar ni liberar un servicio haciéndose pasar por el repartidor (403).
+
+### Privacidad del repartidor
+
+Dos niveles, equivalentes a los del proveedor en V1.7:
+
+- **OFFER** (puedo tomarlo): ruta, direcciones con coordenadas, paquetes sin texto libre y contexto de pago. Sin contactos, sin instrucciones, sin referencia del comercio.
+- **OWNER** (lo tomé): se agregan contactos, instrucciones, descripciones de paquete y el `publicId` del pedido.
+
+Las consultas del repartidor usan un `select` propio que ni siquiera lee `DispatchCandidate`, `claimedByProviderId` ni el IntegrationClient, de modo que la relación comercial de un proveedor no puede filtrarse por descuido.
+
+### Serialización con la suspensión
+
+`take` bloquea la fila del perfil independiente junto con la del `Driver` (`FOR UPDATE OF d, p`), que es la misma fila que bloquea la suspensión. Orden de bloqueo: Dispatch → perfil + Driver → Vehicle; la suspensión sólo toma el bloqueo del perfil, así que no hay ciclo posible. Con eso las dos operaciones son mutuamente excluyentes: si la suspensión llega primero, el `take` lee `SUSPENDED` bajo bloqueo y responde 409 sin escribir nada; si el `take` llega primero, la suspensión espera y encuentra la asignación ACTIVE (409 `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT`). El CHECK V1.9-A demostró que sin ese bloqueo quedaba un repartidor suspendido ejecutando un servicio (ver [VERIFICATION.md](VERIFICATION.md)).
+
+Por la misma razón, `take` y `release` construyen su respuesta sin repetir la comprobación de habilitación: su trabajo ya está confirmado, y una suspensión posterior no debe convertir una operación exitosa en un error. Y cualquier `RAISE EXCEPTION` de los triggers se traduce a 409 `TAKE_CONFLICT`: perder una carrera es un conflicto, nunca un 5xx.
+
+### Take = claim + assignment, atómico
+
+`take` es **una sola transacción**. Bloquea `FOR UPDATE` la misma fila de Dispatch que bloquea el claim de proveedor, valida repartidor, vehículo, Dispatch y elegibilidad, pone el Dispatch en `CLAIMED` a nombre del repartidor y crea la `DeliveryAssignment` ACTIVE en modo `INDEPENDENT`. Si algo falla, no queda nada:
+
+- nunca un **claim independiente sin asignación ACTIVE** (misma transacción);
+- nunca una **asignación independiente sin claim**: `delivery_assignment_guard` reexamina en SQL que el Dispatch esté CLAIMED por ese mismo repartidor.
+
+`release` es igual de atómico en sentido inverso: la asignación ACTIVE pasa a `CANCELLED` con motivo y **después** el Dispatch vuelve a `OPEN` (o `EXPIRED` si la ventana ya cerró) con el claim limpio. El orden importa y `dispatch_guard` rechaza el contrario con `DISPATCH_HAS_ACTIVE_ASSIGNMENT`.
+
+### Dueño del claim: exactamente uno
+
+`Dispatch` no sobrecarga `claimedByProviderId` con un id de Driver. V1.9 agrega `claimedByIndependentDriverId` con su propia FK, y `Dispatch_values_check` exige que un Dispatch CLAIMED tenga **exactamente un** dueño (`num_nonnulls(...) = 1`), nunca los dos. Lo mismo en la asignación: `mode` decide qué columna de dueño se llena (`DeliveryAssignment_mode_check`), así que un ejecutor independiente **no** arrastra un `providerId` falso.
+
+### Sin reasignación para el repartidor
+
+Un repartidor no puede pasarle el servicio a otro: no existe endpoint de reasignación para el rol DRIVER y las rutas de proveedor de V1.8 le responden 403. Debe liberar; después podrá tomarlo otro actor. Quien libera no puede volver a tomar ese mismo Dispatch (paridad con `DISPATCH_RECLAIM_NOT_ALLOWED` de V1.7). Un PROVIDER_ADMIN tampoco puede apropiarse ni reasignar un servicio tomado por un independiente: recibe 409 `DISPATCH_NOT_CLAIMED_BY_PROVIDER`.
+
+### Una entrega a la vez, en los dos modelos
+
+Los tres índices únicos parciales de V1.8 (`WHERE status = 'ACTIVE'`, por Dispatch, por Driver y por Vehicle) son **globales**: no distinguen modo. Por eso, sin añadir reglas nuevas, un repartidor ocupado en un servicio de proveedor no puede tomar uno propio y al revés, y un vehículo ejecuta una entrega a la vez. `GET /driver/me` lo resume en `independent.canTakeServices`.
+
+### Contexto de pago
+
+`take` y el listado devuelven el mismo `paymentContext` de V1.8: `deliveryFee`, `goodsValue`, `goodsPaymentMode`, `driverAdvancesGoods` y `driverAdvanceAmount`. Con `COURIER_ADVANCE` el repartidor sabe **antes** de tomar el servicio cuánto tendrá que adelantar al comercio:
+
+```text
+Mercancía: $800.00   ->  driverAdvanceAmount 800.00
+Envío:     $60.00    ->  deliveryFee          60.00
+```
+
+Mandaria no mueve ese dinero ni comprueba si el repartidor dispone de él: **no hay wallet, saldo ni crédito** en V1.9.
+
+### Plazo de asignación
+
+`assignmentDeadline` / `assignmentOverdue` es un concepto de flotilla: mide el hueco entre reclamar y asignar. Un `take` cierra ese hueco dentro de la misma transacción, así que un claim independiente informa siempre `null` / `false` en vez de inventar una obligación que no puede incumplirse.
+
+### Servicio en curso: no se rompe en silencio
+
+Suspender o rechazar a un repartidor con una asignación ACTIVE responde **409 `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT`** y no cambia nada; desactivar su vehículo, **409 `VEHICLE_HAS_ACTIVE_ASSIGNMENT`**. V1.9 prefiere rechazar la operación administrativa antes que cancelar por detrás una entrega en curso: primero se termina el servicio (lo libera el repartidor, o se cancela la DeliveryRequest) y después se suspende. Ambas reglas están además forzadas en PostgreSQL por `independent_driver_profile_guard`.
+
+### Errores de dominio (`code`)
+
+`INDEPENDENT_NOT_APPROVED`, `DRIVER_NOT_ELIGIBLE`, `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT`, `DISPATCH_ALREADY_CLAIMED`, `DISPATCH_EXPIRED`, `DISPATCH_CANCELLED`, `DISPATCH_NOT_OPEN_TO_INDEPENDENT`, `DISPATCH_RETAKE_NOT_ALLOWED`, `DISPATCH_NOT_CLAIMED_BY_DRIVER`, `DRIVER_BUSY`, `VEHICLE_BUSY`, `VEHICLE_NOT_ELIGIBLE`, `VEHICLE_HAS_ACTIVE_ASSIGNMENT`, `VEHICLE_LIMIT_REACHED` y `TAKE_CONFLICT`. Todos 409; los recursos ajenos o inexistentes son 404 y nunca revelan que existen.
+
+### Base de datos y auditoría
+
+- Migración `20260918001000_independent_drivers`, incremental desde V1.8 y **sin reset**: no reescribe ninguna fila. Toda `DeliveryAssignment` existente queda `mode = 'FLEET'` con su `providerId` por el DEFAULT, y todo `Vehicle` conserva su proveedor.
+- Objetos nuevos: tabla `IndependentDriverProfile` con sus CHECKs de coherencia; `Vehicle_owner_check` (dueño excluyente) e índice único parcial `Vehicle_independent_identifier_key`; `DeliveryAssignment_mode_check`; `Dispatch_values_check` ampliado con el XOR del dueño del claim; triggers `Driver_owner_guard`, `Vehicle_owner_guard` e `IndependentDriverProfile_guard`; `delivery_assignment_guard` y `dispatch_guard` ampliados a los dos modelos.
+- **Cambio sobre V1.8:** las FKs compuestas `DeliveryAssignment_(driverId|vehicleId)_providerId_fkey` se retiran, porque con `providerId` nulo PostgreSQL las omitiría en silencio (MATCH SIMPLE) y dejarían de garantizar nada. Las sustituyen FKs simples a `Driver` y `Vehicle`, la comprobación de pertenencia por modo dentro de `delivery_assignment_guard` y la **inmutabilidad del dueño** de Drivers y Vehicles. El conjunto es más estricto que antes: la pertenencia se prueba en cada escritura y, además, un Driver ya no puede cambiar de proveedor ni un Vehicle de dueño.
+- Concurrencia: `take` y `claim` compiten por el mismo bloqueo de fila, de modo que un CLAIM de proveedor y un TAKE independiente simultáneos dejan exactamente un dueño; varios independientes sobre un Dispatch dejan uno; el mismo repartidor o el mismo vehículo sobre dos Dispatches quedan ACTIVE en uno solo.
+- Eventos: `INDEPENDENT_DRIVER_ENABLED`, `INDEPENDENT_DRIVER_SUSPENDED`, `INDEPENDENT_DRIVER_REJECTED`, `INDEPENDENT_DISPATCH_TAKEN`, `INDEPENDENT_DISPATCH_RELEASED`, `INDEPENDENT_VEHICLE_CREATED`, `INDEPENDENT_VEHICLE_UPDATED` e `INDEPENDENT_VEHICLE_STATUS_CHANGED`, con `profileId`, `driverId`, `dispatchId`, `vehicleId`, `assignmentId` y `actorUserId` según corresponda; sin tokens, contraseñas ni contactos del cliente.
+
+Pruebas: `test/independent-drivers.spec.ts` (política de ejecución por ServiceType, orden de rechazo del `take`, motivos de liberación, plazo que no aplica, habilitación idempotente, suspensión con servicio activo, límite de vehículos, identidad tomada del JWT) y `test/independent-drivers.e2e-spec.ts` (habilitación y permisos negativos, vehículos propios, privacidad del listado, take con contexto de pago, vehículo ajeno en ambos sentidos, repartidor suspendido, release y retake, ausencia de reasignación, carrera flotilla vs independiente, varios independientes, mismo repartidor y mismo vehículo en paralelo, ocupado en un modelo frente al otro, suspensión y desactivación con servicio en curso, invariantes en PostgreSQL y auditoría sin secretos).
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -1281,13 +1431,20 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.8: el Driver no acepta ni rechaza la asignación (no hay Driver App hasta V1.9) y no se comprueba su disponibilidad real, su cercanía ni su efectivo para `COURIER_ADVANCE`; el proveedor asume esa responsabilidad.
 - V1.8: la asignación no crea estados de ejecución (recogido/en camino/entregado); el Dispatch permanece CLAIMED hasta que el ciclo de vida de la entrega exista.
 - V1.8: un Driver o Vehicle sólo ejecuta una entrega a la vez (índices únicos parciales); entregas agrupadas o multi-stop operativo requerirán relajar esa regla deliberadamente.
+- V1.9: un repartidor independiente sigue teniendo un `Driver` ligado a un proveedor, porque V1.9 no crea cuentas (el alta es V1.6.1). Los contextos están separados y no hay fuga de recursos, pero el alta de un independiente **puro** (sin proveedor) exigirá una invitación sin `providerId` en una versión futura.
+- V1.9: la elegibilidad del independiente no considera zona de servicio. Un repartidor APPROVED ve todos los Dispatches OPEN cuyo ServiceType lo admita, sin equivalente a `ProviderServiceCoverage`; operar en varias ciudades exigirá una cobertura por repartidor.
+- V1.9: tampoco se considera cercanía, capacidad real ni efectivo disponible para `COURIER_ADVANCE`; no hay wallet, saldo ni crédito, y Mandaria no verifica que el repartidor pueda adelantar la mercancía.
+- V1.9: no hay verificación documental del repartidor ni del vehículo, ni alta pública. `PENDING` y `REJECTED` existen en el modelo para ese onboarding futuro, pero hoy sólo SUPER_ADMIN crea perfiles, ya en `APPROVED`.
+- V1.9: que un Dispatch aparezca en `/driver/dispatches/available` no garantiza poder tomarlo; la disponibilidad del repartidor y del vehículo se resuelve bajo bloqueos en el `take`, que puede responder 409.
+- V1.9: sin notificaciones. Un repartidor descubre trabajo consultando el listado, igual que un proveedor con `view=AVAILABLE`.
+- V1.9: `take` serializa con la suspensión y con la desactivación de vehículos mediante el bloqueo del perfil; si en el futuro se añaden más operaciones administrativas sobre el repartidor, deben tomar ese mismo bloqueo o volverá a abrirse la carrera que corrigió el CHECK V1.9-A.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.8 / V1.9+
+## Fuera de V1.9 / V1.10+
 
-No se implementaron Driver App, aceptación/rechazo por el repartidor, Drivers independientes, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
-Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API, Independent Driver (V1.9) y auditoría persistente siguen pendientes.
+Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API y auditoría persistente siguen pendientes.

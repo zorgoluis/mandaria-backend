@@ -25,7 +25,7 @@ export class DriverSelfController {
   @ApiOperation({
     summary: 'Consultar mi perfil de repartidor',
     description:
-      'Sólo User activo con rol global DRIVER. Resuelve User → Driver → Provider → vehículo vigente desde el JWT; no acepta IDs. Sin perfil Driver responde 404. Drivers o proveedores suspendidos siguen consultables.',
+      'Sólo User activo con rol global DRIVER. Resuelve User → Driver → Provider → vehículo vigente desde el JWT; no acepta IDs. Sin perfil Driver responde 404. Drivers o proveedores suspendidos siguen consultables. V1.9 agrega `independent` (capacidad de operar por cuenta propia, null si Mandaria no la habilitó) y `activeDeliveryAssignment` (el servicio que ejecuta ahora en cualquiera de los dos modelos).',
   })
   me(@Req() req: AuthenticatedRequest) {
     return this.drivers.self(req.user.id);

@@ -1,4 +1,5 @@
 import type { DispatchCandidateStatus, Prisma } from '@prisma/client';
+import { allowsIndependent } from '../independent-drivers/independent-driver-policy.js';
 import { effectiveDispatchStatus } from './dispatch-policy.js';
 
 const decimal = (value: Prisma.Decimal | null) =>
@@ -11,6 +12,7 @@ export const dispatchSelect = {
   openedAt: true,
   expiresAt: true,
   claimedByProviderId: true,
+  claimedByIndependentDriverId: true,
   claimedAt: true,
   expiredAt: true,
   cancelledAt: true,
@@ -71,6 +73,7 @@ export const dispatchSelect = {
     take: 1,
     select: {
       id: true,
+      mode: true,
       assignedAt: true,
       assignedByUserId: true,
       driver: { select: { id: true, name: true } },
@@ -234,6 +237,13 @@ export function adminDispatchView(dispatch: DispatchRecord, now = new Date()) {
     openedAt: dispatch.openedAt,
     expiresAt: dispatch.expiresAt,
     claimedByProviderId: dispatch.claimedByProviderId,
+    // V1.9: the other execution model. Exactly one of the two is set while CLAIMED.
+    claimedByIndependentDriverId: dispatch.claimedByIndependentDriverId,
+    claimMode: dispatch.claimedByIndependentDriverId
+      ? 'INDEPENDENT'
+      : dispatch.claimedByProviderId
+        ? 'FLEET'
+        : null,
     claimedAt: dispatch.claimedAt,
     expiredAt: dispatch.expiredAt,
     cancelledAt: dispatch.cancelledAt,
@@ -252,11 +262,16 @@ export function adminDispatchView(dispatch: DispatchRecord, now = new Date()) {
       amount: dispatch.deliveryQuote.amount.toFixed(2),
       currency: dispatch.deliveryQuote.currency,
     },
-    // Derived signal instead of a status: nobody can currently claim this OPEN dispatch.
     activeAssignment: dispatch.deliveryAssignments[0] ?? null,
+    // Derived signal instead of a status: no provider can currently claim this OPEN dispatch.
+    // V1.9 keeps its V1.7 meaning (providers only) so existing consumers do not change; whether
+    // the other execution model could still take it is reported separately.
     noProviderAvailable:
       status === 'OPEN' &&
       !dispatch.candidates.some((c) => c.status === 'OFFERED'),
+    openToIndependentDrivers:
+      status === 'OPEN' &&
+      allowsIndependent(dispatch.deliveryQuote.serviceType),
     candidates: dispatch.candidates.map((c) => ({
       provider: c.provider,
       status: c.status,

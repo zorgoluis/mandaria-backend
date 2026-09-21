@@ -39,6 +39,9 @@ model User {
   deliveryAssignmentsEnded DeliveryAssignment[] @relation("DeliveryAssignmentEndedBy")
   createdInvitations UserInvitation[] @relation("InvitationCreator")
   revokedInvitations UserInvitation[] @relation("InvitationRevoker")
+  independentProfilesApproved IndependentDriverProfile[] @relation("IndependentProfileApprover")
+  independentProfilesSuspended IndependentDriverProfile[] @relation("IndependentProfileSuspender")
+  independentProfilesRejected IndependentDriverProfile[] @relation("IndependentProfileRejecter")
 }
 model RefreshToken {
   id String @id @default(uuid()) @db.Uuid
@@ -162,14 +165,22 @@ model Driver {
   user User @relation(fields: [userId], references: [id], onDelete: Restrict)
   assignments DriverVehicleAssignment[]
   deliveryAssignments DeliveryAssignment[]
+  /// V1.9: explicit capability to operate for itself; never replaces providerId.
+  independentProfile IndependentDriverProfile?
+  claimedDispatches Dispatch[] @relation("DispatchIndependentClaim")
   @@unique([id, providerId])
   @@index([providerId, status, availability])
   @@index([providerId, createdAt, id])
 }
-/// Operational resource owned by the provider; drivers only use it through assignments.
+/// Operational resource. V1.9: owned by a provider (fleet) XOR by an IndependentDriverProfile;
+/// a CHECK in the migration forbids both and neither. Drivers only use a provider vehicle through
+/// V1.4 assignments; an independent driver uses its own vehicles directly. The composite keys are
+/// what stops a provider from assigning an independent vehicle (and the reverse) in SQL.
 model Vehicle {
   id String @id @default(uuid()) @db.Uuid
-  providerId String @db.Uuid
+  providerId String? @db.Uuid
+  /// V1.9: set exactly when providerId is null; the vehicle belongs to this independent driver.
+  independentDriverProfileId String? @db.Uuid
   identifier String
   type VehicleType
   status VehicleStatus @default(ACTIVE)
@@ -180,13 +191,16 @@ model Vehicle {
   plate String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  provider DeliveryProvider? @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  independentDriverProfile IndependentDriverProfile? @relation(fields: [independentDriverProfileId], references: [id], onDelete: Restrict)
   assignments DriverVehicleAssignment[]
   deliveryAssignments DeliveryAssignment[]
   @@unique([providerId, identifier])
   @@unique([id, providerId])
+  @@unique([id, independentDriverProfileId])
   @@index([providerId, type, status])
   @@index([providerId, createdAt, id])
+  @@index([independentDriverProfileId, status])
 }
 /// Assignment history. unassignedAt = null marks the active assignment; partial unique
 /// indexes in the migration allow one active row per driver and per vehicle.
@@ -203,6 +217,44 @@ model DriverVehicleAssignment {
   vehicle Vehicle @relation(fields: [vehicleId, providerId], references: [id, providerId], onDelete: Restrict)
   @@index([driverId, assignedAt])
   @@index([vehicleId, assignedAt])
+}
+
+/// V1.9 lifecycle. PENDING exists for a future public onboarding: V1.9 has no self-registration,
+/// so SUPER_ADMIN moves a driver straight to APPROVED. REJECTED closes an application without
+/// deleting history; SUSPENDED withdraws an approval and can be reverted by approving again.
+enum IndependentDriverStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  REJECTED
+}
+/// V1.9: an existing Driver that may also take dispatches for itself, with its own vehicles. It is
+/// an explicit capability layered on the Driver, never a synthetic DeliveryProvider: the person
+/// keeps one identity (User → Driver) and gains a second execution context. Nothing that already
+/// belongs to Driver (name, status, availability, provider) is duplicated here.
+model IndependentDriverProfile {
+  id String @id @default(uuid()) @db.Uuid
+  driverId String @unique @db.Uuid
+  status IndependentDriverStatus @default(PENDING)
+  approvedAt DateTime?
+  approvedByUserId String? @db.Uuid
+  suspendedAt DateTime?
+  suspendedByUserId String? @db.Uuid
+  rejectedAt DateTime?
+  rejectedByUserId String? @db.Uuid
+  /// Free-text motive of the last status change; never personal data.
+  reason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  approvedBy User? @relation("IndependentProfileApprover", fields: [approvedByUserId], references: [id], onDelete: Restrict)
+  suspendedBy User? @relation("IndependentProfileSuspender", fields: [suspendedByUserId], references: [id], onDelete: Restrict)
+  rejectedBy User? @relation("IndependentProfileRejecter", fields: [rejectedByUserId], references: [id], onDelete: Restrict)
+  vehicles Vehicle[]
+  deliveryAssignments DeliveryAssignment[]
+  /// Lets DeliveryAssignment prove driver and profile match with a composite FK instead of a trigger.
+  @@unique([id, driverId])
+  @@index([status, createdAt])
 }
 
 enum DeliveryRequestStatus {
@@ -512,7 +564,11 @@ model Dispatch {
   openedAt DateTime
   expiresAt DateTime
   /// Current owner while CLAIMED; kept as history when a CLAIMED dispatch is CANCELLED.
+  /// V1.9: mutually exclusive with claimedByIndependentDriverId (XOR CHECK in the migration).
   claimedByProviderId String? @db.Uuid
+  /// V1.9: Driver.id of the independent that took the dispatch. A Driver id never travels in
+  /// claimedByProviderId: each execution model has its own column and its own foreign key.
+  claimedByIndependentDriverId String? @db.Uuid
   claimedAt DateTime?
   expiredAt DateTime?
   cancelledAt DateTime?
@@ -521,11 +577,13 @@ model Dispatch {
   updatedAt DateTime @updatedAt
   deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
   deliveryQuote DeliveryQuote @relation(fields: [deliveryQuoteId], references: [id], onDelete: Cascade)
+  claimedByIndependentDriver Driver? @relation("DispatchIndependentClaim", fields: [claimedByIndependentDriverId], references: [id], onDelete: Restrict)
   candidates DispatchCandidate[]
   deliveryAssignments DeliveryAssignment[]
   @@index([deliveryRequestId])
   @@index([status, expiresAt])
   @@index([claimedByProviderId, status])
+  @@index([claimedByIndependentDriverId, status])
   @@index([createdAt, id])
 }
 /// Snapshot of the providers a dispatch was offered to. Never recalculated or deleted.
@@ -561,15 +619,28 @@ enum DeliveryAssignmentEndReason {
   DELIVERY_CANCELLED
   OTHER
 }
-/// V1.8: which driver and vehicle of the claim owner execute a CLAIMED dispatch. Rows are never
-/// overwritten: reassignment ends the ACTIVE row and inserts a new one, keeping the history.
-/// Composite FKs force driver and vehicle to belong to providerId; partial unique indexes allow one
-/// ACTIVE row per dispatch, per driver and per vehicle; a trigger requires providerId to be the
-/// dispatch claim owner.
+/// V1.9: who executes a service. FLEET is the V1.8 model (a provider assigns one of its drivers).
+/// INDEPENDENT is the driver itself, with its own vehicle and no provider involved.
+enum DeliveryAssignmentMode {
+  FLEET
+  INDEPENDENT
+}
+/// V1.8/V1.9: which driver and vehicle execute a CLAIMED dispatch, in either execution mode. Rows
+/// are never overwritten: reassignment ends the ACTIVE row and inserts a new one, keeping the
+/// history. mode decides which owner column is set (XOR CHECK in the migration): FLEET carries
+/// providerId, INDEPENDENT carries independentDriverProfileId. The partial unique indexes still
+/// allow one ACTIVE row per dispatch, per driver and per vehicle — globally, so a driver busy as
+/// fleet cannot also be busy as independent. `delivery_assignment_guard` replaces the V1.8
+/// composite FKs: it proves, per mode, that driver and vehicle belong to the owner and that the
+/// owner currently holds the dispatch claim.
 model DeliveryAssignment {
   id String @id @default(uuid()) @db.Uuid
   dispatchId String @db.Uuid
-  providerId String @db.Uuid
+  mode DeliveryAssignmentMode @default(FLEET)
+  /// FLEET only; null for INDEPENDENT (never filled with a placeholder provider).
+  providerId String? @db.Uuid
+  /// INDEPENDENT only; null for FLEET.
+  independentDriverProfileId String? @db.Uuid
   driverId String @db.Uuid
   vehicleId String @db.Uuid
   status DeliveryAssignmentStatus @default(ACTIVE)
@@ -582,13 +653,15 @@ model DeliveryAssignment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
-  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
-  driver Driver @relation(fields: [driverId, providerId], references: [id, providerId], onDelete: Restrict)
-  vehicle Vehicle @relation(fields: [vehicleId, providerId], references: [id, providerId], onDelete: Restrict)
+  provider DeliveryProvider? @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  independentDriverProfile IndependentDriverProfile? @relation(fields: [independentDriverProfileId], references: [id], onDelete: Restrict)
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
   assignedBy User @relation("DeliveryAssignmentAssignedBy", fields: [assignedByUserId], references: [id], onDelete: Restrict)
   endedBy User? @relation("DeliveryAssignmentEndedBy", fields: [endedByUserId], references: [id], onDelete: Restrict)
   @@index([dispatchId, assignedAt])
   @@index([providerId, status, assignedAt])
+  @@index([independentDriverProfileId, status, assignedAt])
   @@index([driverId, assignedAt])
   @@index([vehicleId, assignedAt])
 }

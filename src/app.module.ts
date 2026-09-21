@@ -16,6 +16,7 @@ import { DeliveryQuotesModule } from './delivery-quotes/delivery-quotes.module.j
 import { InvitationsModule } from './invitations/invitations.module.js';
 import { DispatchModule } from './dispatch/dispatch.module.js';
 import { DeliveryAssignmentsModule } from './delivery-assignments/delivery-assignments.module.js';
+import { IndependentDriversModule } from './independent-drivers/independent-drivers.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
@@ -33,6 +34,7 @@ import { DeliveryAssignmentsModule } from './delivery-assignments/delivery-assig
     InvitationsModule,
     DispatchModule,
     DeliveryAssignmentsModule,
+    IndependentDriversModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
