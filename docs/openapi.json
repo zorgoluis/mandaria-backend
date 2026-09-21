@@ -43334,6 +43334,31 @@
           "vehicle"
         ]
       },
+      "DriverSelfActiveDeliveryAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "FLEET",
+              "INDEPENDENT"
+            ]
+          },
+          "dispatchId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "mode",
+          "dispatchId"
+        ]
+      },
       "DriverSelfIndependentResponse": {
         "type": "object",
         "properties": {
@@ -43417,9 +43442,14 @@
             ]
           },
           "activeDeliveryAssignment": {
-            "type": "object",
             "nullable": true,
-            "description": "V1.9: asignación de entrega ACTIVE del repartidor en cualquiera de los dos modelos (con su mode y dispatchId), o null si está libre."
+            "description": "V1.9: asignación de entrega ACTIVE del repartidor en cualquiera de los dos modelos (con su mode y dispatchId), o null si está libre.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DriverSelfActiveDeliveryAssignmentResponse"
+              }
+            ]
           },
           "independent": {
             "nullable": true,

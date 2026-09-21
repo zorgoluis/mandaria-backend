@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  DeliveryAssignmentMode,
   DriverAvailability,
   DriverStatus,
   IndependentDriverStatus,
@@ -174,6 +175,13 @@ class DriverSelfIndependentResponse {
   })
   canTakeServices!: boolean;
 }
+/** Exactly the three fields drivers.service selects; there is no assignedAt here. */
+export class DriverSelfActiveDeliveryAssignmentResponse {
+  @ApiProperty(uuid) id!: string;
+  @ApiProperty({ enum: DeliveryAssignmentMode })
+  mode!: DeliveryAssignmentMode;
+  @ApiProperty(uuid) dispatchId!: string;
+}
 export class DriverSelfResponse {
   @ApiProperty(uuid) id!: string;
   @ApiProperty({ example: 'Carlos' }) name!: string;
@@ -189,11 +197,12 @@ export class DriverSelfResponse {
   })
   currentAssignment!: DriverSelfAssignmentResponse | null;
   @ApiPropertyOptional({
+    type: DriverSelfActiveDeliveryAssignmentResponse,
     nullable: true,
     description:
       'V1.9: asignación de entrega ACTIVE del repartidor en cualquiera de los dos modelos (con su mode y dispatchId), o null si está libre.',
   })
-  activeDeliveryAssignment!: Record<string, unknown> | null;
+  activeDeliveryAssignment!: DriverSelfActiveDeliveryAssignmentResponse | null;
   @ApiPropertyOptional({
     type: DriverSelfIndependentResponse,
     nullable: true,
