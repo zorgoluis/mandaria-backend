@@ -39,6 +39,7 @@ model User {
   deliveryAssignmentsEnded DeliveryAssignment[] @relation("DeliveryAssignmentEndedBy")
   createdInvitations UserInvitation[] @relation("InvitationCreator")
   revokedInvitations UserInvitation[] @relation("InvitationRevoker")
+  creditLedgerEntries CreditLedgerEntry[]
   independentProfilesApproved IndependentDriverProfile[] @relation("IndependentProfileApprover")
   independentProfilesSuspended IndependentDriverProfile[] @relation("IndependentProfileSuspender")
   independentProfilesRejected IndependentDriverProfile[] @relation("IndependentProfileRejecter")
@@ -110,6 +111,8 @@ model DeliveryProvider {
   serviceCoverages ProviderServiceCoverage[]
   dispatchCandidates DispatchCandidate[]
   deliveryAssignments DeliveryAssignment[]
+  /// V1.10: exactly one per provider, created with it (trigger) and never deleted by the API.
+  creditAccount CreditAccount?
   @@index([type, status])
   @@index([createdAt, id])
 }
@@ -252,6 +255,8 @@ model IndependentDriverProfile {
   rejectedBy User? @relation("IndependentProfileRejecter", fields: [rejectedByUserId], references: [id], onDelete: Restrict)
   vehicles Vehicle[]
   deliveryAssignments DeliveryAssignment[]
+  /// V1.10: created the first time the profile reaches APPROVED; kept through suspension.
+  creditAccount CreditAccount?
   /// Lets DeliveryAssignment prove driver and profile match with a composite FK instead of a trigger.
   @@unique([id, driverId])
   @@index([status, createdAt])
@@ -664,4 +669,81 @@ model DeliveryAssignment {
   @@index([independentDriverProfileId, status, assignedAt])
   @@index([driverId, assignedAt])
   @@index([vehicleId, assignedAt])
+}
+
+/// V1.10: who a CreditAccount belongs to. A fleet driver never has one: it works on its provider's.
+enum CreditAccountOwnerType {
+  PROVIDER
+  INDEPENDENT_DRIVER
+}
+/// V1.10 sign convention (enforced by CHECK): RECHARGE and SERVICE_REFUND are credits (> 0),
+/// SERVICE_AWARD is a debit (< 0), ADMIN_ADJUSTMENT may be either but never 0. Only RECHARGE and
+/// ADMIN_ADJUSTMENT are produced in V1.10-A; the other two are reserved for claim/take charging.
+enum CreditLedgerEntryType {
+  RECHARGE
+  SERVICE_AWARD
+  SERVICE_REFUND
+  ADMIN_ADJUSTMENT
+}
+/// How a manual recharge was paid outside Mandaria. A declaration by SUPER_ADMIN, not a gateway:
+/// Mandaria never moves or verifies that money.
+enum CreditRechargeMethod {
+  TRANSFER
+  CASH
+  OTHER
+}
+/// V1.10: Mandaria credits — the commercial right to be awarded services. They are integers and
+/// they are NOT money: not the delivery fee, not the goods value, not a driver's cash. Exactly one
+/// owner column is set, matching ownerType (CHECK). balance is materialized for fast reads and
+/// future claim-time checks, but it can only move through a CreditLedgerEntry: inserting an entry
+/// updates it in the same statement (trigger), and a direct UPDATE of balance is rejected.
+model CreditAccount {
+  id String @id @default(uuid()) @db.Uuid
+  ownerType CreditAccountOwnerType
+  providerId String? @unique @db.Uuid
+  independentDriverProfileId String? @unique @db.Uuid
+  /// Whole credits, 0..1_000_000_000 (CHECK). Starts at 0: an account is never born with credits.
+  balance Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  provider DeliveryProvider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  independentDriverProfile IndependentDriverProfile? @relation(fields: [independentDriverProfileId], references: [id], onDelete: Cascade)
+  entries CreditLedgerEntry[]
+  @@index([ownerType, createdAt])
+}
+/// V1.10: append-only history of an account. No row is ever updated, and deletion is refused too
+/// (trigger). balanceAfter = balanceBefore + amount, and each entry's balanceBefore is the
+/// account's balance at the moment it is written, so the chain ordered by sequence is gapless.
+/// Every human movement carries an Idempotency-Key, unique per account.
+model CreditLedgerEntry {
+  id String @id @default(uuid()) @db.Uuid
+  /// Global insertion order. Movements of one account are serialized by its row lock, so ordering
+  /// an account's entries by sequence reproduces the exact order they were applied in.
+  sequence Int @unique @default(autoincrement())
+  creditAccountId String @db.Uuid
+  type CreditLedgerEntryType
+  /// Signed whole credits: > 0 adds, < 0 removes. |amount| <= 1_000_000 per movement.
+  amount Int
+  balanceBefore Int
+  balanceAfter Int
+  /// RECHARGE only: how it was paid outside Mandaria.
+  rechargeMethod CreditRechargeMethod?
+  /// RECHARGE only: bank transfer folio, receipt number, etc. Never card data or credentials.
+  externalReference String?
+  /// Why the movement exists. Required for ADMIN_ADJUSTMENT and for RECHARGE with method OTHER.
+  reason String?
+  /// Reserved for SERVICE_AWARD / SERVICE_REFUND (e.g. DISPATCH + Dispatch.id). Unused in V1.10-A.
+  referenceType String?
+  referenceId String? @db.Uuid
+  /// Human actor. Required for RECHARGE and ADMIN_ADJUSTMENT.
+  createdByUserId String? @db.Uuid
+  /// Client-supplied key, unique per account; only its request fingerprint is kept alongside it.
+  idempotencyKey String?
+  requestHash String? @db.Char(64)
+  createdAt DateTime @default(now())
+  creditAccount CreditAccount @relation(fields: [creditAccountId], references: [id], onDelete: Restrict)
+  createdBy User? @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  @@unique([creditAccountId, idempotencyKey])
+  @@index([creditAccountId, sequence])
+  @@index([type, createdAt])
 }

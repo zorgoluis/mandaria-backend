@@ -8,6 +8,7 @@ const url = new URL(process.env.DATABASE_URL);
 const suffix = randomBytes(5).toString('hex');
 const cleanDb = `mandaria_clean_${suffix}_test`;
 const upgradeDb = `mandaria_upgrade_${suffix}_test`;
+const v19Db = `mandaria_v19_${suffix}_test`;
 const windowsPsql = 'C:/Program Files/PostgreSQL/18/bin/psql.exe';
 const psql =
   process.env.PSQL_PATH || (existsSync(windowsPsql) ? windowsPsql : 'psql');
@@ -632,8 +633,172 @@ try {
     '1',
   );
   prisma(upgradeDb, ['migrate', 'deploy']);
+
+  // V1.10: credit accounts. Verified in a dedicated database brought to V1.9 first, so the
+  // migration runs over real V1.9 data (providers and independent profiles in every state).
+  sql('postgres', ['-c', `CREATE DATABASE "${v19Db}"`]);
+  const upToV19 = readdirSync('prisma/migrations', { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort()
+    .filter((name) => name <= '20260918001000_independent_drivers');
+  for (const name of upToV19) {
+    sql(v19Db, ['-f', `prisma/migrations/${name}/migration.sql`]);
+    prisma(v19Db, ['migrate', 'resolve', '--applied', name]);
+  }
+  assert.equal(
+    sql(v19Db, [
+      '-c',
+      `SELECT count(*) FROM information_schema.tables WHERE table_name = 'CreditAccount'`,
+    ]),
+    '0',
+  );
+  const v19Admin = randomUUID();
+  const v19Providers = [randomUUID(), randomUUID()];
+  const v19Profiles = {
+    approved: [randomUUID(), randomUUID(), randomUUID()],
+    suspended: [randomUUID(), randomUUID(), randomUUID()],
+    pending: [randomUUID(), randomUUID(), randomUUID()],
+  };
+  const profileSql = ([userId, driverId, profileId], state) => {
+    const approved =
+      state === 'pending'
+        ? `NULL, NULL`
+        : `now() - interval '2 days', '${v19Admin}'`;
+    const suspended =
+      state === 'suspended'
+        ? `now() - interval '1 day', '${v19Admin}'`
+        : `NULL, NULL`;
+    const status =
+      state === 'approved'
+        ? 'APPROVED'
+        : state === 'suspended'
+          ? 'SUSPENDED'
+          : 'PENDING';
+    return `
+      INSERT INTO "User" (id,email,"passwordHash",role,"updatedAt") VALUES ('${userId}','${state}-${userId}@example.test','${hash}','DRIVER',now());
+      INSERT INTO "Driver" (id,"providerId","userId",name,status,"updatedAt") VALUES ('${driverId}','${v19Providers[0]}','${userId}','${state}','ACTIVE',now());
+      INSERT INTO "IndependentDriverProfile" (id,"driverId",status,"approvedAt","approvedByUserId","suspendedAt","suspendedByUserId","updatedAt")
+        VALUES ('${profileId}','${driverId}','${status}',${approved},${suspended},now());`;
+  };
+  sql(v19Db, [
+    '-c',
+    `
+    INSERT INTO "User" (id,email,"passwordHash",role,"updatedAt") VALUES ('${v19Admin}','v19-admin@example.test','${hash}','SUPER_ADMIN',now());
+    ${v19Providers
+      .map(
+        (id, i) =>
+          `INSERT INTO "DeliveryProvider" (id,name,code,type,status,"maxDrivers","maxVehicles","updatedAt") VALUES ('${id}','V19 provider ${i}','V19_PROVIDER_${i}','FLEET','${i ? 'SUSPENDED' : 'ACTIVE'}',5,5,now());`,
+      )
+      .join('\n')}
+    ${profileSql(v19Profiles.approved, 'approved')}
+    ${profileSql(v19Profiles.suspended, 'suspended')}
+    ${profileSql(v19Profiles.pending, 'pending')}
+  `,
+  ]);
+  const v19Tables = [
+    'User',
+    'DeliveryProvider',
+    'Driver',
+    'IndependentDriverProfile',
+  ];
+  const v19Snapshot = () =>
+    Object.fromEntries(
+      v19Tables.map((table) => [
+        table,
+        sql(v19Db, [
+          '-c',
+          `SELECT json_agg(t ORDER BY id) FROM "${table}" t`,
+        ]),
+      ]),
+    );
+  const beforeCredits = v19Snapshot();
+  prisma(v19Db, ['migrate', 'deploy']);
+  // The credit migration adds tables only: every pre-existing row is byte-identical.
+  assert.deepEqual(v19Snapshot(), beforeCredits);
+  // One zero-balance account per provider, whatever its status; none invented as a recharge.
+  assert.equal(
+    sql(v19Db, [
+      '-c',
+      `SELECT count(*) FROM "CreditAccount" a JOIN "DeliveryProvider" p ON p.id = a."providerId" WHERE a."ownerType" = 'PROVIDER' AND a.balance = 0`,
+    ]),
+    '2',
+  );
+  // Accounts belong to the capability once it has been approved: APPROVED and
+  // SUSPENDED-after-approval get one, a profile never approved does not.
+  assert.equal(
+    sql(v19Db, [
+      '-c',
+      `SELECT count(*) FROM "CreditAccount" WHERE "independentDriverProfileId" IN ('${v19Profiles.approved[2]}','${v19Profiles.suspended[2]}') AND balance = 0 AND "ownerType" = 'INDEPENDENT_DRIVER'`,
+    ]),
+    '2',
+  );
+  assert.equal(
+    sql(v19Db, [
+      '-c',
+      `SELECT count(*) FROM "CreditAccount" WHERE "independentDriverProfileId" = '${v19Profiles.pending[2]}'`,
+    ]),
+    '0',
+  );
+  assert.equal(sql(v19Db, ['-c', 'SELECT count(*) FROM "CreditAccount"']), '4');
+  assert.equal(
+    sql(v19Db, ['-c', 'SELECT count(*) FROM "CreditLedgerEntry"']),
+    '0',
+  );
+  // After the migration the triggers take over: a new provider and a newly approved profile get
+  // their account at once, and re-approval never creates a second one.
+  sql(v19Db, [
+    '-c',
+    `
+    INSERT INTO "DeliveryProvider" (id,name,code,type,status,"maxDrivers","maxVehicles","updatedAt") VALUES (gen_random_uuid(),'V110 provider','V110_PROVIDER','FLEET','PENDING',5,5,now());
+    UPDATE "IndependentDriverProfile" SET status='APPROVED', "approvedAt"=now(), "approvedByUserId"='${v19Admin}', "suspendedAt"=NULL, "suspendedByUserId"=NULL WHERE id IN ('${v19Profiles.pending[2]}','${v19Profiles.suspended[2]}');
+  `,
+  ]);
+  assert.equal(sql(v19Db, ['-c', 'SELECT count(*) FROM "CreditAccount"']), '6');
+  assert.equal(
+    sql(v19Db, [
+      '-c',
+      `SELECT count(*) FROM (SELECT "independentDriverProfileId" FROM "CreditAccount" WHERE "independentDriverProfileId" IS NOT NULL GROUP BY 1 HAVING count(*) > 1) x`,
+    ]),
+    '0',
+  );
+  for (const db of [cleanDb, upgradeDb, v19Db]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('CreditAccount_owner_check','CreditAccount_balance_check','CreditLedgerEntry_amount_check','CreditLedgerEntry_type_check','CreditLedgerEntry_text_check','CreditAccount_providerId_fkey','CreditAccount_independentDriverProfileId_fkey','CreditLedgerEntry_creditAccountId_fkey','CreditLedgerEntry_createdByUserId_fkey')",
+      ]),
+      '9',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('CreditAccount_guard','CreditLedgerEntry_apply','CreditLedgerEntry_guard','CreditLedgerEntry_no_truncate','DeliveryProvider_credit_account','IndependentDriverProfile_credit_account')",
+      ]),
+      '6',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname IN ('CreditAccount_providerId_key','CreditAccount_independentDriverProfileId_key','CreditLedgerEntry_creditAccountId_idempotencyKey_key','CreditLedgerEntry_sequence_key') AND indexdef LIKE 'CREATE UNIQUE%'",
+      ]),
+      '4',
+    );
+  }
+  // The upgraded V1.0 -> V1.10 database: its single provider got exactly one empty account.
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      `SELECT count(*) FROM "CreditAccount" WHERE "providerId" = '${providerId}' AND balance = 0`,
+    ]),
+    '1',
+  );
+  assert.equal(
+    sql(upgradeDb, ['-c', 'SELECT count(*) FROM "CreditLedgerEntry"']),
+    '0',
+  );
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; V1.4-V1.9 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}) and V1.9 data -> V1.10 (${v19Db}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.4-V1.10 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

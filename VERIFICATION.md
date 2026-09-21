@@ -1,3 +1,96 @@
+# Verificación V1.10-A — Credit Accounts & Immutable Ledger (2026-09-21)
+
+Rama `v1.10-credit-monetization`, paquete 1.10.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push.
+
+**Nota de partida:** el encargo daba por completada una «V1.9-C Service Coverage». No existe en el repositorio: ni en ninguna rama local o remota, ni en el historial, ni en la documentación; la rama parte de V1.9 (PR #14) más un commit de documentación, y la única cobertura es la `ProviderServiceCoverage` de V1.7. V1.10-A no depende de ella, así que se construyó sobre V1.9 y la regresión cubre la cobertura que sí existe.
+
+| Verificación | Resultado |
+|---|---|
+| Línea base **antes** de modificar | PASS; 113 unitarias; E2E 162 (1 fallo preexistente, ver nota) |
+| Prisma validate / migrate status | PASS / al día (11 migraciones) |
+| Drift `migrate diff` schema ↔ migraciones (shadow DB temporal, eliminada después) | Vacío |
+| Migración `20260921001100_credit_accounts_ledger` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; 10 y 47 proveedores con exactamente una cuenta cada uno; 3 y 2 perfiles independientes aprobados alguna vez con cuenta; saldo 0 y **0 movimientos** en ambas |
+| `verify-migrations.mjs` | PASS en tres bases: instalación limpia; V1.0 → … → V1.9 → V1.10 con datos; y una base **llevada a V1.9 con datos reales** antes de aplicar V1.10 |
+| TypeScript / Build / Oxlint / ESLint / Prettier (archivos nuevos) | PASS |
+| `docs:openapi` + `docs:check` | 1.10.0; **+12 rutas, +8 esquemas, 0 eliminados**; 0 campos ambiguos `type: object` en los esquemas nuevos; `balance`, `amount` y `credits` publicados como `integer`; 0 campos `currency` en rutas de créditos |
+| `npm test` | **130 PASS** (113 previas + 17 de V1.10-A) |
+| E2E por archivo, 15 archivos | **186 PASS** (162 previas + 24 de V1.10-A); 14 archivos OK; `delivery-quotes` con el fallo preexistente |
+| Tormenta de concurrencia contra `dist/main.js` (fuera del repositorio) | **7/7** |
+| Escaneo de invariantes del ledger en ambas bases | **0 violaciones** en 11 consultas cada una |
+
+## Migración sobre datos reales de V1.9
+
+La base `mandaria_v19_*_test` se llevó migración a migración hasta V1.9 y se le cargaron datos de V1.9: dos proveedores (uno SUSPENDED) y tres perfiles independientes — APPROVED, SUSPENDED después de haber sido aprobado, y PENDING nunca aprobado. Tras aplicar V1.10:
+
+- las filas de `User`, `DeliveryProvider`, `Driver` e `IndependentDriverProfile` son **idénticas byte a byte** a las previas;
+- cada proveedor, también el suspendido, tiene una cuenta con saldo 0;
+- el perfil APPROVED y el SUSPENDED-tras-aprobación tienen cuenta; el PENDING **no**;
+- el ledger está vacío: ninguna recarga inventada;
+- después, los triggers toman el relevo: un proveedor nuevo recibe su cuenta, el perfil PENDING al aprobarse recibe la suya, y reaprobar el suspendido no crea una segunda.
+
+## Pruebas nuevas
+
+`test/credits.spec.ts` (17): convención de signo por tipo; `MAX_CREDIT_BALANCE + MAX_CREDIT_MOVEMENT` < 2³¹ (sin desbordamiento posible); saldo negativo y límite superior rechazados; todos los conflictos son 409; validación estricta — `0`, `-5`, `1.5`, `7.25`, `0.01`, `"10"`, `null`, `true` y valores fuera de límite rechazados; `reason` obligatorio sólo con OTHER; caracteres de control rechazados en `reason` y `externalReference`; `ownerType`, `providerId`, `creditAccountId`, `balance` y `createdByUserId` forjados en el cuerpo rechazados; Idempotency-Key ausente, corta, con espacios, demasiado larga o repetida rechazada; las vistas nunca exponen la huella del cuerpo y ocultan actor y key al dueño; débito insuficiente bajo bloqueo sin escribir; replay por key y conflicto por cuerpo distinto sin escribir; una guarda de PostgreSQL traducida a 409.
+
+`test/credits.e2e-spec.ts` (24, HTTP real contra la aplicación y PostgreSQL):
+
+| Área | Resultado |
+|---|---|
+| Cuenta de proveedor | Proveedores creados por SQL y por la API reciben exactamente una cuenta con saldo 0 y sin movimientos |
+| Cuenta independiente | 404 antes de aprobar; creada al aprobar; conservada al suspender; reaprobar no duplica |
+| Driver de flotilla | `GET /driver/credits` → 404 `CREDIT_ACCOUNT_NOT_FOUND`; ninguna cuenta en la base |
+| Recarga | 201, `Idempotent-Replayed: false`, entrada RECHARGE con actor, método y referencia; saldo 500 |
+| Idempotencia | Misma key y cuerpo → 200 con el movimiento original; cuerpo distinto → 409; recarga y ajuste con la misma key → 409; 1 sola entrada por key |
+| Key y OTHER | Sin key → 400; key corta → 400; OTHER sin motivo → 400; con motivo → 201 |
+| Ajuste | +50 y −20 aplicados; sobregiro → 409 `INSUFFICIENT_CREDITS` sin escribir ninguna entrada |
+| Entradas inválidas | 0, decimales, texto, ±1 000 001, `null`, 2³¹ y campos forjados → 400; referencia con salto de línea → 400; el proveedor B nunca tocado |
+| Ruta independiente | Recarga y ajuste por `/admin/drivers/:driverId/independent/credits`; Driver de flotilla, Driver y proveedor inexistentes → 404 |
+| PROVIDER_ADMIN | Lee su cuenta e historial sin actor, key ni huella; no hay ruta de mutación (404); rutas de admin → 403 |
+| Aislamiento | Admin de B sobre la cuenta de A (propia y admin) → 403; `providerId` repetido en la query → 400 |
+| DRIVER independiente | Lee sólo lo suyo; mutaciones y cuenta de proveedor → 403 |
+| B2B y roles | Token B2B y sin token → 401 en las 8 rutas probadas; SUPER_ADMIN en rutas propias de dueño → 403 |
+| Historial | Ordenado por `sequence` descendente; página 2 exacta; `pageSize` 0/101, `page` 0/texto → 400 |
+| Inmutabilidad | UPDATE, DELETE y TRUNCATE por SQL rechazados (`CREDIT_LEDGER_IMMUTABLE`); UPDATE rechazado **incluso** con el interruptor de purga; borrar un proveedor con historial rechazado |
+| Ataques SQL (16) | Todos rechazados, cada uno por el objeto esperado: UPDATE directo del saldo, segunda cuenta, ownerType incoherente, dos dueños, cuenta con saldo inicial, cambio de dueño, recarga negativa, saldo negativo, movimiento 0, aritmética falsa, `balanceBefore` obsoleto, cantidad absurda, SERVICE_AWARD positivo, recarga sin actor o sin key, ajuste sin motivo |
+| Concurrencia | +100/+200/+300 simultáneas → +600 y 3 entradas; −8/−8 sobre 10 → 201 + 409, saldo 2; 8 movimientos mixtos → saldo = suma de los aplicados; la misma key ×5 → 1 × 201 + 4 × 200, una entrada |
+| **CLAIM/TAKE sin créditos** | Proveedor con saldo 0 reclama (200) y un independiente con saldo 0 toma (200); **ningún movimiento nuevo** en el ledger y 0 entradas SERVICE_AWARD/SERVICE_REFUND |
+| Suspensión | Proveedor suspendido conserva saldo e historial legibles |
+| Auditoría | CREDIT_RECHARGED, CREDIT_ADJUSTED, CREDIT_MOVEMENT_REPLAYED, CREDIT_IDEMPOTENCY_CONFLICT y CREDIT_MOVEMENT_REJECTED con actor, cuenta, dueño, entrada, importe y saldos; 0 secretos |
+
+La suite se ejecutó 3 veces seguidas con 24/24 y no deja residuos (0 proveedores, 0 usuarios y 0 entradas de la suite).
+
+## Tormenta de concurrencia contra el servidor real
+
+Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (base `mandaria_test`, reinicios del servidor para no consumir el límite por IP):
+
+| Escenario | Resultado |
+|---|---|
+| 60 recargas y ajustes simultáneos sobre **una** cuenta | 60 aplicados; saldo 3250 = exactamente el esperado; cadena íntegra |
+| 30 débitos simultáneos de 7 sobre un saldo de exactamente 70 | **10 aplicados, 20 rechazados, saldo 0**: ningún sobregiro |
+| 25 copias simultáneas de la misma Idempotency-Key | 1 × 201 + 24 × 200, todas con la misma entrada; +13 una sola vez |
+| La misma key con cuerpos distintos en paralelo (10) | 1 creada, 5 conflictos (cuerpo distinto), 4 replays (mismo cuerpo que la ganadora); 1 entrada |
+| Cadena final | 75 entradas sin un solo hueco |
+| Servidor | 0 respuestas 5xx; 0 secretos en 1 304 líneas de log |
+
+## Escaneo de invariantes del ledger
+
+11 consultas sobre `mandaria_db` y `mandaria_test`: todo proveedor tiene cuenta; todo perfil aprobado alguna vez la tiene y ninguno nunca aprobado; 0 saldos negativos; 0 dueños incoherentes; 0 entradas con aritmética falsa; 0 roturas de cadena; toda cadena empieza en 0; el último `balanceAfter` coincide siempre con el saldo; 0 entradas SERVICE_*; 0 keys duplicadas. **0 violaciones** en ambas.
+
+## Defectos encontrados durante la implementación
+
+- **Nulos publicados como `type: object`.** Los campos `string | null` de las respuestas nuevas salían en OpenAPI como objetos sin estructura, porque TypeScript refleja la unión como `Object`. Se declaró el tipo explícito en todos; auditoría de los esquemas nuevos en 0. El mismo defecto existe en **130 campos de versiones anteriores** (V1.1–V1.9, incluidos varios de V1.9): no se corrigió aquí por estar fuera de alcance y quedó propuesto como tarea aparte.
+- **400 sin documentar en `GET /driver/credits`.** La regresión de V1.4 (`driver-self.e2e-spec.ts`) exige que toda ruta de drivers documente 400/401/403/429; la ruta nueva no documentaba 400. Corregido; todas las rutas de créditos cumplen la convención.
+- **CORS no exponía `Idempotent-Replayed`.** Un navegador no podía leer esa cabecera. Se añadió a `exposedHeaders`.
+- Errores del propio validador, corregidos en el validador: un correo con mayúsculas en el alta (el login normaliza a minúsculas) y la lectura del resultado de un script abortado.
+
+## Fallo preexistente, ajeno a V1.10-A
+
+`test/delivery-quotes.e2e-spec.ts > 20 cotizaciones concurrentes` falla igual que en la línea base previa: agotamiento del pool de conexiones de Prisma (500 a los ~10 s) en el camino de cotización V1.6.
+
+## No verificado
+
+Docker; entrega SMTP real; `docs/API-CONTRACT.md` de `mandaria-frontend` (otro repositorio, no modificado).
+
 # CHECK V1.9-A — Independent Driver Security, Concurrency & Integrity (2026-09-18)
 
 Rama `v1.9-independent_drivers`, paquete 1.9.0. Validador adversarial temporal **fuera del repositorio** contra `dist/main.js` en ejecución (puerto 3019, base `mandaria_test`, `ROUTING_PROVIDER=local_fake`), con fixtures propios, logins reales y limpieza total. Reinicios del servidor para no consumir el límite por IP (100/min, 5 logins/min, 30 cotizaciones/min). **Se encontraron y corrigieron 3 defectos reales** (una sola causa raíz); ver abajo.

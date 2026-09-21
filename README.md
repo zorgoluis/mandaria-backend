@@ -1,10 +1,10 @@
-# Mandaria — V1.9 Independent Drivers
+# Mandaria — V1.10-A Credit Accounts & Immutable Ledger
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). V1.10-A agrega la base contable de los créditos Mandaria: una cuenta por proveedor y por repartidor independiente, con un ledger inmutable, recargas y ajustes manuales de SUPER_ADMIN; **todavía no se cobra ningún crédito al adjudicar servicios** (ver [Credit Accounts & Immutable Ledger](#credit-accounts--immutable-ledger-v110-a)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -18,6 +18,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `dispatch/`: V1.7 Dispatch, candidatos, coberturas de proveedor, claim y liberación.
 - `delivery-assignments/`: V1.8 asignación de Driver y Vehicle al Dispatch reclamado, con historial, reasignación y plazo.
 - `independent-drivers/`: V1.9 perfil independiente, vehículos propios y las operaciones `take`/`release` del repartidor.
+- `credits/`: V1.10-A cuentas de créditos, ledger inmutable, recargas y ajustes; sin cobro por servicio todavía.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -1396,6 +1397,127 @@ Suspender o rechazar a un repartidor con una asignación ACTIVE responde **409 `
 
 Pruebas: `test/independent-drivers.spec.ts` (política de ejecución por ServiceType, orden de rechazo del `take`, motivos de liberación, plazo que no aplica, habilitación idempotente, suspensión con servicio activo, límite de vehículos, identidad tomada del JWT) y `test/independent-drivers.e2e-spec.ts` (habilitación y permisos negativos, vehículos propios, privacidad del listado, take con contexto de pago, vehículo ajeno en ambos sentidos, repartidor suspendido, release y retake, ausencia de reasignación, carrera flotilla vs independiente, varios independientes, mismo repartidor y mismo vehículo en paralelo, ocupado en un modelo frente al otro, suspensión y desactivación con servicio en curso, invariantes en PostgreSQL y auditoría sin secretos).
 
+## Credit Accounts & Immutable Ledger (V1.10-A)
+
+V1.10-A crea la base contable de los créditos Mandaria: cuentas y un historial inmutable de movimientos. **Todavía no cobra nada:** CLAIM de proveedor y TAKE independiente siguen funcionando exactamente igual, con o sin créditos, y no escriben en el ledger. El consumo por servicio llega en V1.10-D; la política de costo (V1.10-B) tampoco existe aún.
+
+### Créditos no son dinero
+
+Un crédito es el **derecho comercial a adjudicarse servicios** dentro de Mandaria. No es la tarifa del envío (`deliveryFee`), ni el valor de la mercancía (`goodsValue`), ni efectivo del repartidor, ni un wallet. Por eso son **enteros**, no llevan moneda y ningún campo de créditos usa decimales o `MXN`:
+
+```text
+ORDER / DELIVERY MONEY   ≠   MANDARIA CREDITS
+deliveryFee 60.00 MXN        balance 500
+goodsValue 800.00 MXN        amount -7
+```
+
+### Quién tiene cuenta
+
+| Dueño | Cuándo se crea | Notas |
+|---|---|---|
+| **Proveedor** | Al crearse el proveedor, por cualquier vía (API, seed, SQL) | Una por proveedor. La usan todos sus Drivers de flotilla, que **no** tienen cuenta propia. |
+| **Repartidor independiente** | La primera vez que su perfil llega a `APPROVED` | Pertenece a la capacidad independiente, no al User. Se conserva si después queda `SUSPENDED` o `REJECTED`. |
+
+La creación la hacen triggers de PostgreSQL (`DeliveryProvider_credit_account`, `IndependentDriverProfile_credit_account`) con `ON CONFLICT DO NOTHING`, así que es atómica con el dueño e idempotente: reaprobar a un repartidor nunca crea una segunda cuenta. Una cuenta **nace con saldo 0** (un trigger rechaza cualquier otro valor).
+
+**Datos existentes:** la migración creó una cuenta con saldo 0 para cada proveedor existente y para cada perfil independiente que **haya sido aprobado alguna vez** (`approvedAt` no nulo; la misma regla que aplica el trigger en adelante). **No** escribió ningún movimiento: una cuenta vacía no tiene historia económica, e inventar una `RECHARGE` registraría un pago que nadie hizo.
+
+### Sin estado propio de la cuenta (decisión)
+
+No se añadió `ACTIVE`/`SUSPENDED` a la cuenta. En V1.10-A sería redundante: el dueño ya tiene estado operativo (`DeliveryProvider.status`, `IndependentDriverProfile.status`), no existe todavía ningún débito automático que bloquear, y las recargas y ajustes son decisiones explícitas de SUPER_ADMIN. Un estado de cuenta sin nadie que lo consulte sería superficie sin uso. Si V1.10-D necesita congelar créditos de forma distinta a la suspensión operativa, se añadirá entonces con un consumidor concreto.
+
+Consecuencia documentada: **suspender a un proveedor o a un repartidor no borra ni congela su saldo ni su historial**, y SUPER_ADMIN puede seguir recargando o ajustando esa cuenta.
+
+### Límites
+
+| Límite | Valor | Dónde |
+|---|---|---|
+| Créditos por movimiento | 1 – 1 000 000 | DTO + CHECK `CreditLedgerEntry_amount_check` |
+| Saldo máximo | 1 000 000 000 | servicio + CHECK `CreditAccount_balance_check` |
+| Saldo mínimo | 0 | servicio + CHECK (nunca negativo) |
+
+Con ambos límites, `balanceBefore + amount` siempre cabe en un `INTEGER` de 32 bits: ninguna operación puede desbordarse. Los límites son constantes (`src/credits/credit-policy.ts`), no variables de entorno; V1.10-A no añade ninguna variable a `.env.example`.
+
+### Ledger
+
+Cada movimiento es una fila `CreditLedgerEntry` con `amount`, `balanceBefore`, `balanceAfter`, tipo, actor y motivo. Convención de signo única, forzada por CHECK:
+
+| Tipo | Signo | Uso en V1.10-A |
+|---|---|---|
+| `RECHARGE` | siempre `+` | Sí: recarga manual |
+| `ADMIN_ADJUSTMENT` | `+` o `−`, nunca 0 | Sí: corrección con motivo |
+| `SERVICE_AWARD` | siempre `−` | Reservado (cobro al adjudicar) |
+| `SERVICE_REFUND` | siempre `+` | Reservado (devolución) |
+
+`RECHARGE -500` o cualquier movimiento de 0 los rechaza la base. No hay columna `metadata` libre: lo que habría ido ahí son columnas tipadas (`rechargeMethod`, `externalReference`, `reason`, `referenceType`/`referenceId`), para no guardar datos arbitrarios y que OpenAPI publique cada campo con su tipo.
+
+**Inmutable en PostgreSQL, no sólo en la API.** `UPDATE` sobre el ledger se rechaza siempre; `DELETE` y `TRUNCATE` también. La única excepción es para bases de prueba desechables: una transacción que ejecuta `SET LOCAL mandaria.ledger_purge = 'test-fixtures'` puede **borrar** (nunca editar) entradas, para que las suites automáticas limpien lo que crearon. La aplicación nunca la usa ni puede usarla. Una cuenta con historia no se puede borrar (FK `RESTRICT`); una cuenta sin movimientos sigue a su dueño.
+
+**El saldo sólo se mueve a través del ledger.** `CreditAccount.balance` está materializado para lecturas rápidas y para el cobro futuro, pero insertar una entrada **es** el movimiento: el trigger `CreditLedgerEntry_apply` actualiza el saldo en la misma sentencia, sólo si la cuenta todavía tiene exactamente `balanceBefore`. Un `UPDATE "CreditAccount" SET balance = ...` directo desde cualquier cliente lo rechaza `CreditAccount_guard` (`CREDIT_BALANCE_WITHOUT_LEDGER`). Así, el ledger ordenado por `sequence` es una cadena sin huecos: `balanceBefore + amount = balanceAfter` en cada fila, cada `balanceAfter` es el `balanceBefore` de la siguiente, y la última coincide con el saldo.
+
+### Movimiento atómico y concurrencia
+
+```text
+BEGIN
+  SELECT balance FROM "CreditAccount" WHERE id = … FOR UPDATE   -- bloquea la cuenta
+  ¿Idempotency-Key ya usada?  → devolver el original
+  balanceAfter = balanceBefore + amount   -- < 0 → 409 INSUFFICIENT_CREDITS
+  INSERT CreditLedgerEntry                -- el trigger mueve el saldo
+COMMIT                                    -- cualquier fallo: ROLLBACK completo
+```
+
+El bloqueo de fila serializa todos los movimientos de una cuenta: con saldo 10, dos débitos simultáneos de 8 terminan en **uno aplicado, uno rechazado y saldo 2**, nunca −6. Aunque otro escritor se saltara el bloqueo, el trigger rechaza una entrada construida sobre un saldo ya obsoleto (`CREDIT_LEDGER_STALE`), y los CHECK impiden un saldo negativo.
+
+### Idempotencia
+
+Recargas y ajustes exigen la cabecera `Idempotency-Key` (8–255 caracteres ASCII visibles), con el mismo contrato que la creación B2B de DeliveryRequest:
+
+| Situación | Respuesta |
+|---|---|
+| Key nueva | `201`, `Idempotent-Replayed: false`, movimiento aplicado |
+| Misma key + mismo cuerpo | `200`, `Idempotent-Replayed: true`, **el movimiento original**, nada se aplica otra vez |
+| Misma key + cuerpo distinto (o recarga vs. ajuste) | `409 CREDIT_IDEMPOTENCY_CONFLICT` |
+| Sin key o mal formada | `400` |
+
+La key es **única por cuenta** y vive en el propio ledger (índice único `CreditLedgerEntry_creditAccountId_idempotencyKey_key`), no en `ApiIdempotencyRecord`, porque el actor es un SUPER_ADMIN humano y no un IntegrationClient. Se guarda sólo una huella SHA-256 del cuerpo. Un doble clic, un reintento del navegador o de red nunca recarga dos veces: la key se revisa antes, se revisa otra vez bajo el bloqueo, y el índice único resuelve el caso de dos copias que corren en paralelo. Mandaria Web debe generar una key nueva por cada operación intencional. CORS expone `Idempotent-Replayed` para que el navegador pueda leerla.
+
+### Endpoints
+
+| Método | Ruta | Rol |
+|---|---|---|
+| GET | `/admin/providers/:providerId/credits` | SUPER_ADMIN |
+| GET | `/admin/providers/:providerId/credits/ledger` | SUPER_ADMIN |
+| POST | `/admin/providers/:providerId/credits/recharge` | SUPER_ADMIN |
+| POST | `/admin/providers/:providerId/credits/adjustment` | SUPER_ADMIN |
+| GET | `/admin/drivers/:driverId/independent/credits` | SUPER_ADMIN |
+| GET | `/admin/drivers/:driverId/independent/credits/ledger` | SUPER_ADMIN |
+| POST | `/admin/drivers/:driverId/independent/credits/recharge` | SUPER_ADMIN |
+| POST | `/admin/drivers/:driverId/independent/credits/adjustment` | SUPER_ADMIN |
+| GET | `/provider/credits`, `/provider/credits/ledger` | PROVIDER_ADMIN (sólo su proveedor) |
+| GET | `/driver/credits`, `/driver/credits/ledger` | DRIVER independiente (sólo su cuenta) |
+
+- **Recarga:** `{ credits, method: TRANSFER|CASH|OTHER, externalReference?, reason? }`. `credits` entero de 1 a 1 000 000. `method` registra cómo se pagó **fuera** de Mandaria: no es una pasarela y Mandaria no verifica el pago; SUPER_ADMIN declara que se confirmó. `OTHER` exige `reason`.
+- **Ajuste:** `{ amount, reason }`. Entero con signo, nunca 0, motivo obligatorio. Es una operación separada de la recarga. Si dejaría el saldo negativo responde `409 INSUFFICIENT_CREDITS` y no aplica nada.
+- **Historial:** paginado (máx. 100 por página), del más reciente al más antiguo por `sequence`. SUPER_ADMIN ve además quién registró cada movimiento y con qué Idempotency-Key; el dueño de la cuenta ve importes, saldos y motivos, pero no esos datos internos. La huella del cuerpo no se expone a nadie.
+
+La cuenta siempre se resuelve desde el dueño que nombra la ruta (y que los guards autorizan) o desde el JWT: el cuerpo **no** acepta `ownerType`, `providerId`, `balance` ni ids de cuenta (400 por campo desconocido). PROVIDER_ADMIN y DRIVER no tienen rutas de mutación. Un proveedor nunca ve la cuenta de otro (403). Un Driver de flotilla no tiene cuenta propia (`404 CREDIT_ACCOUNT_NOT_FOUND`). Un token B2B no sirve en ninguna ruta de créditos (401): los IntegrationClients no conocen los créditos en esta versión. SUPER_ADMIN administra, pero no usa las rutas propias de proveedor o repartidor (403).
+
+Un repartidor independiente puede **consultar** su cuenta aunque su perfil esté `SUSPENDED` o `REJECTED` (el prompt pedía `APPROVED`): su saldo y su historia se conservan, y ocultárselos contradiría esa conservación. Si podrá **operar** con esos créditos se decide cuando exista el cobro (V1.10-D).
+
+### Errores (`code`)
+
+`INSUFFICIENT_CREDITS`, `CREDIT_BALANCE_LIMIT`, `CREDIT_IDEMPOTENCY_CONFLICT` y `CREDIT_MOVEMENT_CONFLICT` (una guarda de PostgreSQL se disparó; reintentar con la misma key) son 409 y nunca aplican nada. `CREDIT_ACCOUNT_NOT_FOUND` es 404. Motivos y referencias rechazan caracteres de control (Unicode `Cc`), para que nunca puedan falsificar una línea de log.
+
+### Auditoría
+
+`CREDIT_RECHARGED` y `CREDIT_ADJUSTED` registran `actorUserId`, `creditAccountId`, `ownerType`, `ownerId`, `entryId`, `sequence`, `amount`, `balanceBefore`, `balanceAfter`, `rechargeMethod` y `externalReference`. También `CREDIT_MOVEMENT_REPLAYED`, `CREDIT_IDEMPOTENCY_CONFLICT` y `CREDIT_MOVEMENT_REJECTED`. Nunca tokens, contraseñas, secretos B2B ni credenciales SMTP.
+
+### Base de datos
+
+Migración `20260921001100_credit_accounts_ledger`, incremental desde V1.9 y **sin reset**: sólo añade tablas; ninguna fila existente cambia. Objetos: CHECK `CreditAccount_owner_check` (dueño coherente con `ownerType`, exactamente uno), `CreditAccount_balance_check`, `CreditLedgerEntry_amount_check` (aritmética, límites, nunca 0), `CreditLedgerEntry_type_check` (signo y campos obligatorios por tipo), `CreditLedgerEntry_text_check`; índices únicos por proveedor, por perfil independiente y por (cuenta, Idempotency-Key); triggers `CreditAccount_guard`, `CreditLedgerEntry_apply`, `CreditLedgerEntry_guard`, `CreditLedgerEntry_no_truncate` y los dos de creación de cuenta.
+
+Pruebas: `test/credits.spec.ts` (convención de signo, límites y desbordamiento, validación estricta de enteros, motivo con OTHER, caracteres de control, campos de dueño forjados, Idempotency-Key, vistas sin huella ni datos internos, saldo insuficiente bajo bloqueo, replay y conflicto de key, guarda de PostgreSQL traducida a 409) y `test/credits.e2e-spec.ts` (creación de cuentas por cualquier vía, cuenta independiente al aprobar y conservada, Driver de flotilla sin cuenta, recarga, replay y conflicto, ajustes, rechazo de cero/decimales/texto/cantidades absurdas/campos forjados, aislamiento por rol y por proveedor, paginación, inmutabilidad por SQL, 16 ataques directos a la base, concurrencia de recargas, doble débito, movimientos mixtos y una misma key en paralelo, CLAIM y TAKE con saldo 0 sin tocar el ledger, suspensión que conserva el saldo, y auditoría sin secretos).
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -1438,13 +1560,19 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.9: que un Dispatch aparezca en `/driver/dispatches/available` no garantiza poder tomarlo; la disponibilidad del repartidor y del vehículo se resuelve bajo bloqueos en el `take`, que puede responder 409.
 - V1.9: sin notificaciones. Un repartidor descubre trabajo consultando el listado, igual que un proveedor con `view=AVAILABLE`.
 - V1.9: `take` serializa con la suspensión y con la desactivación de vehículos mediante el bloqueo del perfil; si en el futuro se añaden más operaciones administrativas sobre el repartidor, deben tomar ese mismo bloqueo o volverá a abrirse la carrera que corrigió el CHECK V1.9-A.
+- V1.10-A: los créditos existen pero no se consumen. Hasta V1.10-D cualquier proveedor o repartidor sigue reclamando y tomando servicios aunque su saldo sea 0; un saldo alto hoy no confiere ninguna ventaja operativa.
+- V1.10-A: las recargas son una declaración de SUPER_ADMIN sobre un pago externo; Mandaria no lo verifica ni lo concilia. `externalReference` es texto libre sin validación contra un banco.
+- V1.10-A: el ledger admite `DELETE` en una transacción que active `mandaria.ledger_purge = 'test-fixtures'`, para limpiar bases de prueba. Quien tenga acceso SQL con el rol dueño de las tablas puede usarla (igual que podría desactivar un trigger); en producción conviene que la aplicación use un rol sin privilegios de dueño.
+- V1.10-A: la Idempotency-Key es única por cuenta, no global; reutilizar la misma key en dos cuentas distintas registra dos movimientos independientes.
+- V1.10-A: los límites (1 000 000 por movimiento, 1 000 000 000 de saldo) son constantes de código y de CHECK; cambiarlos requiere migración.
+- OpenAPI: 130 campos anulables de versiones anteriores (V1.1–V1.9, incluidos varios de V1.9) se publican como `type: object` sin estructura, porque TypeScript refleja `X | null` como Object. Los esquemas de V1.10-A declaran su tipo explícitamente; el resto queda pendiente como tarea aparte.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.9 / V1.10+
+## Fuera de V1.10-A / V1.10-B+
 
-No se implementaron Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron CreditPolicy (V1.10-B), costo por distancia (PER_KM, FLAT, DISTANCE_RANGE), snapshot del costo en créditos, débito al CLAIM o al TAKE, SERVICE_AWARD y SERVICE_REFUND operativos, devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API y auditoría persistente siguen pendientes.

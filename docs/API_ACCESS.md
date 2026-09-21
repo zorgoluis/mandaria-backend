@@ -17,6 +17,10 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/dispatches/{dispatchId}/assignments | bearer | SUPER_ADMIN | — | Historial de asignaciones de un Dispatch |
 | GET | /api/v1/admin/drivers/{driverId}/independent | bearer | SUPER_ADMIN | — | Consultar el perfil independiente de un Driver |
 | POST | /api/v1/admin/drivers/{driverId}/independent | bearer | SUPER_ADMIN | — | Habilitar un Driver existente como independiente |
+| GET | /api/v1/admin/drivers/{driverId}/independent/credits | bearer | SUPER_ADMIN | — | Consultar la cuenta de créditos de un repartidor independiente |
+| POST | /api/v1/admin/drivers/{driverId}/independent/credits/adjustment | bearer | SUPER_ADMIN | — | Ajustar créditos de un repartidor independiente |
+| GET | /api/v1/admin/drivers/{driverId}/independent/credits/ledger | bearer | SUPER_ADMIN | — | Historial de créditos de un repartidor independiente |
+| POST | /api/v1/admin/drivers/{driverId}/independent/credits/recharge | bearer | SUPER_ADMIN | — | Recargar créditos a un repartidor independiente |
 | POST | /api/v1/admin/drivers/{driverId}/independent/reject | bearer | SUPER_ADMIN | — | Rechazar el perfil independiente de un Driver |
 | POST | /api/v1/admin/drivers/{driverId}/independent/suspend | bearer | SUPER_ADMIN | — | Suspender a un repartidor independiente |
 | GET | /api/v1/admin/drivers/{driverId}/independent/vehicles | bearer | SUPER_ADMIN | — | Vehículos propios del repartidor independiente |
@@ -39,6 +43,10 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/admin/providers/{id}/activate | bearer | SUPER_ADMIN | — | Activar o reactivar proveedor |
 | GET | /api/v1/admin/providers/{id}/capacity | bearer | SUPER_ADMIN | — | Consultar uso de límites del proveedor |
 | POST | /api/v1/admin/providers/{id}/suspend | bearer | SUPER_ADMIN | — | Suspender proveedor activo |
+| GET | /api/v1/admin/providers/{providerId}/credits | bearer | SUPER_ADMIN | — | Consultar la cuenta de créditos de un proveedor |
+| POST | /api/v1/admin/providers/{providerId}/credits/adjustment | bearer | SUPER_ADMIN | — | Ajustar créditos de un proveedor |
+| GET | /api/v1/admin/providers/{providerId}/credits/ledger | bearer | SUPER_ADMIN | — | Historial de créditos de un proveedor |
+| POST | /api/v1/admin/providers/{providerId}/credits/recharge | bearer | SUPER_ADMIN | — | Recargar créditos a un proveedor |
 | GET | /api/v1/admin/providers/{providerId}/drivers | bearer | SUPER_ADMIN | — | Listar Drivers del proveedor |
 | POST | /api/v1/admin/providers/{providerId}/drivers | bearer | SUPER_ADMIN | — | Crear Driver para un User DRIVER existente |
 | GET | /api/v1/admin/providers/{providerId}/drivers/{driverId} | bearer | SUPER_ADMIN | — | Consultar Driver |
@@ -92,6 +100,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:read | Historial de Quotes de mi DeliveryRequest |
 | POST | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:create | Cotizar mi DeliveryRequest |
 | PATCH | /api/v1/driver/availability | bearer | DRIVER | — | Cambiar mi disponibilidad |
+| GET | /api/v1/driver/credits | bearer | DRIVER | — | Mi saldo de créditos como repartidor independiente |
+| GET | /api/v1/driver/credits/ledger | bearer | DRIVER | — | Mi historial de créditos |
 | GET | /api/v1/driver/dispatches/{dispatchId} | bearer | DRIVER | — | Detalle de un servicio ofrecido o tomado por mí |
 | POST | /api/v1/driver/dispatches/{dispatchId}/release | bearer | DRIVER | — | Liberar un servicio que tomé |
 | POST | /api/v1/driver/dispatches/{dispatchId}/take | bearer | DRIVER | — | Tomar un servicio |
@@ -111,6 +121,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/integrations/scope-check | integration-bearer | — | deliveries:read | Authorization probe for deliveries:read; does not access or implement deliveries |
 | POST | /api/v1/integrations/token | Pública | — | — | Exchange Client Credentials for a short-lived B2B token; no refresh token |
 | GET | /api/v1/provider/capacity | bearer | PROVIDER_ADMIN | — | Consultar uso de Drivers y Vehicles de mi proveedor |
+| GET | /api/v1/provider/credits | bearer | PROVIDER_ADMIN | — | Saldo de créditos de mi proveedor |
+| GET | /api/v1/provider/credits/ledger | bearer | PROVIDER_ADMIN | — | Historial de créditos de mi proveedor |
 | GET | /api/v1/provider/dispatches | bearer | PROVIDER_ADMIN | — | Listar Dispatches de mi proveedor |
 | GET | /api/v1/provider/dispatches/{dispatchId} | bearer | PROVIDER_ADMIN | — | Consultar Dispatch de mi proveedor |
 | POST | /api/v1/provider/dispatches/{dispatchId}/assignment | bearer | PROVIDER_ADMIN | — | Asignar Driver y Vehicle a mi Dispatch |
