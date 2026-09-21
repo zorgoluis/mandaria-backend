@@ -50,16 +50,29 @@ export const assignmentTtlMinutes = (
 ) => config.getOrThrow<number>(ASSIGNMENT_TTL_VARIABLE[serviceType]);
 
 /**
- * Derived operational signal, never persisted and without automatic release in V1.8: a CLAIMED
- * dispatch whose owner has not assigned resources after claimedAt + TTL is overdue.
+ * Derived operational signal, never persisted and without automatic release: a CLAIMED dispatch
+ * whose owner has not assigned resources after claimedAt + TTL is overdue.
+ *
+ * V1.9 §44: this is a fleet-only concept. It measures the gap between claiming and assigning, and
+ * an independent TAKE closes that gap inside one transaction — there is never a moment where an
+ * independent claim lacks its assignment. Reporting a deadline for one would invent an obligation
+ * that cannot be missed, so an independent claim always reports null / false.
  */
 export function assignmentDeadline(
-  dispatch: { status: string; claimedAt: Date | null },
+  dispatch: {
+    status: string;
+    claimedAt: Date | null;
+    claimedByIndependentDriverId?: string | null;
+  },
   hasActiveAssignment: boolean,
   ttlMinutes: number,
   now = new Date(),
 ) {
-  if (dispatch.status !== 'CLAIMED' || !dispatch.claimedAt)
+  if (
+    dispatch.status !== 'CLAIMED' ||
+    !dispatch.claimedAt ||
+    dispatch.claimedByIndependentDriverId
+  )
     return { assignmentDeadline: null, assignmentOverdue: false };
   const deadline = new Date(dispatch.claimedAt.getTime() + ttlMinutes * 60_000);
   return {

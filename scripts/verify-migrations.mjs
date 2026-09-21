@@ -152,6 +152,26 @@ try {
         ]),
       ]),
     );
+  /** Re-serializes `after` keeping only the columns present in `before`, per table. */
+  const sameColumnsAs = (after, before) =>
+    Object.fromEntries(
+      Object.entries(after).map(([table, json]) => {
+        const previous = JSON.parse(before[table] ?? 'null');
+        const current = JSON.parse(json ?? 'null');
+        if (!previous?.length || !current?.length) return [table, json];
+        const keys = Object.keys(previous[0]);
+        // Untouched tables keep the exact psql text, so formatting never masks a real difference.
+        if (keys.length === Object.keys(current[0]).length) return [table, json];
+        return [
+          table,
+          JSON.stringify(
+            current.map((row) =>
+              Object.fromEntries(keys.map((k) => [k, row[k]])),
+            ),
+          ),
+        ];
+      }),
+    );
   const v12Snapshot = fullSnapshot();
   sql(upgradeDb, [
     '-f',
@@ -260,7 +280,20 @@ try {
   ]);
   const v16Snapshot = fullSnapshot();
   prisma(upgradeDb, ['migrate', 'deploy']);
-  assert.deepEqual(fullSnapshot(), v16Snapshot);
+  // A later migration may add a column (V1.9 adds Vehicle.independentDriverProfileId). That is
+  // additive, so the comparison drops keys the older snapshot did not have and still demands that
+  // every pre-existing value be byte-identical; the new column is asserted separately below.
+  assert.deepEqual(
+    sameColumnsAs(fullSnapshot(), v16Snapshot),
+    sameColumnsAs(v16Snapshot, v16Snapshot),
+  );
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      'SELECT count(*) FROM "Vehicle" WHERE "independentDriverProfileId" IS NOT NULL',
+    ]),
+    '0',
+  );
   for (const [table, rows] of [
     ['ServiceZone', '1'],
     ['RatePlan', '1'],
@@ -326,7 +359,7 @@ try {
     assert.equal(
       sql(db, [
         '-c',
-        "SELECT count(*) FROM pg_constraint WHERE conname IN ('DeliveryAssignment_values_check','DeliveryAssignment_reason_check','DeliveryAssignment_dispatchId_fkey','DeliveryAssignment_providerId_fkey','DeliveryAssignment_driverId_providerId_fkey','DeliveryAssignment_vehicleId_providerId_fkey','DeliveryAssignment_assignedByUserId_fkey','DeliveryAssignment_endedByUserId_fkey')",
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('DeliveryAssignment_values_check','DeliveryAssignment_reason_check','DeliveryAssignment_dispatchId_fkey','DeliveryAssignment_providerId_fkey','DeliveryAssignment_driverId_fkey','DeliveryAssignment_vehicleId_fkey','DeliveryAssignment_assignedByUserId_fkey','DeliveryAssignment_endedByUserId_fkey')",
       ]),
       '8',
     );
@@ -350,6 +383,72 @@ try {
       sql(db, [
         '-c',
         "SELECT count(*) FROM pg_proc WHERE proname = 'dispatch_guard' AND prosrc LIKE '%DISPATCH_HAS_ACTIVE_ASSIGNMENT%'",
+      ]),
+      '1',
+    );
+  }
+  // V1.9: independent drivers. The upgrade adds the capability without touching existing data:
+  // every V1.8 assignment stays FLEET with its provider, and every vehicle keeps its owner.
+  assert.equal(
+    sql(upgradeDb, ['-c', 'SELECT count(*) FROM "IndependentDriverProfile"']),
+    '0',
+  );
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      `SELECT count(*) FROM "DeliveryAssignment" WHERE mode <> 'FLEET' OR "providerId" IS NULL`,
+    ]),
+    '0',
+  );
+  assert.equal(
+    sql(upgradeDb, [
+      '-c',
+      'SELECT count(*) FROM "Vehicle" WHERE "providerId" IS NULL',
+    ]),
+    '0',
+  );
+  for (const db of [cleanDb, upgradeDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('Vehicle_owner_check','DeliveryAssignment_mode_check','IndependentDriverProfile_values_check','IndependentDriverProfile_driverId_fkey','DeliveryAssignment_independentDriverProfileId_fkey','Vehicle_independentDriverProfileId_fkey','Dispatch_claimedByIndependentDriverId_fkey')",
+      ]),
+      '7',
+    );
+    // Ownership is immutable, and an independent identifier is unique within its driver.
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('Driver_owner_guard','Vehicle_owner_guard','IndependentDriverProfile_guard')",
+      ]),
+      '3',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname = 'Vehicle_independent_identifier_key' AND indexdef LIKE '%WHERE%'",
+      ]),
+      '1',
+    );
+    // Exactly one claim owner while CLAIMED, and per-mode ownership inside the assignment guard.
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname = 'Dispatch_values_check' AND pg_get_constraintdef(oid) LIKE '%claimedByIndependentDriverId%'",
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_proc WHERE proname = 'delivery_assignment_guard' AND prosrc LIKE '%independent profile must be APPROVED%'",
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_proc WHERE proname = 'dispatch_guard' AND prosrc LIKE '%APPROVED independent driver%'",
       ]),
       '1',
     );
@@ -534,12 +633,12 @@ try {
   );
   prisma(upgradeDb, ['migrate', 'deploy']);
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; V1.4-V1.8 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 upgrade (${upgradeDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; V1.4-V1.9 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(
     error instanceof assert.AssertionError
-      ? 'Migration preservation assertion failed'
+      ? `Migration preservation assertion failed: ${error.message}`
       : error.message,
   );
   process.exitCode = 1;

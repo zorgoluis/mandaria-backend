@@ -29,6 +29,16 @@ export const driverSelfSelect = {
   provider: {
     select: { id: true, name: true, code: true, type: true, status: true },
   },
+  /// V1.9: the second execution context, if Mandaria enabled it. Absent means fleet work only.
+  independentProfile: {
+    select: {
+      id: true,
+      status: true,
+      approvedAt: true,
+      suspendedAt: true,
+      reason: true,
+    },
+  },
   assignments: {
     ...activeAssignment,
     select: {

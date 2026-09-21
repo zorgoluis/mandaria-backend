@@ -15,6 +15,14 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/dispatches | bearer | SUPER_ADMIN | — | Listar Dispatches |
 | GET | /api/v1/admin/dispatches/{dispatchId} | bearer | SUPER_ADMIN | — | Consultar Dispatch |
 | GET | /api/v1/admin/dispatches/{dispatchId}/assignments | bearer | SUPER_ADMIN | — | Historial de asignaciones de un Dispatch |
+| GET | /api/v1/admin/drivers/{driverId}/independent | bearer | SUPER_ADMIN | — | Consultar el perfil independiente de un Driver |
+| POST | /api/v1/admin/drivers/{driverId}/independent | bearer | SUPER_ADMIN | — | Habilitar un Driver existente como independiente |
+| POST | /api/v1/admin/drivers/{driverId}/independent/reject | bearer | SUPER_ADMIN | — | Rechazar el perfil independiente de un Driver |
+| POST | /api/v1/admin/drivers/{driverId}/independent/suspend | bearer | SUPER_ADMIN | — | Suspender a un repartidor independiente |
+| GET | /api/v1/admin/drivers/{driverId}/independent/vehicles | bearer | SUPER_ADMIN | — | Vehículos propios del repartidor independiente |
+| POST | /api/v1/admin/drivers/{driverId}/independent/vehicles | bearer | SUPER_ADMIN | — | Alta de vehículo propio del repartidor independiente |
+| PATCH | /api/v1/admin/drivers/{driverId}/independent/vehicles/{vehicleId} | bearer | SUPER_ADMIN | — | Editar o cambiar el estado de un vehículo independiente |
+| GET | /api/v1/admin/independent-drivers | bearer | SUPER_ADMIN | — | Listar repartidores independientes |
 | GET | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |
 | POST | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | AdminIntegrationsController_create[0] |
 | GET | /api/v1/admin/integrations/{id} | bearer | SUPER_ADMIN | — | AdminIntegrationsController_get[0] |
@@ -84,7 +92,12 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:read | Historial de Quotes de mi DeliveryRequest |
 | POST | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:create | Cotizar mi DeliveryRequest |
 | PATCH | /api/v1/driver/availability | bearer | DRIVER | — | Cambiar mi disponibilidad |
+| GET | /api/v1/driver/dispatches/{dispatchId} | bearer | DRIVER | — | Detalle de un servicio ofrecido o tomado por mí |
+| POST | /api/v1/driver/dispatches/{dispatchId}/release | bearer | DRIVER | — | Liberar un servicio que tomé |
+| POST | /api/v1/driver/dispatches/{dispatchId}/take | bearer | DRIVER | — | Tomar un servicio |
+| GET | /api/v1/driver/dispatches/available | bearer | DRIVER | — | Servicios que puedo tomar |
 | GET | /api/v1/driver/me | bearer | DRIVER | — | Consultar mi perfil de repartidor |
+| GET | /api/v1/driver/vehicles | bearer | DRIVER | — | Mis vehículos como repartidor independiente |
 | GET | /api/v1/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |
 | POST | /api/v1/integrations | bearer | SUPER_ADMIN | — | AdminIntegrationsController_create[1] |
 | GET | /api/v1/integrations/{id} | bearer | SUPER_ADMIN | — | AdminIntegrationsController_get[1] |

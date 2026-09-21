@@ -1,3 +1,160 @@
+# CHECK V1.9-A — Independent Driver Security, Concurrency & Integrity (2026-09-18)
+
+Rama `v1.9-independent_drivers`, paquete 1.9.0. Validador adversarial temporal **fuera del repositorio** contra `dist/main.js` en ejecución (puerto 3019, base `mandaria_test`, `ROUTING_PROVIDER=local_fake`), con fixtures propios, logins reales y limpieza total. Reinicios del servidor para no consumir el límite por IP (100/min, 5 logins/min, 30 cotizaciones/min). **Se encontraron y corrigieron 3 defectos reales** (una sola causa raíz); ver abajo.
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Línea base antes del CHECK (prisma validate, migrate status, tsc, build, Oxlint, ESLint, docs:check, unitarias, E2E) | PASS; 110 unitarias; E2E 162 |
+| 2 | SUPER_ADMIN habilita un Driver válido (API + DB + auditoría) | 200 APPROVED con `approvedByUserId`; idempotente (1 perfil tras repetir) |
+| 2c | Sin proveedor ni membership ficticios | 2 proveedores (los del fixture) y **0 memberships** del repartidor |
+| 2d | Vehículos propios | `providerId` NULL en DB, dueño = perfil; 3.º → 409 `VEHICLE_LIMIT_REACHED` |
+| 3 | Escalada de privilegios (habilitar/suspender/vehículos) | PROVIDER_ADMIN, DRIVER propio y DRIVER ajeno → **403 ×9**; IntegrationClient y sin token → **401 ×3**; 0 perfiles creados |
+| 4 | Driver inválido | SUSPENDED y cuenta inactiva → 409 `DRIVER_NOT_ELIGIBLE`; id de User, rol no-DRIVER e inexistente → 404; malformado → 400; 0 perfiles creados |
+| 5 | Vehículo de otro independiente | 404 |
+| 6 | Vehículo de proveedor (A y B) e inexistente | 404 ×3; malformado 400; Dispatch sigue OPEN sin asignación |
+| 6b | Sentido inverso: PROVIDER_ADMIN asigna un vehículo independiente | 404 |
+| 7 | Listado de Dispatches elegibles | Sólo OPEN elegibles; el CLAIMED por un proveedor no aparece; **0 fugas** de 12 términos (contactos, teléfono, instrucciones, descripción, referencia, IntegrationClient, candidaturas, providerId); no habilitado → 409 |
+| 8 | TAKE básico | 200 OWNER; Dispatch CLAIMED con `claimedByIndependentDriverId` y `claimedByProviderId` NULL; asignación ACTIVE `mode=INDEPENDENT`, `providerId` NULL |
+| 9 | Atomicidad | 16 consultas de invariantes sobre toda la base, en 0, tras cada bloque y al final |
+| 10 | **Carrera Provider CLAIM vs Independent TAKE** (5 repeticiones) | Siempre `200/409`; exactamente **un** dueño; ganador independiente ⇒ asignación ACTIVE, ganador flotilla ⇒ sin asignación (sigue siendo paso aparte). Se observaron ambos ganadores entre ejecuciones |
+| 11 | Varios independientes sobre un Dispatch | 1 × 200 y 2 × 409; 1 ACTIVE |
+| 12 | **Alta contención mixta**: 20 intentos (2 proveedores + 3 tomas) sobre 4 Dispatches | 4 ganadores / 4 Dispatches; **1 dueño por Dispatch**; claims independientes = asignaciones activas; 0 violaciones; 0 respuestas 5xx |
+| 13 | Mismo repartidor sobre 2 Dispatches en paralelo | 1 × 200 + 1 × 409; 1 ACTIVE; sin claim huérfano |
+| 14 | Ocupado en flotilla → TAKE independiente | 409 `DRIVER_BUSY`; `/driver/me` con `canTakeServices` false y `activeDeliveryAssignment.mode = FLEET` |
+| 15 | Ocupado como independiente → asignación de proveedor | 409 `DRIVER_BUSY`; exactamente 1 ACTIVE |
+| 16 | Mismo vehículo sobre 2 Dispatches en paralelo | 1 × 200 + 1 × 409; 1 ACTIVE por vehículo |
+| 17 | RELEASE | Motivo ausente/inválido/OTHER sin detalle → 400 ×3; asignación CANCELLED con motivo y detalle; Dispatch OPEN con claim limpio; historial de 1 fila; quien liberó → 409 `DISPATCH_RETAKE_NOT_ALLOWED`; otro repartidor → 200 |
+| 18 | Liberar servicio ajeno | Pedro → 409 `DISPATCH_NOT_CLAIMED_BY_DRIVER`; SUPER_ADMIN y PROVIDER_ADMIN → 403; la asignación sigue ACTIVE |
+| 19 | Interferencia del PROVIDER_ADMIN | claim 409 `DISPATCH_ALREADY_CLAIMED`; assignment, reassign, cancel y release → 409 `DISPATCH_NOT_CLAIMED_BY_PROVIDER`; la asignación del repartidor intacta |
+| 20 | DRIVER sobre rutas V1.8 | assignment, reassign, cancel y claim → 403 ×4 |
+| 21/22 | Suspender / rechazar / desactivar vehículo con servicio ACTIVE | 409 `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT` ×2 y 409 `VEHICLE_HAS_ACTIVE_ASSIGNMENT`; perfil sigue APPROVED, vehículo ACTIVE y la entrega sigue ACTIVE |
+| 23 | Contexto de pago | COURIER_ADVANCE: fee 60.00, goods 800.00, `driverAdvanceAmount` 800.00. PREPAID: `driverAdvancesGoods` false y `driverAdvanceAmount` null |
+| 24 | Sin wallet | 0 términos (wallet/balance/saldo/credit/ledger) en la respuesta y **0 tablas** con esos nombres |
+| 25 | Ataques directos a la base (14) | Todos rechazados: dueño doble, 2.ª ACTIVE por Dispatch, asignación sin claim, vehículo ajeno, vehículo con dos dueños o ninguno, cambio de dueño de vehículo y de proveedor del Driver, `providerId` en una asignación independiente, suspensión con ACTIVE por SQL, cambio de Driver del perfil y CLAIMED sin dueño |
+| 25b | Aislamiento de los CHECK | Con los triggers ya satisfechos, el dueño XOR lo rechaza **`Dispatch_values_check`** y el modo **`DeliveryAssignment_mode_check`** (nombres verificados en el mensaje) |
+| 26 | Flujo V1.8 completo | claim 200, assign 201, reassign 200, historial 2, `/release` con ACTIVE → 409 `DISPATCH_HAS_ACTIVE_ASSIGNMENT`, cancel 200, release 200 → OPEN; ambas filas `mode=FLEET` con su `providerId` |
+| 27 | Migración V1.8 → V1.9 | `verify-migrations` PASS: instalación limpia + V1.0 → … → V1.9 con datos preservados, sin reset |
+| 28 | Auditoría | 4 eventos independientes presentes; el de `take` con `dispatchId`, `assignmentId`, `driverId`, `vehicleId`, `profileId` y `actorUserId`; **0 secretos** (contraseña, clientSecret, JWT humano y B2B, secreto de firma) y **0 datos del cliente** en 3 117 líneas de log |
+| 29 | Regresión V1.0–V1.8 | E2E por archivo 162 PASS (13/14 archivos limpios) |
+| 30 | Calidad final | prisma validate, migrate status, tsc, build, Oxlint, ESLint, docs:check PASS; 113 unitarias |
+| 31 | Cancelación oficial B2B con asignación independiente ACTIVE | Dispatch CANCELLED, asignación CANCELLED/`DELIVERY_CANCELLED` en modo INDEPENDENT, recursos liberados y reutilizables |
+| 32 | TAKE sobre Dispatch cancelado o vencido | 409 `DISPATCH_CANCELLED` y 409 `DISPATCH_EXPIRED`; mover la ventana del Dispatch por SQL → rechazado (`DISPATCH_IMMUTABLE`), así que el vencimiento se provocó dejando expirar un Dispatch real con TTL de 1 minuto; expiración perezosa persistida y fuera del listado |
+| 33 | **Control negativo** | Un claim independiente huérfano fabricado a mano **sí** es detectado por el escaneo (`orphanIndependentClaim=1`) y vuelve a 0 al restaurarlo: el resto de escaneos no es vacío |
+| — | Servidor durante el CHECK | **0 respuestas 5xx y 0 respuestas 429** en las 34 comprobaciones |
+| — | Escaneo de invariantes en `mandaria_db` y `mandaria_test` | **0 violaciones** en 17 consultas cada una; 7 constraints, 6 triggers y 5 índices parciales presentes; 68 asignaciones FLEET previas intactas; 0 residuo de fixtures |
+
+Resultado: **34/34 comprobaciones** por HTTP real más el escaneo de ambas bases sin violaciones.
+
+## Defectos reales encontrados y corregidos
+
+Las comprobaciones anteriores pasaron en la primera pasada, así que se añadió una sonda dirigida al único punto donde los bloqueos podían no encontrarse: **`take` bloqueaba la fila de `Driver` (`FOR UPDATE OF d`) mientras la suspensión bloquea la fila de `IndependentDriverProfile`**. Al ser filas distintas, las dos transacciones nunca se serializaban. Lanzando `take` y `suspend` a la vez (24 rondas, con desfase aleatorio de 0–12 ms) aparecieron **tres síntomas de una sola causa**:
+
+1. **Estado inconsistente (3 de 24 rondas):** perfil `SUSPENDED` **con** asignación ACTIVE y Dispatch CLAIMED — justo el estado que la política V1.9 (§46) promete no producir. La suspensión comprobaba «¿hay asignación ACTIVE?» antes de que el `take` confirmara, y el trigger tampoco veía la fila aún sin confirmar.
+2. **HTTP 500 (5 de 24 rondas):** cuando la suspensión confirmaba antes del INSERT, `delivery_assignment_guard` lanzaba `DELIVERY_ASSIGNMENT_INVALID` y el error de PostgreSQL llegaba al cliente como error interno en vez de un conflicto.
+3. **409 que mentía:** en las rondas inconsistentes la API devolvía `409 INDEPENDENT_NOT_APPROVED` **aunque el `take` ya se había confirmado**. El repartidor creía no tener el servicio mientras la base decía que sí. Causa: tras la transacción, la respuesta se construía con `get()`, que vuelve a pasar por la puerta de aprobación.
+
+**Corrección** (`src/independent-drivers/`, sin cambiar el modelo de datos ni la migración):
+
+- `lockEligibleResources` bloquea ahora también la fila del perfil (`FOR UPDATE OF d, p`). Orden de bloqueo: Dispatch → perfil + Driver → Vehicle; la suspensión sólo toma el bloqueo del perfil, así que no hay ciclo. Con eso, si la suspensión va primero el `take` lee `SUSPENDED` bajo bloqueo y responde 409 limpio sin escribir nada; si el `take` va primero, la suspensión espera y encuentra la asignación ACTIVE (409 `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT`).
+- `take` y `release` construyen su respuesta con `viewFor(driverId, …)`, que no repite la puerta de aprobación: el trabajo ya está confirmado y una suspensión posterior no puede convertirlo en un error.
+- Defensa en profundidad: `isGuardRejection` traduce cualquier `RAISE EXCEPTION` de los triggers a **409 `TAKE_CONFLICT`**. Una carrera perdida nunca debe salir como 5xx.
+
+**Comprobación de la corrección:** 80 rondas de `suspend` vs `take` (2 ejecuciones de 40) y 40 rondas de desactivación de vehículo vs `take`: **0 estados inconsistentes, 0 respuestas 500**, y sólo las dos serializaciones correctas (`409/200` y `200/409`). El CHECK completo se repitió sobre el binario corregido: 34/34.
+
+**Regresión anclada:** `test/independent-drivers.spec.ts` añade tres pruebas (113 unitarias en total) que fijan el bloqueo del perfil, la traducción del rechazo del trigger a 409 y el reconocimiento de `isGuardRejection`. La primera se validó por mutación: quitando `, p` del `FOR UPDATE` la prueba falla; restaurándolo pasa.
+
+## Errores del propio validador (no del producto)
+
+Tres intentos del validador fueron rechazados **por el sistema comportándose bien**, y se corrigieron en el validador:
+
+- mover `openedAt`/`expiresAt` de un Dispatch → `DISPATCH_IMMUTABLE`; el vencimiento se provocó dejando expirar un Dispatch real;
+- usar `now()` en SQL crudo para cerrar una asignación → el CHECK `endedAt >= assignedAt` lo rechazó, porque la sesión de PostgreSQL da hora local y la aplicación guarda UTC;
+- una aserción que contaba proveedores por prefijo en vez de por identificador de ejecución.
+
+## No verificado
+
+Docker; entrega SMTP real; onboarding público del repartidor (no implementado); `docs/API-CONTRACT.md` de `mandaria-frontend` (otro repositorio, no modificado).
+
+## Fallo preexistente, ajeno a V1.9
+
+`test/delivery-quotes.e2e-spec.ts > 20 cotizaciones concurrentes` sigue fallando igual que en la línea base anterior a V1.9: agotamiento del pool de conexiones de Prisma (500 a los 10 063 ms) en el camino de cotización V1.6, que V1.9 no toca.
+
+# Verificación V1.9-A — Independent Drivers (2026-09-18)
+
+Rama `v1.9-independent_drivers`, paquete 1.9.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push.
+
+| Verificación | Resultado |
+|---|---|
+| Línea base **antes** de modificar (prisma validate, migrate status, tsc, Oxlint, unitarias, E2E por archivo) | PASS; 91 unitarias; E2E 135/136 con 1 fallo preexistente (ver nota) |
+| Prisma validate / migrate status | PASS / al día (10 migraciones) |
+| Drift `migrate diff` schema ↔ migraciones (shadow DB) | Vacío (`-- This is an empty migration.`) |
+| Migración `20260918001000_independent_drivers` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; 0 filas reescritas |
+| `verify-migrations.mjs`: instalación limpia + V1.0 → … → V1.8 → V1.9 con datos | PASS; datos preservados; `IndependentDriverProfile` vacía; 0 asignaciones no-FLEET; 0 vehículos sin proveedor; 7 constraints, 3 triggers y el índice parcial V1.9 presentes |
+| TypeScript / Build / Oxlint / ESLint | PASS |
+| `docs:openapi` + `docs:check` | 1.9.0; **+13 rutas y +17 esquemas; 0 rutas y 0 esquemas eliminados**; matriz al día |
+| `npm test` (unitarias) | **110 PASS** (91 previas + 19 de V1.9) |
+| E2E por archivo, 14 archivos | **162 PASS**; 13 archivos OK; `delivery-quotes` con 1 fallo preexistente |
+
+## Escenarios V1.9 verificados por HTTP real (`test/independent-drivers.e2e-spec.ts`, 23 pruebas)
+
+| # | Escenario | Resultado |
+|---|---|---|
+| 1 | Habilitar: sólo SUPER_ADMIN | DRIVER y PROVIDER_ADMIN 403; token B2B 401; sin token 401; 0 perfiles creados |
+| 2 | Habilitar Driver existente | APPROVED con `approvedAt`; idempotente (2.ª llamada no crea un segundo perfil); **0 proveedores ficticios creados** |
+| 3 | Driver SUSPENDED / id inexistente | 409 `DRIVER_NOT_ELIGIBLE` / 404 |
+| 4 | Vehículos propios | 2 altas con `providerId` NULL en DB; 3.ª → 409 `VEHICLE_LIMIT_REACHED` (límite 2 en la suite); PROVIDER_ADMIN y DRIVER 403 |
+| 5 | Vista del repartidor | `/driver/me` con `independent.canTakeServices` true; `/driver/vehicles` sólo los suyos; Driver no habilitado → `independent: null` y 409 en las rutas independientes |
+| 6 | Privacidad del listado | `access: OFFER` con ruta, direcciones y `paymentContext`; **0 coincidencias** de contactos, teléfono, instrucciones, descripción de paquete, referencia del comercio, IntegrationClient, candidaturas y `providerId` |
+| 7 | `take` | 200 con `access: OWNER`; Dispatch CLAIMED con `claimedByIndependentDriverId` y `claimedByProviderId` NULL; asignación ACTIVE `mode=INDEPENDENT`, `providerId` NULL; **0 claims independientes sin asignación ACTIVE** |
+| 8 | Contexto de pago | `deliveryFee` 60.00 y `driverAdvanceAmount` 800.00 con COURIER_ADVANCE, antes y después de tomar |
+| 9 | Vehículo ajeno | Vehículo de la flotilla → 404; de otro independiente → 404; UUID inexistente → 404; Dispatch sigue OPEN sin asignación |
+| 10 | Vehículo independiente desde ruta de proveedor | 404: un PROVIDER_ADMIN no puede asignar el vehículo propio de un repartidor |
+| 11 | Repartidor SUSPENDED | `take` y listado 409 `INDEPENDENT_NOT_APPROVED`; tras reaprobar, `take` 200 |
+| 12 | `release` | Asignación CANCELLED con motivo y detalle; Dispatch OPEN con claim limpio; historial de 1 fila |
+| 13 | Retake tras liberar | Quien liberó 409 `DISPATCH_RETAKE_NOT_ALLOWED`; otro repartidor 200 |
+| 14 | `release` sin motivo / motivo inválido / OTHER sin detalle | 400 ×3 |
+| 15 | `release` por quien no lo tiene | 409 `DISPATCH_NOT_CLAIMED_BY_DRIVER`; PROVIDER_ADMIN y SUPER_ADMIN 403; la asignación sigue ACTIVE |
+| 16 | Sin reasignación para DRIVER | Las 3 rutas de asignación V1.8 → 403 con token de repartidor |
+| 17 | Proveedor sobre servicio de un independiente | `assignment` 409 `DISPATCH_NOT_CLAIMED_BY_PROVIDER` ×2 y `claim` 409 `DISPATCH_ALREADY_CLAIMED`; la asignación del repartidor intacta |
+| 18 | **Carrera flotilla vs independiente** (3 repeticiones) | Siempre `[200, 409]`: exactamente un ganador; exactamente **una** columna de dueño no nula; si gana el independiente hay asignación ACTIVE, si gana el proveedor no (sigue siendo paso aparte en V1.8) |
+| 19 | **Varios independientes** sobre un Dispatch | 1 × 200 y 2 × 409; 1 asignación ACTIVE |
+| 20 | Mismo repartidor sobre 2 Dispatches en paralelo | 1 × 200 y 1 × 409; ACTIVE en exactamente 1 |
+| 21 | Mismo vehículo sobre 2 Dispatches en paralelo | 1 sola asignación ACTIVE para ese vehículo |
+| 22 | **Ocupado en flotilla → no puede como independiente** | 409 `DRIVER_BUSY`; `/driver/me` con `canTakeServices` false y `activeDeliveryAssignment.mode = FLEET` |
+| 23 | **Ocupado como independiente → el proveedor no puede asignarlo** | 409 `DRIVER_BUSY`; exactamente 1 ACTIVE para ese Driver |
+| 24 | Vehículo liberado vuelve a ser usable | `release` y nuevo `take` 200; 1 ACTIVE |
+| 25 | Suspensión con servicio en curso | 409 `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT`; perfil sigue APPROVED y la entrega sigue ACTIVE |
+| 26 | Desactivar vehículo con servicio en curso | 409 `VEHICLE_HAS_ACTIVE_ASSIGNMENT`; vehículo sigue ACTIVE |
+| 27 | Tras liberar | MAINTENANCE 200 y suspensión 200; un vehículo en MAINTENANCE → 409 `VEHICLE_NOT_ELIGIBLE` aunque el repartidor esté rehabilitado |
+| 28 | Invariantes en SQL | Dueño doble del claim rechazado por `Dispatch_values_check` (con el trigger satisfecho, para que la prueba aísle el CHECK); asignación sobre Dispatch no tomado → `DELIVERY_ASSIGNMENT_INVALID`; vehículo con dos dueños o sin dueño → `Vehicle_owner_check`; cambiar el dueño de un vehículo → `RESOURCE_OWNER_IMMUTABLE` |
+| 29 | Objetos en la base | 5 constraints, 5 triggers y los 4 índices (3 parciales ACTIVE + identificador independiente) presentes; 0 filas con `mode`/dueño incoherentes |
+| 30 | Auditoría | `INDEPENDENT_DRIVER_ENABLED`, `_SUSPENDED`, `_DISPATCH_TAKEN`, `_DISPATCH_RELEASED` y `_VEHICLE_CREATED` presentes; el evento de `take` incluye `dispatchId`, `assignmentId`, `driverId`, `vehicleId`, `profileId` y `actorUserId`; **0 secretos** (contraseña, JWT humano y token B2B) en los logs |
+
+Pruebas unitarias V1.9 (`test/independent-drivers.spec.ts`, 19): política de ejecución por ServiceType y su exhaustividad, orden de rechazo del `take` (cancelado → vencido → ya tomado → tipo no admitido → retake), mapeo de motivos al enum V1.8 sin usar `DELIVERY_CANCELLED`, todos los errores como 409, plazo de asignación nulo para un claim independiente, habilitación que exige Driver operacional y es idempotente, reaprobación que limpia la suspensión, suspensión bloqueada con servicio activo, límite de vehículos configurable y vehículo creado sin proveedor, e identidad resuelta siempre desde el JWT.
+
+## Regresión V1.0–V1.8
+
+E2E por archivo: b2b 14, core 7, delivery-assignments 13, delivery-requests-b2b 15, delivery-requests-validation 7, dispatch 13, driver-self 7, drivers-vehicles 11, pricing-admin 4, provider-admin-access 9, providers 15, user-invitations 24 — todos PASS, con los mismos conteos que la línea base. `delivery-assignments` (claim, release, reasignación, aislamiento por proveedor, contexto de pago) y `dispatch` (claim/liberación V1.7) pasan sin cambios de expectativas.
+
+Dos pruebas existentes se ajustaron **al comportamiento nuevo e intencionado**, no al revés:
+
+- `test/driver-self.e2e-spec.ts`: la aserción de campos exactos de `/driver/me` ahora incluye `independent` y `activeDeliveryAssignment`, y comprueba que un repartidor de flotilla no habilitado los recibe en `null`.
+- `test/logistics.spec.ts`: el doble de Prisma de `setOwnAvailability` no cubría la consulta que `self()` añadió; se le agregó `deliveryAssignment.findFirst`.
+
+## Fallo preexistente, no introducido por V1.9
+
+`test/delivery-quotes.e2e-spec.ts > 20 llamadas de cotización concurrentes` falla **también en la línea base, antes de cualquier cambio** (se ejecutó dos veces sobre el código intacto). Con el timeout por defecto se manifiesta como «Test timed out in 5000ms»; subiéndolo a 30 s se ve la causa real: 18 de las 20 peticiones responden 500 tras **10 063 ms**, exactamente el timeout de pool de Prisma. Es agotamiento del pool de conexiones al mantener 20 transacciones simultáneas (cada una retiene su conexión durante la llamada de routing), un límite de entorno del camino de cotización V1.6 —que V1.9 no toca— ya anotado como deuda técnica en el README. La cotización y la aceptación funcionan: el propio test registra `DELIVERY_QUOTE_CREATED` y respuestas 201/200.
+
+## Nota de entorno
+
+En Windows, los *worker forks* de Vitest mueren de forma aleatoria y el archivo se reporta como «N passed (M)» con N<M y un error de pool no controlado; ya estaba documentado en V1.8. Las ejecuciones se repitieron por archivo hasta completar; los conteos de esta tabla son de ejecuciones completas. Una caída así dejó fixtures sin borrar (el `afterAll` no llega a ejecutarse) y eso destapó una aserción propia demasiado amplia en la suite nueva: contaba proveedores por prefijo en vez de por identificador de ejecución. Se corrigió para que quede acotada a su propia corrida; `test/independent-drivers.e2e-spec.ts` se ejecutó después **3 veces seguidas con 23/23** y la base de pruebas queda sin residuos (0 proveedores, 0 perfiles y 0 usuarios de la suite).
+
+Las bases de verificación de migraciones sobrantes de corridas repetidas se eliminaron; se conservó el par de la corrida válida (`mandaria_clean_958a27f19e_test` y `mandaria_upgrade_958a27f19e_test`), como hace el script. La comprobación de drift necesita una shadow database temporal, creada y eliminada durante la verificación.
+
+## No verificado
+
+Docker; entrega SMTP real; onboarding público del repartidor (no implementado); `docs/API-CONTRACT.md` de `mandaria-frontend` (vive en otro repositorio y no se modificó).
+
 # CHECK V1.8-A — Assignment Concurrency, Isolation & Integrity (2026-09-17)
 
 Rama `v1.8-provider_driver_vehicle_assignment`, paquete 1.8.0. Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (puerto 3011, base `mandaria_test`, `ROUTING_PROVIDER=local_fake`), con fixtures propios, logins reales y limpieza total. Sin cambios de código.

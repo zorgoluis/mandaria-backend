@@ -200,13 +200,35 @@ export class DriversService {
   }
 
   /** Resolved exclusively from the authenticated User; no client-supplied driverId. */
+  /**
+   * The driver's own view of both execution contexts. V1.9 adds `independent`: the capability and
+   * whether it can take a service right now. canTakeServices is false while any ACTIVE assignment
+   * exists, fleet or independent, because a driver executes one service at a time whichever model
+   * it belongs to. currentAssignment stays the V1.4 driver↔vehicle pairing of the provider; it
+   * says nothing about independent vehicles, which are listed by GET /driver/vehicles.
+   */
   async self(userId: string) {
     const driver = await this.prisma.driver.findUnique({
       where: { userId },
       select: driverSelfSelect,
     });
     if (!driver) throw new NotFoundException('Driver profile not found');
-    return withCurrentAssignment(driver);
+    const { independentProfile, ...rest } = driver;
+    const activeAssignment = await this.prisma.deliveryAssignment.findFirst({
+      where: { driverId: driver.id, status: 'ACTIVE' },
+      select: { id: true, mode: true, dispatchId: true },
+    });
+    return {
+      ...withCurrentAssignment(rest),
+      activeDeliveryAssignment: activeAssignment,
+      independent: independentProfile
+        ? {
+            ...independentProfile,
+            canTakeServices:
+              independentProfile.status === 'APPROVED' && !activeAssignment,
+          }
+        : null,
+    };
   }
 
   async setOwnAvailability(userId: string, availability: DriverAvailability) {

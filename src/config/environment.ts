@@ -117,6 +117,13 @@ const schema = z.object({
     .min(1)
     .max(10000)
     .default(2),
+  /// V1.9: vehicles SUPER_ADMIN may register for one independent driver (their own, not a fleet).
+  INDEPENDENT_DRIVER_MAX_VEHICLES: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .default(3),
 });
 export function validateEnvironment(input: Record<string, unknown>) {
   const result = schema.safeParse(input);

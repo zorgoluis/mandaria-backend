@@ -171,11 +171,16 @@ describe.sequential(
         currentAssignment: {
           vehicle: { id: vehicle.id, identifier: 'MOTO-01', plate: 'ABC-123' },
         },
+        // V1.9: a fleet driver that Mandaria has not enabled as independent.
+        independent: null,
+        activeDeliveryAssignment: null,
       });
       expect(Object.keys(me.body).sort()).toEqual([
+        'activeDeliveryAssignment',
         'availability',
         'currentAssignment',
         'id',
+        'independent',
         'name',
         'provider',
         'status',

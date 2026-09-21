@@ -1,7 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  DeliveryAssignmentMode,
   DriverAvailability,
   DriverStatus,
+  IndependentDriverStatus,
   ProviderStatus,
   ProviderType,
   Role,
@@ -154,6 +156,32 @@ class DriverSelfAssignmentResponse {
   @ApiProperty({ type: DriverSelfVehicleResponse })
   vehicle!: DriverSelfVehicleResponse;
 }
+class DriverSelfIndependentResponse {
+  @ApiProperty(uuid) id!: string;
+  @ApiProperty({
+    enum: IndependentDriverStatus,
+    description:
+      'APPROVED habilita /driver/dispatches/available y /driver/dispatches/:id/take. Cualquier otro estado los rechaza con 409 INDEPENDENT_NOT_APPROVED.',
+  })
+  status!: IndependentDriverStatus;
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  approvedAt!: Date | null;
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  suspendedAt!: Date | null;
+  @ApiPropertyOptional({ nullable: true }) reason!: string | null;
+  @ApiProperty({
+    description:
+      'true sólo si el perfil está APPROVED y no hay ninguna asignación de entrega ACTIVE, sea de flotilla o independiente: un repartidor ejecuta un servicio a la vez en cualquiera de los dos modelos.',
+  })
+  canTakeServices!: boolean;
+}
+/** Exactly the three fields drivers.service selects; there is no assignedAt here. */
+export class DriverSelfActiveDeliveryAssignmentResponse {
+  @ApiProperty(uuid) id!: string;
+  @ApiProperty({ enum: DeliveryAssignmentMode })
+  mode!: DeliveryAssignmentMode;
+  @ApiProperty(uuid) dispatchId!: string;
+}
 export class DriverSelfResponse {
   @ApiProperty(uuid) id!: string;
   @ApiProperty({ example: 'Carlos' }) name!: string;
@@ -161,6 +189,25 @@ export class DriverSelfResponse {
   @ApiProperty({ enum: DriverAvailability }) availability!: DriverAvailability;
   @ApiProperty({ type: DriverSelfProviderResponse })
   provider!: DriverSelfProviderResponse;
-  @ApiProperty({ type: DriverSelfAssignmentResponse, nullable: true })
+  @ApiProperty({
+    type: DriverSelfAssignmentResponse,
+    nullable: true,
+    description:
+      'Emparejamiento Driver↔Vehicle V1.4 con el vehículo del proveedor. No describe los vehículos propios del repartidor independiente: ésos están en GET /driver/vehicles.',
+  })
   currentAssignment!: DriverSelfAssignmentResponse | null;
+  @ApiPropertyOptional({
+    type: DriverSelfActiveDeliveryAssignmentResponse,
+    nullable: true,
+    description:
+      'V1.9: asignación de entrega ACTIVE del repartidor en cualquiera de los dos modelos (con su mode y dispatchId), o null si está libre.',
+  })
+  activeDeliveryAssignment!: DriverSelfActiveDeliveryAssignmentResponse | null;
+  @ApiPropertyOptional({
+    type: DriverSelfIndependentResponse,
+    nullable: true,
+    description:
+      'V1.9: capacidad de operar por cuenta propia. null si Mandaria no lo ha habilitado como independiente; ser repartidor de un proveedor no la otorga.',
+  })
+  independent!: DriverSelfIndependentResponse | null;
 }
