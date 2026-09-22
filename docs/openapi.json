@@ -31466,7 +31466,7 @@
     },
     "/api/v1/provider/dispatches/{dispatchId}/claim": {
       "post": {
-        "description": "Sin body (cualquier campo, incluido providerId, se rechaza con 400): el proveedor sale de la membership (providerId en query sólo selecciona entre mis memberships) y debe ser candidato OFFERED de un Dispatch OPEN y vigente, además de seguir elegible. Bloqueo de fila del Dispatch: con claims simultáneos gana exactamente uno y el resto recibe 409 sin cambios. Repetir el claim del propio ganador devuelve 200 sin cambios. No asigna Driver ni Vehicle. SUPER_ADMIN, DRIVER e IntegrationClient no pueden reclamar. 60/min por IP. Requiere JWT humano, rol global PROVIDER_ADMIN (RolesGuard) y membership vigente (ProviderMembershipGuard); son comprobaciones independientes. providerId es opcional sólo con una membership; un proveedor sin membership responde 403.",
+        "description": "Sin body (cualquier campo, incluido providerId, se rechaza con 400): el proveedor sale de la membership (providerId en query sólo selecciona entre mis memberships) y debe ser candidato OFFERED de un Dispatch OPEN y vigente, además de seguir elegible. Bloqueo de fila del Dispatch: con claims simultáneos gana exactamente uno y el resto recibe 409 sin cambios. Repetir el claim del propio ganador devuelve 200 sin cambios. No asigna Driver ni Vehicle. SUPER_ADMIN, DRIVER e IntegrationClient no pueden reclamar. 60/min por IP. V1.10-D: reclamar un servicio monetizado cobra en la misma transacción el creditCost congelado a la cuenta de créditos del proveedor (un SERVICE_AWARD por servicio, nunca dos) y sin saldo suficiente no hay claim ni cargo; los Dispatches anteriores a V1.10-C no se cobran. Liberar no devuelve créditos todavía. Requiere JWT humano, rol global PROVIDER_ADMIN (RolesGuard) y membership vigente (ProviderMembershipGuard); son comprobaciones independientes. providerId es opcional sólo con una membership; un proveedor sin membership responde 403.",
         "operationId": "ProviderDispatchesController_claim",
         "parameters": [
           {
@@ -31702,7 +31702,7 @@
             }
           },
           "409": {
-            "description": "DISPATCH_ALREADY_CLAIMED (otro proveedor ganó; también el perdedor de una carrera concurrente) | DISPATCH_EXPIRED (now >= expiresAt; se persiste EXPIRED) | DISPATCH_CANCELLED | DISPATCH_RECLAIM_NOT_ALLOWED (mi proveedor ya lo liberó) | PROVIDER_NOT_ELIGIBLE (proveedor ya no ACTIVE o cobertura de zona/servicio INACTIVE).",
+            "description": "DISPATCH_ALREADY_CLAIMED (otro proveedor ganó; también el perdedor de una carrera concurrente) | DISPATCH_EXPIRED (now >= expiresAt; se persiste EXPIRED) | DISPATCH_CANCELLED | DISPATCH_RECLAIM_NOT_ALLOWED (mi proveedor ya lo liberó) | PROVIDER_NOT_ELIGIBLE (proveedor ya no ACTIVE o cobertura de zona/servicio INACTIVE) | INSUFFICIENT_CREDITS (el saldo del proveedor no cubre el creditCost del servicio; no se reclama nada) | CREDIT_ACCOUNT_UNAVAILABLE (el proveedor no tiene cuenta de créditos) | CREDIT_SNAPSHOT_UNAVAILABLE (servicio monetizado sin costo congelado) | CREDIT_MOVEMENT_CONFLICT (la cuenta cambió durante el cobro; reintentar).",
             "content": {
               "application/json": {
                 "schema": {
@@ -41046,7 +41046,7 @@
     },
     "/api/v1/driver/dispatches/{dispatchId}/take": {
       "post": {
-        "description": "Operación atómica: en una sola transacción el Dispatch pasa a CLAIMED a nombre de este repartidor y se crea su DeliveryAssignment ACTIVE en modo INDEPENDENT. Nunca queda un claim sin asignación ni una asignación sin claim. El repartidor se resuelve desde el JWT y la pertenencia del vehículo se relee en la base de datos, así que un vehicleId de un proveedor o de otro repartidor responde 404. Bloquea la misma fila de Dispatch que el claim de proveedor: si un proveedor reclama y un independiente toma a la vez, gana exactamente uno y el otro recibe 409. Máximo una asignación ACTIVE por Dispatch, por Driver y por Vehicle, contando flotilla e independiente: un repartidor ocupado en un servicio de proveedor no puede tomar uno propio, y al revés. Devuelve el servicio con access OWNER y su paymentContext. Mandaria no verifica si el repartidor dispone del efectivo para adelantar la mercancía: no hay wallet ni crédito.",
+        "description": "Operación atómica: en una sola transacción el Dispatch pasa a CLAIMED a nombre de este repartidor y se crea su DeliveryAssignment ACTIVE en modo INDEPENDENT. Nunca queda un claim sin asignación ni una asignación sin claim. El repartidor se resuelve desde el JWT y la pertenencia del vehículo se relee en la base de datos, así que un vehicleId de un proveedor o de otro repartidor responde 404. Bloquea la misma fila de Dispatch que el claim de proveedor: si un proveedor reclama y un independiente toma a la vez, gana exactamente uno y el otro recibe 409. Máximo una asignación ACTIVE por Dispatch, por Driver y por Vehicle, contando flotilla e independiente: un repartidor ocupado en un servicio de proveedor no puede tomar uno propio, y al revés. Devuelve el servicio con access OWNER y su paymentContext. Mandaria no verifica si el repartidor dispone del efectivo para adelantar la mercancía. V1.10-D: tomar un servicio monetizado cobra en la misma transacción el creditCost congelado a la cuenta de créditos del repartidor (un SERVICE_AWARD por servicio); sin saldo suficiente no hay claim, ni asignación, ni cargo. Liberar no devuelve créditos todavía.",
         "operationId": "DriverDispatchesController_take",
         "parameters": [
           {
@@ -41272,7 +41272,7 @@
             }
           },
           "409": {
-            "description": "INDEPENDENT_NOT_APPROVED: el Driver no está habilitado como independiente, o su perfil está SUSPENDED, REJECTED o PENDING. | DISPATCH_ALREADY_CLAIMED (lo tomó un proveedor u otro repartidor) | DISPATCH_EXPIRED | DISPATCH_CANCELLED | DISPATCH_NOT_OPEN_TO_INDEPENDENT (ese ServiceType no admite independientes) | DISPATCH_RETAKE_NOT_ALLOWED (yo lo liberé) | DRIVER_NOT_ELIGIBLE | VEHICLE_NOT_ELIGIBLE | DRIVER_BUSY | VEHICLE_BUSY (ya tengo, o el vehículo tiene, una asignación ACTIVE en cualquiera de los dos modelos) | TAKE_CONFLICT.",
+            "description": "INDEPENDENT_NOT_APPROVED: el Driver no está habilitado como independiente, o su perfil está SUSPENDED, REJECTED o PENDING. | DISPATCH_ALREADY_CLAIMED (lo tomó un proveedor u otro repartidor) | DISPATCH_EXPIRED | DISPATCH_CANCELLED | DISPATCH_NOT_OPEN_TO_INDEPENDENT (ese ServiceType no admite independientes) | DISPATCH_RETAKE_NOT_ALLOWED (yo lo liberé) | DRIVER_NOT_ELIGIBLE | VEHICLE_NOT_ELIGIBLE | DRIVER_BUSY | VEHICLE_BUSY (ya tengo, o el vehículo tiene, una asignación ACTIVE en cualquiera de los dos modelos) | TAKE_CONFLICT | INSUFFICIENT_CREDITS (mi saldo no cubre el creditCost del servicio; no se toma nada) | CREDIT_ACCOUNT_UNAVAILABLE | CREDIT_SNAPSHOT_UNAVAILABLE (servicio monetizado sin costo congelado) | CREDIT_MOVEMENT_CONFLICT.",
             "content": {
               "application/json": {
                 "schema": {
@@ -52359,6 +52359,15 @@
       "ProviderDispatchResponse": {
         "type": "object",
         "properties": {
+          "creditEnforcementMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY",
+              "PRE_ENFORCEMENT_AWARD",
+              "ENFORCED"
+            ],
+            "description": "Persisted credit boundary: LEGACY predates snapshots and is not charged; PRE_ENFORCEMENT_AWARD identifies the current historical V1.10-C award, preserved without retroactive debit; ENFORCED requires the exact snapshot debit for a new award. This is not a payment receipt. After release, a new award is ENFORCED even when an older award was exempt."
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -52440,6 +52449,7 @@
           }
         },
         "required": [
+          "creditEnforcementMode",
           "id",
           "status",
           "access",
@@ -52827,6 +52837,15 @@
       "AdminDispatchResponse": {
         "type": "object",
         "properties": {
+          "creditEnforcementMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY",
+              "PRE_ENFORCEMENT_AWARD",
+              "ENFORCED"
+            ],
+            "description": "Persisted credit boundary: LEGACY predates snapshots and is not charged; PRE_ENFORCEMENT_AWARD identifies the current historical V1.10-C award, preserved without retroactive debit; ENFORCED requires the exact snapshot debit for a new award. This is not a payment receipt. After release, a new award is ENFORCED even when an older award was exempt."
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -52921,6 +52940,7 @@
           }
         },
         "required": [
+          "creditEnforcementMode",
           "id",
           "status",
           "openedAt",
@@ -54216,6 +54236,15 @@
       "DriverDispatchResponse": {
         "type": "object",
         "properties": {
+          "creditEnforcementMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY",
+              "PRE_ENFORCEMENT_AWARD",
+              "ENFORCED"
+            ],
+            "description": "Persisted credit boundary: LEGACY predates snapshots and is not charged; PRE_ENFORCEMENT_AWARD identifies the current historical V1.10-C award, preserved without retroactive debit; ENFORCED requires the exact snapshot debit for a new award. This is not a payment receipt. After release, a new award is ENFORCED even when an older award was exempt."
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -54292,6 +54321,7 @@
           }
         },
         "required": [
+          "creditEnforcementMode",
           "id",
           "status",
           "access",

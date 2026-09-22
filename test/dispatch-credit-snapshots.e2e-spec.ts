@@ -990,6 +990,8 @@ describe.sequential('V1.10-C legacy dispatches and no charging yet', () => {
 
   it('a Dispatch without snapshots (pre-V1.10-C) reads with creditCost null and still works', async () => {
     const legacy = await openDispatch(6240);
+    // V1.10-D: a Dispatch without snapshots is legacy only if it is labelled so; the fixture
+    // switch (test databases only) is what lets a suite build a genuine pre-V1.10-C row.
     await prisma.$transaction([
       prisma.$executeRawUnsafe(
         `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
@@ -997,6 +999,10 @@ describe.sequential('V1.10-C legacy dispatches and no charging yet', () => {
       prisma.dispatchCreditSnapshot.deleteMany({
         where: { dispatchId: legacy.id },
       }),
+      prisma.$executeRawUnsafe(
+        `UPDATE "Dispatch" SET "creditMode" = 'LEGACY' WHERE id = $1::uuid`,
+        legacy.id,
+      ),
     ]);
     const provider = await api()
       .get(`/api/v1/provider/dispatches/${legacy.id}`)
@@ -1029,7 +1035,7 @@ describe.sequential('V1.10-C legacy dispatches and no charging yet', () => {
       .expect(200);
   });
 
-  it('CLAIM and TAKE with balance 0 and a frozen cost > 0 still work and move no credit', async () => {
+  it('CLAIM and TAKE with balance 0 and a frozen cost > 0 are refused and move no credit', async () => {
     const provAccount = await prisma.creditAccount.findUniqueOrThrow({
       where: { providerId: ids.provider },
     });
@@ -1051,28 +1057,37 @@ describe.sequential('V1.10-C legacy dispatches and no charging yet', () => {
     expect(claimCost).toBeGreaterThan(0);
     expect(takeCost).toBeGreaterThan(0);
     const before = await economy();
-    await api()
+    // V1.10-D charges the frozen cost at CLAIM/TAKE, so an empty account wins nothing: this suite
+    // never funds anyone, which is why no credit moves anywhere in it.
+    const claim = await api()
       .post(`/api/v1/provider/dispatches/${toClaim.id}/claim`)
       .auth(t.admin, bearer)
-      .expect(200);
-    await api()
+      .expect(409);
+    const take = await api()
       .post(`/api/v1/driver/dispatches/${toTake.id}/take`)
       .auth(t.indep, bearer)
       .send({ vehicleId: ids.vehicle })
-      .expect(200);
+      .expect(409);
+    expect([claim.body.code, take.body.code]).toEqual([
+      'INSUFFICIENT_CREDITS',
+      'INSUFFICIENT_CREDITS',
+    ]);
+    // The frozen costs themselves are untouched by the refusal.
+    expect((await snapshotsOf(toClaim.id)).map((s) => s.credits).length).toBe(
+      2,
+    );
     expect(await economy()).toEqual(before);
-    await api()
-      .post(`/api/v1/driver/dispatches/${toTake.id}/release`)
-      .auth(t.indep, bearer)
-      .send({ reason: 'OPERATIONAL_ISSUE' })
-      .expect(200);
   });
 
   it('no credit moved during the whole suite and every quote routed exactly once', () =>
     economy().then((end) => {
       expect(end).toEqual(economyAtStart);
-      expect(end.service).toBe(0);
-      const opened = logs.filter((l) => l.includes('DISPATCH_OPENED'));
+      // V1.10-D does charge awards, so what this suite guarantees is that IT never moved a
+      // credit: the count it started with is the count it ends with.
+      expect(end.service).toBe(economyAtStart.service);
+      const opened = logs.filter((l) =>
+        l.includes('"event":"DISPATCH_OPENED"'),
+      );
       expect(opened.length).toBeGreaterThan(5);
       for (const line of opened) expect(line).toContain('creditCosts');
       const quotes = logs.filter(

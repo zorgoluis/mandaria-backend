@@ -1,6 +1,16 @@
-# Mandaria — V1.10-B Credit Policy Engine
+# Mandaria — V1.10-D Atomic CLAIM / TAKE Credit Consumption
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
+
+## Integridad económica y frontera histórica — V1.10-D correctiva
+
+Toda adjudicación **ENFORCED V1.10-D+** requiere exactamente un SERVICE_AWARD válido, por el monto del snapshot y desde la cuenta del ganador, dentro de la misma transacción. PostgreSQL lo comprueba al COMMIT mediante constraints diferidos y también impide débitos sin historial operacional correspondiente.
+
+No todos los Dispatches MONETIZED históricos fueron cobrados: los premios existentes con snapshot pero sin débito se conservan como **PRE_ENFORCEMENT_AWARD**, en un registro inmutable, sin cobro retroactivo. LEGACY conserva su frontera pre-C. Un servicio OPEN con snapshot exige créditos en su siguiente adjudicación; liberar una adjudicación histórica no regala la siguiente. La API expone `creditEnforcementMode` (LEGACY / PRE_ENFORCEMENT_AWARD / ENFORCED), que expresa una regla, no un recibo.
+
+La migración `20260923000200_award_integrity_boundary` es incremental: no modifica la anterior, saldos, ledger ni snapshots. No usar reset. V1.10-D aún no devuelve créditos por release o cancelación; V1.10-E no está implementada.
+
+Contrato: [API-CONTRACT](docs/API-CONTRACT.md). Resultados: [corrección del CHECK](docs/CHECK_V1_10_D_FIXES.md). Reproducción local: `node scripts/verify-award-boundary.mjs`; reconciliación de sólo lectura: `node scripts/scan-award-integrity.mjs`.
 
 ## Estado y arquitectura
 
@@ -18,7 +28,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `dispatch/`: V1.7 Dispatch, candidatos, coberturas de proveedor, claim y liberación.
 - `delivery-assignments/`: V1.8 asignación de Driver y Vehicle al Dispatch reclamado, con historial, reasignación y plazo.
 - `independent-drivers/`: V1.9 perfil independiente, vehículos propios y las operaciones `take`/`release` del repartidor.
-- `credits/`: V1.10-A cuentas de créditos, ledger inmutable, recargas y ajustes; sin cobro por servicio todavía.
+- `credits/`: V1.10-A cuentas de créditos, ledger inmutable, recargas, ajustes y cobro atómico CLAIM/TAKE; sin refunds todavía.
 - `credit-policies/`: V1.10-B políticas de créditos versionadas y cálculo puro del costo de un servicio; no debita cuentas.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
@@ -1626,6 +1636,75 @@ Migración `20260922001400_dispatch_credit_snapshots`: tabla `DispatchCreditSnap
 
 Pruebas: `test/dispatch-credit-snapshots.spec.ts` (actores por modo, evidencia PER_KM/FLAT/RANGE, costo 0 rechazado, bloqueo compartido, sin acceso a cuentas ni ledger) y `test/dispatch-credit-snapshots.e2e-spec.ts` (vistas por actor, cambio de política, 10 aceptaciones simultáneas, carrera con el versionado, fallo cerrado y reintento, 20 ataques SQL, cascada, legacy, CLAIM/TAKE con saldo 0 sin movimientos, logs). Desde V1.10-C las suites E2E corren un archivo a la vez (`fileParallelism: false`) porque la política de créditos es configuración global compartida; las que aceptan cotizaciones aseguran una política base con `test/support/credit-policies.ts`.
 
+## Atomic CLAIM / TAKE Credit Consumption (V1.10-D)
+
+Responde: **¿quién paga el servicio y cuándo?** Desde V1.10-D los créditos son una regla económica operativa: un proveedor sólo puede reclamar —y un repartidor independiente sólo puede tomar— un servicio monetizado si tiene créditos suficientes, y **la adjudicación y el débito son una sola operación**.
+
+```text
+CLAIM / TAKE ──► validaciones V1.7/V1.8/V1.9 ──► snapshot del actor (V1.10-C)
+                 ──► cuenta del actor FOR UPDATE ──► saldo >= costo
+                 ──► claim (+ asignación en TAKE) ──► SERVICE_AWARD ──► COMMIT
+```
+
+Todo o nada: nunca existe una adjudicación sin su débito ni un débito sin su adjudicación. Si falla cualquier paso, la transacción se revierte completa (Dispatch, candidatura, asignación, saldo y ledger).
+
+### Quién paga
+
+| Ejecuta | Paga | Cuenta |
+|---|---|---|
+| Proveedor (flotilla), aunque después asigne a cualquiera de sus Drivers | El proveedor | `CreditAccount` de `PROVIDER` |
+| Repartidor independiente | El repartidor | `CreditAccount` de `INDEPENDENT_DRIVER` |
+
+Un Driver de flotilla **nunca** paga: el costo económico del viaje es del proveedor. Reasignar, cancelar la asignación interna o cambiar de vehículo **no vuelve a cobrar**: Mandaria vendió el servicio una sola vez.
+
+### El costo es el congelado, no el vigente
+
+El cargo es exactamente `DispatchCreditSnapshot.credits` de V1.10-C. V1.10-D **no** resuelve la política ACTIVE, **no** recalcula PER_KM / FLAT / DISTANCE_RANGE y **no** llama a ningún proveedor de routing. Un Dispatch abierto con 7 créditos cuesta 7 aunque la política ya cobre 20; lo que el proveedor o el repartidor vio como `creditCost` es exactamente lo que se le cobra.
+
+### Saldo
+
+- **Suficiente:** 10 − 7 = 3. **Exacto:** 7 − 7 = **0**, que es un saldo válido. **Insuficiente:** 409 `INSUFFICIENT_CREDITS` y no cambia nada (ni claim, ni candidatura, ni asignación, ni ledger).
+- **Nunca negativo:** no depende sólo del `if` en TypeScript. La cuenta se bloquea `FOR UPDATE`, el trigger del ledger vuelve a comprobar `balanceBefore` y el CHECK de V1.10-A acota el saldo a 0..1 000 000 000. Con dos claims simultáneos sobre el mismo saldo, uno pasa y el otro recibe `INSUFFICIENT_CREDITS`.
+- **Orden de bloqueos:** Dispatch → (Driver, Vehicle) → cuenta de créditos, el mismo en CLAIM y en TAKE, así que no pueden interbloquearse entre sí.
+
+### Un solo cargo por adjudicación
+
+Cada adjudicación económica escribe **exactamente un** `SERVICE_AWARD` con `amount` negativo, `referenceType: 'DISPATCH'` y `referenceId` del Dispatch; con la cuenta (que identifica al actor) queda claro qué snapshot se cobró. Un índice único parcial `(creditAccountId, referenceId) WHERE type = 'SERVICE_AWARD'` impide un segundo cargo por reintento, doble clic o reintento de red. Repetir el CLAIM del propio dueño sigue respondiendo 200 sin cobrar de nuevo. Los awards no usan la `Idempotency-Key` humana: esa sigue siendo de recargas y ajustes.
+
+### Fallo cerrado y Dispatches legacy
+
+La frontera de monetización está **persistida en cada Dispatch** (`creditMode`), no deducida de «no tiene snapshot»:
+
+- `LEGACY`: los Dispatches que ya existían cuando se aplicó la migración V1.10-D. No se cobran nunca, no se les inventa costo ni snapshot retroactivo, y se registra `LEGACY_DISPATCH_CREDIT_SKIPPED`. No se escribe ningún movimiento de 0 créditos: el ledger no admite movimientos de 0 y la contabilidad no se ensucia.
+- `MONETIZED`: todo Dispatch abierto desde V1.10-C. Si le falta el snapshot de su actor, **falla cerrado** con 409 `CREDIT_SNAPSHOT_UNAVAILABLE`; jamás se convierte en un viaje gratis. Igual si no hay cuenta que cobrar: 409 `CREDIT_ACCOUNT_UNAVAILABLE`, y la cuenta se corrige administrativamente (nunca se crea sola durante una adjudicación).
+
+El modo nace `MONETIZED` y es inmutable (`DISPATCH_CREDIT_MODE_IMMUTABLE`); sólo las bases `*_test` pueden fabricar uno legacy con el interruptor de fixtures, para poder probar ese camino.
+
+### Errores (`code`)
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| `INSUFFICIENT_CREDITS` | 409 | El saldo no cubre el costo congelado |
+| `CREDIT_ACCOUNT_UNAVAILABLE` | 409 | El actor no tiene cuenta de créditos |
+| `CREDIT_SNAPSHOT_UNAVAILABLE` | 409 | Servicio monetizado sin costo congelado (corrupción) |
+| `CREDIT_MOVEMENT_CONFLICT` | 409 | La cuenta cambió durante el cobro, o el servicio ya estaba cobrado a esa cuenta |
+
+Ninguno es 500, y todos distinguen el motivo para que Mandaria Web pueda actuar (recargar créditos, avisar a un administrador o reintentar).
+
+### Dinero y créditos siguen separados
+
+`deliveryFee`, `goodsValue` y `driverAdvanceAmount` son pesos (MXN, cadenas con moneda); `creditCost` son créditos enteros sin moneda. Cobrar créditos no cambia ninguno de esos importes, y un `COURIER_ADVANCE` sigue siendo el repartidor adelantando mercancía al comercio, sin relación con lo que Mandaria cobra por adjudicar.
+
+### Sin devoluciones todavía
+
+V1.10-D **no** implementa refunds. Si un proveedor reclama (y paga) y después libera, o si la entrega se cancela, **los créditos siguen consumidos** hasta V1.10-E. Es deliberado y figura como riesgo conocido.
+
+### Base de datos
+
+Migración `20260923000100_dispatch_credit_consumption`: columna `Dispatch.creditMode` (enum `DispatchCreditMode`, los Dispatches existentes quedan LEGACY sin reescribir filas) con trigger de inmutabilidad; índice único parcial de un SERVICE_AWARD por cuenta y Dispatch; CHECK de forma del award (referencia obligatoria, autor obligatorio, sin clave de idempotencia humana); y `service_award_guard`, que **recalcula el cargo en SQL** desde el snapshot y rechaza un importe falsificado (`CREDIT_AWARD_MISMATCH`), un cargo a una cuenta que no ganó el servicio, un Dispatch legacy o no reclamado y un award sin Dispatch (`CREDIT_AWARD_INVALID`). No se cobró nada retroactivamente.
+
+Pruebas: `test/credit-consumption.spec.ts` (costo del snapshot, saldo exacto, insuficiente, cuenta correcta por actor, fallo cerrado sin snapshot, sin cuenta, legacy, duplicado y conflicto) y `test/credit-consumption.e2e-spec.ts` (cobro real en CLAIM y TAKE, cambio de política irrelevante, reasignación y release sin segundo cargo, 10 claims simultáneos, proveedor contra independiente, dos claims contra un mismo saldo, saldo compartido exacto, recarga y ajuste concurrentes, legacy, corrupción, 14 escrituras forjadas rechazadas en SQL, contexto de pago y logs). Los tests de éxito fondean con `test/support/credits.ts` exactamente lo que cuesta el servicio.
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -1677,7 +1756,11 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - OpenAPI: 130 campos anulables de versiones anteriores (V1.1–V1.9, incluidos varios de V1.9) se publican como `type: object` sin estructura, porque TypeScript refleja `X | null` como Object. Los esquemas de V1.10-A declaran su tipo explícitamente; el resto queda pendiente como tarea aparte.
 - V1.10-B: las políticas sólo se calculan; desde V1.10-C cada Dispatch nuevo congela su costo por actor y proveedor/repartidor ven su `creditCost`, pero nada lo cobra todavía (V1.10-D).
 - V1.10-C: sin políticas ACTIVE para todos los actores del ServiceType, **ninguna cotización puede aceptarse** (409 `CREDIT_POLICY_UNAVAILABLE`): crear las políticas es parte del despliegue. Una política que calcule 0 créditos también bloquea la apertura (422).
-- V1.10-C: los Dispatches anteriores a V1.10-C no tienen snapshot (`creditCost: null`); V1.10-D debe decidir cómo tratarlos (p. ej. adjudicarlos sin cobro).
+- V1.10-C: los Dispatches anteriores a V1.10-C no tienen snapshot (`creditCost: null`); V1.10-D los marca `creditMode: LEGACY` y los adjudica sin cobro.
+- V1.10-D: **no hay devoluciones**. Liberar un servicio ya pagado, cancelar la asignación o cancelar la entrega no devuelve créditos hasta V1.10-E; un proveedor que reclama y libera repetidamente gasta créditos sin ejecutar nada.
+- V1.10-D: un proveedor sin saldo deja de poder reclamar, así que un servicio puede quedarse sin quien lo tome por falta de créditos, no por falta de capacidad. Operativamente hay que vigilar los saldos (no hay recarga automática ni alertas).
+- V1.10-D: el costo se congela al abrir y se cobra al adjudicar; entre ambos momentos puede pasar tiempo y el precio ya no se puede corregir salvo cancelando el Dispatch.
+- V1.10-D: si un Dispatch monetizado pierde su snapshot (corrupción), nadie puede adjudicárselo (409 `CREDIT_SNAPSHOT_UNAVAILABLE`): es deliberado, pero exige intervención administrativa.
 - V1.10-C: los actores requeridos existen dos veces (`SERVICE_EXECUTION_MODES` en código y `credit_required_actors()` en SQL); cambiar el modo de un ServiceType exige migración para actualizar la función.
 - V1.10-C: las suites E2E corren en serie (`fileParallelism: false`) porque comparten la configuración global de políticas; la corrida completa es más lenta.
 - V1.10-B: sin activación futura ni scheduler; una versión rige desde que se crea. Deshabilitar el cobro de una combinación no tiene endpoint (y, cuando V1.10-D cobre, la falta de política bloqueará adjudicaciones: fallo cerrado).
@@ -1687,8 +1770,8 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.10-C / V1.10-D+
+## Fuera de V1.10-D / V1.10-E+
 
-No se implementaron débito al CLAIM o al TAKE (V1.10-D), SERVICE_AWARD y SERVICE_REFUND operativos, devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron SERVICE_REFUND operativo ni devoluciones (V1.10-E), devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API y auditoría persistente siguen pendientes.

@@ -163,7 +163,8 @@ try {
         if (!previous?.length || !current?.length) return [table, json];
         const keys = Object.keys(previous[0]);
         // Untouched tables keep the exact psql text, so formatting never masks a real difference.
-        if (keys.length === Object.keys(current[0]).length) return [table, json];
+        if (keys.length === Object.keys(current[0]).length)
+          return [table, json];
         return [
           table,
           JSON.stringify(
@@ -707,10 +708,7 @@ try {
     Object.fromEntries(
       v19Tables.map((table) => [
         table,
-        sql(v19Db, [
-          '-c',
-          `SELECT json_agg(t ORDER BY id) FROM "${table}" t`,
-        ]),
+        sql(v19Db, ['-c', `SELECT json_agg(t ORDER BY id) FROM "${table}" t`]),
       ]),
     );
   const beforeCredits = v19Snapshot();
@@ -830,7 +828,10 @@ try {
   const economicSnapshot = () =>
     ['CreditAccount', 'CreditLedgerEntry', 'DeliveryProvider', 'User'].map(
       (table) =>
-        sql(v110aDb, ['-c', `SELECT json_agg(t ORDER BY id) FROM "${table}" t`]),
+        sql(v110aDb, [
+          '-c',
+          `SELECT json_agg(t ORDER BY id) FROM "${table}" t`,
+        ]),
     );
   const beforePolicies = economicSnapshot();
   assert.equal(
@@ -847,6 +848,27 @@ try {
     '0',
   );
   for (const db of [cleanDb, upgradeDb, v110aDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_trigger WHERE tgname IN
+      ('Dispatch_award_integrity','DispatchCandidate_award_integrity','DeliveryAssignment_award_integrity',
+       'CreditLedgerEntry_award_integrity','DispatchCreditSnapshot_award_integrity')
+       AND tgdeferrable AND tginitdeferred`,
+      ]),
+      '5',
+    );
+    assert.equal(
+      sql(db, ['-c', `SELECT count(*) FROM "DispatchPreEnforcementAward"`]),
+      '0',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_indexes WHERE indexname = 'DeliveryAssignment_independent_award_key'`,
+      ]),
+      '1',
+    );
     assert.equal(
       sql(db, [
         '-c',
@@ -871,10 +893,7 @@ try {
   }
   // V1.10-C: dispatch credit snapshots. Dispatches that predate the migration (the upgraded
   // database keeps its V1.7-backfilled EXPIRED dispatch) get no invented, retroactive cost.
-  assert.equal(
-    sql(upgradeDb, ['-c', 'SELECT count(*) FROM "Dispatch"']),
-    '1',
-  );
+  assert.equal(sql(upgradeDb, ['-c', 'SELECT count(*) FROM "Dispatch"']), '1');
   for (const db of [upgradeDb, v19Db, v110aDb])
     assert.equal(
       sql(db, ['-c', 'SELECT count(*) FROM "DispatchCreditSnapshot"']),
@@ -910,8 +929,56 @@ try {
       'PROVIDER,INDEPENDENT_DRIVER',
     );
   }
+  // V1.10-D: credit consumption. The monetization boundary is persisted per Dispatch, every
+  // Dispatch that already existed is LEGACY, and no charge is backfilled.
+  for (const db of [upgradeDb, v19Db, v110aDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM "Dispatch" WHERE "creditMode" <> 'LEGACY'`,
+      ]),
+      '0',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM "CreditLedgerEntry" WHERE "type" IN ('SERVICE_AWARD', 'SERVICE_REFUND')`,
+      ]),
+      '0',
+    );
+  }
+  for (const db of [cleanDb, upgradeDb, v110aDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('Dispatch_credit_mode_guard','CreditLedgerEntry_service_award_guard')",
+      ]),
+      '2',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname = 'CreditLedgerEntry_service_award_key' AND indexdef LIKE '%WHERE%SERVICE_AWARD%'",
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname = 'CreditLedgerEntry_award_check'",
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT column_default FROM information_schema.columns WHERE table_name = 'Dispatch' AND column_name = 'creditMode'`,
+      ]),
+      `'MONETIZED'::"DispatchCreditMode"`,
+    );
+  }
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; V1.4-V1.10 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; V1.4-V1.10 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

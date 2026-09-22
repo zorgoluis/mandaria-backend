@@ -26,6 +26,8 @@ const D = (n: string) => new Prisma.Decimal(n);
 function record(overrides: Record<string, unknown> = {}) {
   return {
     id: 'd1',
+    creditMode: 'MONETIZED',
+    preEnforcementAwards: [],
     status: 'OPEN',
     openedAt: opened,
     expiresAt,

@@ -108,13 +108,13 @@ export class ProviderDispatchesController {
   @ApiOkResponse({ type: ProviderDispatchResponse })
   @ApiErrorDescriptions({
     ...errors,
-    409: 'DISPATCH_ALREADY_CLAIMED (otro proveedor ganó; también el perdedor de una carrera concurrente) | DISPATCH_EXPIRED (now >= expiresAt; se persiste EXPIRED) | DISPATCH_CANCELLED | DISPATCH_RECLAIM_NOT_ALLOWED (mi proveedor ya lo liberó) | PROVIDER_NOT_ELIGIBLE (proveedor ya no ACTIVE o cobertura de zona/servicio INACTIVE).',
+    409: 'DISPATCH_ALREADY_CLAIMED (otro proveedor ganó; también el perdedor de una carrera concurrente) | DISPATCH_EXPIRED (now >= expiresAt; se persiste EXPIRED) | DISPATCH_CANCELLED | DISPATCH_RECLAIM_NOT_ALLOWED (mi proveedor ya lo liberó) | PROVIDER_NOT_ELIGIBLE (proveedor ya no ACTIVE o cobertura de zona/servicio INACTIVE) | INSUFFICIENT_CREDITS (el saldo del proveedor no cubre el creditCost del servicio; no se reclama nada) | CREDIT_ACCOUNT_UNAVAILABLE (el proveedor no tiene cuenta de créditos) | CREDIT_SNAPSHOT_UNAVAILABLE (servicio monetizado sin costo congelado) | CREDIT_MOVEMENT_CONFLICT (la cuenta cambió durante el cobro; reintentar).',
     429: 'Límite de 60 peticiones/minuto por IP.',
   })
   @ApiOperation({
     summary: 'Reclamar Dispatch para mi proveedor',
     description:
-      'Sin body (cualquier campo, incluido providerId, se rechaza con 400): el proveedor sale de la membership (providerId en query sólo selecciona entre mis memberships) y debe ser candidato OFFERED de un Dispatch OPEN y vigente, además de seguir elegible. Bloqueo de fila del Dispatch: con claims simultáneos gana exactamente uno y el resto recibe 409 sin cambios. Repetir el claim del propio ganador devuelve 200 sin cambios. No asigna Driver ni Vehicle. SUPER_ADMIN, DRIVER e IntegrationClient no pueden reclamar. 60/min por IP.' +
+      'Sin body (cualquier campo, incluido providerId, se rechaza con 400): el proveedor sale de la membership (providerId en query sólo selecciona entre mis memberships) y debe ser candidato OFFERED de un Dispatch OPEN y vigente, además de seguir elegible. Bloqueo de fila del Dispatch: con claims simultáneos gana exactamente uno y el resto recibe 409 sin cambios. Repetir el claim del propio ganador devuelve 200 sin cambios. No asigna Driver ni Vehicle. SUPER_ADMIN, DRIVER e IntegrationClient no pueden reclamar. 60/min por IP. V1.10-D: reclamar un servicio monetizado cobra en la misma transacción el creditCost congelado a la cuenta de créditos del proveedor (un SERVICE_AWARD por servicio, nunca dos) y sin saldo suficiente no hay claim ni cargo; los Dispatches anteriores a V1.10-C no se cobran. Liberar no devuelve créditos todavía.' +
       PROVIDER_SCOPE_DOC,
   })
   claim(

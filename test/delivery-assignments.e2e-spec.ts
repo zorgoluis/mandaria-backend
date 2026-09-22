@@ -7,6 +7,11 @@ import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
 import request from 'supertest';
 import { ensureTestCreditPolicies } from './support/credit-policies.js';
+import {
+  fundForAward,
+  purgeFixtureCredits,
+  purgeFixtureDispatches,
+} from './support/credits.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith('_test'))
@@ -138,6 +143,10 @@ async function claimedDispatch(admin = 't.A') {
   });
   const dispatch = await prisma.dispatch.findUniqueOrThrow({
     where: { deliveryQuoteId: row.id },
+  });
+  // V1.10-D: claiming debits the frozen cost, so the provider is funded with exactly that.
+  await fundForAward(prisma, dispatch.id, {
+    providerId: admin === 't.A' ? providers.A : providers.B,
   });
   await api()
     .post(`/api/v1/provider/dispatches/${dispatch.id}/claim`)
@@ -360,6 +369,7 @@ beforeAll(async () => {
 }, 120000);
 
 afterAll(async () => {
+  await purgeFixtureDispatches(prisma, clientIds);
   vi.useRealTimers();
   const providerIds = Object.values(providers);
   const zoneFilter = zoneId ? [{ serviceZoneId: zoneId }] : [];
@@ -390,6 +400,8 @@ afterAll(async () => {
     await prisma.ratePlan.deleteMany({ where: { serviceZoneId: zoneId } });
     await prisma.serviceZone.deleteMany({ where: { id: zoneId } });
   }
+  // V1.10-D: the awards these fixtures paid hold their accounts; purge them first (test only).
+  await purgeFixtureCredits(prisma, { providerIds });
   await prisma.driver.deleteMany({
     where: { providerId: { in: providerIds } },
   });

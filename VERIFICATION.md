@@ -1,3 +1,70 @@
+# Verificación correctiva V1.10-D — 2026-09-22
+
+**PASS — COMPLETADA Y VALIDADA.** Resultados de esta tarea, separados de las verificaciones históricas que siguen:
+
+- Ambos bloqueantes reproducidos antes del fix; evidencia histórica preservada.
+- 49/49 adversariales + 3/3 protección de historial; frontera B/C/D real con premios C gratis correctamente clasificados y siguiente premio cobrado.
+- 178/178 unitarias; 266/266 E2E en 18 archivos, con repeticiones documentadas.
+- Prisma generate/validate/status/drift, tsc/build, Oxlint/ESLint, docs:check y verify-migrations PASS.
+- Migración incremental `20260923000200_award_integrity_boundary` en local/test: hashes de seis tablas preservados, 0 cargos retroactivos.
+- Escáner: 0 violaciones; excepciones históricas reportadas aparte. Cleanup: 18 bases temporales propias eliminadas y evidencia exportada.
+- Detalles, incidencias y riesgos: [informe correctivo](docs/CHECK_V1_10_D_FIXES.md). No commit/push; no V1.10-E.
+
+---
+
+# CHECK V1.10-D — FAILED (2026-09-22)
+
+Validación actual del working tree: **dos defectos bloqueantes**, sin correcciones de producto. PostgreSQL permite un ganador MONETIZED sin award; la migración C→D clasifica adjudicaciones anteriores como MONETIZED sin débito y el retry CLAIM devuelve 200. Los resultados históricos siguientes no equivalen a aprobar este CHECK.
+
+Informe completo y matriz de las barreras: [CHECK_V1_10_D.md](docs/CHECK_V1_10_D.md). Evidencia: [v1.10-d-evidence.json](docs/checks/v1.10-d-evidence.json).
+
+- CHECK: 40 comprobaciones agrupadas, 37 PASS / 3 FAIL (dos defectos).
+- Regresión: 170 unitarias; 249 E2E en 18 archivos, con repetición del archivo cuyo fork nativo cayó (15/15 en la repetición).
+- Quality: Prisma validate/status/drift, verify-migrations, tsc, build, Oxlint, ESLint y docs:check PASS.
+- Bases existentes intactas; sólo dos 500 de fallos inyectados, revertidos. Cleanup de bases propias completado.
+- No commit, push ni V1.10-E.
+
+---
+
+# Verificación V1.10-D — Atomic CLAIM / TAKE Credit Consumption (2026-09-23)
+
+Rama `v1.10-credit-monetization` sobre `a4daeb5` (V1.10-C), paquete 1.10.0, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push. **V1.10-D cobra al adjudicar; todavía no devuelve.**
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260923000100_dispatch_credit_consumption` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; los 44 y 18 Dispatches existentes quedaron `creditMode: LEGACY` sin reescribir filas ni tocar su historia; 0 cargos retroactivos |
+| `verify-migrations` | PASS: limpia, V1.0 → V1.10, datos V1.9 → V1.10 y V1.10-A ledger → V1.10-B → V1.10-C → **V1.10-D**; en las bases migradas todo Dispatch es LEGACY, 0 SERVICE_AWARD/REFUND, trigger de modo, guardián del award, índice único parcial, CHECK y `creditMode` por defecto MONETIZED |
+| prisma validate / migrate status (ambas) / drift (ambas) | PASS / al día / vacío |
+| build, tsc, Oxlint, ESLint, docs:check | PASS |
+| OpenAPI | CLAIM y TAKE documentan el cobro y los 409 económicos (`INSUFFICIENT_CREDITS`, `CREDIT_ACCOUNT_UNAVAILABLE`, `CREDIT_SNAPSHOT_UNAVAILABLE`, `CREDIT_MOVEMENT_CONFLICT`); el cliente no envía costo, cuenta ni snapshot |
+| Unitarias | **170/170** (12 nuevas de consumo de créditos) |
+| E2E por archivo | **249/249** en 19 archivos (19 nuevas); `delivery-assignments` y `delivery-requests-b2b` sufrieron la caída nativa de workers de Windows y pasaron completos al repetirlos |
+| Provider CLAIM | Saldo 10, costo mostrado 7 → 200, saldo 3, exactamente 1 `SERVICE_AWARD` de −7 con `referenceType: DISPATCH`, `referenceId` del Dispatch, autor y cuenta del proveedor; `creditCost` mostrado = créditos cobrados |
+| Independent TAKE | Saldo 14, costo 14 → 200 con su asignación ACTIVE, saldo 0, 1 award; la cuenta del proveedor de su flotilla no se mueve |
+| Saldo exacto y saldo insuficiente | 7 − 7 = 0 permitido; con 6 créditos → 409 `INSUFFICIENT_CREDITS`, Dispatch OPEN, sin candidatura CLAIMED, sin asignación, ledger intacto; el mismo Dispatch lo reclama después quien sí puede pagar |
+| Costo autoritativo | Con la política cambiada a 20 créditos/km, el Dispatch abierto a 7 sigue cobrando **7**; uno nuevo congela 140 |
+| Sin recálculo ni routing | El cobro sólo lee el snapshot: el contador del proveedor de routing no aumenta durante CLAIM/TAKE, y las unitarias usan un doble de transacción sin política ni routing |
+| Un solo cargo | Repetir el CLAIM del dueño (×3) responde 200 y deja 1 award; el índice único parcial `(creditAccountId, referenceId)` rechaza un segundo cargo escrito a mano |
+| Reasignación, cancelación y release | Asignar, reasignar y cancelar la asignación no generan un segundo award; liberar tampoco devuelve créditos (V1.10-E) |
+| CLAIM fallido | Dispatch inexistente (404), rol incorrecto (403), B2B (401), vehículo ajeno (404) y llegar tarde (409): saldos y ledger idénticos |
+| Concurrencia sobre un Dispatch | 10 claims simultáneos: un único ganador y **1** award; sólo se movió la cuenta del ganador |
+| Provider CLAIM vs Independent TAKE | Simultáneos: 200 y 409; exactamente **1** actor paga, nunca los dos ni el perdedor |
+| Misma cuenta, dos servicios | Saldo 10 y dos servicios de 7: 1 éxito + 1 `INSUFFICIENT_CREDITS`, saldo 3, 1 award (nunca −4) |
+| Saldo compartido exacto | Saldo 14 y dos servicios de 7: ambos ganan, saldo 0, 2 awards |
+| Recarga y ajuste concurrentes | Recarga contra claim y ajuste contra claim: cualquiera de los dos órdenes es válido, el saldo siempre cuadra con el ledger reconstruido entrada por entrada y nunca queda negativo |
+| Dispatches legacy | Adjudicados sin cobro, con `LEGACY_DISPATCH_CREDIT_SKIPPED` en el log, sin movimiento de 0 créditos y sin snapshot inventado |
+| Snapshot faltante en monetizado | **Falla cerrado**: 409 `CREDIT_SNAPSHOT_UNAVAILABLE` en CLAIM y en TAKE, Dispatch sigue OPEN, nada cobrado |
+| Garantías SQL | 14 escrituras forjadas rechazadas con su razón: segundo award (índice único), award de un Dispatch no reclamado, de uno legacy, cargado a otro proveedor, con importe falsificado, sin referencia, apuntando a algo que no es un Dispatch, con signo positivo, que dejaría saldo negativo, editar o borrar un award, mover el saldo sin ledger y reetiquetar un Dispatch monetizado como legacy |
+| Seguridad | `creditCost`, `credits`, `amount`, `creditSnapshotId`, `creditAccountId`, `actorType` y `type` enviados por el cliente no cambian el cargo (el contrato de CLAIM rechaza cuerpos) |
+| Contexto de pago | `deliveryFee` 60.00 MXN, `goodsValue` 800.00, `driverAdvanceAmount` 800.00 y `creditCost` 7 créditos conviven sin conversión; la historia de recargas queda intacta (`SERVICE_AWARD` −7 sobre `RECHARGE` +20) |
+| Humo real (`dist/main.js` sobre `mandaria_db`, sólo lectura) | **6/6**: los 44 Dispatches son LEGACY y se leen sin costo inventado, ningún monetizado sin snapshot, 0 cargos retroactivos, políticas operativas intactas, nada escrito, log sin secretos ni 5xx |
+| Mutaciones | **5/5 detectadas**: no saltar los legacy, no fallar cerrado sin snapshot, quitar la comprobación de saldo, cobrar un importe distinto al congelado y quitar el bloqueo de la cuenta |
+| Logs | `SERVICE_AWARD_CHARGED` (con cuenta, créditos, snapshot, secuencia y saldos), `SERVICE_AWARD_REJECTED_INSUFFICIENT_CREDITS` y `LEGACY_DISPATCH_CREDIT_SKIPPED`, sin JWT ni contraseñas |
+
+**Defectos propios corregidos durante la implementación.** El backfill de la migración chocaba con el guard V1.7 que congela los Dispatches resueltos (se resolvió etiquetando por valor por defecto y ejecutando el único UPDATE necesario con ese trigger desactivado dentro de la transacción de la migración); la inmutabilidad del nuevo modo impedía construir un Dispatch legacy en pruebas (se permitió con el mismo interruptor de fixtures que ya usan ledger y políticas, que PostgreSQL sólo honra en bases `*_test`); y un filtro de logs de V1.10-C capturaba por subcadena el nuevo motivo `DISPATCH_OPENED_BEFORE_CREDIT_SNAPSHOTS`.
+
+**Riesgos conocidos.** No hay devoluciones: liberar un servicio pagado, cancelar la asignación o cancelar la entrega dejan los créditos consumidos hasta V1.10-E, y un proveedor que reclama y libera repetidamente gasta sin ejecutar. Un saldo en cero deja al actor fuera de juego sin alertas ni recarga automática. Entre congelar el costo y cobrarlo puede pasar tiempo y ya no se puede corregir salvo cancelando el Dispatch. Un Dispatch monetizado que pierda su snapshot queda inadjudicable a propósito y exige intervención administrativa. Sigue vigente que el dueño de las tablas puede desactivar triggers: en producción la aplicación debe usar un rol que no sea dueño y una base cuyo nombre no termine en `_test`.
+
 # CHECK V1.10-C — Dispatch Credit Snapshot, validación adversarial (2026-09-22)
 
 Rama `v1.10-credit-monetization`, HEAD `7881efb` + V1.10-C sin commit, paquete 1.10.0; `mandaria_db` y `mandaria_test` al día (14 migraciones). Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (puerto 3016, base `mandaria_test`), con fixtures propios, logins reales y reinicios para no agotar los límites de peticiones, cotizaciones y logins. `mandaria_db` sólo se leyó (consultas y `pg_dump`). Sin cambios de código: **33/33 PASS**.

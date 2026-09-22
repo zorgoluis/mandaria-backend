@@ -1,3 +1,7 @@
+import {
+  creditEnforcementMode,
+  preEnforcementSelect,
+} from '../credits/award-boundary.js';
 import type { Prisma } from '@prisma/client';
 import { effectiveDispatchStatus } from '../dispatch/dispatch-policy.js';
 import { paymentContext } from '../delivery-assignments/assignment-policy.js';
@@ -14,6 +18,11 @@ const coordinate = (value: Prisma.Decimal) => value.toNumber();
  */
 export const driverDispatchSelect = {
   id: true,
+  creditMode: true,
+  preEnforcementAwards: {
+    where: { actorType: 'INDEPENDENT_DRIVER' },
+    select: preEnforcementSelect,
+  },
   status: true,
   openedAt: true,
   expiresAt: true,
@@ -133,6 +142,11 @@ export function driverDispatchView(
     cancelledAt: dispatch.cancelledAt,
     // V1.10-C: what taking this dispatch costs me, frozen when it opened. Credits, not money.
     // null = opened before V1.10-C (legacy).
+    creditEnforcementMode: creditEnforcementMode(
+      dispatch,
+      'INDEPENDENT_DRIVER',
+      dispatch.claimedByIndependentDriverId,
+    ),
     creditCost: creditCostFor(dispatch.creditSnapshots, 'INDEPENDENT_DRIVER'),
     // Only ever my own assignment: a driver never learns who else is executing a service.
     assignment:

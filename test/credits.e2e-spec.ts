@@ -966,9 +966,11 @@ describe('V1.10-A database guarantees', () => {
         /CreditLedgerEntry_amount_check/,
       ],
       [
+        // Since V1.10-D a hand-written award is stopped even earlier, by the guard that re-derives
+        // the charge from the Dispatch it claims to pay for; the sign CHECK is still behind it.
         'award with positive sign',
         () => entry({ type: 'SERVICE_AWARD', rechargeMethod: null, amount: 5 }),
-        /CreditLedgerEntry_type_check/,
+        /CREDIT_AWARD_INVALID|CreditLedgerEntry_type_check/,
       ],
       [
         'recharge without actor',
@@ -1082,7 +1084,7 @@ describe('V1.10-A concurrency', () => {
 describe('V1.10-A does not charge credits yet', () => {
   withApp();
 
-  it('a provider with zero credits still claims, and a claim writes no ledger entry', async () => {
+  it('a provider with zero credits cannot claim, and nothing moves', async () => {
     await api()
       .post(`/api/v1/admin/providers/${providers.A}/credits/adjustment`)
       .auth(t.sa, bearer)
@@ -1095,19 +1097,27 @@ describe('V1.10-A does not charge credits yet', () => {
     expect((await accountOf(providers.A)).balance).toBe(0);
     const entries = await prisma.creditLedgerEntry.count();
     const dispatchId = await openDispatch();
-    await api()
+    // V1.10-D: the award and its debit are one operation, so without credits neither happens.
+    const refused = await api()
       .post(`/api/v1/provider/dispatches/${dispatchId}/claim`)
       .auth(t.A, bearer)
-      .expect(200);
+      .expect(409);
+    expect(refused.body.code).toBe('INSUFFICIENT_CREDITS');
+    const dispatch = await prisma.dispatch.findUniqueOrThrow({
+      where: { id: dispatchId },
+    });
+    expect(dispatch.status).toBe('OPEN');
+    expect(dispatch.claimedByProviderId).toBeNull();
     expect(
-      (await prisma.dispatch.findUniqueOrThrow({ where: { id: dispatchId } }))
-        .status,
-    ).toBe('CLAIMED');
+      await prisma.dispatchCandidate.count({
+        where: { dispatchId, status: 'CLAIMED' },
+      }),
+    ).toBe(0);
     expect((await accountOf(providers.A)).balance).toBe(0);
     expect(await prisma.creditLedgerEntry.count()).toBe(entries);
   });
 
-  it('an independent driver with zero credits still takes, and a take writes no ledger entry', async () => {
+  it('an independent driver with zero credits cannot take, and nothing moves', async () => {
     const vehicle = await api()
       .post(`/api/v1/admin/drivers/${drivers.carlos}/independent/vehicles`)
       .auth(t.sa, bearer)
@@ -1127,11 +1137,21 @@ describe('V1.10-A does not charge credits yet', () => {
       }).expect(201);
     const entries = await prisma.creditLedgerEntry.count();
     const dispatchId = await openDispatch();
-    await api()
+    const refused = await api()
       .post(`/api/v1/driver/dispatches/${dispatchId}/take`)
       .auth(t.carlos, bearer)
       .send({ vehicleId: carlosVehicle })
-      .expect(200);
+      .expect(409);
+    expect(refused.body.code).toBe('INSUFFICIENT_CREDITS');
+    // Neither the claim nor the assignment survived the refused debit.
+    const dispatch = await prisma.dispatch.findUniqueOrThrow({
+      where: { id: dispatchId },
+    });
+    expect(dispatch.status).toBe('OPEN');
+    expect(dispatch.claimedByIndependentDriverId).toBeNull();
+    expect(
+      await prisma.deliveryAssignment.count({ where: { dispatchId } }),
+    ).toBe(0);
     const after = (
       await api()
         .get('/api/v1/driver/credits')

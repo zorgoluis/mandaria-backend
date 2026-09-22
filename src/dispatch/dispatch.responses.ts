@@ -1,3 +1,7 @@
+import {
+  creditEnforcementDoc,
+  creditEnforcementModes,
+} from '../credits/award-boundary.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   DispatchCandidateStatus,
@@ -107,6 +111,11 @@ class ServiceDetailResponse {
   externalReference?: string | null;
 }
 export class ProviderDispatchResponse {
+  @ApiProperty({
+    enum: creditEnforcementModes,
+    description: creditEnforcementDoc,
+  })
+  creditEnforcementMode!: (typeof creditEnforcementModes)[number];
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: DispatchStatus, description: statusDoc })
   status!: DispatchStatus;
@@ -178,6 +187,11 @@ class AdminQuoteRefResponse {
   @ApiProperty({ example: 'MXN' }) currency!: string;
 }
 export class AdminDispatchResponse {
+  @ApiProperty({
+    enum: creditEnforcementModes,
+    description: creditEnforcementDoc,
+  })
+  creditEnforcementMode!: (typeof creditEnforcementModes)[number];
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: DispatchStatus, description: statusDoc })
   status!: DispatchStatus;

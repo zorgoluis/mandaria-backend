@@ -1,3 +1,7 @@
+import {
+  creditEnforcementMode,
+  preEnforcementSelect,
+} from '../credits/award-boundary.js';
 import type { DispatchCandidateStatus, Prisma } from '@prisma/client';
 import { allowsIndependent } from '../independent-drivers/independent-driver-policy.js';
 import { effectiveDispatchStatus } from './dispatch-policy.js';
@@ -12,6 +16,8 @@ const coordinate = (value: Prisma.Decimal) => value.toNumber();
 
 export const dispatchSelect = {
   id: true,
+  creditMode: true,
+  preEnforcementAwards: { select: preEnforcementSelect },
   status: true,
   openedAt: true,
   expiresAt: true,
@@ -152,6 +158,11 @@ export function providerDispatchView(
     cancelledAt: dispatch.cancelledAt,
     // V1.10-C: what claiming this dispatch costs a provider, frozen when it opened. Credits, not
     // money (never part of service.deliveryFee or goods). null = opened before V1.10-C (legacy).
+    creditEnforcementMode: creditEnforcementMode(
+      dispatch,
+      'PROVIDER',
+      dispatch.claimedByProviderId,
+    ),
     creditCost: creditCostFor(dispatch.creditSnapshots, 'PROVIDER'),
     // V1.8: who executes the service; only the claim owner sees it.
     assignment: owner ? (dispatch.deliveryAssignments[0] ?? null) : null,
@@ -295,6 +306,11 @@ export function adminDispatchView(dispatch: DispatchRecord, now = new Date()) {
     goods: goodsView(dispatch.deliveryRequest.financialContext),
     // V1.10-C audit: every frozen cost with the policy version and evidence that produced it.
     creditSnapshots: dispatch.creditSnapshots,
-    legacyWithoutCreditSnapshots: dispatch.creditSnapshots.length === 0,
+    legacyWithoutCreditSnapshots: dispatch.creditMode === 'LEGACY',
+    creditEnforcementMode: creditEnforcementMode(
+      dispatch,
+      dispatch.claimedByProviderId ? 'PROVIDER' : 'INDEPENDENT_DRIVER',
+      dispatch.claimedByProviderId ?? dispatch.claimedByIndependentDriverId,
+    ),
   };
 }

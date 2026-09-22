@@ -25,6 +25,9 @@ export const CREDIT_ERRORS = {
   CREDIT_IDEMPOTENCY_CONFLICT: 409,
   CREDIT_MOVEMENT_CONFLICT: 409,
   CREDIT_ACCOUNT_NOT_FOUND: 404,
+  // V1.10-D: an award cannot be charged, so the service is not awarded either (fail closed).
+  CREDIT_ACCOUNT_UNAVAILABLE: 409,
+  CREDIT_SNAPSHOT_UNAVAILABLE: 409,
 } as const;
 export type CreditErrorCode = keyof typeof CREDIT_ERRORS;
 export const creditError = (code: CreditErrorCode, message: string) =>

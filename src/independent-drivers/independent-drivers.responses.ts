@@ -1,3 +1,7 @@
+import {
+  creditEnforcementDoc,
+  creditEnforcementModes,
+} from '../credits/award-boundary.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   DeliveryAssignmentMode,
@@ -174,6 +178,11 @@ class DriverDispatchZoneResponse {
   @ApiProperty({ example: 'Ocozocoautla de Espinosa' }) name!: string;
 }
 export class DriverDispatchResponse {
+  @ApiProperty({
+    enum: creditEnforcementModes,
+    description: creditEnforcementDoc,
+  })
+  creditEnforcementMode!: (typeof creditEnforcementModes)[number];
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: DispatchStatus }) status!: DispatchStatus;
   @ApiProperty({

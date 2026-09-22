@@ -1,0 +1,638 @@
+{
+  "baseline": {
+    "branch": "v1.10-credit-monetization",
+    "head": "a4daeb56fd15d533e8c7a2ccd6838e495fa90b34",
+    "version": "1.10.0",
+    "workingTree": " M .env\n M BITACORA.md\n M README.md\n M VERIFICATION.md\n M docs/openapi.json\n M prisma/schema.prisma\n M scripts/verify-migrations.mjs\n M src/credits/credit-policy.ts\n M src/dispatch/dispatch.service.ts\n M src/dispatch/provider-dispatches.controller.ts\n M src/independent-drivers/driver-dispatches.controller.ts\n M src/independent-drivers/independent-dispatches.service.ts\n M test/credits.e2e-spec.ts\n M test/delivery-assignments.e2e-spec.ts\n M test/dispatch-credit-snapshots.e2e-spec.ts\n M test/dispatch.e2e-spec.ts\n M test/independent-drivers.e2e-spec.ts\n?? prisma/migrations/20260923000100_dispatch_credit_consumption/\n?? src/credits/service-award.ts\n?? test/credit-consumption.e2e-spec.ts\n?? test/credit-consumption.spec.ts\n?? test/support/credits.ts\n",
+    "migrations": [
+      {
+        "migration_name": "20260915000100_core",
+        "finished_at": "2026-09-15T07:06:34.568Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260915000200_b2b_credentials",
+        "finished_at": "2026-09-15T07:39:51.802Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260915000300_delivery_providers",
+        "finished_at": "2026-09-15T08:08:13.402Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260915000400_drivers_vehicles",
+        "finished_at": "2026-09-15T17:10:11.241Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260915000500_delivery_requests",
+        "finished_at": "2026-09-15T19:40:22.951Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260915000600_routing_pricing_quotes",
+        "finished_at": "2026-09-15T22:01:44.589Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260916000700_user_invitations",
+        "finished_at": "2026-09-16T08:07:54.775Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260917000800_dispatch_engine",
+        "finished_at": "2026-09-16T23:12:32.343Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260917000900_delivery_assignments",
+        "finished_at": "2026-09-17T17:42:05.334Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260918001000_independent_drivers",
+        "finished_at": "2026-09-22T04:34:38.504Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260921001100_credit_accounts_ledger",
+        "finished_at": "2026-09-22T04:34:38.557Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260921001200_credit_ledger_purge_test_only",
+        "finished_at": "2026-09-22T04:38:56.405Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260922001300_credit_policies",
+        "finished_at": "2026-09-22T05:17:19.635Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260922001400_dispatch_credit_snapshots",
+        "finished_at": "2026-09-22T06:15:16.301Z",
+        "rolled_back_at": null
+      },
+      {
+        "migration_name": "20260923000100_dispatch_credit_consumption",
+        "finished_at": "2026-09-22T17:17:30.423Z",
+        "rolled_back_at": null
+      }
+    ],
+    "counts": [
+      {
+        "negative": 0,
+        "ledger": 0,
+        "dispatches": 44,
+        "monetized": 0
+      }
+    ],
+    "db": "mandaria_check_d_70293be9_test"
+  },
+  "quality": [
+    {
+      "name": "validate",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "migration-status",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "drift",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "tsc",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "build",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "oxlint",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "eslint",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "docs-check",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "unit",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "regression-deploy",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-b2b.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-core.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-credit-consumption.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-credit-policies.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-credits.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-delivery-assignments.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-delivery-quotes.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-delivery-requests-b2b.e2e-spec.ts",
+      "status": 1,
+      "signal": null
+    },
+    {
+      "name": "e2e-delivery-requests-validation.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-dispatch-credit-snapshots.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-dispatch.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-driver-self.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-drivers-vehicles.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-independent-drivers.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-pricing-admin.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-provider-admin-access.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-providers.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "e2e-user-invitations.e2e-spec.ts",
+      "status": 0,
+      "signal": null
+    },
+    {
+      "name": "verify-migrations",
+      "status": 0,
+      "signal": null
+    }
+  ],
+  "regression": {
+    "unitPassed": 170,
+    "e2ePassed": 249,
+    "e2eFiles": 18,
+    "retriedFile": "delivery-requests-b2b.e2e-spec.ts",
+    "retryPassed": 15,
+    "initialFailure": "Native Vitest fork exited unexpectedly"
+  },
+  "httpBase": [
+    {
+      "name": "V1.10-D award and debit are one operation provider CLAIM debits exactly the cost shown and writes one SERVICE_AWARD",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D award and debit are one operation independent TAKE debits its own account and keeps the assignment in the same operation",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D award and debit are one operation an exact balance is enough and leaves zero; one credit less is refused and moves nothing",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D award and debit are one operation charges the cost frozen when the dispatch opened, not the policy in force now",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D award and debit are one operation a fleet reassignment or an assignment cancellation never charges again",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D award and debit are one operation a failed CLAIM or TAKE never charges",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D award and debit are one operation repeating the same CLAIM does not charge twice",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D concurrency 10 simultaneous claims on one dispatch: one winner, exactly one charge",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D concurrency provider CLAIM against independent TAKE: one winner, exactly one actor pays",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D concurrency two claims paid from one balance: only what the balance covers is charged",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D concurrency a balance that covers both services pays both and ends at zero",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D concurrency a recharge racing a claim serializes: never corruption",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D concurrency an administrative adjustment racing a claim keeps the balance consistent",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D legacy, corruption and database guarantees a legacy dispatch is awarded without any charge and says so in the log",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D legacy, corruption and database guarantees a monetized dispatch whose snapshot disappeared fails closed instead of being free",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D legacy, corruption and database guarantees refuses every forged award written directly in SQL",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D legacy, corruption and database guarantees the client cannot choose what it pays: forged fields are ignored or rejected",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D legacy, corruption and database guarantees keeps the payment context and the recharge history untouched",
+      "status": "passed"
+    },
+    {
+      "name": "V1.10-D legacy, corruption and database guarantees no secret reaches the logs of a charged award",
+      "status": "passed"
+    }
+  ],
+  "httpAdditional": [
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 02-08 zero, sufficient and insufficient independent balances are atomic",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 11-12 neither actor looks up policy or routes during award",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 13 ten distinct providers: exactly one 200 and nine failures",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 14 ten distinct independents: exactly one award and assignment",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 18 high contention twenty claims share fifty credits",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 20 retry TAKE never charges twice",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 21 failed provider claims preserve economy for noncandidate, inactive and unauthorized actors",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 22 failed takes: suspended, invalid vehicle, busy driver/vehicle, unavailable and role",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled ledger failure rolls back CLAIM and TAKE",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled account failure rolls back CLAIM and TAKE",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled deferred failure rolls back CLAIM and TAKE",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 28 missing accounts fail closed for both actor types",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 32 delivery cancellation preserves original debit without refunds",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 36-39 forged TAKE price snapshot account and actor fields rejected",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 41 reverse SQL barrier refuses an operational CLAIM committed without debit",
+      "status": "failed"
+    },
+    {
+      "name": "CHECK D additional adversarial barriers — real backend 42 database scan matches balance chains snapshots and historical/current payers",
+      "status": "failed"
+    }
+  ],
+  "supplement": [
+    {
+      "name": "CHECK D supplementary exact scenarios 9-10 policy becomes FLAT 20 after OPEN but each actor pays the displayed snapshot",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D supplementary exact scenarios 33 and 40 recharge zero to twenty then claim leaves thirteen and payment context identical",
+      "status": "passed"
+    },
+    {
+      "name": "CHECK D supplementary exact scenarios 46 logs contain neither generated password nor tokens",
+      "status": "passed"
+    },
+    {
+      "name": "29-31 three reassignments cancellation and release keep one debit and no refund",
+      "status": "passed"
+    }
+  ],
+  "migrationCases": [
+    {
+      "name": "43 authentic B legacy and C priced OPEN/CLAIMED migrate to D preserving history",
+      "status": "failed"
+    }
+  ],
+  "adversarial": {
+    "providerRace": [
+      200,
+      409,
+      409,
+      409,
+      409,
+      409,
+      409,
+      409,
+      409,
+      409
+    ],
+    "independentRace": [
+      409,
+      409,
+      409,
+      409,
+      409,
+      409,
+      409,
+      409,
+      200,
+      409
+    ],
+    "contention": {
+      "statuses": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        409,
+        409,
+        409,
+        409,
+        409,
+        409,
+        409,
+        409,
+        409,
+        409,
+        409,
+        409,
+        409
+      ],
+      "codes": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS",
+        "INSUFFICIENT_CREDITS"
+      ],
+      "balance": 1
+    },
+    "rollback_ledger_provider": 409,
+    "rollback_ledger_independent": 409,
+    "rollback_account_provider": 409,
+    "rollback_account_independent": 409,
+    "rollback_deferred_provider": 500,
+    "rollback_deferred_independent": 500,
+    "sqlClaimWithoutDebit": {
+      "accepted": true,
+      "awards": 0,
+      "dispatchId": "111c3b2f-e165-49a2-96de-146e35a98dd4",
+      "detail": [
+        {
+          "id": "111c3b2f-e165-49a2-96de-146e35a98dd4",
+          "status": "CLAIMED",
+          "creditMode": "MONETIZED",
+          "credits": 7,
+          "balance": 0,
+          "awards": 0
+        }
+      ]
+    },
+    "databaseScan": {
+      "violations": [
+        {
+          "kind": "winnerWithoutAward",
+          "id": "111c3b2f-e165-49a2-96de-146e35a98dd4"
+        }
+      ],
+      "accounts": 34,
+      "awards": 17
+    }
+  },
+  "migration": {
+    "migrated": [
+      {
+        "id": "af52cfb4-1315-47e4-bea9-48ff325838ae",
+        "creditMode": "MONETIZED",
+        "status": "OPEN"
+      },
+      {
+        "id": "c8164752-669d-4561-bfcb-5f3ce3138fed",
+        "creditMode": "MONETIZED",
+        "status": "CLAIMED"
+      },
+      {
+        "id": "cd8f68ba-d79b-4506-8e37-17db6ca56aad",
+        "creditMode": "LEGACY",
+        "status": "OPEN"
+      },
+      {
+        "id": "cf212d1f-c614-4f96-8236-71baa527b1ee",
+        "creditMode": "MONETIZED",
+        "status": "CLAIMED"
+      }
+    ],
+    "legacy": {
+      "id": "cd8f68ba-d79b-4506-8e37-17db6ca56aad",
+      "awards": 0
+    },
+    "newAward": {
+      "id": "af52cfb4-1315-47e4-bea9-48ff325838ae",
+      "amount": -7
+    },
+    "preDClaim": {
+      "id": "cf212d1f-c614-4f96-8236-71baa527b1ee",
+      "retryStatus": 200,
+      "awards": 0
+    },
+    "preDTake": {
+      "id": "c8164752-669d-4561-bfcb-5f3ce3138fed",
+      "awards": 0
+    },
+    "historyPreserved": true
+  },
+  "scan": {
+    "databases": {
+      "main": {
+        "database": "mandaria_db",
+        "accounts": 12,
+        "chainViolations": 0,
+        "negative": 0,
+        "duplicate": 0,
+        "incorrect_amount": 0,
+        "winner_without_award": 0
+      },
+      "adversarial": {
+        "database": "mandaria_check_d_70293be9_full_full_full_test",
+        "accounts": 34,
+        "chainViolations": 0,
+        "negative": 0,
+        "duplicate": 0,
+        "incorrect_amount": 0,
+        "winner_without_award": 1
+      },
+      "regression": {
+        "database": "mandaria_check_d_70293be9_reg_test",
+        "accounts": 0,
+        "chainViolations": 0,
+        "negative": 0,
+        "duplicate": 0,
+        "incorrect_amount": 0,
+        "winner_without_award": 0
+      }
+    },
+    "logs": [
+      {
+        "file": "backend.log",
+        "http5xx": 2,
+        "requestFailed": 2,
+        "jwtMatches": 0,
+        "configuredSecretMatch": false,
+        "unhandledOrDeadlock": false
+      },
+      {
+        "file": "migration-backend.log",
+        "http5xx": 0,
+        "requestFailed": 0,
+        "jwtMatches": 0,
+        "configuredSecretMatch": false,
+        "unhandledOrDeadlock": false
+      },
+      {
+        "file": "supplement-backend.log",
+        "http5xx": 0,
+        "requestFailed": 0,
+        "jwtMatches": 0,
+        "configuredSecretMatch": false,
+        "unhandledOrDeadlock": false
+      }
+    ]
+  },
+  "cleanup": {
+    "dropped": [
+      "mandaria_check_d_70293be9_test",
+      "mandaria_check_d_70293be9_reg_test",
+      "mandaria_check_d_70293be9_full_test",
+      "mandaria_check_d_70293be9_full_full_test",
+      "mandaria_check_d_70293be9_full_full_full_test",
+      "mandaria_check_d_migration_1790100977392_test",
+      "mandaria_check_d_supplement_1790101168016_test",
+      "mandaria_check_d_remaining_1790101299918_test",
+      "mandaria_clean_71cac5144e_test",
+      "mandaria_upgrade_71cac5144e_test",
+      "mandaria_v19_71cac5144e_test",
+      "mandaria_v110a_71cac5144e_test",
+      "mandaria_check_d_supplement_1790101541118_test"
+    ],
+    "productionUntouched": true
+  }
+}

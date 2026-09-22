@@ -549,6 +549,10 @@ model ProviderServiceCoverage {
 /// EXPIRED is persisted lazily: an OPEN dispatch past expiresAt is reported as EXPIRED and can
 /// never be claimed. There is no NO_PROVIDER status: a dispatch without OFFERED candidates stays
 /// OPEN until it expires and is flagged by the derived field noProviderAvailable.
+enum DispatchCreditMode {
+  LEGACY
+  MONETIZED
+}
 enum DispatchStatus {
   OPEN
   CLAIMED
@@ -565,6 +569,13 @@ enum DispatchCandidateStatus {
 model Dispatch {
   /// V1.10-C: frozen credit cost per actor type; empty for Dispatches opened before V1.10-C.
   creditSnapshots DispatchCreditSnapshot[]
+  preEnforcementAwards DispatchPreEnforcementAward[]
+  /// V1.10-D monetization boundary, decided when the Dispatch is created and never changed.
+  /// MONETIZED (every Dispatch opened from V1.10-C on) must carry its snapshots and is charged at
+  /// CLAIM/TAKE; LEGACY (backfilled for the Dispatches that already existed) is never charged and
+  /// never gets a retroactive snapshot. A monetized Dispatch without its snapshot fails closed
+  /// instead of being free, so future corruption can never turn into free services.
+  creditMode DispatchCreditMode @default(MONETIZED)
   id String @id @default(uuid()) @db.Uuid
   deliveryRequestId String @db.Uuid
   deliveryQuoteId String @unique @db.Uuid
@@ -593,6 +604,19 @@ model Dispatch {
   @@index([claimedByProviderId, status])
   @@index([claimedByIndependentDriverId, status])
   @@index([createdAt, id])
+}
+
+/// Immutable migration evidence: an award that existed before DB credit enforcement.
+/// actorId is a DeliveryProvider id for PROVIDER, or a Driver id for INDEPENDENT_DRIVER.
+model DispatchPreEnforcementAward {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dispatchId String @db.Uuid
+  actorType CreditAccountOwnerType
+  actorId String @db.Uuid
+  awardedAt DateTime
+  recordedAt DateTime @default(now())
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Restrict)
+  @@unique([dispatchId, actorType, actorId, awardedAt], map: "DispatchPreEnforcementAward_identity_key")
 }
 /// Snapshot of the providers a dispatch was offered to. Never recalculated or deleted.
 model DispatchCandidate {
@@ -735,7 +759,9 @@ model CreditLedgerEntry {
   externalReference String?
   /// Why the movement exists. Required for ADMIN_ADJUSTMENT and for RECHARGE with method OTHER.
   reason String?
-  /// Reserved for SERVICE_AWARD / SERVICE_REFUND (e.g. DISPATCH + Dispatch.id). Unused in V1.10-A.
+  /// What the movement paid for. V1.10-D writes DISPATCH + Dispatch.id on every SERVICE_AWARD,
+  /// which together with the account (and so the actor) identifies the frozen snapshot charged.
+  /// A partial unique index allows at most one SERVICE_AWARD per account and Dispatch.
   referenceType String?
   referenceId String? @db.Uuid
   /// Human actor. Required for RECHARGE and ADMIN_ADJUSTMENT.
