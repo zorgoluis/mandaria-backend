@@ -9,6 +9,7 @@ const suffix = randomBytes(5).toString('hex');
 const cleanDb = `mandaria_clean_${suffix}_test`;
 const upgradeDb = `mandaria_upgrade_${suffix}_test`;
 const v19Db = `mandaria_v19_${suffix}_test`;
+const v110aDb = `mandaria_v110a_${suffix}_test`;
 const windowsPsql = 'C:/Program Files/PostgreSQL/18/bin/psql.exe';
 const psql =
   process.env.PSQL_PATH || (existsSync(windowsPsql) ? windowsPsql : 'psql');
@@ -797,8 +798,79 @@ try {
     sql(upgradeDb, ['-c', 'SELECT count(*) FROM "CreditLedgerEntry"']),
     '0',
   );
+
+  // V1.10-B: credit policies. A dedicated database brought to V1.10-A with real economic history
+  // (accounts with RECHARGE/ADMIN_ADJUSTMENT entries) must come out of the V1.10-B migration with
+  // every account, balance and ledger entry identical, and with no policy invented by the migration.
+  sql('postgres', ['-c', `CREATE DATABASE "${v110aDb}"`]);
+  const upToV110A = readdirSync('prisma/migrations', { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort()
+    .filter((name) => name <= '20260921001200_credit_ledger_purge_test_only');
+  for (const name of upToV110A) {
+    sql(v110aDb, ['-f', `prisma/migrations/${name}/migration.sql`]);
+    prisma(v110aDb, ['migrate', 'resolve', '--applied', name]);
+  }
+  const v110aAdmin = randomUUID();
+  const v110aProvider = randomUUID();
+  sql(v110aDb, [
+    '-c',
+    `
+    INSERT INTO "User" (id,email,"passwordHash",role,"updatedAt") VALUES ('${v110aAdmin}','v110a-admin@example.test','${hash}','SUPER_ADMIN',now());
+    INSERT INTO "DeliveryProvider" (id,name,code,type,status,"maxDrivers","maxVehicles","updatedAt") VALUES ('${v110aProvider}','V110A provider','V110A_PROVIDER','FLEET','ACTIVE',5,5,now());
+    INSERT INTO "CreditLedgerEntry" (id,"creditAccountId",type,amount,"balanceBefore","balanceAfter","rechargeMethod","createdByUserId","idempotencyKey","requestHash")
+      SELECT gen_random_uuid(), a.id, 'RECHARGE', 500, 0, 500, 'TRANSFER', '${v110aAdmin}', 'v110a-recharge-1', repeat('a', 64)
+        FROM "CreditAccount" a WHERE a."providerId" = '${v110aProvider}';
+    INSERT INTO "CreditLedgerEntry" (id,"creditAccountId",type,amount,"balanceBefore","balanceAfter",reason,"createdByUserId","idempotencyKey","requestHash")
+      SELECT gen_random_uuid(), a.id, 'ADMIN_ADJUSTMENT', -120, 500, 380, 'Ajuste de prueba', '${v110aAdmin}', 'v110a-adjust-1', repeat('b', 64)
+        FROM "CreditAccount" a WHERE a."providerId" = '${v110aProvider}';
+  `,
+  ]);
+  const economicSnapshot = () =>
+    ['CreditAccount', 'CreditLedgerEntry', 'DeliveryProvider', 'User'].map(
+      (table) =>
+        sql(v110aDb, ['-c', `SELECT json_agg(t ORDER BY id) FROM "${table}" t`]),
+    );
+  const beforePolicies = economicSnapshot();
+  assert.equal(
+    sql(v110aDb, [
+      '-c',
+      `SELECT balance FROM "CreditAccount" WHERE "providerId" = '${v110aProvider}'`,
+    ]),
+    '380',
+  );
+  prisma(v110aDb, ['migrate', 'deploy']);
+  assert.deepEqual(economicSnapshot(), beforePolicies);
+  assert.equal(
+    sql(v110aDb, ['-c', 'SELECT count(*) FROM "CreditPolicy"']),
+    '0',
+  );
+  for (const db of [cleanDb, upgradeDb, v110aDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('CreditPolicy_values_check','CreditPolicy_calculation_check','CreditPolicyRange_values_check','CreditPolicy_createdByUserId_fkey','CreditPolicyRange_creditPolicyId_fkey')",
+      ]),
+      '5',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname IN ('CreditPolicy_serviceType_actorType_version_key','CreditPolicyRange_creditPolicyId_position_key','CreditPolicyRange_creditPolicyId_minDistanceMeters_key') OR (indexname = 'CreditPolicy_active_key' AND indexdef LIKE '%WHERE%ACTIVE%')",
+      ]),
+      '4',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('CreditPolicy_guard','CreditPolicyRange_guard','CreditPolicy_no_truncate','CreditPolicyRange_no_truncate','CreditPolicy_ranges_check','CreditPolicyRange_ranges_check')",
+      ]),
+      '6',
+    );
+  }
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}) and V1.9 data -> V1.10 (${v19Db}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.4-V1.10 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; V1.4-V1.10 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

@@ -40,6 +40,7 @@ model User {
   createdInvitations UserInvitation[] @relation("InvitationCreator")
   revokedInvitations UserInvitation[] @relation("InvitationRevoker")
   creditLedgerEntries CreditLedgerEntry[]
+  creditPolicies CreditPolicy[]
   independentProfilesApproved IndependentDriverProfile[] @relation("IndependentProfileApprover")
   independentProfilesSuspended IndependentDriverProfile[] @relation("IndependentProfileSuspender")
   independentProfilesRejected IndependentDriverProfile[] @relation("IndependentProfileRejecter")
@@ -746,4 +747,61 @@ model CreditLedgerEntry {
   @@unique([creditAccountId, idempotencyKey])
   @@index([creditAccountId, sequence])
   @@index([type, createdAt])
+}
+
+/// V1.10-B: how a credit policy turns the canonical distance of a service into credits.
+enum CreditCalculationType {
+  PER_KM
+  FLAT
+  DISTANCE_RANGE
+}
+/// V1.10-B: at most one ACTIVE policy per serviceType + actorType (partial unique index). A new
+/// version supersedes the ACTIVE one in the same transaction; superseded versions stay INACTIVE
+/// forever as history.
+enum CreditPolicyStatus {
+  ACTIVE
+  INACTIVE
+}
+/// V1.10-B: how many credits it costs a given actor to be awarded a service. Versioned and
+/// immutable: economics never change in place, a change is a new version (max + 1 per
+/// serviceType + actorType, enforced by trigger). actorType reuses CreditAccountOwnerType because it
+/// is exactly who pays: PROVIDER for a provider and its fleet drivers, INDEPENDENT_DRIVER for an
+/// independent driver. effectiveFrom/effectiveUntil record when the version was really in force
+/// (set by the server on activation and on supersession); there is no scheduling. Only the column
+/// set of its calculationType is filled (CHECK). V1.10-B only calculates: nothing consumes credits.
+model CreditPolicy {
+  id String @id @default(uuid()) @db.Uuid
+  serviceType ServiceType
+  actorType CreditAccountOwnerType
+  version Int
+  status CreditPolicyStatus @default(ACTIVE)
+  calculationType CreditCalculationType
+  creditsPerKm Int?
+  minimumCredits Int?
+  flatCredits Int?
+  effectiveFrom DateTime
+  effectiveUntil DateTime?
+  reason String?
+  createdByUserId String @db.Uuid
+  createdAt DateTime @default(now())
+  createdBy User @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  ranges CreditPolicyRange[]
+  @@unique([serviceType, actorType, version])
+  @@index([serviceType, actorType, status])
+  @@index([createdAt, id])
+}
+/// V1.10-B DISTANCE_RANGE row. [minDistanceMeters, maxDistanceMeters): min inclusive, max
+/// exclusive, integer meters; maxDistanceMeters null means "and beyond". A policy's ranges start
+/// at 0, are contiguous and the last one is open, so every distance matches exactly one range
+/// (deferred constraint trigger). Written only with its policy and never changed.
+model CreditPolicyRange {
+  id String @id @default(uuid()) @db.Uuid
+  creditPolicyId String @db.Uuid
+  position Int
+  minDistanceMeters Int
+  maxDistanceMeters Int?
+  credits Int
+  creditPolicy CreditPolicy @relation(fields: [creditPolicyId], references: [id], onDelete: Restrict)
+  @@unique([creditPolicyId, position])
+  @@unique([creditPolicyId, minDistanceMeters])
 }

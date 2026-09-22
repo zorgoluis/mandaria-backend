@@ -1,10 +1,10 @@
-# Mandaria — V1.10-A Credit Accounts & Immutable Ledger
+# Mandaria — V1.10-B Credit Policy Engine
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). V1.10-A agrega la base contable de los créditos Mandaria: una cuenta por proveedor y por repartidor independiente, con un ledger inmutable, recargas y ajustes manuales de SUPER_ADMIN; **todavía no se cobra ningún crédito al adjudicar servicios** (ver [Credit Accounts & Immutable Ledger](#credit-accounts--immutable-ledger-v110-a)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). V1.10-A agrega la base contable de los créditos Mandaria: una cuenta por proveedor y por repartidor independiente, con un ledger inmutable, recargas y ajustes manuales de SUPER_ADMIN; **todavía no se cobra ningún crédito al adjudicar servicios** (ver [Credit Accounts & Immutable Ledger](#credit-accounts--immutable-ledger-v110-a)). V1.10-B agrega el motor de políticas de créditos: cuánto cuesta adjudicarse un servicio según serviceType, quién paga y la distancia canónica, con versiones inmutables; **sólo calcula, no cobra** (ver [Credit Policy Engine](#credit-policy-engine-v110-b)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -19,6 +19,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `delivery-assignments/`: V1.8 asignación de Driver y Vehicle al Dispatch reclamado, con historial, reasignación y plazo.
 - `independent-drivers/`: V1.9 perfil independiente, vehículos propios y las operaciones `take`/`release` del repartidor.
 - `credits/`: V1.10-A cuentas de créditos, ledger inmutable, recargas y ajustes; sin cobro por servicio todavía.
+- `credit-policies/`: V1.10-B políticas de créditos versionadas y cálculo puro del costo de un servicio; no debita cuentas.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -47,6 +48,7 @@ Los comandos de desarrollo solicitados están disponibles en `package.json`:
 | `db:seed:local-driver-users`, `verify:drivers-vehicles` | **LOCAL/TEST ONLY**: Users DRIVER locales y validación HTTP real del escenario V1.4 |
 | `verify:delivery-requests` | **LOCAL/TEST ONLY**: validación HTTP real del escenario V1.5 con IntegrationClients locales A/B |
 | `db:seed:local-pricing`, `verify:delivery-quotes` | **LOCAL/TEST ONLY**: zonas/tarifa placeholder y validación HTTP real de cotización V1.6 |
+| `db:seed:local-credit-policies` | **LOCAL/TEST ONLY**: políticas de créditos v1 `LOCAL_DELIVERY` PER_KM (1 crédito/km, mínimo 3) para PROVIDER e INDEPENDENT_DRIVER; idempotente, nunca edita una existente |
 | `verify:user-invitations` | **LOCAL/TEST ONLY**: invitación → correo en outbox local → activación → login real de PROVIDER_ADMIN y DRIVER (V1.6.1) |
 | `routing:check-google` | Comprobación manual explícita de Google Routes (1 llamada facturable; requiere GOOGLE_ROUTES_API_KEY) |
 | `db:test:deploy` | Aplicar migraciones a la base de pruebas |
@@ -1518,6 +1520,64 @@ Migración `20260921001100_credit_accounts_ledger`, incremental desde V1.9 y **s
 
 Pruebas: `test/credits.spec.ts` (convención de signo, límites y desbordamiento, validación estricta de enteros, motivo con OTHER, caracteres de control, campos de dueño forjados, Idempotency-Key, vistas sin huella ni datos internos, saldo insuficiente bajo bloqueo, replay y conflicto de key, guarda de PostgreSQL traducida a 409) y `test/credits.e2e-spec.ts` (creación de cuentas por cualquier vía, cuenta independiente al aprobar y conservada, Driver de flotilla sin cuenta, recarga, replay y conflicto, ajustes, rechazo de cero/decimales/texto/cantidades absurdas/campos forjados, aislamiento por rol y por proveedor, paginación, inmutabilidad por SQL, 16 ataques directos a la base, concurrencia de recargas, doble débito, movimientos mixtos y una misma key en paralelo, CLAIM y TAKE con saldo 0 sin tocar el ledger, suspensión que conserva el saldo, y auditoría sin secretos).
 
+## Credit Policy Engine (V1.10-B)
+
+Responde: **¿cuántos créditos cuesta adjudicarse un servicio?** V1.10-B define políticas versionadas y **sólo calcula**: CLAIM y TAKE todavía **no** consumen créditos, no se escribe ningún SERVICE_AWARD y ninguna cuenta cambia de saldo (el cobro empieza en V1.10-D; el snapshot del costo en el Dispatch es V1.10-C).
+
+```text
+serviceType + actorType ──► política ACTIVE (única) ──┐
+distancia canónica (metros enteros, ya calculada) ────┴──► calculateCreditCost ──► credits (entero)
+```
+
+### Actor y tipos de cálculo
+
+`actorType` es **quién paga**, con el mismo enum de las cuentas V1.10-A: `PROVIDER` (el proveedor, también cuando ejecuta un Driver de su flotilla) o `INDEPENDENT_DRIVER`. Nunca un `DRIVER` genérico. `serviceType` usa el enum real (hoy sólo `LOCAL_DELIVERY`); el motor no asume ningún tipo de cálculo por servicio.
+
+| calculationType | Campos (sólo éstos; cualquier otro → 400) | Costo |
+|---|---|---|
+| `PER_KM` | `creditsPerKm` 1–1 000 000, `minimumCredits` 0–1 000 000 | `max(ceil(distanceMeters / 1000) × creditsPerKm, minimumCredits)` |
+| `FLAT` | `flatCredits` 1–1 000 000 | `flatCredits`, cualquiera sea la distancia |
+| `DISTANCE_RANGE` | `ranges` (1–50) | `credits` del único rango que contiene la distancia |
+
+Ejemplo `PER_KM` 1 crédito/km, mínimo 3: 0 m → 3; 800 m → ceil(0,8) = 1 → max(1, 3) = **3**; 1001 m → 2 km → **3**; 6240 m → 6,24 km → 7 km facturables → **7**.
+
+**Rangos `[min, max)`** (mínimo inclusivo, máximo exclusivo, metros enteros; igual que las bandas de tarifa V1.6): el primero empieza en 0, cada uno empieza donde termina el anterior y **sólo el último es abierto** (`maxDistanceMeters: null`, «en adelante»). Así cualquier distancia ≥ 0 cae en exactamente un rango. Ejemplo `[0,3000)→3`, `[3000,5000)→5`, `[5000,10000)→8`, `[10000,∞)→15`: 2999 m → 3, **3000 m → 5**, 4999 m → 5, **5000 m → 8**, 10000 m → 15. Huecos, solapes, un primer rango que no empieza en 0 o un último cerrado se rechazan (400 en la API y trigger en PostgreSQL).
+
+**Enteros y límites.** Todo es aritmética entera (`ceil` se calcula con resto entero, sin coma flotante). La distancia debe ser un entero de 0 a 2 147 483 647 m (`CREDIT_DISTANCE_INVALID` si no: negativa, decimal, NaN, Infinity, texto, cadena vacía o parámetro repetido → 400 en la API). Un costo mayor que 1 000 000 créditos —el límite de un movimiento del ledger V1.10-A— es 422 `CREDIT_COST_OUT_OF_RANGE`, nunca se trunca. Con `minimumCredits: 0` y 0 m el costo es 0: V1.10-D deberá decidir cómo registrar un servicio de costo 0 (el ledger no admite movimientos de 0).
+
+**Distancia canónica.** El cálculo recibe los metros que Mandaria ya obtuvo para el servicio; nunca vuelve a llamar a Google Routes, `local_fake` ni otro proveedor de routing. Es **determinista**: misma versión + misma distancia → mismo resultado; no depende del reloj, del saldo, del proveedor ni del repartidor.
+
+**Sin política no hay servicio gratis.** Si no hay política ACTIVE para la combinación, `CREDIT_POLICY_UNAVAILABLE` (409). Nunca se asume 0 créditos.
+
+### Versionado, vigencia e inmutabilidad
+
+- **Una política ACTIVE como máximo** por `serviceType + actorType`, garantizado por un índice único parcial en PostgreSQL.
+- **Versiones monótonas** (1, 2, 3…) por combinación, siempre `máximo + 1` calculado por el servidor y comprobado por trigger: el cliente nunca envía `version`, `status`, fechas ni autor (400).
+- **Nunca se edita una versión.** Cambiar la economía crea una versión nueva: en una transacción, bajo un bloqueo por combinación, la ACTIVE pasa a INACTIVE con `effectiveUntil = ahora` y la nueva nace ACTIVE con `effectiveFrom = ahora`. Nunca coexisten dos ACTIVE ni queda un estado a medias. Las INACTIVE son historial permanente: no se reactivan (para volver a condiciones anteriores se crea otra versión con ellas).
+- **Vigencia sin programación.** `effectiveFrom`/`effectiveUntil` los fija el servidor al activar y al reemplazar, así que responden de forma exacta qué versión regía en cada instante. No hay activación futura ni scheduler (fuera de alcance, por simplicidad y determinismo).
+- **Concurrencia.** Una versión nueva se basa en la ACTIVE (`/:id/versions` con su id). Si otra solicitud la reemplazó antes, `CREDIT_POLICY_VERSION_CONFLICT` (409) y no se escribe nada: 10 solicitudes simultáneas → 1 versión nueva y 9 conflictos. Dos creaciones iniciales simultáneas → una v1 y `CREDIT_POLICY_EXISTS`. Sin DELETE, PATCH ni PUT.
+
+### Endpoints (sólo SUPER_ADMIN)
+
+| Método | Ruta | Uso |
+|---|---|---|
+| GET | `/admin/credit-policies` | Historial completo (ACTIVE e INACTIVE); filtros `serviceType`, `actorType`, `status`; paginado |
+| GET | `/admin/credit-policies/:id` | Configuración completa, rangos incluidos |
+| POST | `/admin/credit-policies` | Versión 1 de una combinación sin políticas (409 `CREDIT_POLICY_EXISTS` si ya tiene) |
+| POST | `/admin/credit-policies/:id/versions` | Nueva versión desde la ACTIVE `:id` (conserva `serviceType` y `actorType`) |
+| GET | `/admin/credit-policies/calculation?serviceType=&actorType=&distanceMeters=` | Resuelve la ACTIVE y calcula; sólo lectura |
+
+PROVIDER_ADMIN y DRIVER reciben 403 y el IntegrationClient 401: no leen las reglas comerciales; en versiones posteriores recibirán sólo el `creditCost` del servicio. Internamente, `CreditPoliciesService.resolveActivePolicy()` y la función pura `calculateCreditCost({ policy, distanceMeters })` son la interfaz que usarán V1.10-C/D.
+
+### Base de datos, seed y auditoría
+
+- Migración `20260922001300_credit_policies`: tablas `CreditPolicy` y `CreditPolicyRange`; únicos `(serviceType, actorType, version)`, `(creditPolicyId, position)` y `(creditPolicyId, minDistanceMeters)`; índice parcial `CreditPolicy_active_key`; CHECKs de versión > 0, coherencia estado/vigencia y **exactamente los campos del tipo de cálculo** (con `IS NOT NULL` explícitos: un CHECK que evalúa a NULL pasaría); triggers de versión `máximo + 1`, nacimiento ACTIVE, inmutabilidad (sólo ACTIVE → INACTIVE con `effectiveUntil`), prohibición de DELETE/TRUNCATE y un trigger **diferido** que al COMMIT exige rangos completos y contiguos (y sin rangos en PER_KM/FLAT), lo que también impide añadir rangos a una política existente. La migración **no crea políticas** ni toca cuentas o ledger.
+- Borrado sólo en bases `*_test` con el mismo interruptor que el ledger (`mandaria.ledger_purge = 'test-fixtures'`), para que las suites limpien sus fixtures.
+- **Política inicial:** configuración, no migración. En local, `npm run db:seed:local-credit-policies` (LOCAL/TEST ONLY, idempotente, nunca edita una política existente) crea v1 `LOCAL_DELIVERY` `PER_KM` 1 crédito/km, mínimo 3, para `PROVIDER` y para `INDEPENDENT_DRIVER`, atribuidas al SUPER_ADMIN de bootstrap. En producción las crea explícitamente un SUPER_ADMIN con `POST /admin/credit-policies`; hasta entonces el cálculo responde `CREDIT_POLICY_UNAVAILABLE`.
+- Eventos `CREDIT_POLICY_CREATED` y `CREDIT_POLICY_VERSIONED` (versión anterior y nueva) con la configuración completa, `effectiveFrom` y `actorUserId`; cada fila guarda `createdByUserId`. Con eso se reconstruye quién, cuándo, qué versión y qué configuración.
+
+Pruebas: `test/credit-policies.spec.ts` (PER_KM 0/1/999/1000/1001/6240 m con mínimo, casos donde el mínimo ya no domina, FLAT, fronteras de rangos, validación de campos por tipo, huecos/solapes, distancia inválida, desbordamiento, determinismo con reloj falso, fallo cerrado y pureza respecto a cuentas) y `test/credit-policies.e2e-spec.ts` (autorización, fallo cerrado, creación y campos falsificados, cálculo por HTTP, versionado v1→v4 con historial intacto, conflicto al versionar desde una INACTIVE, fronteras por HTTP, 10 versiones simultáneas, cadenas concurrentes, creaciones iniciales simultáneas, 28 ataques SQL rechazados y ledger/saldos intactos tras los cálculos).
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -1567,13 +1627,16 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.10-A: la Idempotency-Key es única por cuenta, no global; reutilizar la misma key en dos cuentas distintas registra dos movimientos independientes.
 - V1.10-A: los límites (1 000 000 por movimiento, 1 000 000 000 de saldo) son constantes de código y de CHECK; cambiarlos requiere migración.
 - OpenAPI: 130 campos anulables de versiones anteriores (V1.1–V1.9, incluidos varios de V1.9) se publican como `type: object` sin estructura, porque TypeScript refleja `X | null` como Object. Los esquemas de V1.10-A declaran su tipo explícitamente; el resto queda pendiente como tarea aparte.
+- V1.10-B: las políticas sólo se calculan; ninguna ruta de proveedor o repartidor muestra aún el costo de un servicio, y ningún servicio lo congela (V1.10-C) ni lo cobra (V1.10-D).
+- V1.10-B: sin activación futura ni scheduler; una versión rige desde que se crea. Deshabilitar el cobro de una combinación no tiene endpoint (y, cuando V1.10-D cobre, la falta de política bloqueará adjudicaciones: fallo cerrado).
+- V1.10-B: con `minimumCredits: 0` un servicio de 0 m cuesta 0 créditos; V1.10-D debe decidir cómo tratarlo porque el ledger no admite movimientos de 0.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.10-A / V1.10-B+
+## Fuera de V1.10-B / V1.10-C+
 
-No se implementaron CreditPolicy (V1.10-B), costo por distancia (PER_KM, FLAT, DISTANCE_RANGE), snapshot del costo en créditos, débito al CLAIM o al TAKE, SERVICE_AWARD y SERVICE_REFUND operativos, devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron snapshot del costo en créditos en el Dispatch (V1.10-C), débito al CLAIM o al TAKE, SERVICE_AWARD y SERVICE_REFUND operativos, devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API y auditoría persistente siguen pendientes.

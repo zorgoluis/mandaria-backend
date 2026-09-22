@@ -1,3 +1,83 @@
+# CHECK V1.10-B — Credit Policy Engine (2026-09-22)
+
+Rama `v1.10-credit-monetization`, HEAD `5e8e14b` + V1.10-B sin commit, paquete 1.10.0; `mandaria_db` y `mandaria_test` al día (13 migraciones). Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (puerto 3014, base `mandaria_test`), con fixtures propios, logins reales y reinicios para no agotar los límites de peticiones y logins. `mandaria_db` sólo se leyó. Sin cambios de código. **Resultado: 29/29.**
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Línea base V1.10-A | Ledger sin roturas ni descuadres, 0 saldos negativos, todo proveedor con cuenta; recarga y ajuste 201; 147 unitarias; `credits` 24/24 y `credit-policies` 19/19 |
+| 2 | Matriz de políticas | PROVIDER e INDEPENDENT_DRIVER resuelven cada uno su propia ACTIVE |
+| 3 | PER_KM 1/km, mínimo 3 | 0, 1, 999, 1000, 1001, 2999, 3000 m → 3; 3001 → 4; 6240 → 7 (ambos actores; también `billableKm` y `minimumApplied`) |
+| 4 | Nueva tarifa 2/km | 6240 m → 7 km × 2 = 14 |
+| 5 | FLAT 5 (temporal en INDEPENDENT_DRIVER) | 9 distancias de 0 a 2 147 483 647 m → 5 |
+| 6 | DISTANCE_RANGE `[0,3000)3 [3000,5000)5 [5000,10000)8 [10000,∞)15` | Antes/en/después de cada frontera exacto; en base: inicio 0, sin huecos ni solapes, un único rango abierto y al final; cada metro de 0 a 12 000 cae en exactamente un rango |
+| 7 | Rangos inválidos | Solape, hueco, inicio > 0, dos abiertos, invertido, vacío, créditos 0/negativos/decimales, último cerrado, sin máximo, 51 rangos → 400; nada creado |
+| 8 | Historial v1/v2/v3 | Preservado; una sola ACTIVE; `effectiveUntil` de cada versión = `effectiveFrom` de la siguiente; payload de v1 idéntico al de su creación |
+| 9 | Inmutabilidad histórica | API: PATCH/PUT/DELETE 404, versionar desde v1 409, `version`/`id` en el cuerpo 400. SQL: cambiar tarifa, tipo o versión de v1, editar o borrar rangos y borrar v1 → `CREDIT_POLICY_IMMUTABLE`; v1 intacta |
+| 10 | Versionado concurrente | 12 simultáneas desde la ACTIVE → 1 × 201 + 11 × 409 (versiones 1..4); 6 cadenas concurrentes de 3 → versiones 1..9 únicas y contiguas, 1 ACTIVE, fechas encadenadas |
+| 11 | Activación concurrente | No existe endpoint de activación (una versión se activa al crearse). Carrera directa en SQL de 4 «desactivar + insertar»: 1 aplicada, 3 `CREDIT_POLICY_VERSION_INVALID`; reactivar INACTIVE → `CREDIT_POLICY_IMMUTABLE`; siempre 1 ACTIVE |
+| 12 | Sin política | Ambas combinaciones sin ACTIVE → 409 `CREDIT_POLICY_UNAVAILABLE`; con sólo una vacía, la otra sigue calculando. Nunca 0 |
+| 13 | Aislamiento de actores | Cambiar PROVIDER (2/km) deja INDEPENDENT_DRIVER en 7; su FLAT deja PROVIDER en 14 |
+| 14 | Distancia canónica | Servidor con `ROUTING_PROVIDER=google` y clave inutilizable: los cálculos responden 3/3/7/25/124 y el log no registra ningún evento de routing; ningún import de routing en `src/credit-policies`; el detector sí ve las cotizaciones reales del paso 24 |
+| 15 | Distancias inválidas | -1, NaN, ±Infinity, 2 147 483 648, 1e20, 20 dígitos, abc, true, vacía, 1.5, 0x10, con espacio, ausente y repetida → 400; 0 m → 3 (mínimo) |
+| 16 | Enteros | 1.5/km, mínimo 3.2, flat 5.7, créditos de rango 2.5, límite 500.5 y tarifa en texto → 400; los 47 costos devueltos son enteros seguros ≥ 0 |
+| 17 | Desbordamiento | 1 000 000/km: 0 y 1000 m → 1 000 000; 1001 m y distancia máxima → 422 `CREDIT_COST_OUT_OF_RANGE`; tarifas 1 000 001, 2⁵³, -1, mínimo y flat fuera de límite → 400 |
+| 18 | Autorización | SUPER_ADMIN 200; PROVIDER_ADMIN, DRIVER de flotilla e independiente 403; IntegrationClient y anónimo 401 (5 rutas) |
+| 19 | Campos falsificados | `version`, `createdByUserId`, `id`, `status` (ARCHIVED/ACTIVE), `createdAt`, fechas, `serviceType`/`actorType` al versionar, `id`/`position` de rango, `DRIVER`, `FREIGHT`, `PER_MINUTE` → 400 |
+| 20 | Invariantes SQL | 16 escrituras inválidas rechazadas (segunda ACTIVE, versión duplicada/0/negativa/saltada, nacida INACTIVE, tarifa NULL/0, campos cruzados, FLAT 0, rangos ausentes o con hueco, mínimo fuera de límite, vigencia invertida, TRUNCATE) |
+| 21 | Migración V1.10-A → V1.10-B | `verify-migrations` PASS (base V1.10-A con ledger → V1.10-B idéntica, 0 políticas creadas); aplicación real sin reset verificada en la implementación (26 tablas con mismas filas y contenido) |
+| 22 | Cuentas | 185 cuentas con el mismo saldo y `updatedAt` tras todos los cálculos y versiones |
+| 23 | Ledger | Mismo número de entradas y secuencia; 0 SERVICE_AWARD/SERVICE_REFUND |
+| 24 | CLAIM con saldo 0 | 200, CLAIMED, 0 movimientos |
+| 25 | TAKE con saldo 0 | 200, tomado por el independiente, 0 movimientos |
+| 26 | Cambio de política con operaciones vivas | Tras 2 versiones nuevas, los 2 Dispatch, 2 asignaciones, candidatos, cuentas y ledger idénticos |
+| 27 | OpenAPI | Enums exactos (actorType, calculationType, status, serviceType), enteros en versiones/créditos/distancias/paginación, rangos e items con `$ref`, sin DELETE/PATCH/PUT, 0 objetos sin estructura en 169 esquemas |
+| 28 | Regresión | Unitarias **147/147**; E2E **216/216** en 16 archivos (`delivery-requests-b2b` sufrió la caída nativa de workers y pasó 15/15 dos veces al repetir) |
+| 29 | Calidad | prisma validate, migrate status (ambas), sin drift, verify-migrations, build, tsc, Oxlint, ESLint, docs:check PASS |
+| 30 | Limpieza | `mandaria_test`: 0 políticas (como estaba), 0 fixtures. `mandaria_db`: políticas operativas intactas (v1 PER_KM 1/km, mínimo 3, para ambos actores) |
+| — | Logs | 2012 líneas sin contraseñas, JWT, clientSecret ni secretos de firma; eventos de política con actor; 0 respuestas 5xx |
+
+**Bugs del producto:** ninguno; sin cambios de código. **Del validador (corregidos en el validador):** foto económica tomada antes de la recarga/ajuste de la línea base; detector de routing que contaba prosa de comentarios como imports; parche de limpieza roto por la sustitución de comandos de bash (una corrida dejó fixtures, que se limpiaron).
+
+**Incidente de limpieza (mandaria_test).** Al final ejecuté por error el limpiador de fixtures con el prefijo genérico `E2E_`: borró de `mandaria_test` restos acumulados de corridas E2E anteriores (las 1 300 DeliveryRequest con sus cotizaciones, dispatches y stops, y las zonas `E2E_`) antes de detenerse en una FK. `mandaria_db` no se tocó. Son datos desechables que ninguna suite necesita (cada una crea los suyos); la regresión E2E completa se repitió después sobre la base limpiada con el resultado indicado en la fila 28.
+
+# Verificación V1.10-B — Credit Policy Engine (2026-09-22)
+
+Rama `v1.10-credit-monetization` sobre `5e8e14b` (CHECK V1.10-A), paquete 1.10.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push. **V1.10-B sólo calcula: CLAIM y TAKE no consumen créditos.**
+
+| Verificación | Resultado |
+|---|---|
+| Línea base (HEAD `5e8e14b`, barrera final del CHECK V1.10-A) | 131 unitarias; E2E 197/197 |
+| Migración `20260922001300_credit_policies` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; 26 tablas previas con las mismas filas y el mismo contenido (hash por tabla); 0 políticas creadas por la migración |
+| `verify-migrations` | PASS: limpia, V1.0 → V1.10, datos V1.9 → V1.10 y **nueva base V1.10-A con ledger → V1.10-B** (cuentas, saldos y movimientos idénticos; 0 políticas); objetos V1.10-B presentes |
+| prisma validate / migrate status (ambas) / drift | PASS / al día / vacío |
+| build, tsc, Oxlint, ESLint, Prettier, docs:check | PASS |
+| OpenAPI | 4 rutas `/admin/credit-policies` (sin DELETE/PATCH/PUT), 7 esquemas nuevos, 0 objetos sin estructura |
+| Unitarias | **147/147** (131 + 16 V1.10-B) |
+| E2E por archivo | **216/216** en 16 archivos (19 V1.10-B); `independent-drivers` sufrió la caída nativa de workers y pasó 23/23 dos veces al repetir |
+| PER_KM 1 crédito/km, mínimo 3 | 0, 1, 999, 1000, 1001 m → 3; 6240 m → 7 (unitarias y HTTP); casos donde el mínimo no domina (2 créditos/km: 2001 m → 6, 6240 m → 14) |
+| FLAT | Mismo costo para 0 m … 2 147 483 647 m |
+| DISTANCE_RANGE `[0,3000)→3, [3000,5000)→5, [5000,10000)→8, [10000,∞)→15` | 0/1/2999 → 3; 3000/3001/4999 → 5; 5000/5001/9999 → 8; 10000/10001/máx → 15; cada distancia en exactamente un rango |
+| Configuración ambigua | PER_KM con `flatCredits` o `ranges`, FLAT con `minimumCredits`/`ranges`, huecos, solapes, primer rango ≠ 0, último cerrado, 51 rangos, créditos 0/decimales/texto/2⁵³ → 400 |
+| Campos falsificados | `version`, `status`, `createdByUserId`, `effectiveFrom`, `effectiveUntil`, `id`, `actorType: DRIVER`, `serviceType: FREIGHT` → 400 |
+| Distancia inválida | -1, 1.5, abc, 1e20, vacía, con espacio, 2 147 483 648, NaN, Infinity y parámetro repetido → 400; en la función pura → `CREDIT_DISTANCE_INVALID` |
+| Desbordamiento | 1 000 000 créditos/km × 2 km → 422 `CREDIT_COST_OUT_OF_RANGE` (nunca truncado) |
+| Sin política ACTIVE | 409 `CREDIT_POLICY_UNAVAILABLE` para ambos actores; nunca 0 créditos |
+| Versionado v1 → v2 → v3 → v4 | 4 versiones, sólo v4 ACTIVE; payload de v1 idéntico; `effectiveUntil` de cada una = `effectiveFrom` de la siguiente |
+| Versionar desde una INACTIVE | 409 `CREDIT_POLICY_VERSION_CONFLICT`; nada escrito |
+| Concurrencia | 10 versiones simultáneas desde la ACTIVE → 1 × 201 + 9 × 409; 10 cadenas concurrentes de 3 → versiones contiguas 1..n, 1 ACTIVE; 8 creaciones iniciales simultáneas → 1 v1 + 7 × 409 |
+| Ataques SQL directos | **28/28 rechazados** por la garantía correcta: segunda ACTIVE (índice parcial), versión duplicada/0/-1/saltada y nacida INACTIVE (trigger), PER_KM sin tarifa (CHECK con `IS NOT NULL`), campos cruzados y límites (CHECK), rangos sin rangos/solapados/con hueco/sin 0/cerrados/en PER_KM/añadidos después (trigger diferido), edición, reactivación, cambio de autor, DELETE, TRUNCATE y otro valor del interruptor (`CREDIT_POLICY_IMMUTABLE`) |
+| Autorización | PROVIDER_ADMIN y DRIVER 403, B2B y anónimo 401 en las 5 rutas |
+| Ledger y cuentas | Tras 16 cálculos por HTTP: saldos, `updatedAt`, número de entradas y secuencia máxima idénticos; 0 SERVICE_AWARD/REFUND |
+| Regresión V1.10-A y CLAIM/TAKE | `credits.e2e` 24/24 (recarga, ajuste, idempotencia, saldo no negativo, ledger inmutable; CLAIM y TAKE con saldo 0 sin movimiento) |
+| Servidor real `dist/main.js` sobre `mandaria_db` | 14/14: políticas del seed listadas, 0/800/1001/6240/25 000 m → 3/3/3/7/25 para ambos actores, anónimo 401, saldos/ledger/políticas sin cambios, sin secretos en el log |
+| Seed local | `db:seed:local-credit-policies` crea v1 PER_KM 1/3 para PROVIDER e INDEPENDENT_DRIVER en `mandaria_db`; segunda ejecución «kept existing v1» |
+| Mutaciones M1–M6 | 6/6 detectadas (km redondeados hacia abajo, mínimo ignorado, máximo de rango inclusivo, campo ajeno aceptado, versionar desde una reemplazada, costo sin límite) |
+| Auditoría | `CREDIT_POLICY_CREATED`/`CREDIT_POLICY_VERSIONED` con configuración, versión anterior y `actorUserId`; sin contraseñas, JWT ni clientSecret |
+
+**Defectos encontrados durante la implementación (propios, corregidos antes de entregar):** (1) el trigger diferido usaba `CASE … NEW."creditPolicyId"`, que falla en cada inserción de política (el mensaje en español «el registro "new" no tiene un campo…» llegó como `P2022 column "registro"`); se cambió por `IF` y, como la migración no estaba commiteada y sus tablas estaban vacías, se retiró y reaplicó localmente; (2) `?distanceMeters=` vacío se convertía en 0 m con `Number('')`; ahora sólo se convierten cadenas de dígitos; (3) el CHECK de cálculo habría aceptado `PER_KM` con tarifa NULL (un CHECK que evalúa a NULL pasa); se añadieron `IS NOT NULL` explícitos. En pruebas: supertest ligado al objeto servidor cerraba el servidor entre peticiones concurrentes; la suite usa ahora un puerto efímero real.
+
+No verificado: Docker; comportamiento de V1.10-C/D (fuera de alcance).
+
 # CHECK V1.10-A — Credit Accounts & Immutable Ledger (2026-09-21)
 
 Rama `v1.10-credit-monetization` (HEAD `c612f6c`), paquete 1.10.0. Validación adversarial contra `dist/main.js` en ejecución (puerto 3012, base `mandaria_test`, routing local_fake) y PostgreSQL real, con fixtures propios, logins reales, fallos inyectados con triggers temporales (sólo en `mandaria_test`, retirados al terminar) y limpieza total. `mandaria_db` se consultó en sólo lectura salvo la migración. Sin commit ni push.

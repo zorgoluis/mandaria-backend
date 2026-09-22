@@ -6,6 +6,11 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 
 | Método | Ruta | Autenticación | Roles globales | Scopes | Operación |
 |---|---|---|---|---|---|
+| GET | /api/v1/admin/credit-policies | bearer | SUPER_ADMIN | — | Listar políticas de créditos (historial) |
+| POST | /api/v1/admin/credit-policies | bearer | SUPER_ADMIN | — | Crear la primera política de una combinación |
+| GET | /api/v1/admin/credit-policies/{id} | bearer | SUPER_ADMIN | — | Consultar una versión de política de créditos |
+| POST | /api/v1/admin/credit-policies/{id}/versions | bearer | SUPER_ADMIN | — | Crear una nueva versión de una política de créditos |
+| GET | /api/v1/admin/credit-policies/calculation | bearer | SUPER_ADMIN | — | Calcular el costo en créditos de un servicio |
 | GET | /api/v1/admin/delivery-quotes | bearer | SUPER_ADMIN | — | Listar Quotes |
 | GET | /api/v1/admin/delivery-quotes/{publicId} | bearer | SUPER_ADMIN | — | Consultar cualquier Quote |
 | GET | /api/v1/admin/delivery-requests | bearer | SUPER_ADMIN | — | Listar todas las DeliveryRequests |
