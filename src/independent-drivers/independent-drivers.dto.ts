@@ -67,14 +67,24 @@ export class IndependentDriverListQueryDto extends PaginationQueryDto {
 }
 
 class IndependentVehicleDetailsDto {
-  @ApiPropertyOptional({ nullable: true, example: 'Italika', maxLength: 50 })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    example: 'Italika',
+    maxLength: 50,
+  })
   @Transform(trim)
   @ValidateIf(present)
   @IsString()
   @MinLength(1)
   @MaxLength(50)
   brand?: string | null;
-  @ApiPropertyOptional({ nullable: true, example: 'FT150', maxLength: 50 })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    example: 'FT150',
+    maxLength: 50,
+  })
   @Transform(trim)
   @ValidateIf(present)
   @IsString()
@@ -82,6 +92,7 @@ class IndependentVehicleDetailsDto {
   @MaxLength(50)
   model?: string | null;
   @ApiPropertyOptional({
+    type: 'integer',
     nullable: true,
     example: 2023,
     minimum: 1900,
@@ -92,7 +103,12 @@ class IndependentVehicleDetailsDto {
   @Min(1900)
   @Max(2100)
   year?: number | null;
-  @ApiPropertyOptional({ nullable: true, example: 'Rojo', maxLength: 30 })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    example: 'Rojo',
+    maxLength: 30,
+  })
   @Transform(trim)
   @ValidateIf(present)
   @IsString()
@@ -100,6 +116,7 @@ class IndependentVehicleDetailsDto {
   @MaxLength(30)
   color?: string | null;
   @ApiPropertyOptional({
+    type: String,
     nullable: true,
     description:
       'Placa opcional, normalizada a mayúsculas; null para bicicletas. No se valida unicidad ni formato oficial.',

@@ -46091,7 +46091,7 @@
             "description": "INVITED: nunca activada (sin contraseña). ACTIVE: puede iniciar sesión. DISABLED: inactiva con contraseña previa."
           },
           "emailVerifiedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -46243,17 +46243,17 @@
             }
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "date-time"
           },
           "revokedAt": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "date-time"
           },
           "lastUsedAt": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "format": "date-time"
           },
@@ -47351,7 +47351,7 @@
             "type": "string"
           },
           "unassignedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "null mientras la asignación está vigente."
@@ -47483,23 +47483,23 @@
             "example": "ACTIVE"
           },
           "brand": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "year": {
-            "type": "object",
+            "type": "integer",
             "nullable": true
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "plate": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -47574,17 +47574,17 @@
             "description": "APPROVED habilita /driver/dispatches/available y /driver/dispatches/:id/take. Cualquier otro estado los rechaza con 409 INDEPENDENT_NOT_APPROVED."
           },
           "approvedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "suspendedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "canTakeServices": {
@@ -47690,32 +47690,32 @@
         "type": "object",
         "properties": {
           "brand": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Italika",
             "maxLength": 50
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "FT150",
             "maxLength": 50
           },
           "year": {
-            "type": "object",
+            "type": "integer",
             "nullable": true,
             "example": 2023,
             "minimum": 1900,
             "maximum": 2100
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Rojo",
             "maxLength": 30
           },
           "plate": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Placa opcional, normalizada a mayúsculas; null para bicicletas u otros vehículos sin placa. No se valida unicidad ni formato oficial.",
             "example": "ABC-123",
@@ -47855,27 +47855,27 @@
             "example": "ACTIVE"
           },
           "brand": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Italika"
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "FT150"
           },
           "year": {
-            "type": "object",
+            "type": "integer",
             "nullable": true,
             "example": 2023
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Rojo"
           },
           "plate": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "ABC-123"
           },
@@ -47947,32 +47947,32 @@
         "type": "object",
         "properties": {
           "brand": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Italika",
             "maxLength": 50
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "FT150",
             "maxLength": 50
           },
           "year": {
-            "type": "object",
+            "type": "integer",
             "nullable": true,
             "example": 2023,
             "minimum": 1900,
             "maximum": 2100
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Rojo",
             "maxLength": 30
           },
           "plate": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Placa opcional, normalizada a mayúsculas; null para bicicletas u otros vehículos sin placa. No se valida unicidad ni formato oficial.",
             "example": "ABC-123",
@@ -48056,7 +48056,7 @@
             "pattern": "^\\+?[0-9 ()-]{7,20}$"
           },
           "instructions": {
-            "type": "object",
+            "type": "string",
             "example": "Entregar en mostrador",
             "maxLength": 500,
             "nullable": true
@@ -48101,25 +48101,25 @@
             "example": 2
           },
           "weightKg": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "example": 1.5,
             "description": "Kilogramos > 0, hasta 3 decimales."
           },
           "lengthCm": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "example": 30,
             "description": "cm > 0"
           },
           "widthCm": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "example": 20,
             "description": "cm > 0"
           },
           "heightCm": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "example": 15,
             "description": "cm > 0"
@@ -48129,7 +48129,7 @@
             "default": false
           },
           "handlingInstructions": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Mantener vertical",
             "maxLength": 500
@@ -48189,7 +48189,7 @@
             "description": "V1.6: sólo LOCAL_DELIVERY (servicio inmediato; sin programación). Omitirlo equivale a LOCAL_DELIVERY."
           },
           "externalReference": {
-            "type": "object",
+            "type": "string",
             "example": "ORDER-1842",
             "maxLength": 100,
             "nullable": true,
@@ -48256,7 +48256,7 @@
             "example": "+52 961 123 4567"
           },
           "instructions": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -48294,20 +48294,20 @@
             "example": 2
           },
           "weightKg": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "example": 1.5
           },
           "lengthCm": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "widthCm": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "heightCm": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "isFragile": {
@@ -48315,7 +48315,7 @@
             "example": false
           },
           "handlingInstructions": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -48361,7 +48361,7 @@
             "description": "Identificador operacional global."
           },
           "externalReference": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "ORDER-1842"
           },
@@ -48386,7 +48386,7 @@
             "description": "Momento en que Mandaria aceptó la solicitud."
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -48399,7 +48399,7 @@
             "type": "string"
           },
           "cancellationReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": null
           },
@@ -48440,7 +48440,7 @@
             "description": "Identificador operacional global."
           },
           "externalReference": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "ORDER-1842"
           },
@@ -48465,7 +48465,7 @@
             "description": "Momento en que Mandaria aceptó la solicitud."
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -48566,7 +48566,7 @@
             "description": "Identificador operacional global."
           },
           "externalReference": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "ORDER-1842"
           },
@@ -48591,7 +48591,7 @@
             "description": "Momento en que Mandaria aceptó la solicitud."
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -48671,7 +48671,7 @@
             "description": "Identificador operacional global."
           },
           "externalReference": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "ORDER-1842"
           },
@@ -48696,7 +48696,7 @@
             "description": "Momento en que Mandaria aceptó la solicitud."
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -48709,7 +48709,7 @@
             "type": "string"
           },
           "cancellationReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": null
           },
@@ -49241,12 +49241,12 @@
             "type": "string"
           },
           "activatedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "deactivatedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -49431,17 +49431,17 @@
             "description": "Fin de la vigencia del precio. No indica cuándo se realiza el servicio."
           },
           "acceptedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "cancellationReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "DELIVERY_REQUEST_CANCELLED"
           }
@@ -49660,23 +49660,23 @@
             "type": "string"
           },
           "acceptedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "expiredAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true,
             "description": "Momento en que se persistió EXPIRED."
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "cancellationReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -49847,7 +49847,7 @@
             "description": "Sólo PROVIDER_ADMIN: rol local de la membership a crear."
           },
           "driverName": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Carlos Pérez",
             "description": "Sólo DRIVER: nombre del Driver a crear."
@@ -49876,17 +49876,17 @@
             "example": 0
           },
           "acceptedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "revokedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "revokedByUserId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -49968,7 +49968,7 @@
             "description": "Sólo PROVIDER_ADMIN: rol local de la membership a crear."
           },
           "driverName": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Carlos Pérez",
             "description": "Sólo DRIVER: nombre del Driver a crear."
@@ -49997,17 +49997,17 @@
             "example": 0
           },
           "acceptedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "revokedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "revokedByUserId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -50180,17 +50180,17 @@
             "type": "string"
           },
           "claimedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "releasedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "releaseReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -50256,7 +50256,7 @@
             "description": "Sólo access OWNER."
           },
           "instructions": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Sólo access OWNER."
           }
@@ -50287,7 +50287,7 @@
             "example": 2
           },
           "weightKg": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "isFragile": {
@@ -50298,7 +50298,7 @@
             "description": "Sólo access OWNER."
           },
           "handlingInstructions": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Sólo access OWNER."
           }
@@ -50320,7 +50320,7 @@
             ]
           },
           "value": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "450.00"
           },
@@ -50380,7 +50380,7 @@
             "description": "Sólo OWNER."
           },
           "externalReference": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Sólo OWNER."
           }
@@ -50441,12 +50441,12 @@
             "type": "boolean"
           },
           "claimedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -50708,17 +50708,17 @@
             "type": "string"
           },
           "claimedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "releasedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "releaseReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -50754,28 +50754,28 @@
             "type": "string"
           },
           "claimedByProviderId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true,
             "description": "Proveedor con el claim. Se conserva como histórico si un Dispatch CLAIMED se cancela; se limpia al liberar."
           },
           "claimedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "expiredAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "cancellationReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "DELIVERY_REQUEST_CANCELLED"
           },
@@ -51005,12 +51005,12 @@
             "format": "uuid"
           },
           "endedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "endedByUserId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -51026,7 +51026,7 @@
             "nullable": true
           },
           "endReasonDetail": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "paymentContext": {
@@ -51144,12 +51144,12 @@
             "format": "uuid"
           },
           "endedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "endedByUserId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -51165,7 +51165,7 @@
             "nullable": true
           },
           "endReasonDetail": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -51204,7 +51204,7 @@
             ]
           },
           "plate": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "ABC-123"
           },
@@ -51316,19 +51316,19 @@
             ]
           },
           "brand": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "plate": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "pairedDriver": {
@@ -51383,6 +51383,26 @@
           "items"
         ]
       },
+      "DeliveryAssignmentProviderResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code"
+        ]
+      },
       "AdminDeliveryAssignmentResponse": {
         "type": "object",
         "properties": {
@@ -51422,12 +51442,12 @@
             "format": "uuid"
           },
           "endedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "endedByUserId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
@@ -51443,12 +51463,16 @@
             "nullable": true
           },
           "endReasonDetail": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "provider": {
-            "type": "object",
-            "description": "Proveedor dueño de la asignación."
+            "description": "Proveedor dueño de la asignación.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DeliveryAssignmentProviderResponse"
+              }
+            ]
           }
         },
         "required": [
@@ -51526,37 +51550,37 @@
             "description": "APPROVED: puede tomar servicios. SUSPENDED: se le retiró la habilitación. REJECTED: solicitud cerrada. PENDING: reservado para el alta pública futura; V1.9 no la implementa."
           },
           "approvedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "approvedByUserId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
           "suspendedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "suspendedByUserId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
           "rejectedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "rejectedByUserId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -51678,23 +51702,23 @@
             ]
           },
           "brand": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "year": {
-            "type": "object",
+            "type": "integer",
             "nullable": true
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "plate": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -51720,32 +51744,32 @@
         "type": "object",
         "properties": {
           "brand": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Italika",
             "maxLength": 50
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "FT150",
             "maxLength": 50
           },
           "year": {
-            "type": "object",
+            "type": "integer",
             "nullable": true,
             "example": 2023,
             "minimum": 1900,
             "maximum": 2100
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Rojo",
             "maxLength": 30
           },
           "plate": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Placa opcional, normalizada a mayúsculas; null para bicicletas. No se valida unicidad ni formato oficial.",
             "example": "ABC-123",
@@ -51779,32 +51803,32 @@
         "type": "object",
         "properties": {
           "brand": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Italika",
             "maxLength": 50
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "FT150",
             "maxLength": 50
           },
           "year": {
-            "type": "object",
+            "type": "integer",
             "nullable": true,
             "example": 2023,
             "minimum": 1900,
             "maximum": 2100
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Rojo",
             "maxLength": 30
           },
           "plate": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Placa opcional, normalizada a mayúsculas; null para bicicletas. No se valida unicidad ni formato oficial.",
             "example": "ABC-123",
@@ -51821,6 +51845,58 @@
             "description": "Desactivar un vehículo que está ejecutando un servicio responde 409 VEHICLE_HAS_ACTIVE_ASSIGNMENT."
           }
         }
+      },
+      "DriverDispatchZoneResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "OCOZOCOAUTLA"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ocozocoautla de Espinosa"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "DriverAssignmentVehicleResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "identifier": {
+            "type": "string",
+            "example": "MOTO-03"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "BICYCLE",
+              "MOTORCYCLE",
+              "CAR",
+              "PICKUP",
+              "VAN",
+              "TRUCK",
+              "OTHER"
+            ]
+          },
+          "plate": {
+            "type": "string",
+            "nullable": true,
+            "example": "ABC-123"
+          }
+        },
+        "required": [
+          "id",
+          "identifier",
+          "type"
+        ]
       },
       "DriverAssignmentResponse": {
         "type": "object",
@@ -51842,7 +51918,7 @@
             "type": "string"
           },
           "vehicle": {
-            "type": "object"
+            "$ref": "#/components/schemas/DriverAssignmentVehicleResponse"
           }
         },
         "required": [
@@ -51875,7 +51951,7 @@
             "description": "Sólo access OWNER."
           },
           "instructions": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Sólo access OWNER."
           }
@@ -51906,7 +51982,7 @@
             "example": 2
           },
           "weightKg": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "isFragile": {
@@ -51917,7 +51993,7 @@
             "description": "Sólo access OWNER."
           },
           "handlingInstructions": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Sólo access OWNER."
           }
@@ -52039,7 +52115,7 @@
             ]
           },
           "serviceZone": {
-            "type": "object"
+            "$ref": "#/components/schemas/DriverDispatchZoneResponse"
           },
           "openedAt": {
             "format": "date-time",
@@ -52054,12 +52130,12 @@
             "type": "boolean"
           },
           "claimedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },

@@ -91,6 +91,7 @@ export class DeliveryStopDto {
   @Matches(/^\+?[0-9 ()-]{7,20}$/)
   contactPhone!: string;
   @ApiPropertyOptional({
+    type: String,
     example: 'Entregar en mostrador',
     maxLength: 500,
     nullable: true,
@@ -123,6 +124,7 @@ export class DeliveryPackageDto {
   @Max(10000)
   quantity!: number;
   @ApiPropertyOptional({
+    type: Number,
     nullable: true,
     example: 1.5,
     description: 'Kilogramos > 0, hasta 3 decimales.',
@@ -132,19 +134,34 @@ export class DeliveryPackageDto {
   @Min(0.001)
   @Max(100000)
   weightKg?: number | null;
-  @ApiPropertyOptional({ nullable: true, example: 30, description: 'cm > 0' })
+  @ApiPropertyOptional({
+    type: Number,
+    nullable: true,
+    example: 30,
+    description: 'cm > 0',
+  })
   @ValidateIf(present)
   @IsNumber({ maxDecimalPlaces: 2, allowNaN: false, allowInfinity: false })
   @Min(0.01)
   @Max(100000)
   lengthCm?: number | null;
-  @ApiPropertyOptional({ nullable: true, example: 20, description: 'cm > 0' })
+  @ApiPropertyOptional({
+    type: Number,
+    nullable: true,
+    example: 20,
+    description: 'cm > 0',
+  })
   @ValidateIf(present)
   @IsNumber({ maxDecimalPlaces: 2, allowNaN: false, allowInfinity: false })
   @Min(0.01)
   @Max(100000)
   widthCm?: number | null;
-  @ApiPropertyOptional({ nullable: true, example: 15, description: 'cm > 0' })
+  @ApiPropertyOptional({
+    type: Number,
+    nullable: true,
+    example: 15,
+    description: 'cm > 0',
+  })
   @ValidateIf(present)
   @IsNumber({ maxDecimalPlaces: 2, allowNaN: false, allowInfinity: false })
   @Min(0.01)
@@ -155,6 +172,7 @@ export class DeliveryPackageDto {
   @IsBoolean()
   isFragile?: boolean;
   @ApiPropertyOptional({
+    type: String,
     nullable: true,
     example: 'Mantener vertical',
     maxLength: 500,
@@ -207,6 +225,7 @@ export class CreateDeliveryRequestDto {
   @IsEnum(ServiceType)
   serviceType?: ServiceType;
   @ApiPropertyOptional({
+    type: String,
     example: 'ORDER-1842',
     maxLength: 100,
     nullable: true,

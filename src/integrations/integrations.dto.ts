@@ -93,9 +93,11 @@ export class CredentialResponse {
   clientId!: string;
   @ApiProperty({ enum: ['ACTIVE', 'REVOKED'] }) status!: string;
   @ApiProperty({ enum: INTEGRATION_SCOPES, isArray: true }) scopes!: string[];
-  @ApiProperty({ nullable: true, format: 'date-time' }) expiresAt!: Date | null;
-  @ApiProperty({ nullable: true, format: 'date-time' }) revokedAt!: Date | null;
-  @ApiProperty({ nullable: true, format: 'date-time' })
+  @ApiProperty({ type: String, nullable: true, format: 'date-time' })
+  expiresAt!: Date | null;
+  @ApiProperty({ type: String, nullable: true, format: 'date-time' })
+  revokedAt!: Date | null;
+  @ApiProperty({ type: String, nullable: true, format: 'date-time' })
   lastUsedAt!: Date | null;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
   @ApiProperty({ format: 'date-time' }) updatedAt!: Date;

@@ -24,11 +24,12 @@ class MyCandidateResponse {
   })
   status!: DispatchCandidateStatus;
   @ApiProperty({ format: 'date-time' }) offeredAt!: Date;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   claimedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   releasedAt!: Date | null;
-  @ApiPropertyOptional({ nullable: true }) releaseReason!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) releaseReason!:
+    string | null;
 }
 class MoneyResponse {
   @ApiProperty({ example: '50.00' }) amount!: string;
@@ -46,22 +47,31 @@ class StopResponse {
   contactName?: string;
   @ApiPropertyOptional({ description: 'Sólo access OWNER.' })
   contactPhone?: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Sólo access OWNER.' })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Sólo access OWNER.',
+  })
   instructions?: string | null;
 }
 class PackageResponse {
   @ApiProperty({ enum: PackageCategory }) category!: PackageCategory;
   @ApiProperty({ example: 2 }) quantity!: number;
-  @ApiPropertyOptional({ nullable: true }) weightKg!: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true })
+  weightKg!: number | null;
   @ApiProperty() isFragile!: boolean;
   @ApiPropertyOptional({ description: 'Sólo access OWNER.' })
   description?: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Sólo access OWNER.' })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Sólo access OWNER.',
+  })
   handlingInstructions?: string | null;
 }
 class GoodsResponse {
   @ApiProperty({ enum: GoodsPaymentMode }) paymentMode!: GoodsPaymentMode;
-  @ApiPropertyOptional({ nullable: true, example: '450.00' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: '450.00' })
   value!: string | null;
   @ApiProperty({ example: 'MXN' }) currency!: string;
   @ApiProperty({
@@ -85,7 +95,11 @@ class ServiceDetailResponse {
   goods!: GoodsResponse | null;
   @ApiPropertyOptional({ example: 'MDR-000001', description: 'Sólo OWNER.' })
   deliveryRequestPublicId?: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Sólo OWNER.' })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Sólo OWNER.',
+  })
   externalReference?: string | null;
 }
 export class ProviderDispatchResponse {
@@ -108,9 +122,9 @@ export class ProviderDispatchResponse {
   })
   expiresAt!: Date;
   @ApiProperty() claimedByMe!: boolean;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   claimedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
   @ApiPropertyOptional({ type: MyCandidateResponse, nullable: true })
   myCandidate!: MyCandidateResponse | null;
@@ -132,11 +146,12 @@ class AdminCandidateResponse {
   @ApiProperty({ enum: DispatchCandidateStatus })
   status!: DispatchCandidateStatus;
   @ApiProperty({ format: 'date-time' }) offeredAt!: Date;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   claimedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   releasedAt!: Date | null;
-  @ApiPropertyOptional({ nullable: true }) releaseReason!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) releaseReason!:
+    string | null;
 }
 class AdminRequestRefResponse {
   @ApiProperty({ example: 'MDR-000001' }) publicId!: string;
@@ -157,19 +172,21 @@ export class AdminDispatchResponse {
   @ApiProperty({ format: 'date-time' }) openedAt!: Date;
   @ApiProperty({ format: 'date-time' }) expiresAt!: Date;
   @ApiPropertyOptional({
+    type: String,
     format: 'uuid',
     nullable: true,
     description:
       'Proveedor con el claim. Se conserva como histórico si un Dispatch CLAIMED se cancela; se limpia al liberar.',
   })
   claimedByProviderId!: string | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   claimedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   expiredAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
   @ApiPropertyOptional({
+    type: String,
     nullable: true,
     example: 'DELIVERY_REQUEST_CANCELLED',
   })

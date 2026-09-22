@@ -16,7 +16,7 @@ class AssignmentVehicleResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ example: 'MOTO-03' }) identifier!: string;
   @ApiProperty({ enum: VehicleType }) type!: VehicleType;
-  @ApiPropertyOptional({ nullable: true, example: 'ABC-123' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'ABC-123' })
   plate!: string | null;
 }
 class MoneyResponse {
@@ -67,13 +67,14 @@ export class DeliveryAssignmentResponse {
   vehicle!: AssignmentVehicleResponse;
   @ApiProperty({ format: 'date-time' }) assignedAt!: Date;
   @ApiProperty({ format: 'uuid' }) assignedByUserId!: string;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   endedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true })
   endedByUserId!: string | null;
   @ApiPropertyOptional({ enum: DeliveryAssignmentEndReason, nullable: true })
   endReason!: DeliveryAssignmentEndReason | null;
-  @ApiPropertyOptional({ nullable: true }) endReasonDetail!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) endReasonDetail!:
+    string | null;
 }
 export class DeliveryAssignmentWithPaymentResponse extends DeliveryAssignmentResponse {
   @ApiProperty({ type: PaymentContextResponse })
@@ -107,10 +108,10 @@ export class AvailableVehicleResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ example: 'MOTO-03' }) identifier!: string;
   @ApiProperty({ enum: VehicleType }) type!: VehicleType;
-  @ApiPropertyOptional({ nullable: true }) brand!: string | null;
-  @ApiPropertyOptional({ nullable: true }) model!: string | null;
-  @ApiPropertyOptional({ nullable: true }) color!: string | null;
-  @ApiPropertyOptional({ nullable: true }) plate!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) brand!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) model!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) color!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) plate!: string | null;
   @ApiPropertyOptional({
     type: AssignmentDriverResponse,
     nullable: true,
@@ -123,7 +124,15 @@ export class AvailableVehiclePageResponse extends PaginationResponse {
   @ApiProperty({ type: AvailableVehicleResponse, isArray: true })
   items!: AvailableVehicleResponse[];
 }
+class DeliveryAssignmentProviderResponse {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty() name!: string;
+  @ApiProperty() code!: string;
+}
 export class AdminDeliveryAssignmentResponse extends DeliveryAssignmentResponse {
-  @ApiProperty({ description: 'Proveedor dueño de la asignación.' })
-  provider!: { id: string; name: string; code: string };
+  @ApiProperty({
+    type: DeliveryAssignmentProviderResponse,
+    description: 'Proveedor dueño de la asignación.',
+  })
+  provider!: DeliveryAssignmentProviderResponse;
 }
