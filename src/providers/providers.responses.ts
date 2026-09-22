@@ -66,10 +66,16 @@ export class ProviderProfileResponse {
   membershipRole!: ProviderMemberRole;
 }
 export class PaginationResponse {
-  @ApiProperty({ example: 1 }) page!: number;
-  @ApiProperty({ example: 20 }) pageSize!: number;
-  @ApiProperty({ example: 1 }) total!: number;
-  @ApiProperty({ example: 1, description: 'Cero cuando no hay resultados.' })
+  @ApiProperty({ type: 'integer', minimum: 1, example: 1 }) page!: number;
+  @ApiProperty({ type: 'integer', minimum: 1, maximum: 100, example: 20 })
+  pageSize!: number;
+  @ApiProperty({ type: 'integer', minimum: 0, example: 1 }) total!: number;
+  @ApiProperty({
+    type: 'integer',
+    minimum: 0,
+    example: 1,
+    description: 'Cero cuando no hay resultados.',
+  })
   totalPages!: number;
 }
 export class ProviderUsageItemResponse {

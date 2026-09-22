@@ -1443,7 +1443,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -1455,7 +1455,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -3964,7 +3964,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -3976,7 +3976,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -5287,7 +5287,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -5299,7 +5299,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -5971,7 +5971,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -5983,7 +5983,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -7824,7 +7824,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -7836,7 +7836,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -8546,7 +8546,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -8558,7 +8558,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -10535,7 +10535,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -10547,7 +10547,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -12021,7 +12021,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -12033,7 +12033,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -13152,7 +13152,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -13164,7 +13164,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -13874,7 +13874,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -13886,7 +13886,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -15091,7 +15091,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -15103,7 +15103,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -15843,7 +15843,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -15855,7 +15855,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -16850,7 +16850,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -16862,7 +16862,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -18284,7 +18284,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -18296,7 +18296,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -20946,7 +20946,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -20958,7 +20958,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -24480,7 +24480,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -24492,7 +24492,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -25519,7 +25519,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -25531,7 +25531,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -26262,7 +26262,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -26274,7 +26274,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -27031,7 +27031,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -27043,7 +27043,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -28965,7 +28965,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -28977,7 +28977,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -30762,7 +30762,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -30774,7 +30774,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -32593,7 +32593,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -32605,7 +32605,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -35862,7 +35862,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -35874,7 +35874,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -36269,7 +36269,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -36281,7 +36281,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -37004,7 +37004,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -37016,7 +37016,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -40298,7 +40298,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -40310,7 +40310,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -42158,7 +42158,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -42170,7 +42170,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -43638,7 +43638,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -43650,7 +43650,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -45063,7 +45063,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -45075,7 +45075,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -45681,7 +45681,7 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -45693,7 +45693,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -46678,19 +46678,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -46871,19 +46876,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -46983,19 +46993,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -47214,19 +47229,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -47378,19 +47398,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -47912,19 +47937,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -48491,19 +48521,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -48631,19 +48666,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -48952,19 +48992,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -49270,19 +49315,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -49464,19 +49514,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -49716,19 +49771,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -50044,19 +50104,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -50484,19 +50549,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -50830,19 +50900,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -51261,19 +51336,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -51352,19 +51432,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -51608,19 +51693,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -52172,19 +52262,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -52369,19 +52464,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },
@@ -52571,19 +52671,24 @@
         "type": "object",
         "properties": {
           "page": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
             "example": 1
           },
           "pageSize": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
             "example": 20
           },
           "total": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1
           },
           "totalPages": {
-            "type": "number",
+            "type": "integer",
+            "minimum": 0,
             "example": 1,
             "description": "Cero cuando no hay resultados."
           },

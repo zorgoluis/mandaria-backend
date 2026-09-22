@@ -773,7 +773,7 @@ try {
     assert.equal(
       sql(db, [
         '-c',
-        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('CreditAccount_guard','CreditLedgerEntry_apply','CreditLedgerEntry_guard','CreditLedgerEntry_no_truncate','DeliveryProvider_credit_account','IndependentDriverProfile_credit_account')",
+        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('CreditAccount_guard','CreditLedgerEntry_apply','CreditLedgerEntry_guard','CreditLedgerEntry_no_truncate','DeliveryProvider_credit_account','IndependentDriverProfile_credit_account') AND EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'credit_ledger_guard' AND prosrc LIKE '%current_database()%_test%')",
       ]),
       '6',
     );

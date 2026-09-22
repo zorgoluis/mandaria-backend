@@ -1,3 +1,45 @@
+# CHECK V1.10-A — Credit Accounts & Immutable Ledger (2026-09-21)
+
+Rama `v1.10-credit-monetization` (HEAD `c612f6c`), paquete 1.10.0. Validación adversarial contra `dist/main.js` en ejecución (puerto 3012, base `mandaria_test`, routing local_fake) y PostgreSQL real, con fixtures propios, logins reales, fallos inyectados con triggers temporales (sólo en `mandaria_test`, retirados al terminar) y limpieza total. `mandaria_db` se consultó en sólo lectura salvo la migración. Sin commit ni push.
+
+**Estado de partida del entorno.** El cliente Prisma de `node_modules` era del 17-sep y `mandaria_db` y `mandaria_test` estaban en V1.8: las migraciones de V1.9 y V1.10 nunca se habían aplicado en esta máquina, así que la primera línea base falló (tsc, build y casi todas las E2E) por entorno, no por el producto. Se regeneró el cliente, se respaldaron ambas bases con `pg_dump` y se aplicaron las migraciones sin reset.
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Propiedad de cuentas | 1 cuenta por proveedor (creado por API y por SQL), 1 por independiente APPROVED, 0 para Driver de flotilla (API 404 CREDIT_ACCOUNT_NOT_FOUND); cuentas duplicadas de proveedor e independiente rechazadas por los únicos; aprobar → suspender → aprobar sigue en 1 |
+| 2 | Saldos iniciales (`mandaria_db`, datos reales) | 12 proveedores → 12 cuentas en 0; 0 independientes aprobados; 0 entradas de ledger; ninguna RECHARGE inventada |
+| 3 | Recarga | 0 + 500 = 500 y 500 + 200 = 700 en API, DB y ledger (2 entradas encadenadas, actor registrado) |
+| 4 | Recargas inválidas | 0, -1, 1.5, 1 000 001, texto, 10¹², método inexistente, OTHER sin motivo, campos forjados (balance, ownerType), sin Idempotency-Key y key corta → 400 ×12; saldo intacto |
+| 5 | Ajustes | +100 → 800, -50 → 750 con motivo; sin motivo, 0 y decimal → 400 |
+| 6 | Saldo negativo | Con 20, -21 → 409 INSUFFICIENT_CREDITS; cuenta (incl. `updatedAt`) y ledger sin cambios |
+| 7 | Atomicidad | Fallo inyectado antes y **después** de mover el saldo → 409 CREDIT_MOVEMENT_CONFLICT sin medio movimiento; UPDATE directo del saldo → CREDIT_BALANCE_WITHOUT_LEDGER; entrada con saldo viejo → CREDIT_LEDGER_STALE; reintentar la misma key aplica una sola vez |
+| 8 | Concurrencia | Con 10, -8 ∥ -8 → 1 × 201 + 1 × 409, saldo 2; +100 ∥ +200 ∥ +300 → exactamente 602 |
+| 9 | Alta contención | 60 movimientos mixtos simultáneos en ~0,6 s: 58 × 201 + 2 × 409; saldo 16 = 50 + suma aplicada; 70 entradas encadenadas sin roturas |
+| 10 | Idempotencia | Misma RECHARGE y mismo ADJUSTMENT con la misma key → 1 movimiento (201 y 200 `Idempotent-Replayed`); cuerpo distinto o otro tipo con la misma key → 409 CREDIT_IDEMPOTENCY_CONFLICT; 5 copias simultáneas → 1 movimiento (recarga y ajuste); la key es por cuenta |
+| 11 | Ledger inmutable | UPDATE, DELETE, deleteMany, TRUNCATE, GUC con otro valor y borrar una cuenta con historia → rechazados |
+| 12 | Restricciones | 19 estados inválidos escritos en SQL, todos rechazados (saldo inicial ≠ 0, negativo, UPDATE directo, duplicados, combinaciones de dueño inválidas, cambio de dueño, importe 0 o fuera de límite, descuadre, saldo negativo, signos por tipo, falta de actor/key/motivo, key repetida) |
+| 13 | Matemática del ledger | En todas las cuentas de ambas bases: before + amount = after, cadena continua, primera en 0, última = saldo: **0 violaciones** |
+| 14 | Autorización | SUPER_ADMIN lee/recarga/ajusta por rutas admin; PROVIDER_ADMIN sólo lee lo suyo; independiente sólo lo suyo; flotilla 404; B2B y anónimo 401; no existen rutas de escritura para dueños (404) |
+| 15 | Aislamiento de proveedores | `providerId` ajeno 403, `accountId`/`creditAccountId` 400, rutas admin 403; la vista del dueño no expone actor ni Idempotency-Key |
+| 16 | Aislamiento de independientes | Parámetros con el driver o la cuenta de B → se devuelve la cuenta propia o 400; rutas admin y de proveedor 403; 0 fugas |
+| 17 | Suspensión / rechazo | Cuenta y ledger se conservan y siguen legibles (proveedor suspendido; independiente suspendido y rechazado) |
+| 18 | Sin DELETE | 12 rutas de créditos en OpenAPI, ninguna DELETE/PATCH/PUT; 8 intentos → 404 |
+| 19 | Créditos ≠ dinero | Ningún campo de moneda, formato decimal ni número no entero en los 8 esquemas de créditos ni en las respuestas |
+| 20 | Regresión CLAIM | Proveedor con saldo 0 reclama (200, CLAIMED); ledger sin cambios |
+| 21 | Regresión TAKE | Independiente con saldo 0 toma (200); ledger sin cambios; 0 entradas SERVICE_* |
+| 22 | Migración | `mandaria_db` y `mandaria_test`: V1.8 → V1.9 → V1.10 sin reset; las 23 tablas previas con las mismas filas y el mismo contenido en sus columnas originales (hash por tabla); `verify-migrations` (limpia, V1.0 → V1.10 y datos V1.9 → V1.10) PASS |
+| 23 | OpenAPI | Cuenta, entrada, entrada admin, recarga, ajuste, movimiento y páginas con tipos exactos; paginación `integer`; Idempotency-Key obligatoria; 0 objetos sin estructura |
+| 24 | Logs / secretos | 2477 líneas sin contraseña, JWT (humanos, B2B ni de firma), clientSecret, SMTP ni clave de Google; 0 cadenas con forma de JWT; eventos de crédito presentes; 0 respuestas 5xx |
+| 25 | Regresión | Unitarias **131/131**; E2E **197/197** en 15 archivos (`credits` y `drivers-vehicles` sufrieron la caída nativa de workers y pasaron 24/24 y 11/11 dos veces al repetir) |
+| 26 | Calidad | prisma validate, migrate status (ambas), verify-migrations, build, tsc, Oxlint, ESLint, Prettier, docs:check PASS |
+| 27 | Limpieza | Fixtures del CHECK: 0 restos. Restos de corridas de `credits` interrumpidas por la caída de workers (5 proveedores, 12 usuarios, 20 movimientos) eliminados de `mandaria_test`. Las 12 cuentas de migración de `mandaria_db` intactas |
+
+**Defecto real encontrado y corregido.** El interruptor `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`, documentado como exclusivo de bases de prueba, funcionaba en **cualquier** base y para **cualquier** rol con permiso DELETE: fijar un GUC propio no requiere privilegios. Prueba con un rol temporal sin privilegios de dueño en `mandaria_test`: no podía desactivar el trigger, pero sí borró una entrada del ledger con el interruptor; lo mismo ocurría en `mandaria_db` (probado dentro de una transacción revertida). La mitigación del README («usar un rol sin privilegios de dueño») no lo cerraba. Corrección: migración `20260921001200_credit_ledger_purge_test_only`, que sólo acepta el interruptor si el nombre de la base termina en `_test` (misma regla que `scripts/test-database-url.ts`). Después: en `mandaria_db` el borrado con interruptor se rechaza (`CREDIT_LEDGER_IMMUTABLE`) y en `mandaria_test` sigue sirviendo para limpiar fixtures. `verify-migrations` comprueba la restricción; README actualizado.
+
+**Imprecisión preexistente corregida (sólo documentación).** La paginación compartida desde V1.2 (`page`, `pageSize`, `total`, `totalPages` en 21 respuestas y los parámetros `page`/`pageSize`) se publicaba como `number`; ahora `integer` con sus límites. Sin cambios de validación ni de respuesta.
+
+**Otras clasificaciones.** Errores de tsc/build/E2E de la primera línea base → entorno (cliente Prisma y bases sin migrar). Los 2 errores de tsc en `test/credits.spec.ts` → orden de ejecución (los tests importan tipos de `dist/`, que venía de la compilación fallida). Caídas de workers → nativas de Windows. Dos fallos del validador → expectativas equivocadas corregidas en el validador (la prosa «sin decimales ni moneda» coincidía con el patrón).
+
 # Corrección — cotizaciones concurrentes de V1.6 (2026-09-21)
 
 Rama `v1.10-credit-monetization`, sobre el commit `533bf10` (V1.10-A). El fallo que se venía arrastrando desde la línea base de V1.9 — `test/delivery-quotes.e2e-spec.ts > 20 cotizaciones concurrentes` — era un **defecto real del producto**, no del entorno.
