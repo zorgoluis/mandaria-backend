@@ -4,7 +4,7 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
-- **Entrega Git (2026-09-22):** el propietario autorizó commit y push de V1.10-D en `v1.10-credit-monetization`. Se incluye implementación, migraciones, pruebas, OpenAPI y evidencia; se excluye el cambio local preexistente de `.env`. Las menciones «sin commit/push» de verificaciones anteriores describen aquellas ejecuciones.
+- **Entrega Git (2026-09-22):** V1.10-D publicado en `origin/v1.10-credit-monetization`, commit de implementación `ec98980`; SHA local/remoto verificados iguales. Se incluye implementación, migraciones, pruebas, OpenAPI y evidencia; se excluye el cambio local preexistente de `.env`. Las menciones «sin commit/push» de verificaciones anteriores describen aquellas ejecuciones.
 
 - **Blocking Fixes V1.10-D (2026-09-22):** enforcement SQL diferido y excepciones históricas inmutables implementados; 52/52 barreras adversariales, 178 unitarias y 266 E2E pasan. Migración correctiva aplicada sin reset a ambas bases locales, datos financieros/operacionales preservados por hash. Cleanup completado: 18 bases propias eliminadas, documentación y evidencia exportadas. **COMPLETADA Y VALIDADA**. Ver `docs/CHECK_V1_10_D_FIXES.md`. Sin commit/push ni V1.10-E.
 
@@ -588,5 +588,5 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Solicitud:** realizar commit y push a la rama actual.
 - **Cambios:** empaquetar V1.10-D y sus correcciones ya validadas, conservando los informes históricos; actualizar continuidad de entrega. No modificar funcionalidades ni versión.
 - **Verificaciones de esta tarea:** revisión de estado/diff, rama y remoto; fetch, revisión de divergencia, comprobación de whitespace y búsqueda de secretos en el contenido a publicar. Las pruebas funcionales corresponden a la tarea anterior: 178 unitarias, 266 E2E y 52 adversariales, sin repetirlas para esta operación Git.
-- **Entrega:** commit de implementación preparado para publicar en `origin/v1.10-credit-monetization`; la confirmación de push se verifica contra el SHA remoto al terminar. `.env` permanece local, fuera del commit.
+- **Resultado:** commit de implementación `ec989801063a61dac2cfd7d49f6d0ab5ad0abbe5` publicado; `git ls-remote` confirmó el mismo SHA. 36 archivos, comprobación de whitespace sin errores y 0 coincidencias de secretos nuevos. `.env` permanece local, fuera del commit.
 - **Pendientes:** V1.10-E no iniciado; remediación histórica de `.env` versionado sigue pendiente.
