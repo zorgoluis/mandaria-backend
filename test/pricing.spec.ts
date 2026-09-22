@@ -16,7 +16,10 @@ import {
 } from '../dist/routing/google-routing.provider.js';
 import { RoutingError } from '../dist/routing/routing.types.js';
 import { formatPublicId } from '../dist/common/public-id.js';
-import { quoteView } from '../dist/delivery-quotes/delivery-quotes.service.js';
+import {
+  DeliveryQuotesService,
+  quoteView,
+} from '../dist/delivery-quotes/delivery-quotes.service.js';
 import { validateEnvironment } from '../src/config/environment.js';
 
 const square = (
@@ -427,5 +430,65 @@ describe('V1.6 configuration and quote views', () => {
         new Date('2030-01-01'),
       ),
     ).toMatchObject({ status: 'ACCEPTED' });
+  });
+});
+
+/**
+ * Regression for the 20-concurrent-quotes failure: inside the quote transaction, zone and rate
+ * plan lookups ran on the global Prisma client. Each needed a second pool connection while the
+ * transaction held its own plus the request lock, so with as many concurrent quotes as pool
+ * connections every request waited 10 s and failed with P2024 (HTTP 500). Every lookup must run
+ * on the transaction client.
+ */
+describe('Quote transaction runs every lookup on its own connection', () => {
+  const D = (n: number) => new Prisma.Decimal(n);
+  const build = (plan: unknown) => {
+    const tx = {
+      $queryRaw: vi
+        .fn()
+        .mockResolvedValue([
+          { id: 'req', status: 'CREATED', serviceType: 'LOCAL_DELIVERY' },
+        ]),
+      deliveryQuote: { findMany: vi.fn().mockResolvedValue([]) },
+      deliveryStop: {
+        findMany: vi.fn().mockResolvedValue([
+          { type: 'PICKUP', latitude: D(16.7), longitude: D(-93.3) },
+          { type: 'DROPOFF', latitude: D(16.71), longitude: D(-93.31) },
+        ]),
+      },
+    };
+    const zones = {
+      resolveActive: vi.fn().mockResolvedValue([{ id: 'zone' }]),
+    };
+    const plans = { findActive: vi.fn().mockResolvedValue(plan) };
+    const prisma = {
+      $transaction: (fn: (t: typeof tx) => unknown) => fn(tx),
+    };
+    const config = new ConfigService({
+      GOOGLE_ROUTES_TIMEOUT_MS: 5000,
+      GOOGLE_ROUTES_MAX_RETRIES: 1,
+    });
+    const routing = { name: 'fake', calculateRoute: vi.fn() };
+    const service = new DeliveryQuotesService(
+      prisma as never,
+      zones as never,
+      plans as never,
+      routing as never,
+      config,
+    );
+    return { service, tx, zones, plans, routing };
+  };
+
+  it('passes the transaction client to the zone and rate plan lookups', async () => {
+    // No active plan: the quote stops right after the lookups, before any routing call.
+    const { service, tx, zones, plans, routing } = build(null);
+    await expect(service.quote('MDR-000001', 'client')).rejects.toMatchObject({
+      response: { code: 'RATE_CONFIGURATION_UNAVAILABLE' },
+    });
+    expect(zones.resolveActive).toHaveBeenCalledTimes(2);
+    for (const call of zones.resolveActive.mock.calls) expect(call[1]).toBe(tx);
+    expect(plans.findActive).toHaveBeenCalledTimes(1);
+    expect(plans.findActive.mock.calls[0][2]).toBe(tx);
+    expect(routing.calculateRoute).not.toHaveBeenCalled();
   });
 });

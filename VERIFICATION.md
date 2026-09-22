@@ -1,3 +1,33 @@
+# Corrección — cotizaciones concurrentes de V1.6 (2026-09-21)
+
+Rama `v1.10-credit-monetization`, sobre el commit `533bf10` (V1.10-A). El fallo que se venía arrastrando desde la línea base de V1.9 — `test/delivery-quotes.e2e-spec.ts > 20 cotizaciones concurrentes` — era un **defecto real del producto**, no del entorno.
+
+**Causa.** `DeliveryQuotesService.quote()` abre una transacción interactiva, bloquea la DeliveryRequest `FOR UPDATE` y, dentro de ella, resolvía la zona (`ServiceZonesService.resolveActive`, dos veces en paralelo) y la tarifa (`RatePlansService.findActive`) con el **cliente global** de Prisma, no con `tx`. Cada una de esas consultas necesita **otra** conexión del pool mientras la transacción retiene la suya. Con tantas cotizaciones simultáneas como conexiones del pool, todas quedaban esperando el bloqueo de la fila y quien lo tenía esperaba una conexión que nunca se liberaba: interbloqueo hasta el timeout del pool (10 s), `P2024` y `500` en casi todas.
+
+**Reproducción aislada** (fuera de la aplicación, 20 transacciones sobre la misma fila en `mandaria_test`):
+
+| Variante | Resultado |
+|---|---|
+| Consultas con el cliente global dentro de la transacción (código anterior) | **0/20 OK**; todas fallan a los **10 015 ms** con `P2024` — la misma firma que los `500` a ~10 s del test |
+| Mismas consultas con `tx` | **20/20 OK en 634 ms** |
+| Sólo bloqueo `FOR UPDATE` + 150 ms de espera (control) | 20/20 OK en ~3,1 s: el bloqueo y el pool por sí solos no eran el problema |
+
+**Corrección.** `resolveActive` y `findActive` aceptan opcionalmente el cliente de la transacción (por defecto el global, así que los demás llamadores no cambian) y `quote()` les pasa `tx`; las dos búsquedas de zona pasan a ser secuenciales dentro de la misma conexión. Sin cambios de esquema, de contrato ni de respuestas.
+
+**¿Hay más casos?** Se revisaron todas las transacciones interactivas de `src/` buscando consultas con `this.prisma` o llamadas a otros servicios dentro del cuerpo: sólo existían estas tres, en la cotización. Las otras tres llamadas encontradas no consultan la base (routing HTTP, lectura de configuración, validación pura).
+
+**Verificación.**
+
+| Verificación | Resultado |
+|---|---|
+| `delivery-quotes.e2e-spec.ts` | **11/11 en 3 corridas seguidas** (antes 10/11 siempre) |
+| Prueba unitaria nueva en `test/pricing.spec.ts` | Comprueba que zona y tarifa reciben `tx` y que no se llama al routing si no hay tarifa. **Validada por mutación**: quitando `tx` de la llamada, falla; restaurado, pasa |
+| TypeScript / Oxlint / ESLint / Prettier / docs:check | PASS |
+| Unitarias | **131 PASS** (130 + 1) |
+| E2E por archivo | **197 PASS, 15/15 archivos, 0 fallos**: primera corrida completamente verde registrada en el proyecto (un archivo necesitó un reintento por la caída conocida de workers en Windows, no por un fallo de prueba) |
+
+**Nota de entorno.** Mientras se ejecutaba, una tarea en segundo plano trabajaba en un worktree dentro de la carpeta del repositorio (`.claude/worktrees/`) y Vitest tomaba también sus copias de los specs. Las corridas de esta verificación usan `--exclude '.claude/**'`; los resultados anteriores son sólo del repositorio principal.
+
 # Verificación V1.10-A — Credit Accounts & Immutable Ledger (2026-09-21)
 
 Rama `v1.10-credit-monetization`, paquete 1.10.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push.
