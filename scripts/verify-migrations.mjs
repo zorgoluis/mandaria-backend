@@ -869,8 +869,49 @@ try {
       '6',
     );
   }
+  // V1.10-C: dispatch credit snapshots. Dispatches that predate the migration (the upgraded
+  // database keeps its V1.7-backfilled EXPIRED dispatch) get no invented, retroactive cost.
+  assert.equal(
+    sql(upgradeDb, ['-c', 'SELECT count(*) FROM "Dispatch"']),
+    '1',
+  );
+  for (const db of [upgradeDb, v19Db, v110aDb])
+    assert.equal(
+      sql(db, ['-c', 'SELECT count(*) FROM "DispatchCreditSnapshot"']),
+      '0',
+    );
+  for (const db of [cleanDb, upgradeDb, v110aDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('DispatchCreditSnapshot_values_check','DispatchCreditSnapshot_dispatchId_fkey','DispatchCreditSnapshot_creditPolicyId_fkey','DispatchCreditSnapshot_appliedRangeId_fkey')",
+      ]),
+      '4',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname = 'DispatchCreditSnapshot_dispatchId_actorType_key' AND indexdef LIKE 'CREATE UNIQUE%'",
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('DispatchCreditSnapshot_guard','DispatchCreditSnapshot_no_truncate','Dispatch_credit_snapshots_required')",
+      ]),
+      '3',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT array_to_string(\"credit_required_actors\"('LOCAL_DELIVERY'), ',')",
+      ]),
+      'PROVIDER,INDEPENDENT_DRIVER',
+    );
+  }
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; V1.4-V1.10 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; V1.4-V1.10 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

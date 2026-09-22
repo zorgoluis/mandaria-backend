@@ -12,6 +12,7 @@ import {
   VehicleType,
 } from '@prisma/client';
 import { PaginationResponse } from '../providers/providers.responses.js';
+import { creditCostDoc } from '../credit-policies/dispatch-credit-snapshots.responses.js';
 
 class IndependentDriverRefResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
@@ -195,6 +196,14 @@ export class DriverDispatchResponse {
   claimedAt!: Date | null;
   @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
+  @ApiProperty({
+    type: 'integer',
+    nullable: true,
+    minimum: 1,
+    example: 14,
+    description: creditCostDoc('mí (repartidor independiente)'),
+  })
+  creditCost!: number | null;
   @ApiPropertyOptional({ type: DriverAssignmentResponse, nullable: true })
   assignment!: DriverAssignmentResponse | null;
   @ApiProperty({ type: DriverServiceResponse })

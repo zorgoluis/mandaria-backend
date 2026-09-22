@@ -1,6 +1,7 @@
 import type { DispatchStatus, Prisma, ServiceType } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
 import { cancelActiveAssignments } from '../delivery-assignments/delivery-assignments.service.js';
+import { createDispatchCreditSnapshots } from '../credit-policies/dispatch-credit-snapshots.js';
 
 export const DISPATCH_ERRORS = {
   DISPATCH_EXPIRED: 409,
@@ -85,6 +86,9 @@ export async function eligibleProviderIds(
 /**
  * Opens the dispatch of a quote that has just been ACCEPTED, inside the same transaction, and
  * snapshots its candidates. Zero candidates is valid: the dispatch stays OPEN until it expires.
+ * V1.10-C: in the same transaction it freezes the credit cost of every actor that may be awarded
+ * it (DispatchCreditSnapshot), from the quote's canonical distance. A missing credit policy aborts
+ * the opening — and with it the acceptance — instead of publishing a free service.
  */
 export async function openDispatch(
   tx: Prisma.TransactionClient,
@@ -93,6 +97,7 @@ export async function openDispatch(
     deliveryRequestId: string;
     serviceZoneId: string;
     serviceType: ServiceType;
+    distanceMeters: number;
   },
   ttlMinutes: number,
   now: Date,
@@ -111,6 +116,11 @@ export async function openDispatch(
     },
     select: { id: true, expiresAt: true },
   });
+  const creditSnapshots = await createDispatchCreditSnapshots(
+    tx,
+    dispatch.id,
+    quote,
+  );
   if (providerIds.length)
     await tx.dispatchCandidate.createMany({
       data: providerIds.map((providerId) => ({
@@ -119,7 +129,7 @@ export async function openDispatch(
         offeredAt: now,
       })),
     });
-  return { ...dispatch, providerIds };
+  return { ...dispatch, providerIds, creditSnapshots };
 }
 
 /**

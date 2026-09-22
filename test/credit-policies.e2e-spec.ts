@@ -7,6 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import request from 'supertest';
+import { ensureTestCreditPolicies } from './support/credit-policies.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith('_test'))
@@ -84,6 +85,8 @@ async function purgePolicies() {
     prisma.$executeRawUnsafe(
       `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
     ),
+    // V1.10-C: frozen dispatch costs reference policies (RESTRICT), so they go first.
+    prisma.dispatchCreditSnapshot.deleteMany({}),
     prisma.creditPolicyRange.deleteMany({}),
     prisma.creditPolicy.deleteMany({}),
   ]);
@@ -206,6 +209,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await purgePolicies();
+  // Leave the global baseline that the suites opening Dispatches rely on (V1.10-C).
+  await ensureTestCreditPolicies(prisma);
   await prisma.driver.deleteMany({ where: { providerId } });
   await prisma.providerMembership.deleteMany({ where: { providerId } });
   await prisma.deliveryProvider.deleteMany({ where: { id: providerId } }); // empty account cascades
@@ -692,6 +697,7 @@ async function purgeActor(actorType: 'PROVIDER' | 'INDEPENDENT_DRIVER') {
     prisma.$executeRawUnsafe(
       `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
     ),
+    prisma.dispatchCreditSnapshot.deleteMany({ where: { actorType } }),
     prisma.creditPolicyRange.deleteMany({
       where: { creditPolicy: { actorType } },
     }),

@@ -6,6 +6,7 @@ import type { INestApplication, LoggerService } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
 import request from 'supertest';
+import { ensureTestCreditPolicies } from './support/credit-policies.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith('_test'))
@@ -210,6 +211,8 @@ const detail = (key: string, dispatchId: string, providerId?: string) =>
     .auth(t[key], bearer);
 
 beforeAll(async () => {
+  // V1.10-C: accepting a quote opens a Dispatch, which needs ACTIVE credit policies.
+  await ensureTestCreditPolicies(prisma);
   const passwordHash = await argon2.hash(password);
   const user = async (
     key: string,

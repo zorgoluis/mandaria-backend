@@ -1,6 +1,10 @@
 import type { DispatchCandidateStatus, Prisma } from '@prisma/client';
 import { allowsIndependent } from '../independent-drivers/independent-driver-policy.js';
 import { effectiveDispatchStatus } from './dispatch-policy.js';
+import {
+  creditCostFor,
+  dispatchCreditSnapshotSelect,
+} from '../credit-policies/dispatch-credit-snapshots.js';
 
 const decimal = (value: Prisma.Decimal | null) =>
   value === null ? null : value.toFixed(2);
@@ -94,6 +98,11 @@ export const dispatchSelect = {
       provider: { select: { id: true, name: true, code: true } },
     },
   },
+  // V1.10-C: frozen credit cost per actor; each view exposes only what its audience may see.
+  creditSnapshots: {
+    orderBy: { actorType: 'asc' },
+    select: dispatchCreditSnapshotSelect,
+  },
 } satisfies Prisma.DispatchSelect;
 export type DispatchRecord = Prisma.DispatchGetPayload<{
   select: typeof dispatchSelect;
@@ -141,6 +150,9 @@ export function providerDispatchView(
     claimedByMe: owner,
     claimedAt: owner ? dispatch.claimedAt : null,
     cancelledAt: dispatch.cancelledAt,
+    // V1.10-C: what claiming this dispatch costs a provider, frozen when it opened. Credits, not
+    // money (never part of service.deliveryFee or goods). null = opened before V1.10-C (legacy).
+    creditCost: creditCostFor(dispatch.creditSnapshots, 'PROVIDER'),
     // V1.8: who executes the service; only the claim owner sees it.
     assignment: owner ? (dispatch.deliveryAssignments[0] ?? null) : null,
     ...deadline,
@@ -281,5 +293,8 @@ export function adminDispatchView(dispatch: DispatchRecord, now = new Date()) {
       releaseReason: c.releaseReason,
     })),
     goods: goodsView(dispatch.deliveryRequest.financialContext),
+    // V1.10-C audit: every frozen cost with the policy version and evidence that produced it.
+    creditSnapshots: dispatch.creditSnapshots,
+    legacyWithoutCreditSnapshots: dispatch.creditSnapshots.length === 0,
   };
 }

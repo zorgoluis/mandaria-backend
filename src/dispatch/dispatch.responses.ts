@@ -8,6 +8,10 @@ import {
   ServiceType,
 } from '@prisma/client';
 import { PaginationResponse } from '../providers/providers.responses.js';
+import {
+  DispatchCreditSnapshotResponse,
+  creditCostDoc,
+} from '../credit-policies/dispatch-credit-snapshots.responses.js';
 
 const statusDoc =
   'Estado efectivo. OPEN: reclamable hasta expiresAt. CLAIMED: tomado por un proveedor (su claim no caduca con expiresAt). EXPIRED: ventana cerrada sin claim vigente (un OPEN vencido se informa EXPIRED aunque aún no se haya persistido). CANCELLED: la DeliveryRequest fue cancelada.';
@@ -126,6 +130,14 @@ export class ProviderDispatchResponse {
   claimedAt!: Date | null;
   @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
+  @ApiProperty({
+    type: 'integer',
+    nullable: true,
+    minimum: 1,
+    example: 7,
+    description: creditCostDoc('mi proveedor'),
+  })
+  creditCost!: number | null;
   @ApiPropertyOptional({ type: MyCandidateResponse, nullable: true })
   myCandidate!: MyCandidateResponse | null;
   @ApiPropertyOptional({ type: ServiceDetailResponse, nullable: true })
@@ -206,6 +218,18 @@ export class AdminDispatchResponse {
   candidates!: AdminCandidateResponse[];
   @ApiPropertyOptional({ type: GoodsResponse, nullable: true })
   goods!: GoodsResponse | null;
+  @ApiProperty({
+    type: DispatchCreditSnapshotResponse,
+    isArray: true,
+    description:
+      'V1.10-C: costo congelado por tipo de actor que puede adjudicarse el servicio, con la versión de política y la evidencia del cálculo. Vacío en Dispatches anteriores a V1.10-C.',
+  })
+  creditSnapshots!: DispatchCreditSnapshotResponse[];
+  @ApiProperty({
+    description:
+      'true si el Dispatch se abrió antes de V1.10-C y no tiene costo registrado (legacy). No se inventan costos retroactivos.',
+  })
+  legacyWithoutCreditSnapshots!: boolean;
 }
 export class AdminDispatchPageResponse extends PaginationResponse {
   @ApiProperty({ type: AdminDispatchResponse, isArray: true })

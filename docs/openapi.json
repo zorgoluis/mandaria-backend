@@ -52413,6 +52413,13 @@
             "format": "date-time",
             "nullable": true
           },
+          "creditCost": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1,
+            "example": 7,
+            "description": "V1.10-C: créditos que costaría a mi proveedor adjudicarse este servicio, congelados al abrir el Dispatch con la política ACTIVE de entonces; un cambio posterior de política no lo altera. Son créditos, no dinero: no forman parte de deliveryFee, goods ni paymentContext. null = Dispatch abierto antes de V1.10-C (legacy, sin costo registrado). V1.10-C todavía no descuenta créditos al reclamar ni al tomar."
+          },
           "myCandidate": {
             "nullable": true,
             "type": "object",
@@ -52440,7 +52447,8 @@
           "serviceZone",
           "openedAt",
           "expiresAt",
-          "claimedByMe"
+          "claimedByMe",
+          "creditCost"
         ]
       },
       "ProviderDispatchPageResponse": {
@@ -52696,6 +52704,126 @@
           "offeredAt"
         ]
       },
+      "DispatchCreditSnapshotResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actorType": {
+            "type": "string",
+            "enum": [
+              "PROVIDER",
+              "INDEPENDENT_DRIVER"
+            ],
+            "description": "Quién pagaría: PROVIDER (también por sus Drivers de flotilla) o INDEPENDENT_DRIVER."
+          },
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "LOCAL_DELIVERY"
+            ]
+          },
+          "creditPolicyId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Versión de CreditPolicy usada (la ACTIVE al abrir el Dispatch)."
+          },
+          "policyVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "calculationType": {
+            "type": "string",
+            "enum": [
+              "PER_KM",
+              "FLAT",
+              "DISTANCE_RANGE"
+            ]
+          },
+          "distanceMeters": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Distancia canónica copiada de la DeliveryQuote del Dispatch (la que fijó el routing al cotizar). No se volvió a consultar routing."
+          },
+          "billableKm": {
+            "type": "integer",
+            "nullable": true,
+            "description": "PER_KM: ceil(distanceMeters / 1000) aplicado. null en los demás tipos."
+          },
+          "creditsPerKm": {
+            "type": "integer",
+            "nullable": true,
+            "description": "PER_KM: tarifa congelada."
+          },
+          "minimumCredits": {
+            "type": "integer",
+            "nullable": true,
+            "description": "PER_KM: mínimo congelado."
+          },
+          "calculatedCredits": {
+            "type": "integer",
+            "nullable": true,
+            "description": "PER_KM: billableKm × creditsPerKm antes del mínimo."
+          },
+          "flatCredits": {
+            "type": "integer",
+            "nullable": true,
+            "description": "FLAT: costo fijo congelado."
+          },
+          "appliedRangeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "DISTANCE_RANGE: rango aplicado."
+          },
+          "appliedRangePosition": {
+            "type": "integer",
+            "nullable": true
+          },
+          "appliedRangeMinDistanceMeters": {
+            "type": "integer",
+            "nullable": true,
+            "description": "DISTANCE_RANGE: inicio del rango aplicado (inclusivo)."
+          },
+          "appliedRangeMaxDistanceMeters": {
+            "type": "integer",
+            "nullable": true,
+            "description": "DISTANCE_RANGE: fin del rango aplicado (exclusivo); null si era el rango abierto."
+          },
+          "credits": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000,
+            "description": "Costo congelado en créditos enteros. V1.10-C no lo descuenta de ninguna cuenta."
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "actorType",
+          "serviceType",
+          "creditPolicyId",
+          "policyVersion",
+          "calculationType",
+          "distanceMeters",
+          "billableKm",
+          "creditsPerKm",
+          "minimumCredits",
+          "calculatedCredits",
+          "flatCredits",
+          "appliedRangeId",
+          "appliedRangePosition",
+          "appliedRangeMinDistanceMeters",
+          "appliedRangeMaxDistanceMeters",
+          "credits",
+          "createdAt"
+        ]
+      },
       "AdminDispatchResponse": {
         "type": "object",
         "properties": {
@@ -52779,6 +52907,17 @@
                 "$ref": "#/components/schemas/GoodsResponse"
               }
             ]
+          },
+          "creditSnapshots": {
+            "description": "V1.10-C: costo congelado por tipo de actor que puede adjudicarse el servicio, con la versión de política y la evidencia del cálculo. Vacío en Dispatches anteriores a V1.10-C.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DispatchCreditSnapshotResponse"
+            }
+          },
+          "legacyWithoutCreditSnapshots": {
+            "type": "boolean",
+            "description": "true si el Dispatch se abrió antes de V1.10-C y no tiene costo registrado (legacy). No se inventan costos retroactivos."
           }
         },
         "required": [
@@ -52791,7 +52930,9 @@
           "deliveryRequest",
           "deliveryQuote",
           "noProviderAvailable",
-          "candidates"
+          "candidates",
+          "creditSnapshots",
+          "legacyWithoutCreditSnapshots"
         ]
       },
       "AdminDispatchPageResponse": {
@@ -54127,6 +54268,13 @@
             "format": "date-time",
             "nullable": true
           },
+          "creditCost": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1,
+            "example": 14,
+            "description": "V1.10-C: créditos que costaría a mí (repartidor independiente) adjudicarse este servicio, congelados al abrir el Dispatch con la política ACTIVE de entonces; un cambio posterior de política no lo altera. Son créditos, no dinero: no forman parte de deliveryFee, goods ni paymentContext. null = Dispatch abierto antes de V1.10-C (legacy, sin costo registrado). V1.10-C todavía no descuenta créditos al reclamar ni al tomar."
+          },
           "assignment": {
             "nullable": true,
             "type": "object",
@@ -54152,6 +54300,7 @@
           "openedAt",
           "expiresAt",
           "takenByMe",
+          "creditCost",
           "service",
           "paymentContext"
         ]

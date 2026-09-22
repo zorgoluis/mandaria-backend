@@ -1578,6 +1578,54 @@ PROVIDER_ADMIN y DRIVER reciben 403 y el IntegrationClient 401: no leen las regl
 
 Pruebas: `test/credit-policies.spec.ts` (PER_KM 0/1/999/1000/1001/6240 m con mínimo, casos donde el mínimo ya no domina, FLAT, fronteras de rangos, validación de campos por tipo, huecos/solapes, distancia inválida, desbordamiento, determinismo con reloj falso, fallo cerrado y pureza respecto a cuentas) y `test/credit-policies.e2e-spec.ts` (autorización, fallo cerrado, creación y campos falsificados, cálculo por HTTP, versionado v1→v4 con historial intacto, conflicto al versionar desde una INACTIVE, fronteras por HTTP, 10 versiones simultáneas, cadenas concurrentes, creaciones iniciales simultáneas, 28 ataques SQL rechazados y ledger/saldos intactos tras los cálculos).
 
+## Dispatch Credit Snapshot (V1.10-C)
+
+Responde: **¿cuántos créditos costaba este servicio, para cada actor, en el momento en que se abrió?** Al abrirse un Dispatch se congela el costo por actor con la política ACTIVE de ese instante. **V1.10-C no cobra:** CLAIM y TAKE no consumen créditos, no se escribe SERVICE_AWARD ni SERVICE_REFUND y ningún saldo cambia (el cobro es V1.10-D y usará este snapshot, nunca la política vigente).
+
+```text
+aceptar cotización ─► (misma transacción) Dispatch OPEN ─► por cada actor permitido:
+    política ACTIVE (serviceType, actor) + DeliveryQuote.distanceMeters ─► calculateCreditCost ─► DispatchCreditSnapshot
+```
+
+### Actores y distancia canónica
+
+- **Actores del snapshot** = quién puede adjudicarse el servicio según el modo de ejecución del ServiceType (`SERVICE_EXECUTION_MODES`): `FLEET` → `PROVIDER`; `INDEPENDENT` → `INDEPENDENT_DRIVER`; `BOTH` → ambos. Hoy `LOCAL_DELIVERY` es `BOTH`, así que cada Dispatch nuevo tiene exactamente dos snapshots. La función SQL `credit_required_actors("ServiceType")` replica esa tabla para las garantías de la base (cambiar un modo exige migración).
+- **Distancia canónica:** `DeliveryQuote.distanceMeters` de la cotización aceptada (el Dispatch la referencia con `deliveryQuoteId`). No se vuelve a llamar a Google Routes ni a `local_fake`; la base comprueba que el snapshot copie exactamente esa distancia y el `serviceType` de la cotización.
+
+### Cuándo y cómo se crea
+
+- Dentro de `openDispatch()`, en la **misma transacción** que acepta la cotización y crea el Dispatch y sus candidaturas: o se crean Dispatch + todos los snapshots, o nada.
+- Por actor: bloqueo consultivo **compartido** `(71_600_020, serviceType:actor)` —el mismo espacio que toma en exclusiva el versionado V1.10-B—, resolución de la ACTIVE y cálculo puro. Así una versión nueva nunca se cruza con una apertura: el snapshot queda con la versión anterior o con la nueva, nunca con una mezcla.
+- **Evidencia congelada:** `creditPolicyId`, `policyVersion`, `calculationType`, `distanceMeters`, `credits` y, según el tipo, `billableKm`/`creditsPerKm`/`minimumCredits`/`calculatedCredits` (PER_KM), `flatCredits` (FLAT) o `appliedRangeId`/`appliedRangePosition`/`appliedRangeMin/MaxDistanceMeters` (DISTANCE_RANGE). Con eso se reconstruye el costo sin consultar la política.
+- **Costo 0 no se congela:** `credits` va de 1 a 1 000 000. Una política que diera 0 (p. ej. PER_KM con `minimumCredits: 0` y 0 m) hace fallar la apertura con 422 `CREDIT_COST_OUT_OF_RANGE`, igual que un costo > 1 000 000. Nunca se abre un servicio «gratis» por omisión.
+
+### Fallo cerrado
+
+Si falta la ACTIVE de **cualquier** actor requerido, la aceptación B2B (`POST /delivery-quotes/:publicId/accept`) responde **409 `CREDIT_POLICY_UNAVAILABLE`**: la transacción se revierte, la cotización sigue OFFERED, no queda Dispatch ni snapshot huérfano y el cliente puede reintentar cuando exista la política. **Orden de despliegue:** antes de aceptar cotizaciones en un entorno nuevo, un SUPER_ADMIN debe crear la política de `PROVIDER` y la de `INDEPENDENT_DRIVER` para `LOCAL_DELIVERY` (en local: `npm run db:seed:local-credit-policies`); si no, toda aceptación falla con 409.
+
+### Inmutabilidad y dispatches anteriores
+
+- Un snapshot no se edita nunca (`CREDIT_SNAPSHOT_IMMUTABLE`). Crear una versión nueva de la política **no altera** los snapshots existentes: un Dispatch abierto con v1 (7 créditos) sigue costando 7 aunque v2 cobre 21; los Dispatches nuevos usan v2.
+- Sólo se borra en cascada al borrarse su Dispatch, o con el interruptor de purga de bases `_test`. La FK a la política y al rango es RESTRICT.
+- **Dispatches anteriores a V1.10-C** (legacy) no reciben un costo inventado ni retroactivo: la migración no rellena nada. En la API se ven con `creditCost: null` (proveedor/repartidor) y `creditSnapshots: []` + `legacyWithoutCreditSnapshots: true` (admin). Siguen operando igual (CLAIM/TAKE/asignación).
+
+### Exposición en la API
+
+| Vista | Campo |
+|---|---|
+| Proveedor (`/provider/dispatches…`) | `creditCost`: créditos del actor `PROVIDER` (entero) o `null` en legacy |
+| Repartidor independiente (`/driver/dispatches…`) | `creditCost`: créditos del actor `INDEPENDENT_DRIVER` o `null` |
+| SUPER_ADMIN (`/admin/dispatches…`) | `creditSnapshots` (todos, con su evidencia, ordenados por actor) y `legacyWithoutCreditSnapshots` |
+| IntegrationClient (B2B) | Nada: los créditos son un asunto entre Mandaria y quien ejecuta, no del cliente |
+
+Ni el proveedor ni el repartidor ven el costo del otro actor ni la política. El log `DISPATCH_OPENED` añade `creditCosts` (actor, créditos, versión, tipo).
+
+### Base de datos
+
+Migración `20260922001400_dispatch_credit_snapshots`: tabla `DispatchCreditSnapshot` con único `(dispatchId, actorType)`; CHECK de valores (créditos 1–1 000 000, distancia ≥ 0, versión > 0 y exactamente la evidencia de cada tipo, con `IS NOT NULL` explícitos); trigger guardián que, al insertar, exige un Dispatch OPEN recién creado en la misma transacción (sin claim ni asignación), actor permitido, la política ACTIVE correcta y **recalcula el costo en SQL** (`CREDIT_SNAPSHOT_INVALID` / `CREDIT_SNAPSHOT_MISMATCH`), y rechaza UPDATE, DELETE fuera de cascada/purga y TRUNCATE; y un trigger de restricción **diferido** en `Dispatch` que al COMMIT exige los snapshots de todos los actores requeridos (`CREDIT_SNAPSHOT_MISSING`). No toca datos existentes.
+
+Pruebas: `test/dispatch-credit-snapshots.spec.ts` (actores por modo, evidencia PER_KM/FLAT/RANGE, costo 0 rechazado, bloqueo compartido, sin acceso a cuentas ni ledger) y `test/dispatch-credit-snapshots.e2e-spec.ts` (vistas por actor, cambio de política, 10 aceptaciones simultáneas, carrera con el versionado, fallo cerrado y reintento, 20 ataques SQL, cascada, legacy, CLAIM/TAKE con saldo 0 sin movimientos, logs). Desde V1.10-C las suites E2E corren un archivo a la vez (`fileParallelism: false`) porque la política de créditos es configuración global compartida; las que aceptan cotizaciones aseguran una política base con `test/support/credit-policies.ts`.
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -1627,7 +1675,11 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.10-A: la Idempotency-Key es única por cuenta, no global; reutilizar la misma key en dos cuentas distintas registra dos movimientos independientes.
 - V1.10-A: los límites (1 000 000 por movimiento, 1 000 000 000 de saldo) son constantes de código y de CHECK; cambiarlos requiere migración.
 - OpenAPI: 130 campos anulables de versiones anteriores (V1.1–V1.9, incluidos varios de V1.9) se publican como `type: object` sin estructura, porque TypeScript refleja `X | null` como Object. Los esquemas de V1.10-A declaran su tipo explícitamente; el resto queda pendiente como tarea aparte.
-- V1.10-B: las políticas sólo se calculan; ninguna ruta de proveedor o repartidor muestra aún el costo de un servicio, y ningún servicio lo congela (V1.10-C) ni lo cobra (V1.10-D).
+- V1.10-B: las políticas sólo se calculan; desde V1.10-C cada Dispatch nuevo congela su costo por actor y proveedor/repartidor ven su `creditCost`, pero nada lo cobra todavía (V1.10-D).
+- V1.10-C: sin políticas ACTIVE para todos los actores del ServiceType, **ninguna cotización puede aceptarse** (409 `CREDIT_POLICY_UNAVAILABLE`): crear las políticas es parte del despliegue. Una política que calcule 0 créditos también bloquea la apertura (422).
+- V1.10-C: los Dispatches anteriores a V1.10-C no tienen snapshot (`creditCost: null`); V1.10-D debe decidir cómo tratarlos (p. ej. adjudicarlos sin cobro).
+- V1.10-C: los actores requeridos existen dos veces (`SERVICE_EXECUTION_MODES` en código y `credit_required_actors()` en SQL); cambiar el modo de un ServiceType exige migración para actualizar la función.
+- V1.10-C: las suites E2E corren en serie (`fileParallelism: false`) porque comparten la configuración global de políticas; la corrida completa es más lenta.
 - V1.10-B: sin activación futura ni scheduler; una versión rige desde que se crea. Deshabilitar el cobro de una combinación no tiene endpoint (y, cuando V1.10-D cobre, la falta de política bloqueará adjudicaciones: fallo cerrado).
 - V1.10-B: con `minimumCredits: 0` un servicio de 0 m cuesta 0 créditos; V1.10-D debe decidir cómo tratarlo porque el ledger no admite movimientos de 0.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
@@ -1635,8 +1687,8 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.10-B / V1.10-C+
+## Fuera de V1.10-C / V1.10-D+
 
-No se implementaron snapshot del costo en créditos en el Dispatch (V1.10-C), débito al CLAIM o al TAKE, SERVICE_AWARD y SERVICE_REFUND operativos, devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron débito al CLAIM o al TAKE (V1.10-D), SERVICE_AWARD y SERVICE_REFUND operativos, devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API y auditoría persistente siguen pendientes.

@@ -563,6 +563,8 @@ enum DispatchCandidateStatus {
 /// V1.7: offer of an ACCEPTED quote to eligible providers. Created in the same transaction that
 /// accepts the quote (one per quote). The winner is claimedByProviderId; no Driver/Vehicle yet.
 model Dispatch {
+  /// V1.10-C: frozen credit cost per actor type; empty for Dispatches opened before V1.10-C.
+  creditSnapshots DispatchCreditSnapshot[]
   id String @id @default(uuid()) @db.Uuid
   deliveryRequestId String @db.Uuid
   deliveryQuoteId String @unique @db.Uuid
@@ -770,6 +772,7 @@ enum CreditPolicyStatus {
 /// (set by the server on activation and on supersession); there is no scheduling. Only the column
 /// set of its calculationType is filled (CHECK). V1.10-B only calculates: nothing consumes credits.
 model CreditPolicy {
+  snapshots DispatchCreditSnapshot[]
   id String @id @default(uuid()) @db.Uuid
   serviceType ServiceType
   actorType CreditAccountOwnerType
@@ -795,6 +798,7 @@ model CreditPolicy {
 /// at 0, are contiguous and the last one is open, so every distance matches exactly one range
 /// (deferred constraint trigger). Written only with its policy and never changed.
 model CreditPolicyRange {
+  snapshots DispatchCreditSnapshot[]
   id String @id @default(uuid()) @db.Uuid
   creditPolicyId String @db.Uuid
   position Int
@@ -804,4 +808,41 @@ model CreditPolicyRange {
   creditPolicy CreditPolicy @relation(fields: [creditPolicyId], references: [id], onDelete: Restrict)
   @@unique([creditPolicyId, position])
   @@unique([creditPolicyId, minDistanceMeters])
+}
+
+/// V1.10-C: the credit cost of being awarded one Dispatch by one kind of actor, frozen when the
+/// Dispatch opens (same transaction as the quote acceptance). One row per Dispatch and actorType
+/// that may execute its ServiceType (SERVICE_EXECUTION_MODES). It copies the canonical distance
+/// (DeliveryQuote.distanceMeters) and every economic input of the policy version it used, so the
+/// cost stays explainable even without reading the policy again. Never updated; it only disappears
+/// together with its Dispatch. Dispatches opened before V1.10-C have none (legacy, no invented
+/// history). V1.10-C only records the cost: claim and take do not consume credits yet.
+model DispatchCreditSnapshot {
+  id String @id @default(uuid()) @db.Uuid
+  dispatchId String @db.Uuid
+  actorType CreditAccountOwnerType
+  serviceType ServiceType
+  creditPolicyId String @db.Uuid
+  policyVersion Int
+  calculationType CreditCalculationType
+  distanceMeters Int
+  /// PER_KM evidence: ceil(distanceMeters / 1000), the policy rate and minimum, and the product.
+  billableKm Int?
+  creditsPerKm Int?
+  minimumCredits Int?
+  calculatedCredits Int?
+  /// FLAT evidence.
+  flatCredits Int?
+  /// DISTANCE_RANGE evidence: the range applied, [min, max) with null max = open-ended.
+  appliedRangeId String? @db.Uuid
+  appliedRangePosition Int?
+  appliedRangeMinDistanceMeters Int?
+  appliedRangeMaxDistanceMeters Int?
+  credits Int
+  createdAt DateTime @default(now())
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  creditPolicy CreditPolicy @relation(fields: [creditPolicyId], references: [id], onDelete: Restrict)
+  appliedRange CreditPolicyRange? @relation(fields: [appliedRangeId], references: [id], onDelete: Restrict)
+  @@unique([dispatchId, actorType])
+  @@index([creditPolicyId])
 }

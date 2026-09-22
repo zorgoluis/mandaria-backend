@@ -51,8 +51,33 @@ type Combination = {
   serviceType: ServiceType;
   actorType: CreditAccountOwnerType;
 };
-/** Namespace of the per-combination advisory lock (the zone activation lock is 71_600_001). */
-const POLICY_LOCK_NAMESPACE = 71_600_020;
+/**
+ * Namespace of the per-combination advisory lock (the zone activation lock is 71_600_001). Writers
+ * of policy versions take it exclusively; V1.10-C Dispatch openings take it shared, so an opening
+ * sees one complete ACTIVE version for its whole transaction, never a version being replaced.
+ */
+export const POLICY_LOCK_NAMESPACE = 71_600_020;
+
+/**
+ * The single ACTIVE policy of a service type and actor, or CREDIT_POLICY_UNAVAILABLE. Usable inside
+ * any transaction (V1.10-C calls it while opening a Dispatch).
+ */
+export async function resolveActiveCreditPolicy(
+  db: Db,
+  serviceType: ServiceType,
+  actorType: CreditAccountOwnerType,
+) {
+  const policy = await db.creditPolicy.findFirst({
+    where: { serviceType, actorType, status: 'ACTIVE' },
+    select: creditPolicySelect,
+  });
+  if (!policy)
+    throw creditPolicyError(
+      'CREDIT_POLICY_UNAVAILABLE',
+      `No ACTIVE credit policy for ${serviceType} / ${actorType}`,
+    );
+  return policy;
+}
 
 @Injectable()
 export class CreditPoliciesService {
@@ -66,21 +91,12 @@ export class CreditPoliciesService {
    * picks an arbitrary version and never turns a missing policy into a free service: the caller
    * must fail closed. The partial unique index guarantees there is at most one.
    */
-  async resolveActivePolicy(
+  resolveActivePolicy(
     serviceType: ServiceType,
     actorType: CreditAccountOwnerType,
     db: Db = this.prisma,
   ) {
-    const policy = await db.creditPolicy.findFirst({
-      where: { serviceType, actorType, status: 'ACTIVE' },
-      select: creditPolicySelect,
-    });
-    if (!policy)
-      throw creditPolicyError(
-        'CREDIT_POLICY_UNAVAILABLE',
-        `No ACTIVE credit policy for ${serviceType} / ${actorType}`,
-      );
-    return policy;
+    return resolveActiveCreditPolicy(db, serviceType, actorType);
   }
 
   /**

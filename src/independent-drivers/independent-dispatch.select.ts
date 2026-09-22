@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { effectiveDispatchStatus } from '../dispatch/dispatch-policy.js';
 import { paymentContext } from '../delivery-assignments/assignment-policy.js';
+import { creditCostFor } from '../credit-policies/dispatch-credit-snapshots.js';
 
 const decimal = (value: Prisma.Decimal | null) =>
   value === null ? null : value.toFixed(2);
@@ -74,6 +75,11 @@ export const driverDispatchSelect = {
       },
     },
   },
+  // V1.10-C: only the independent-driver cost is read; the provider one never reaches this query.
+  creditSnapshots: {
+    where: { actorType: 'INDEPENDENT_DRIVER' },
+    select: { actorType: true, credits: true },
+  },
 } satisfies Prisma.DispatchSelect;
 export type DriverDispatchRecord = Prisma.DispatchGetPayload<{
   select: typeof driverDispatchSelect;
@@ -125,6 +131,9 @@ export function driverDispatchView(
     takenByMe: owner,
     claimedAt: owner ? dispatch.claimedAt : null,
     cancelledAt: dispatch.cancelledAt,
+    // V1.10-C: what taking this dispatch costs me, frozen when it opened. Credits, not money.
+    // null = opened before V1.10-C (legacy).
+    creditCost: creditCostFor(dispatch.creditSnapshots, 'INDEPENDENT_DRIVER'),
     // Only ever my own assignment: a driver never learns who else is executing a service.
     assignment:
       owner && assignment?.driverId === driverId

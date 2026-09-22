@@ -1,3 +1,79 @@
+# CHECK V1.10-C — Dispatch Credit Snapshot, validación adversarial (2026-09-22)
+
+Rama `v1.10-credit-monetization`, HEAD `7881efb` + V1.10-C sin commit, paquete 1.10.0; `mandaria_db` y `mandaria_test` al día (14 migraciones). Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (puerto 3016, base `mandaria_test`), con fixtures propios, logins reales y reinicios para no agotar los límites de peticiones, cotizaciones y logins. `mandaria_db` sólo se leyó (consultas y `pg_dump`). Sin cambios de código: **33/33 PASS**.
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Línea base | Ledger sin roturas ni descuadres, 0 saldos negativos; 2 políticas ACTIVE sin duplicados; 14 migraciones aplicadas; cálculo 6240 m → 7; cuenta nueva con saldo 0 |
+| 2 | Escenario de dos actores | Políticas PROVIDER 1/km e INDEPENDENT_DRIVER 2/km (mínimo 3); Dispatch real con distancia canónica 6240 m → exactamente 2 snapshots |
+| 3 | Costo del proveedor | DB y API: `billableKm` 7 × 1 = **7** |
+| 4 | Costo del independiente | DB y API: 7 × 2 = **14** |
+| 5 | Aislamiento de vistas | Proveedor: única clave de créditos `creditCost` = 7 (detalle y listado); repartidor: 14; SUPER_ADMIN audita los dos; proveedor y repartidor reciben 403 en `/admin/dispatches/:id` y `/admin/credit-policies` |
+| 6 | Inmutabilidad del snapshot | Tras versionar a 3/km y 4/km, las filas de A son idénticas byte a byte y la API sigue devolviendo 7 / 14 |
+| 7 | Dispatch nuevo | Con las políticas nuevas y la misma distancia: **21 / 28**; A sigue en 7 / 14 aunque recalcular hoy daría 21 / 28 |
+| 8 | Política histórica | Cada snapshot referencia la versión exacta usada (v3, hoy INACTIVE) con su `policyVersion`, no la ACTIVE actual; A se creó dentro de la ventana de vigencia de esa versión |
+| 9 | Inmutabilidad por SQL | UPDATE de créditos, de política/versión y de `createdAt`, DELETE, DELETE con un valor de purga falso y TRUNCATE → `CREDIT_SNAPSHOT_IMMUTABLE`; A intacto |
+| 10 | Snapshot duplicado | Segundo `PROVIDER` en la misma apertura → índice único (`Unique constraint`); fila extra sobre un Dispatch existente → `CREDIT_SNAPSHOT_INVALID` |
+| 11 | Datos inválidos | credits 0, negativos, > 1 000 000 y falsificados → `CREDIT_SNAPSHOT_MISMATCH`; distancia < 0 y FK de política inexistente → `CREDIT_SNAPSHOT_INVALID`; PER_KM sin `billableKm` → CHECK 23514; el CHECK acota además créditos 1–1 000 000 y distancia ≥ 0 |
+| 12 | Actor cruzado | Fila PROVIDER con la política del independiente, fila INDEPENDENT con la del proveedor y versión superada del actor correcto → `CREDIT_SNAPSHOT_INVALID` |
+| 13 | ServiceType cruzado | Enum real = {LOCAL_DELIVERY}: el escenario **no puede ejecutarse sin inventar dominio** y no se agregó ningún ServiceType. La comparación de `serviceType` (contra la cotización y contra la política) sí existe en el guardián SQL |
+| 14 | Sin política de PROVIDER | Aceptar → 409 `CREDIT_POLICY_UNAVAILABLE`; cotización OFFERED, 0 Dispatch, 0 snapshots huérfanos; al restaurarla, el mismo reintento abre con 21/28 |
+| 15 | Sin política de INDEPENDENT_DRIVER | Idéntico (LOCAL_DELIVERY = BOTH, el independiente está permitido) |
+| 16 | Política irrelevante | `credit_required_actors('LOCAL_DELIVERY')` = PROVIDER,INDEPENDENT_DRIVER; ningún ServiceType real excluye a un actor, así que el caso se cubre con la prueba de dominio «a FLEET-only or INDEPENDENT-only service gets only its own actor» |
+| 17 | Rollback transaccional | Servidor real con el 2.º actor a 1 000 000/km: 422 `CREDIT_COST_OUT_OF_RANGE`, cotización OFFERED, 0 Dispatch, 0 snapshots, sin `DISPATCH_OPENED` en el log. Por SQL: 1.er snapshot insertado y 2.º falsificado → `CREDIT_SNAPSHOT_MISMATCH` y no queda nada |
+| 18 | Carrera con la activación | 12 aperturas simultáneas + 2 versiones nuevas: 12 × 200 y 2 × 201; cada snapshot coincide exactamente con una versión (0 incoherencias); reparto PROVIDER 2 viejas/10 nuevas, INDEPENDENT 1/11; 1 Dispatch quedó con un actor viejo y el otro nuevo (ver garantía abajo) |
+| 19 | Reintentos | Re-aceptar A ×3 → 200 idempotente y sigue con 2 snapshots; 10 aceptaciones simultáneas → 1 Dispatch, 2 snapshots; **0 duplicados** en toda la base |
+| 20 | Llamadas de routing | 1 por cotización, **0 al aceptar y snapshotear**, 0 al re-aceptar; 20 `ROUTING_CALCULATED` para 20 cotizaciones |
+| 21 | FLAT | `calculationType` FLAT, `credits` = `flatCredits` = 5, sin evidencia falsa (`billableKm`, `creditsPerKm`, `minimumCredits`, `calculatedCredits` y rango en NULL) |
+| 22 | DISTANCE_RANGE | 6240 m → rango #2 [3000, 10000) → 8 con id, posición y límites; tras reemplazar la política por PER_KM la fila es idéntica y sigue siendo interpretable (API incluida) |
+| 23 | Distancia 0 | Cotización real de 0 m: FLAT → 5, primer rango → 3, PER_KM 1/km mínimo 3 → `billableKm` 0, calculado 0, **credits 3** |
+| 24 | Independencia de cuentas | 185 cuentas con el mismo saldo y `updatedAt` tras 24 Dispatches (46 snapshots) |
+| 25 | Independencia del ledger | Entradas y secuencia sin cambios; **0** SERVICE_AWARD / SERVICE_REFUND |
+| 26 | CLAIM con saldo 0 | Saldo 0 y `creditCost` 7 → claim 200 CLAIMED, saldo sigue 0, sin movimientos |
+| 27 | TAKE con saldo 0 | Saldo 0 y `creditCost` 14 → take 200, saldo sigue 0, sin movimientos |
+| 28 | Contexto de pago | `deliveryFee` 60.00 MXN, `goodsValue` 300.00, `driverAdvanceAmount` 300.00 (cadenas con moneda) y `creditCost` entero sin moneda; A y B comparten tarifa 60.00 con créditos 7 y 21 (ninguna conversión ni suma cruzada) |
+| 29 | Aislamiento B2B | 20 rutas de créditos y de dispatch con el token de IntegrationClient → 401; los payloads B2B (alta, cotización, aceptación, lectura) no contienen ninguna clave de créditos |
+| 30 | Dispatch legacy | Fixture sin snapshots: proveedor y repartidor `creditCost: null`, admin `[]` + `legacyWithoutCreditSnapshots: true`, listados 200; los 18 Dispatches previos de `mandaria_test` se leen igual; CLAIM 200 y **no se creó ningún snapshot retroactivo** |
+| 31 | Migración V1.10-B → V1.10-C | Base temporal con el esquema V1.10-B (13 migraciones) y **los datos reales de `mandaria_db`** (28 tablas idénticas): al aplicar sólo la migración V1.10-C, las 28 tablas quedan con las mismas filas y el mismo hash; 44 Dispatches, 0 snapshots, 44 legacy, ledger y políticas sin tocar; sin drift contra `schema.prisma`. Base temporal y volcado eliminados |
+| 32 | Escaneo de base | `mandaria_test` (46 snapshots) y `mandaria_db` (0): **0 duplicados, 0 huérfanos, 0 créditos ≤ 0, 0 distancias < 0, 0 desajustes de política y 0 de costo recalculado en SQL, 0 conjuntos incompletos** |
+| 33 | OpenAPI | `creditCost` entero anulable en proveedor y repartidor; `creditSnapshots` como arreglo de `DispatchCreditSnapshotResponse` (18 propiedades tipadas, enum de actor, 0 sin estructura); `legacyWithoutCreditSnapshots` booleano; 0 esquemas B2B con créditos |
+| 34-35 | Regresión y calidad | prisma validate, migrate status (ambas), sin drift (ambas), verify-migrations, build, tsc, Oxlint, ESLint, docs:check PASS; **158 unitarias**; **E2E 230/230 en 17 archivos** (sin caída de workers en esta corrida) |
+| 36 | Limpieza | Fixtures, usuarios, credenciales temporales y versiones de política del CHECK eliminados; políticas ACTIVE base restauradas (PER_KM 1/km, mínimo 3, autor de E2E) en `mandaria_test`; `mandaria_db` idéntica antes y después |
+| — | Logs | 1216 líneas sin secretos ni JWT, 0 respuestas 5xx; los 24 `DISPATCH_OPENED` incluyen `creditCosts` |
+
+**Garantía de concurrencia (detalle del punto 18).** Cada actor se resuelve bajo un bloqueo consultivo **compartido** `(71600020, "LOCAL_DELIVERY:<actor>")` que la apertura mantiene hasta el COMMIT, mientras que crear una versión lo toma en **exclusiva**. Por eso ningún snapshot mezcla dos versiones. Los actores se resuelven uno tras otro (PROVIDER y luego INDEPENDENT_DRIVER) y cada cambio de política es su propia transacción, así que un Dispatch puede quedar legítimamente con el proveedor en la versión anterior y el independiente en la nueva si esa segunda versión se confirma entre las dos resoluciones: cada costo sigue siendo exactamente el vigente en su propia resolución, y es el snapshot —no la política— lo que V1.10-D cobrará.
+
+**Bugs del producto:** ninguno; sin cambios de código. **Del validador (corregidos en el validador):** `now()` local usado como `effectiveUntil` en una base con marcas UTC (la restricción `CreditPolicy_values_check` lo rechazó correctamente) y un contador de limpieza que confundía la política base restaurada con las del propio CHECK.
+
+**Riesgos restantes.** Los ya documentados de V1.10-C: hay que crear las políticas antes de aceptar cotizaciones en cada entorno (si no, 409 en toda aceptación); los Dispatches legacy no tienen costo y V1.10-D debe decidir cómo tratarlos; los actores requeridos viven en dos lugares (`SERVICE_EXECUTION_MODES` y `credit_required_actors()`), así que cambiar un modo exige migración. Además: una combinación puede quedar sin política ACTIVE sólo escribiendo SQL directo (la API nunca desactiva sin reemplazar) y en ese estado no hay endpoint para volver a activarla; y el dueño de las tablas puede desactivar triggers, por lo que en producción la aplicación debe usar un rol que no sea dueño y una base cuyo nombre no termine en `_test`.
+
+# Verificación V1.10-C — Dispatch Credit Snapshot (2026-09-22)
+
+Rama `v1.10-credit-monetization` sobre `7881efb` (V1.10-B), paquete 1.10.0, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push. **V1.10-C no cobra: CLAIM y TAKE no consumen créditos.**
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260922001400_dispatch_credit_snapshots` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; 28 tablas previas con las mismas filas y contenido; 0 snapshots creados (sin backfill) |
+| `verify-migrations` | PASS: limpia, V1.0 → V1.10, datos V1.9 → V1.10 y V1.10-A ledger → V1.10-B → V1.10-C; 0 snapshots en las bases migradas (el Dispatch EXPIRED retrocompletado en V1.7 queda legacy); 4 restricciones, índice único, 3 triggers y `credit_required_actors('LOCAL_DELIVERY')` = `PROVIDER,INDEPENDENT_DRIVER` |
+| prisma validate / migrate status (ambas) / drift (ambas) | PASS / al día / vacío |
+| build, tsc, Oxlint, ESLint, docs:check | PASS |
+| OpenAPI | `creditCost` entero anulable en las 8 respuestas de proveedor y repartidor (listas, detalle, claim/take/release); `creditSnapshots` + `legacyWithoutCreditSnapshots` en admin; esquemas B2B sin datos de créditos; 0 objetos sin estructura |
+| Unitarias | **158/158** (10 nuevas de snapshot + `dispatch.spec` ampliado) |
+| E2E por archivo | **230/230** en 17 archivos (14 nuevas); `provider-admin-access` sufrió la caída nativa de workers de Windows y pasó 9/9 dos veces al repetir |
+| Costo por actor | Distancia 6240 m: proveedor ve `creditCost` 7, repartidor independiente 14 (política 2/km), admin ambos snapshots con evidencia, B2B sin datos de créditos |
+| Cambio de política | Dispatch A abierto con v1 sigue 7/14 tras crear v2; Dispatch B nuevo 21/28 |
+| Evidencia FLAT y DISTANCE_RANGE | FLAT con `flatCredits`; 12 400 m → rango 2 `[10000,20000)` → 20, con id, posición y límites del rango |
+| Concurrencia | 10 aceptaciones simultáneas → 1 Dispatch y 2 snapshots; carrera con creación de versiones → cada snapshot coincide exactamente con una versión |
+| Fallo cerrado | Sin política INDEPENDENT_DRIVER → 409 `CREDIT_POLICY_UNAVAILABLE`, cotización OFFERED, 0 Dispatch, 0 snapshots huérfanos; al restaurar, la aceptación da [35, 28] |
+| Garantías SQL | 20 escrituras directas rechazadas con su razón (costo o distancia falsos, política INACTIVE u otro actor, actor no permitido, Dispatch no OPEN/antiguo/reclamado, UPDATE, DELETE, TRUNCATE, faltante al COMMIT, duplicado); borrado en cascada con el Dispatch |
+| Legacy | Dispatch sin snapshot: `creditCost: null`, admin `[]` + `legacyWithoutCreditSnapshots: true`; CLAIM funciona |
+| Economía intacta | CLAIM y TAKE con saldo 0 y costo > 0 → 200; saldos, `updatedAt` y ledger sin cambios; 0 SERVICE_AWARD/SERVICE_REFUND |
+| Logs | `DISPATCH_OPENED` incluye `creditCosts` (actor, créditos, versión, tipo); sin secretos |
+| Humo real (`dist/main.js` sobre `mandaria_db`, sólo lectura) | **5/5**: los 44 Dispatches existentes (28 CLAIMED, 14 EXPIRED, 2 CANCELLED) se leen como legacy; un CLAIMED con asignación ACTIVE se lee bien; políticas operativas v1 PER_KM 1/3 presentes; Dispatches, asignaciones, snapshots (0) y ledger (0) idénticos; log sin secretos ni 5xx |
+| Mutaciones | **5/5 detectadas**: BOTH sin repartidor independiente, costo 0 aceptado, legacy informado como 0, bloqueo exclusivo en vez de compartido, apertura sin snapshots |
+
+Estado final: `mandaria_db` con 0 snapshots y sus 44 Dispatches legacy intactos. En `mandaria_test` las suites de políticas purgan todos los snapshots con el interruptor `_test` (necesario para poder borrar políticas, FK RESTRICT), así que los Dispatches de fixtures que quedan aparecen sin snapshot; es un artefacto de limpieza sólo de la base de pruebas.
+
 # CHECK V1.10-B — Credit Policy Engine (2026-09-22)
 
 Rama `v1.10-credit-monetization`, HEAD `5e8e14b` + V1.10-B sin commit, paquete 1.10.0; `mandaria_db` y `mandaria_test` al día (13 migraciones). Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (puerto 3014, base `mandaria_test`), con fixtures propios, logins reales y reinicios para no agotar los límites de peticiones y logins. `mandaria_db` sólo se leyó. Sin cambios de código. **Resultado: 29/29.**

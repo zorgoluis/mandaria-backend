@@ -408,6 +408,13 @@ export class DeliveryQuotesService {
         serviceType: outcome.quote.serviceType,
         candidateCount: outcome.dispatch.providerIds.length,
         noProviderAvailable: outcome.dispatch.providerIds.length === 0,
+        // V1.10-C: the frozen cost per actor (evidence of which policy version produced it).
+        creditCosts: outcome.dispatch.creditSnapshots.map((s) => ({
+          actorType: s.actorType,
+          credits: s.credits,
+          policyVersion: s.policyVersion,
+          calculationType: s.calculationType,
+        })),
         expiresAt: outcome.dispatch.expiresAt.toISOString(),
         actorType: 'INTEGRATION',
         actorId: integrationClientId,
