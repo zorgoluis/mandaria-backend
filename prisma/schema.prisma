@@ -39,6 +39,8 @@ model User {
   deliveryAssignmentsEnded DeliveryAssignment[] @relation("DeliveryAssignmentEndedBy")
   createdInvitations UserInvitation[] @relation("InvitationCreator")
   revokedInvitations UserInvitation[] @relation("InvitationRevoker")
+  creditLedgerEntries CreditLedgerEntry[]
+  creditPolicies CreditPolicy[]
   independentProfilesApproved IndependentDriverProfile[] @relation("IndependentProfileApprover")
   independentProfilesSuspended IndependentDriverProfile[] @relation("IndependentProfileSuspender")
   independentProfilesRejected IndependentDriverProfile[] @relation("IndependentProfileRejecter")
@@ -110,6 +112,8 @@ model DeliveryProvider {
   serviceCoverages ProviderServiceCoverage[]
   dispatchCandidates DispatchCandidate[]
   deliveryAssignments DeliveryAssignment[]
+  /// V1.10: exactly one per provider, created with it (trigger) and never deleted by the API.
+  creditAccount CreditAccount?
   @@index([type, status])
   @@index([createdAt, id])
 }
@@ -252,6 +256,8 @@ model IndependentDriverProfile {
   rejectedBy User? @relation("IndependentProfileRejecter", fields: [rejectedByUserId], references: [id], onDelete: Restrict)
   vehicles Vehicle[]
   deliveryAssignments DeliveryAssignment[]
+  /// V1.10: created the first time the profile reaches APPROVED; kept through suspension.
+  creditAccount CreditAccount?
   /// Lets DeliveryAssignment prove driver and profile match with a composite FK instead of a trigger.
   @@unique([id, driverId])
   @@index([status, createdAt])
@@ -543,6 +549,10 @@ model ProviderServiceCoverage {
 /// EXPIRED is persisted lazily: an OPEN dispatch past expiresAt is reported as EXPIRED and can
 /// never be claimed. There is no NO_PROVIDER status: a dispatch without OFFERED candidates stays
 /// OPEN until it expires and is flagged by the derived field noProviderAvailable.
+enum DispatchCreditMode {
+  LEGACY
+  MONETIZED
+}
 enum DispatchStatus {
   OPEN
   CLAIMED
@@ -557,6 +567,15 @@ enum DispatchCandidateStatus {
 /// V1.7: offer of an ACCEPTED quote to eligible providers. Created in the same transaction that
 /// accepts the quote (one per quote). The winner is claimedByProviderId; no Driver/Vehicle yet.
 model Dispatch {
+  /// V1.10-C: frozen credit cost per actor type; empty for Dispatches opened before V1.10-C.
+  creditSnapshots DispatchCreditSnapshot[]
+  preEnforcementAwards DispatchPreEnforcementAward[]
+  /// V1.10-D monetization boundary, decided when the Dispatch is created and never changed.
+  /// MONETIZED (every Dispatch opened from V1.10-C on) must carry its snapshots and is charged at
+  /// CLAIM/TAKE; LEGACY (backfilled for the Dispatches that already existed) is never charged and
+  /// never gets a retroactive snapshot. A monetized Dispatch without its snapshot fails closed
+  /// instead of being free, so future corruption can never turn into free services.
+  creditMode DispatchCreditMode @default(MONETIZED)
   id String @id @default(uuid()) @db.Uuid
   deliveryRequestId String @db.Uuid
   deliveryQuoteId String @unique @db.Uuid
@@ -585,6 +604,19 @@ model Dispatch {
   @@index([claimedByProviderId, status])
   @@index([claimedByIndependentDriverId, status])
   @@index([createdAt, id])
+}
+
+/// Immutable migration evidence: an award that existed before DB credit enforcement.
+/// actorId is a DeliveryProvider id for PROVIDER, or a Driver id for INDEPENDENT_DRIVER.
+model DispatchPreEnforcementAward {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dispatchId String @db.Uuid
+  actorType CreditAccountOwnerType
+  actorId String @db.Uuid
+  awardedAt DateTime
+  recordedAt DateTime @default(now())
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Restrict)
+  @@unique([dispatchId, actorType, actorId, awardedAt], map: "DispatchPreEnforcementAward_identity_key")
 }
 /// Snapshot of the providers a dispatch was offered to. Never recalculated or deleted.
 model DispatchCandidate {
@@ -664,4 +696,193 @@ model DeliveryAssignment {
   @@index([independentDriverProfileId, status, assignedAt])
   @@index([driverId, assignedAt])
   @@index([vehicleId, assignedAt])
+}
+
+/// V1.10: who a CreditAccount belongs to. A fleet driver never has one: it works on its provider's.
+enum CreditAccountOwnerType {
+  PROVIDER
+  INDEPENDENT_DRIVER
+}
+/// V1.10 sign convention (enforced by CHECK): RECHARGE and SERVICE_REFUND are credits (> 0),
+/// SERVICE_AWARD is a debit (< 0), ADMIN_ADJUSTMENT may be either but never 0. Only RECHARGE and
+/// ADMIN_ADJUSTMENT are produced in V1.10-A; the other two are reserved for claim/take charging.
+/// V1.10-E: why a SERVICE_REFUND exists. Only operational events the backend really supports.
+enum CreditRefundReason {
+  PROVIDER_RELEASE
+  INDEPENDENT_RELEASE
+  DELIVERY_CANCELLED
+}
+enum CreditLedgerEntryType {
+  RECHARGE
+  SERVICE_AWARD
+  SERVICE_REFUND
+  ADMIN_ADJUSTMENT
+}
+/// How a manual recharge was paid outside Mandaria. A declaration by SUPER_ADMIN, not a gateway:
+/// Mandaria never moves or verifies that money.
+enum CreditRechargeMethod {
+  TRANSFER
+  CASH
+  OTHER
+}
+/// V1.10: Mandaria credits — the commercial right to be awarded services. They are integers and
+/// they are NOT money: not the delivery fee, not the goods value, not a driver's cash. Exactly one
+/// owner column is set, matching ownerType (CHECK). balance is materialized for fast reads and
+/// future claim-time checks, but it can only move through a CreditLedgerEntry: inserting an entry
+/// updates it in the same statement (trigger), and a direct UPDATE of balance is rejected.
+model CreditAccount {
+  id String @id @default(uuid()) @db.Uuid
+  ownerType CreditAccountOwnerType
+  providerId String? @unique @db.Uuid
+  independentDriverProfileId String? @unique @db.Uuid
+  /// Whole credits, 0..1_000_000_000 (CHECK). Starts at 0: an account is never born with credits.
+  balance Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  provider DeliveryProvider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  independentDriverProfile IndependentDriverProfile? @relation(fields: [independentDriverProfileId], references: [id], onDelete: Cascade)
+  entries CreditLedgerEntry[]
+  @@index([ownerType, createdAt])
+}
+/// V1.10: append-only history of an account. No row is ever updated, and deletion is refused too
+/// (trigger). balanceAfter = balanceBefore + amount, and each entry's balanceBefore is the
+/// account's balance at the moment it is written, so the chain ordered by sequence is gapless.
+/// Every human movement carries an Idempotency-Key, unique per account.
+model CreditLedgerEntry {
+  id String @id @default(uuid()) @db.Uuid
+  /// Global insertion order. Movements of one account are serialized by its row lock, so ordering
+  /// an account's entries by sequence reproduces the exact order they were applied in.
+  sequence Int @unique @default(autoincrement())
+  creditAccountId String @db.Uuid
+  type CreditLedgerEntryType
+  /// Signed whole credits: > 0 adds, < 0 removes. |amount| <= 1_000_000 per movement.
+  amount Int
+  balanceBefore Int
+  balanceAfter Int
+  /// RECHARGE only: how it was paid outside Mandaria.
+  rechargeMethod CreditRechargeMethod?
+  /// RECHARGE only: bank transfer folio, receipt number, etc. Never card data or credentials.
+  externalReference String?
+  /// Why the movement exists. Required for ADMIN_ADJUSTMENT and for RECHARGE with method OTHER.
+  reason String?
+  /// What the movement paid for. V1.10-D writes DISPATCH + Dispatch.id on every SERVICE_AWARD,
+  /// which together with the account (and so the actor) identifies the frozen snapshot charged.
+  /// A partial unique index allows at most one SERVICE_AWARD per account and Dispatch.
+  referenceType String?
+  referenceId String? @db.Uuid
+  /// V1.10-E: the SERVICE_AWARD this SERVICE_REFUND compensates, and the operational event that
+  /// caused it. The award itself is never modified: a refund is a new, opposite entry that points
+  /// at it, and a partial unique index allows at most one refund per award (full refunds only).
+  reversesEntryId String? @db.Uuid
+  refundReason CreditRefundReason?
+  /// Human actor. Required for RECHARGE and ADMIN_ADJUSTMENT.
+  createdByUserId String? @db.Uuid
+  /// Client-supplied key, unique per account; only its request fingerprint is kept alongside it.
+  idempotencyKey String?
+  requestHash String? @db.Char(64)
+  createdAt DateTime @default(now())
+  creditAccount CreditAccount @relation(fields: [creditAccountId], references: [id], onDelete: Restrict)
+  createdBy User? @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  reverses CreditLedgerEntry? @relation("CreditLedgerReversal", fields: [reversesEntryId], references: [id], onDelete: Restrict)
+  reversedBy CreditLedgerEntry[] @relation("CreditLedgerReversal")
+  @@unique([creditAccountId, idempotencyKey])
+  @@index([creditAccountId, sequence])
+  @@index([type, createdAt])
+  @@index([reversesEntryId])
+}
+
+/// V1.10-B: how a credit policy turns the canonical distance of a service into credits.
+enum CreditCalculationType {
+  PER_KM
+  FLAT
+  DISTANCE_RANGE
+}
+/// V1.10-B: at most one ACTIVE policy per serviceType + actorType (partial unique index). A new
+/// version supersedes the ACTIVE one in the same transaction; superseded versions stay INACTIVE
+/// forever as history.
+enum CreditPolicyStatus {
+  ACTIVE
+  INACTIVE
+}
+/// V1.10-B: how many credits it costs a given actor to be awarded a service. Versioned and
+/// immutable: economics never change in place, a change is a new version (max + 1 per
+/// serviceType + actorType, enforced by trigger). actorType reuses CreditAccountOwnerType because it
+/// is exactly who pays: PROVIDER for a provider and its fleet drivers, INDEPENDENT_DRIVER for an
+/// independent driver. effectiveFrom/effectiveUntil record when the version was really in force
+/// (set by the server on activation and on supersession); there is no scheduling. Only the column
+/// set of its calculationType is filled (CHECK). V1.10-B only calculates: nothing consumes credits.
+model CreditPolicy {
+  snapshots DispatchCreditSnapshot[]
+  id String @id @default(uuid()) @db.Uuid
+  serviceType ServiceType
+  actorType CreditAccountOwnerType
+  version Int
+  status CreditPolicyStatus @default(ACTIVE)
+  calculationType CreditCalculationType
+  creditsPerKm Int?
+  minimumCredits Int?
+  flatCredits Int?
+  effectiveFrom DateTime
+  effectiveUntil DateTime?
+  reason String?
+  createdByUserId String @db.Uuid
+  createdAt DateTime @default(now())
+  createdBy User @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  ranges CreditPolicyRange[]
+  @@unique([serviceType, actorType, version])
+  @@index([serviceType, actorType, status])
+  @@index([createdAt, id])
+}
+/// V1.10-B DISTANCE_RANGE row. [minDistanceMeters, maxDistanceMeters): min inclusive, max
+/// exclusive, integer meters; maxDistanceMeters null means "and beyond". A policy's ranges start
+/// at 0, are contiguous and the last one is open, so every distance matches exactly one range
+/// (deferred constraint trigger). Written only with its policy and never changed.
+model CreditPolicyRange {
+  snapshots DispatchCreditSnapshot[]
+  id String @id @default(uuid()) @db.Uuid
+  creditPolicyId String @db.Uuid
+  position Int
+  minDistanceMeters Int
+  maxDistanceMeters Int?
+  credits Int
+  creditPolicy CreditPolicy @relation(fields: [creditPolicyId], references: [id], onDelete: Restrict)
+  @@unique([creditPolicyId, position])
+  @@unique([creditPolicyId, minDistanceMeters])
+}
+
+/// V1.10-C: the credit cost of being awarded one Dispatch by one kind of actor, frozen when the
+/// Dispatch opens (same transaction as the quote acceptance). One row per Dispatch and actorType
+/// that may execute its ServiceType (SERVICE_EXECUTION_MODES). It copies the canonical distance
+/// (DeliveryQuote.distanceMeters) and every economic input of the policy version it used, so the
+/// cost stays explainable even without reading the policy again. Never updated; it only disappears
+/// together with its Dispatch. Dispatches opened before V1.10-C have none (legacy, no invented
+/// history). V1.10-C only records the cost: claim and take do not consume credits yet.
+model DispatchCreditSnapshot {
+  id String @id @default(uuid()) @db.Uuid
+  dispatchId String @db.Uuid
+  actorType CreditAccountOwnerType
+  serviceType ServiceType
+  creditPolicyId String @db.Uuid
+  policyVersion Int
+  calculationType CreditCalculationType
+  distanceMeters Int
+  /// PER_KM evidence: ceil(distanceMeters / 1000), the policy rate and minimum, and the product.
+  billableKm Int?
+  creditsPerKm Int?
+  minimumCredits Int?
+  calculatedCredits Int?
+  /// FLAT evidence.
+  flatCredits Int?
+  /// DISTANCE_RANGE evidence: the range applied, [min, max) with null max = open-ended.
+  appliedRangeId String? @db.Uuid
+  appliedRangePosition Int?
+  appliedRangeMinDistanceMeters Int?
+  appliedRangeMaxDistanceMeters Int?
+  credits Int
+  createdAt DateTime @default(now())
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  creditPolicy CreditPolicy @relation(fields: [creditPolicyId], references: [id], onDelete: Restrict)
+  appliedRange CreditPolicyRange? @relation(fields: [appliedRangeId], references: [id], onDelete: Restrict)
+  @@unique([dispatchId, actorType])
+  @@index([creditPolicyId])
 }

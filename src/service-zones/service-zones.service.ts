@@ -241,9 +241,15 @@ export class ServiceZonesService {
   /**
    * ACTIVE zones covering the point: bounding-box pre-filter in SQL, exact point-in-polygon in
    * the geometry module. Activation forbids overlaps, so more than one result is an anomaly.
+   * Callers inside an interactive transaction must pass their `tx`: a query on the global client
+   * would need a second pool connection while the transaction holds its own, which deadlocks the
+   * pool under concurrency (see DeliveryQuotesService.quote).
    */
-  async resolveActive(point: GeoPoint) {
-    const candidates = await this.prisma.serviceZone.findMany({
+  async resolveActive(
+    point: GeoPoint,
+    db: Prisma.TransactionClient | PrismaService = this.prisma,
+  ) {
+    const candidates = await db.serviceZone.findMany({
       where: {
         status: 'ACTIVE',
         minLatitude: { lte: point.latitude },

@@ -10,5 +10,9 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
+    exclude: ['**/node_modules/**', '.claude/**'],
+    // All E2E files share one database and, since V1.10-B/C, global credit policies that some
+    // suites replace while others open Dispatches that require them: files run one at a time.
+    fileParallelism: false,
   },
 });

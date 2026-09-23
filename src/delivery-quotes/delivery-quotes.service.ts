@@ -174,10 +174,12 @@ export class DeliveryQuotesService {
           const pickup = point('PICKUP');
           const dropoff = point('DROPOFF');
 
-          const [pickupZones, dropoffZones] = await Promise.all([
-            this.zones.resolveActive(pickup),
-            this.zones.resolveActive(dropoff),
-          ]);
+          // Every query of this transaction runs on `tx`. A lookup on the global client would need a
+          // second pool connection while this one holds the request lock; with as many concurrent
+          // quotes as pool connections, all of them wait on that lock and the holder waits on the
+          // pool, until the 10 s pool timeout fails every request (P2024 -> 500).
+          const pickupZones = await this.zones.resolveActive(pickup, tx);
+          const dropoffZones = await this.zones.resolveActive(dropoff, tx);
           if (!pickupZones.length || !dropoffZones.length)
             throw fail(
               'OUT_OF_SERVICE_AREA',
@@ -199,6 +201,7 @@ export class DeliveryQuotesService {
           const plan = await this.plans.findActive(
             zone.id,
             request.serviceType,
+            tx,
           );
           if (!plan)
             throw fail(
@@ -405,6 +408,13 @@ export class DeliveryQuotesService {
         serviceType: outcome.quote.serviceType,
         candidateCount: outcome.dispatch.providerIds.length,
         noProviderAvailable: outcome.dispatch.providerIds.length === 0,
+        // V1.10-C: the frozen cost per actor (evidence of which policy version produced it).
+        creditCosts: outcome.dispatch.creditSnapshots.map((s) => ({
+          actorType: s.actorType,
+          credits: s.credits,
+          policyVersion: s.policyVersion,
+          calculationType: s.calculationType,
+        })),
         expiresAt: outcome.dispatch.expiresAt.toISOString(),
         actorType: 'INTEGRATION',
         actorId: integrationClientId,

@@ -17,6 +17,8 @@ import { InvitationsModule } from './invitations/invitations.module.js';
 import { DispatchModule } from './dispatch/dispatch.module.js';
 import { DeliveryAssignmentsModule } from './delivery-assignments/delivery-assignments.module.js';
 import { IndependentDriversModule } from './independent-drivers/independent-drivers.module.js';
+import { CreditsModule } from './credits/credits.module.js';
+import { CreditPoliciesModule } from './credit-policies/credit-policies.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
@@ -35,6 +37,8 @@ import { IndependentDriversModule } from './independent-drivers/independent-driv
     DispatchModule,
     DeliveryAssignmentsModule,
     IndependentDriversModule,
+    CreditsModule,
+    CreditPoliciesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

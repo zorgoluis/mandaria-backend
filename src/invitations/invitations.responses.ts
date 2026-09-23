@@ -31,6 +31,7 @@ export class UserInvitationResponse {
   })
   membershipRole!: ProviderMemberRole | null;
   @ApiPropertyOptional({
+    type: String,
     nullable: true,
     example: 'Carlos Pérez',
     description: 'Sólo DRIVER: nombre del Driver a crear.',
@@ -49,11 +50,11 @@ export class UserInvitationResponse {
   })
   tokenIssuedAt!: Date;
   @ApiProperty({ example: 0 }) resendCount!: number;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   acceptedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   revokedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true })
   revokedByUserId!: string | null;
   @ApiProperty({ format: 'uuid' }) createdByUserId!: string;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
@@ -92,7 +93,7 @@ export class UserResponse {
       'INVITED: nunca activada (sin contraseña). ACTIVE: puede iniciar sesión. DISABLED: inactiva con contraseña previa.',
   })
   status!: string;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   emailVerifiedAt!: Date | null;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
   @ApiProperty({ format: 'date-time' }) updatedAt!: Date;

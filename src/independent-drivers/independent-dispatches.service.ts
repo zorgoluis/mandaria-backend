@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
   DeliveryAssignmentEndReason,
+  DispatchCreditMode,
   DispatchStatus,
   IndependentDriverStatus,
   ServiceType,
@@ -10,6 +11,19 @@ import type {
 import { PrismaService } from '../prisma/prisma.service.js';
 import { pageResult } from '../common/pagination.dto.js';
 import { isUniqueViolation } from '../providers/provider-capacity.js';
+import { DomainException } from '../common/domain-error.js';
+import {
+  awardRejectionCode,
+  chargeDispatchAward,
+} from '../credits/service-award.js';
+import type { AwardOutcome } from '../credits/service-award.js';
+import { preEnforcementSelect } from '../credits/award-boundary.js';
+import {
+  REFUND_INTEGRITY_EVENT,
+  refundDispatchAward,
+  refundLogFields,
+  refundRejectionCode,
+} from '../credits/service-refund.js';
 import {
   RELEASE_END_REASON,
   independentError,
@@ -33,6 +47,8 @@ type LockedDispatch = {
   expiresAt: Date;
   claimedByProviderId: string | null;
   claimedByIndependentDriverId: string | null;
+  creditMode: DispatchCreditMode;
+  claimedAt: Date | null;
   serviceType: ServiceType;
 };
 type ApprovedDriver = { driverId: string; profileId: string };
@@ -162,47 +178,82 @@ export class IndependentDispatchesService {
    */
   async take(userId: string, dispatchId: string, vehicleId: string) {
     const actor = await this.approvedDriver(this.prisma, userId);
-    const outcome = await this.transaction(async (tx) => {
-      const dispatch = await this.lock(tx, dispatchId);
-      const now = new Date();
-      const released = await tx.deliveryAssignment.findFirst({
-        where: { dispatchId, driverId: actor.driverId, status: 'CANCELLED' },
-        select: { id: true },
-      });
-      const rejection = takeRejection(dispatch, released !== null, now);
-      if (rejection === 'DISPATCH_EXPIRED' && dispatch.status === 'OPEN') {
+    const outcome = await this.charging(
+      { dispatchId, driverId: actor.driverId, actorUserId: userId },
+      this.transaction(async (tx) => {
+        const dispatch = await this.lock(tx, dispatchId);
+        const now = new Date();
+        const released = await tx.deliveryAssignment.findFirst({
+          where: { dispatchId, driverId: actor.driverId, status: 'CANCELLED' },
+          select: { id: true },
+        });
+        if (
+          dispatch.claimedByIndependentDriverId === actor.driverId &&
+          dispatch.claimedAt
+        ) {
+          const historical = await tx.dispatchPreEnforcementAward.findFirst({
+            where: {
+              dispatchId,
+              actorType: 'INDEPENDENT_DRIVER',
+              actorId: actor.driverId,
+              awardedAt: dispatch.claimedAt,
+            },
+            select: { id: true },
+          });
+          if (historical)
+            this.logger.log({
+              event: 'PRE_ENFORCEMENT_AWARD',
+              dispatchId,
+              driverId: actor.driverId,
+            });
+        }
+        const rejection = takeRejection(dispatch, released !== null, now);
+        if (rejection === 'DISPATCH_EXPIRED' && dispatch.status === 'OPEN') {
+          await tx.dispatch.update({
+            where: { id: dispatchId },
+            data: { status: 'EXPIRED', expiredAt: now },
+          });
+          return { kind: 'expired' as const };
+        }
+        if (rejection)
+          throw independentError(rejection, REJECTION_MESSAGES[rejection]);
+        await this.lockEligibleResources(tx, actor, vehicleId);
         await tx.dispatch.update({
           where: { id: dispatchId },
-          data: { status: 'EXPIRED', expiredAt: now },
+          data: {
+            status: 'CLAIMED',
+            claimedByIndependentDriverId: actor.driverId,
+            claimedAt: now,
+          },
         });
-        return { kind: 'expired' as const };
-      }
-      if (rejection)
-        throw independentError(rejection, REJECTION_MESSAGES[rejection]);
-      await this.lockEligibleResources(tx, actor, vehicleId);
-      await tx.dispatch.update({
-        where: { id: dispatchId },
-        data: {
-          status: 'CLAIMED',
-          claimedByIndependentDriverId: actor.driverId,
-          claimedAt: now,
-        },
-      });
-      const assignment = await tx.deliveryAssignment.create({
-        data: {
-          dispatchId,
-          mode: 'INDEPENDENT',
-          providerId: null,
-          independentDriverProfileId: actor.profileId,
-          driverId: actor.driverId,
-          vehicleId,
-          assignedAt: now,
-          assignedByUserId: userId,
-        },
-        select: { id: true },
-      });
-      return { kind: 'taken' as const, assignmentId: assignment.id };
-    });
+        const assignment = await tx.deliveryAssignment.create({
+          data: {
+            dispatchId,
+            mode: 'INDEPENDENT',
+            providerId: null,
+            independentDriverProfileId: actor.profileId,
+            driverId: actor.driverId,
+            vehicleId,
+            assignedAt: now,
+            assignedByUserId: userId,
+          },
+          select: { id: true },
+        });
+        // Charged last, with the claim and the assignment already written in this transaction: the
+        // guard in PostgreSQL only accepts a charge from the driver holding the dispatch, and a
+        // rejection here rolls back the take, the assignment and the debit together.
+        const award = await chargeDispatchAward(
+          tx,
+          { id: dispatchId, creditMode: dispatch.creditMode },
+          {
+            actorType: 'INDEPENDENT_DRIVER',
+            independentDriverProfileId: actor.profileId,
+          },
+          userId,
+        );
+        return { kind: 'taken' as const, assignmentId: assignment.id, award };
+      }),
+    );
     if (outcome.kind === 'expired') {
       this.logger.log({
         event: 'DISPATCH_EXPIRED',
@@ -225,6 +276,12 @@ export class IndependentDispatchesService {
       vehicleId,
       actorUserId: userId,
     });
+    this.logAward(outcome.award, {
+      dispatchId,
+      profileId: actor.profileId,
+      driverId: actor.driverId,
+      actorUserId: userId,
+    });
     return this.viewFor(actor.driverId, dispatchId);
   }
 
@@ -242,51 +299,77 @@ export class IndependentDispatchesService {
     input: { reason: IndependentReleaseReason; reasonDetail?: string },
   ) {
     const actor = await this.approvedDriver(this.prisma, userId);
-    const outcome = await this.prisma.$transaction(async (tx) => {
-      const dispatch = await this.lock(tx, dispatchId);
-      if (
-        dispatch.status !== 'CLAIMED' ||
-        dispatch.claimedByIndependentDriverId !== actor.driverId
-      )
-        throw independentError(
-          'DISPATCH_NOT_CLAIMED_BY_DRIVER',
-          'Dispatch is not currently taken by this driver',
-        );
-      const now = new Date();
-      const [active] = await tx.$queryRaw<
-        { id: string; vehicleId: string }[]
-      >`SELECT id, "vehicleId" FROM "DeliveryAssignment" WHERE "dispatchId" = ${dispatchId}::uuid AND status = 'ACTIVE' FOR UPDATE`;
-      if (active)
-        await tx.deliveryAssignment.update({
-          where: { id: active.id },
-          data: {
-            status: 'CANCELLED',
-            endedAt: now,
-            endedByUserId: userId,
-            endReason: RELEASE_END_REASON[
-              input.reason
-            ] as DeliveryAssignmentEndReason,
-            // The driver's own motive is kept verbatim; OTHER already requires a detail.
-            endReasonDetail:
-              input.reasonDetail ?? `INDEPENDENT_${input.reason}`,
+    const outcome = await this.reversing(
+      { dispatchId, driverId: actor.driverId, actorUserId: userId },
+      this.prisma.$transaction(async (tx) => {
+        const dispatch = await this.lock(tx, dispatchId);
+        if (
+          dispatch.status !== 'CLAIMED' ||
+          dispatch.claimedByIndependentDriverId !== actor.driverId
+        )
+          throw independentError(
+            'DISPATCH_NOT_CLAIMED_BY_DRIVER',
+            'Dispatch is not currently taken by this driver',
+          );
+        const now = new Date();
+        const [active] = await tx.$queryRaw<
+          { id: string; vehicleId: string }[]
+        >`SELECT id, "vehicleId" FROM "DeliveryAssignment" WHERE "dispatchId" = ${dispatchId}::uuid AND status = 'ACTIVE' FOR UPDATE`;
+        if (active)
+          await tx.deliveryAssignment.update({
+            where: { id: active.id },
+            data: {
+              status: 'CANCELLED',
+              endedAt: now,
+              endedByUserId: userId,
+              endReason: RELEASE_END_REASON[
+                input.reason
+              ] as DeliveryAssignmentEndReason,
+              // The driver's own motive is kept verbatim; OTHER already requires a detail.
+              endReasonDetail:
+                input.reasonDetail ?? `INDEPENDENT_${input.reason}`,
+            },
+          });
+        // Read before the claim is cleared: the boundary of V1.10-D is identified by claimedAt.
+        const awarded = await tx.dispatch.findUniqueOrThrow({
+          where: { id: dispatchId },
+          select: {
+            creditMode: true,
+            claimedAt: true,
+            preEnforcementAwards: { select: preEnforcementSelect },
           },
         });
-      const expired = now >= dispatch.expiresAt;
-      await tx.dispatch.update({
-        where: { id: dispatchId },
-        data: {
-          status: expired ? 'EXPIRED' : 'OPEN',
-          claimedByIndependentDriverId: null,
-          claimedAt: null,
-          ...(expired ? { expiredAt: now } : {}),
-        },
-      });
-      return {
-        expired,
-        assignmentId: active?.id ?? null,
-        vehicleId: active?.vehicleId ?? null,
-      };
-    });
+        const expired = now >= dispatch.expiresAt;
+        await tx.dispatch.update({
+          where: { id: dispatchId },
+          data: {
+            status: expired ? 'EXPIRED' : 'OPEN',
+            claimedByIndependentDriverId: null,
+            claimedAt: null,
+            ...(expired ? { expiredAt: now } : {}),
+          },
+        });
+        // V1.10-E: giving the service back returns exactly the credits its award charged, to the
+        // driver's own account, in this same transaction.
+        const refund = await refundDispatchAward(
+          tx,
+          { id: dispatchId, ...awarded },
+          {
+            actorType: 'INDEPENDENT_DRIVER',
+            independentDriverProfileId: actor.profileId,
+          },
+          actor.driverId,
+          'INDEPENDENT_RELEASE',
+          userId,
+        );
+        return {
+          expired,
+          refund,
+          assignmentId: active?.id ?? null,
+          vehicleId: active?.vehicleId ?? null,
+        };
+      }),
+    );
     this.logger.log({
       event: 'INDEPENDENT_DISPATCH_RELEASED',
       dispatchId,
@@ -296,6 +379,13 @@ export class IndependentDispatchesService {
       vehicleId: outcome.vehicleId,
       actorUserId: userId,
       reason: input.reason,
+    });
+    this.logger.log({
+      ...refundLogFields(outcome.refund),
+      dispatchId,
+      profileId: actor.profileId,
+      driverId: actor.driverId,
+      actorUserId: userId,
     });
     if (outcome.expired)
       this.logger.log({
@@ -319,6 +409,9 @@ export class IndependentDispatchesService {
     try {
       return await this.prisma.$transaction(fn);
     } catch (error) {
+      // An economic rejection (insufficient credits, missing account or snapshot) is a final
+      // answer decided under the locks, not a lost race: it keeps its own code.
+      if (error instanceof DomainException) throw error;
       if (isUniqueViolation(error))
         throw independentError(
           'TAKE_CONFLICT',
@@ -427,10 +520,82 @@ export class IndependentDispatchesService {
   }
 
   /** Same row lock the provider claim takes, so both execution models compete fairly. */
+  /** One line per economic outcome of a take: charged, or skipped because the dispatch is legacy. */
+  private logAward(
+    award: AwardOutcome,
+    context: {
+      dispatchId: string;
+      profileId: string;
+      driverId: string;
+      actorUserId: string;
+    },
+  ) {
+    if (award.kind === 'legacy') {
+      this.logger.log({
+        event: 'LEGACY_DISPATCH_CREDIT_SKIPPED',
+        ...context,
+        reason: 'DISPATCH_OPENED_BEFORE_CREDIT_SNAPSHOTS',
+      });
+      return;
+    }
+    this.logger.log({
+      event: 'SERVICE_AWARD_CHARGED',
+      ...context,
+      actorType: award.actorType,
+      creditAccountId: award.creditAccountId,
+      credits: award.credits,
+      creditSnapshotId: award.snapshotId,
+      entryId: award.entryId,
+      sequence: award.sequence,
+      balanceBefore: award.balanceBefore,
+      balanceAfter: award.balanceAfter,
+    });
+  }
+
+  /** Reports why a take was refused for economic reasons; the rejection itself is the answer. */
+  private async charging<T>(
+    context: { dispatchId: string; driverId: string; actorUserId: string },
+    work: Promise<T>,
+  ) {
+    try {
+      return await work;
+    } catch (error) {
+      const code = awardRejectionCode(error);
+      if (code)
+        this.logger.warn({
+          event:
+            code === 'INSUFFICIENT_CREDITS'
+              ? 'SERVICE_AWARD_REJECTED_INSUFFICIENT_CREDITS'
+              : 'SERVICE_AWARD_REJECTED',
+          ...context,
+          code,
+        });
+      throw error;
+    }
+  }
+
+  /** Reports a reversal refused because the award it should return is missing (corruption). */
+  private async reversing<T>(
+    context: { dispatchId: string; driverId: string; actorUserId: string },
+    work: Promise<T>,
+  ) {
+    try {
+      return await work;
+    } catch (error) {
+      if (refundRejectionCode(error) === 'CREDIT_REFUND_INTEGRITY_ERROR')
+        this.logger.error({
+          event: REFUND_INTEGRITY_EVENT,
+          ...context,
+          code: 'CREDIT_REFUND_INTEGRITY_ERROR',
+        });
+      throw error;
+    }
+  }
+
   private async lock(tx: Prisma.TransactionClient, dispatchId: string) {
     const [row] = await tx.$queryRaw<
       LockedDispatch[]
-    >`SELECT d.id, d.status, d."expiresAt", d."claimedByProviderId", d."claimedByIndependentDriverId", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
+    >`SELECT d.id, d.status, d."expiresAt", d."claimedByProviderId", d."claimedByIndependentDriverId", d."creditMode", d."claimedAt", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
     if (!row) throw new NotFoundException('Dispatch not found');
     return row;
   }

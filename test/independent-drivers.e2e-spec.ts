@@ -6,6 +6,12 @@ import type { INestApplication, LoggerService } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
 import request from 'supertest';
+import { ensureTestCreditPolicies } from './support/credit-policies.js';
+import {
+  fundForAward,
+  purgeFixtureCredits,
+  purgeFixtureDispatches,
+} from './support/credits.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith('_test'))
@@ -148,6 +154,15 @@ async function openDispatch() {
   const dispatch = await prisma.dispatch.findUniqueOrThrow({
     where: { deliveryQuoteId: row.id },
   });
+  // V1.10-D: taking debits the frozen cost. This suite is about the take rules, so every driver
+  // and the fleet provider get exactly what this one service costs, never a fat balance.
+  for (const driverId of Object.values(drivers))
+    if (
+      await prisma.independentDriverProfile.findUnique({ where: { driverId } })
+    )
+      await fundForAward(prisma, dispatch.id, { driverId });
+  for (const providerId of Object.values(providers))
+    await fundForAward(prisma, dispatch.id, { providerId });
   return { id: dispatch.id, requestPublicId: req.body.publicId as string };
 }
 const take = (token: string, dispatchId: string, vehicleId: string) =>
@@ -185,21 +200,37 @@ async function freeAll() {
         endReason: 'OPERATIONAL_CHANGE',
       },
     });
-    await prisma.dispatch.updateMany({
-      where: { id: a.dispatchId, status: 'CLAIMED' },
-      data: {
-        status: 'CANCELLED',
-        cancelledAt: new Date(),
-        cancellationReason: 'E2E_CLEANUP',
-        claimedByProviderId: null,
-        claimedByIndependentDriverId: null,
-        claimedAt: null,
-      },
-    });
+    // V1.10-E: reversing a paid dispatch by hand would owe its refund, and the database says so.
+    // This is fixture teardown, not a business event, so the award is purged with the *_test-only
+    // switch and the reversal then has nothing to return.
+    await prisma.$transaction([
+      prisma.$executeRawUnsafe(
+        `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
+      ),
+      prisma.creditLedgerEntry.deleteMany({
+        where: { type: 'SERVICE_REFUND', referenceId: a.dispatchId },
+      }),
+      prisma.creditLedgerEntry.deleteMany({
+        where: { type: 'SERVICE_AWARD', referenceId: a.dispatchId },
+      }),
+      prisma.dispatch.updateMany({
+        where: { id: a.dispatchId, status: 'CLAIMED' },
+        data: {
+          status: 'CANCELLED',
+          cancelledAt: new Date(),
+          cancellationReason: 'E2E_CLEANUP',
+          claimedByProviderId: null,
+          claimedByIndependentDriverId: null,
+          claimedAt: null,
+        },
+      }),
+    ]);
   }
 }
 
 beforeAll(async () => {
+  // V1.10-C: accepting a quote opens a Dispatch, which needs ACTIVE credit policies.
+  await ensureTestCreditPolicies(prisma);
   const passwordHash = await argon2.hash(password);
   const user = async (
     name: string,
@@ -347,6 +378,7 @@ beforeAll(async () => {
 }, 180000);
 
 afterAll(async () => {
+  await purgeFixtureDispatches(prisma, clientIds);
   const providerIds = Object.values(providers);
   const driverIds = Object.values(drivers);
   await prisma.deliveryAssignment.deleteMany({
@@ -379,6 +411,7 @@ afterAll(async () => {
     await prisma.ratePlan.deleteMany({ where: { serviceZoneId: zoneId } });
     await prisma.serviceZone.deleteMany({ where: { id: zoneId } });
   }
+  await purgeFixtureCredits(prisma, { providerIds, driverIds });
   await prisma.vehicle.deleteMany({
     where: { independentDriverProfile: { driverId: { in: driverIds } } },
   });

@@ -1,3 +1,7 @@
+import {
+  creditEnforcementDoc,
+  creditEnforcementModes,
+} from '../credits/award-boundary.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   DeliveryAssignmentMode,
@@ -12,6 +16,7 @@ import {
   VehicleType,
 } from '@prisma/client';
 import { PaginationResponse } from '../providers/providers.responses.js';
+import { creditCostDoc } from '../credit-policies/dispatch-credit-snapshots.responses.js';
 
 class IndependentDriverRefResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
@@ -35,19 +40,19 @@ export class IndependentDriverProfileResponse {
       'APPROVED: puede tomar servicios. SUSPENDED: se le retiró la habilitación. REJECTED: solicitud cerrada. PENDING: reservado para el alta pública futura; V1.9 no la implementa.',
   })
   status!: IndependentDriverStatus;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   approvedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true })
   approvedByUserId!: string | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   suspendedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true })
   suspendedByUserId!: string | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   rejectedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true })
   rejectedByUserId!: string | null;
-  @ApiPropertyOptional({ nullable: true }) reason!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) reason!: string | null;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
   @ApiProperty({ format: 'date-time' }) updatedAt!: Date;
   @ApiProperty({ type: IndependentDriverRefResponse })
@@ -69,11 +74,12 @@ export class IndependentVehicleResponse {
   @ApiProperty({ example: 'MOTO-CARLOS-01' }) identifier!: string;
   @ApiProperty({ enum: VehicleType }) type!: VehicleType;
   @ApiProperty({ enum: VehicleStatus }) status!: VehicleStatus;
-  @ApiPropertyOptional({ nullable: true }) brand!: string | null;
-  @ApiPropertyOptional({ nullable: true }) model!: string | null;
-  @ApiPropertyOptional({ nullable: true }) year!: number | null;
-  @ApiPropertyOptional({ nullable: true }) color!: string | null;
-  @ApiPropertyOptional({ nullable: true }) plate!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) brand!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) model!: string | null;
+  @ApiPropertyOptional({ type: 'integer', nullable: true })
+  year!: number | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) color!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) plate!: string | null;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
   @ApiProperty({ format: 'date-time' }) updatedAt!: Date;
 }
@@ -94,17 +100,26 @@ class DriverStopResponse {
   contactName?: string;
   @ApiPropertyOptional({ description: 'Sólo access OWNER.' })
   contactPhone?: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Sólo access OWNER.' })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Sólo access OWNER.',
+  })
   instructions?: string | null;
 }
 class DriverPackageResponse {
   @ApiProperty({ enum: PackageCategory }) category!: PackageCategory;
   @ApiProperty({ example: 2 }) quantity!: number;
-  @ApiPropertyOptional({ nullable: true }) weightKg!: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true })
+  weightKg!: number | null;
   @ApiProperty() isFragile!: boolean;
   @ApiPropertyOptional({ description: 'Sólo access OWNER.' })
   description?: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Sólo access OWNER.' })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Sólo access OWNER.',
+  })
   handlingInstructions?: string | null;
 }
 class DriverServiceResponse {
@@ -143,14 +158,31 @@ export class DriverPaymentContextResponse {
   })
   driverAdvanceAmount!: MoneyResponse | null;
 }
+class DriverAssignmentVehicleResponse {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ example: 'MOTO-03' }) identifier!: string;
+  @ApiProperty({ enum: VehicleType }) type!: VehicleType;
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'ABC-123' })
+  plate!: string | null;
+}
 class DriverAssignmentResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: DeliveryAssignmentMode, example: 'INDEPENDENT' })
   mode!: DeliveryAssignmentMode;
   @ApiProperty({ format: 'date-time' }) assignedAt!: Date;
-  @ApiProperty() vehicle!: Record<string, unknown>;
+  @ApiProperty({ type: DriverAssignmentVehicleResponse })
+  vehicle!: DriverAssignmentVehicleResponse;
+}
+class DriverDispatchZoneResponse {
+  @ApiProperty({ example: 'OCOZOCOAUTLA' }) code!: string;
+  @ApiProperty({ example: 'Ocozocoautla de Espinosa' }) name!: string;
 }
 export class DriverDispatchResponse {
+  @ApiProperty({
+    enum: creditEnforcementModes,
+    description: creditEnforcementDoc,
+  })
+  creditEnforcementMode!: (typeof creditEnforcementModes)[number];
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: DispatchStatus }) status!: DispatchStatus;
   @ApiProperty({
@@ -160,7 +192,8 @@ export class DriverDispatchResponse {
   })
   access!: string;
   @ApiProperty({ enum: ServiceType }) serviceType!: ServiceType;
-  @ApiProperty() serviceZone!: Record<string, string>;
+  @ApiProperty({ type: DriverDispatchZoneResponse })
+  serviceZone!: DriverDispatchZoneResponse;
   @ApiProperty({ format: 'date-time' }) openedAt!: Date;
   @ApiProperty({
     format: 'date-time',
@@ -168,10 +201,18 @@ export class DriverDispatchResponse {
   })
   expiresAt!: Date;
   @ApiProperty() takenByMe!: boolean;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   claimedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
+  @ApiProperty({
+    type: 'integer',
+    nullable: true,
+    minimum: 1,
+    example: 14,
+    description: creditCostDoc('mí (repartidor independiente)'),
+  })
+  creditCost!: number | null;
   @ApiPropertyOptional({ type: DriverAssignmentResponse, nullable: true })
   assignment!: DriverAssignmentResponse | null;
   @ApiProperty({ type: DriverServiceResponse })
@@ -188,11 +229,11 @@ export class MyIndependentProfileResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: IndependentDriverStatus })
   status!: IndependentDriverStatus;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   approvedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   suspendedAt!: Date | null;
-  @ApiPropertyOptional({ nullable: true }) reason!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) reason!: string | null;
   @ApiProperty({
     description:
       'true sólo si el perfil está APPROVED y el Driver no tiene ninguna asignación ACTIVE, sea de flotilla o independiente.',

@@ -26,6 +26,8 @@ const D = (n: string) => new Prisma.Decimal(n);
 function record(overrides: Record<string, unknown> = {}) {
   return {
     id: 'd1',
+    creditMode: 'MONETIZED',
+    preEnforcementAwards: [],
     status: 'OPEN',
     openedAt: opened,
     expiresAt,
@@ -92,6 +94,7 @@ function record(overrides: Record<string, unknown> = {}) {
       },
     },
     deliveryAssignments: [],
+    creditSnapshots: [],
     candidates: [
       {
         providerId: 'A',
@@ -184,8 +187,21 @@ describe('opening and cancellation inside the caller transaction', () => {
     deliveryRequestId: 'r1',
     serviceZoneId: 'z1',
     serviceType: 'LOCAL_DELIVERY' as const,
+    distanceMeters: 6240,
   };
-  const tx = (eligible: string[]) => ({
+  // V1.10-C: the ACTIVE policy of each actor (PROVIDER 1/km, INDEPENDENT_DRIVER 2/km, minimum 3).
+  const policyOf = (actorType: string) => ({
+    id: 'policy-' + actorType,
+    version: actorType === 'PROVIDER' ? 3 : 2,
+    serviceType: 'LOCAL_DELIVERY',
+    actorType,
+    calculationType: 'PER_KM',
+    creditsPerKm: actorType === 'PROVIDER' ? 1 : 2,
+    minimumCredits: 3,
+    flatCredits: null,
+    ranges: [],
+  });
+  const tx = (eligible: string[], policies = true) => ({
     $queryRaw: vi.fn().mockResolvedValue(eligible.map((id) => ({ id }))),
     dispatch: {
       create: vi.fn(async ({ data }) => ({
@@ -194,6 +210,12 @@ describe('opening and cancellation inside the caller transaction', () => {
       })),
     },
     dispatchCandidate: { createMany: vi.fn() },
+    creditPolicy: {
+      findFirst: vi.fn(async ({ where }) =>
+        policies ? policyOf(where.actorType) : null,
+      ),
+    },
+    dispatchCreditSnapshot: { create: vi.fn(async ({ data }) => data) },
   });
   it('snapshots every eligible provider as OFFERED with the TTL window', async () => {
     const t = tx(['A', 'B']);
@@ -215,6 +237,33 @@ describe('opening and cancellation inside the caller transaction', () => {
       ],
     });
     expect(result.providerIds).toEqual(['A', 'B']);
+    // V1.10-C: one frozen cost per allowed actor, from the quote's canonical distance.
+    expect(t.dispatchCreditSnapshot.create).toHaveBeenCalledTimes(2);
+    expect(
+      result.creditSnapshots.map((s) => [
+        s.actorType,
+        s.policyVersion,
+        s.billableKm,
+        s.credits,
+      ]),
+    ).toEqual([
+      ['PROVIDER', 3, 7, 7],
+      ['INDEPENDENT_DRIVER', 2, 7, 14],
+    ]);
+    expect(
+      t.dispatchCreditSnapshot.create.mock.calls.every(
+        ([args]: [{ data: { dispatchId: string; distanceMeters: number } }]) =>
+          args.data.dispatchId === 'd1' && args.data.distanceMeters === 6240,
+      ),
+    ).toBe(true);
+  });
+  it('fails closed when an allowed actor has no ACTIVE credit policy', async () => {
+    const t = tx(['A'], false);
+    await expect(
+      openDispatch(t as never, quote, 10, opened),
+    ).rejects.toMatchObject({ code: 'CREDIT_POLICY_UNAVAILABLE' });
+    expect(t.dispatchCreditSnapshot.create).not.toHaveBeenCalled();
+    expect(t.dispatchCandidate.createMany).not.toHaveBeenCalled();
   });
   it('still opens the dispatch when no provider is eligible', async () => {
     const t = tx([]);
@@ -239,6 +288,10 @@ describe('opening and cancellation inside the caller transaction', () => {
           status: 'CLAIMED',
           expiresAt: at(-60_000),
           claimedByProviderId: 'A',
+          claimedByIndependentDriverId: null,
+          claimedAt: at(-120_000),
+          // A dispatch that predates credit snapshots: it never paid, so nothing comes back.
+          creditMode: 'LEGACY',
         },
       ]),
       dispatch: { update },
@@ -246,13 +299,17 @@ describe('opening and cancellation inside the caller transaction', () => {
         findMany: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
       },
+      // V1.10-E: the cancellation looks for the award of whoever held the dispatch.
+      dispatchPreEnforcementAward: { findMany: vi.fn().mockResolvedValue([]) },
+      creditAccount: { findUnique: vi.fn().mockResolvedValue(null) },
+      creditLedgerEntry: { findFirst: vi.fn(), create: vi.fn() },
     };
-    const { events, assignments } = await closeDispatchesForCancelledRequest(
-      t as never,
-      'r1',
-      at(-1),
-    );
+    const { events, assignments, refunds } =
+      await closeDispatchesForCancelledRequest(t as never, 'r1', at(-1));
     expect(assignments).toEqual([]);
+    // Nothing was charged for these dispatches, so nothing is returned.
+    expect(refunds).toEqual([{ kind: 'none', boundary: 'LEGACY' }]);
+    expect(t.creditLedgerEntry.create).not.toHaveBeenCalled();
     expect(events).toEqual([
       { event: 'DISPATCH_CANCELLED', dispatchId: 'open', providerId: null },
       { event: 'DISPATCH_EXPIRED', dispatchId: 'lapsed', providerId: null },

@@ -1,3 +1,7 @@
+import {
+  creditEnforcementDoc,
+  creditEnforcementModes,
+} from '../credits/award-boundary.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   DispatchCandidateStatus,
@@ -8,6 +12,10 @@ import {
   ServiceType,
 } from '@prisma/client';
 import { PaginationResponse } from '../providers/providers.responses.js';
+import {
+  DispatchCreditSnapshotResponse,
+  creditCostDoc,
+} from '../credit-policies/dispatch-credit-snapshots.responses.js';
 
 const statusDoc =
   'Estado efectivo. OPEN: reclamable hasta expiresAt. CLAIMED: tomado por un proveedor (su claim no caduca con expiresAt). EXPIRED: ventana cerrada sin claim vigente (un OPEN vencido se informa EXPIRED aunque aún no se haya persistido). CANCELLED: la DeliveryRequest fue cancelada.';
@@ -24,11 +32,12 @@ class MyCandidateResponse {
   })
   status!: DispatchCandidateStatus;
   @ApiProperty({ format: 'date-time' }) offeredAt!: Date;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   claimedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   releasedAt!: Date | null;
-  @ApiPropertyOptional({ nullable: true }) releaseReason!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) releaseReason!:
+    string | null;
 }
 class MoneyResponse {
   @ApiProperty({ example: '50.00' }) amount!: string;
@@ -46,22 +55,31 @@ class StopResponse {
   contactName?: string;
   @ApiPropertyOptional({ description: 'Sólo access OWNER.' })
   contactPhone?: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Sólo access OWNER.' })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Sólo access OWNER.',
+  })
   instructions?: string | null;
 }
 class PackageResponse {
   @ApiProperty({ enum: PackageCategory }) category!: PackageCategory;
   @ApiProperty({ example: 2 }) quantity!: number;
-  @ApiPropertyOptional({ nullable: true }) weightKg!: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true })
+  weightKg!: number | null;
   @ApiProperty() isFragile!: boolean;
   @ApiPropertyOptional({ description: 'Sólo access OWNER.' })
   description?: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Sólo access OWNER.' })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Sólo access OWNER.',
+  })
   handlingInstructions?: string | null;
 }
 class GoodsResponse {
   @ApiProperty({ enum: GoodsPaymentMode }) paymentMode!: GoodsPaymentMode;
-  @ApiPropertyOptional({ nullable: true, example: '450.00' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: '450.00' })
   value!: string | null;
   @ApiProperty({ example: 'MXN' }) currency!: string;
   @ApiProperty({
@@ -85,10 +103,19 @@ class ServiceDetailResponse {
   goods!: GoodsResponse | null;
   @ApiPropertyOptional({ example: 'MDR-000001', description: 'Sólo OWNER.' })
   deliveryRequestPublicId?: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Sólo OWNER.' })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Sólo OWNER.',
+  })
   externalReference?: string | null;
 }
 export class ProviderDispatchResponse {
+  @ApiProperty({
+    enum: creditEnforcementModes,
+    description: creditEnforcementDoc,
+  })
+  creditEnforcementMode!: (typeof creditEnforcementModes)[number];
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: DispatchStatus, description: statusDoc })
   status!: DispatchStatus;
@@ -108,10 +135,18 @@ export class ProviderDispatchResponse {
   })
   expiresAt!: Date;
   @ApiProperty() claimedByMe!: boolean;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   claimedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
+  @ApiProperty({
+    type: 'integer',
+    nullable: true,
+    minimum: 1,
+    example: 7,
+    description: creditCostDoc('mi proveedor'),
+  })
+  creditCost!: number | null;
   @ApiPropertyOptional({ type: MyCandidateResponse, nullable: true })
   myCandidate!: MyCandidateResponse | null;
   @ApiPropertyOptional({ type: ServiceDetailResponse, nullable: true })
@@ -132,11 +167,12 @@ class AdminCandidateResponse {
   @ApiProperty({ enum: DispatchCandidateStatus })
   status!: DispatchCandidateStatus;
   @ApiProperty({ format: 'date-time' }) offeredAt!: Date;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   claimedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   releasedAt!: Date | null;
-  @ApiPropertyOptional({ nullable: true }) releaseReason!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) releaseReason!:
+    string | null;
 }
 class AdminRequestRefResponse {
   @ApiProperty({ example: 'MDR-000001' }) publicId!: string;
@@ -151,25 +187,32 @@ class AdminQuoteRefResponse {
   @ApiProperty({ example: 'MXN' }) currency!: string;
 }
 export class AdminDispatchResponse {
+  @ApiProperty({
+    enum: creditEnforcementModes,
+    description: creditEnforcementDoc,
+  })
+  creditEnforcementMode!: (typeof creditEnforcementModes)[number];
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: DispatchStatus, description: statusDoc })
   status!: DispatchStatus;
   @ApiProperty({ format: 'date-time' }) openedAt!: Date;
   @ApiProperty({ format: 'date-time' }) expiresAt!: Date;
   @ApiPropertyOptional({
+    type: String,
     format: 'uuid',
     nullable: true,
     description:
       'Proveedor con el claim. Se conserva como histórico si un Dispatch CLAIMED se cancela; se limpia al liberar.',
   })
   claimedByProviderId!: string | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   claimedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   expiredAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
   @ApiPropertyOptional({
+    type: String,
     nullable: true,
     example: 'DELIVERY_REQUEST_CANCELLED',
   })
@@ -189,6 +232,18 @@ export class AdminDispatchResponse {
   candidates!: AdminCandidateResponse[];
   @ApiPropertyOptional({ type: GoodsResponse, nullable: true })
   goods!: GoodsResponse | null;
+  @ApiProperty({
+    type: DispatchCreditSnapshotResponse,
+    isArray: true,
+    description:
+      'V1.10-C: costo congelado por tipo de actor que puede adjudicarse el servicio, con la versión de política y la evidencia del cálculo. Vacío en Dispatches anteriores a V1.10-C.',
+  })
+  creditSnapshots!: DispatchCreditSnapshotResponse[];
+  @ApiProperty({
+    description:
+      'true si el Dispatch se abrió antes de V1.10-C y no tiene costo registrado (legacy). No se inventan costos retroactivos.',
+  })
+  legacyWithoutCreditSnapshots!: boolean;
 }
 export class AdminDispatchPageResponse extends PaginationResponse {
   @ApiProperty({ type: AdminDispatchResponse, isArray: true })

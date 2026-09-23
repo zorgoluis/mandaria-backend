@@ -1,0 +1,1508 @@
+{
+  "date": "2026-09-22",
+  "branch": "v1.10-credit-monetization",
+  "head": "a4daeb56fd15d533e8c7a2ccd6838e495fa90b34",
+  "backendVersion": "1.10.0",
+  "before": {
+    "sql": {
+      "total": 35,
+      "passed": 0,
+      "failed": 2,
+      "tests": [
+        {
+          "name": "V1.10-D award and debit are one operation provider CLAIM debits exactly the cost shown and writes one SERVICE_AWARD",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation independent TAKE debits its own account and keeps the assignment in the same operation",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation an exact balance is enough and leaves zero; one credit less is refused and moves nothing",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation charges the cost frozen when the dispatch opened, not the policy in force now",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation a fleet reassignment or an assignment cancellation never charges again",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation a failed CLAIM or TAKE never charges",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation repeating the same CLAIM does not charge twice",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency 10 simultaneous claims on one dispatch: one winner, exactly one charge",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency provider CLAIM against independent TAKE: one winner, exactly one actor pays",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency two claims paid from one balance: only what the balance covers is charged",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency a balance that covers both services pays both and ends at zero",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency a recharge racing a claim serializes: never corruption",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency an administrative adjustment racing a claim keeps the balance consistent",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees a legacy dispatch is awarded without any charge and says so in the log",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees a monetized dispatch whose snapshot disappeared fails closed instead of being free",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees refuses every forged award written directly in SQL",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees the client cannot choose what it pays: forged fields are ignored or rejected",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees keeps the payment context and the recharge history untouched",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees no secret reaches the logs of a charged award",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 02-08 zero, sufficient and insufficient independent balances are atomic",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 11-12 neither actor looks up policy or routes during award",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 13 ten distinct providers: exactly one 200 and nine failures",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 14 ten distinct independents: exactly one award and assignment",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 18 high contention twenty claims share fifty credits",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 20 retry TAKE never charges twice",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 21 failed provider claims preserve economy for noncandidate, inactive and unauthorized actors",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 22 failed takes: suspended, invalid vehicle, busy driver/vehicle, unavailable and role",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled ledger failure rolls back CLAIM and TAKE",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled account failure rolls back CLAIM and TAKE",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled deferred failure rolls back CLAIM and TAKE",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 28 missing accounts fail closed for both actor types",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 32 delivery cancellation preserves original debit without refunds",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 36-39 forged TAKE price snapshot account and actor fields rejected",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 41 reverse SQL barrier refuses an operational CLAIM committed without debit",
+          "status": "failed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 42 database scan matches balance chains snapshots and historical/current payers",
+          "status": "failed"
+        }
+      ]
+    },
+    "migration": {
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "43 authentic B legacy and C priced OPEN/CLAIMED migrate to D preserving history",
+          "status": "failed"
+        }
+      ]
+    },
+    "boundary": {
+      "migrated": [
+        {
+          "id": "72ad3f87-2372-42e5-8d51-692ab0498b3d",
+          "creditMode": "MONETIZED",
+          "status": "CLAIMED"
+        },
+        {
+          "id": "94011b38-9099-476f-bc52-b05ffa918404",
+          "creditMode": "MONETIZED",
+          "status": "OPEN"
+        },
+        {
+          "id": "cd2cbf59-d9e0-465e-b1f7-060c64bb4241",
+          "creditMode": "MONETIZED",
+          "status": "CLAIMED"
+        },
+        {
+          "id": "ce56ed7f-39c0-4beb-86e2-dcf3c6a175d5",
+          "creditMode": "LEGACY",
+          "status": "OPEN"
+        }
+      ],
+      "legacy": {
+        "id": "ce56ed7f-39c0-4beb-86e2-dcf3c6a175d5",
+        "awards": 0
+      },
+      "newAward": {
+        "id": "94011b38-9099-476f-bc52-b05ffa918404",
+        "amount": -7
+      },
+      "preDClaim": {
+        "id": "cd2cbf59-d9e0-465e-b1f7-060c64bb4241",
+        "retryStatus": 200,
+        "awards": 0
+      },
+      "preDTake": {
+        "id": "72ad3f87-2372-42e5-8d51-692ab0498b3d",
+        "awards": 0
+      },
+      "historyPreserved": true
+    }
+  },
+  "after": {
+    "adversarial": {
+      "total": 49,
+      "passed": 49,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "V1.10-D award and debit are one operation provider CLAIM debits exactly the cost shown and writes one SERVICE_AWARD",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation independent TAKE debits its own account and keeps the assignment in the same operation",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation an exact balance is enough and leaves zero; one credit less is refused and moves nothing",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation charges the cost frozen when the dispatch opened, not the policy in force now",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation a fleet reassignment or an assignment cancellation never charges again",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation a failed CLAIM or TAKE never charges",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation repeating the same CLAIM does not charge twice",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency 10 simultaneous claims on one dispatch: one winner, exactly one charge",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency provider CLAIM against independent TAKE: one winner, exactly one actor pays",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency two claims paid from one balance: only what the balance covers is charged",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency a balance that covers both services pays both and ends at zero",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency a recharge racing a claim serializes: never corruption",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency an administrative adjustment racing a claim keeps the balance consistent",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees a legacy dispatch is awarded without any charge and says so in the log",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees a monetized dispatch whose snapshot disappeared fails closed instead of being free",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees refuses every forged award written directly in SQL",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees the client cannot choose what it pays: forged fields are ignored or rejected",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees keeps the payment context and the recharge history untouched",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees no secret reaches the logs of a charged award",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 02-08 zero, sufficient and insufficient independent balances are atomic",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 11-12 neither actor looks up policy or routes during award",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 13 ten distinct providers: exactly one 200 and nine failures",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 14 ten distinct independents: exactly one award and assignment",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 18 high contention twenty claims share fifty credits",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 20 retry TAKE never charges twice",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 21 failed provider claims preserve economy for noncandidate, inactive and unauthorized actors",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 22 failed takes: suspended, invalid vehicle, busy driver/vehicle, unavailable and role",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled ledger failure rolls back CLAIM and TAKE",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled account failure rolls back CLAIM and TAKE",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled deferred failure rolls back CLAIM and TAKE",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 28 missing accounts fail closed for both actor types",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 32 delivery cancellation preserves original debit without refunds",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 36-39 forged TAKE price snapshot account and actor fields rejected",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 41 reverse SQL barrier refuses an operational CLAIM committed without debit",
+          "status": "passed"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 42 database scan matches balance chains snapshots and historical/current payers",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL missing",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL amount",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL payer",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL actor",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL duplicate",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL orphan",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL valid",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL missing",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL amount",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL payer",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL actor",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL duplicate",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL orphan",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL valid",
+          "status": "passed"
+        }
+      ]
+    },
+    "reverseHistory": {
+      "total": 52,
+      "passed": 3,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "V1.10-D award and debit are one operation provider CLAIM debits exactly the cost shown and writes one SERVICE_AWARD",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation independent TAKE debits its own account and keeps the assignment in the same operation",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation an exact balance is enough and leaves zero; one credit less is refused and moves nothing",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation charges the cost frozen when the dispatch opened, not the policy in force now",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation a fleet reassignment or an assignment cancellation never charges again",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation a failed CLAIM or TAKE never charges",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation repeating the same CLAIM does not charge twice",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency 10 simultaneous claims on one dispatch: one winner, exactly one charge",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency provider CLAIM against independent TAKE: one winner, exactly one actor pays",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency two claims paid from one balance: only what the balance covers is charged",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency a balance that covers both services pays both and ends at zero",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency a recharge racing a claim serializes: never corruption",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D concurrency an administrative adjustment racing a claim keeps the balance consistent",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees a legacy dispatch is awarded without any charge and says so in the log",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees a monetized dispatch whose snapshot disappeared fails closed instead of being free",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees refuses every forged award written directly in SQL",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees the client cannot choose what it pays: forged fields are ignored or rejected",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees keeps the payment context and the recharge history untouched",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees no secret reaches the logs of a charged award",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 02-08 zero, sufficient and insufficient independent balances are atomic",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 11-12 neither actor looks up policy or routes during award",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 13 ten distinct providers: exactly one 200 and nine failures",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 14 ten distinct independents: exactly one award and assignment",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 18 high contention twenty claims share fifty credits",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 20 retry TAKE never charges twice",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 21 failed provider claims preserve economy for noncandidate, inactive and unauthorized actors",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 22 failed takes: suspended, invalid vehicle, busy driver/vehicle, unavailable and role",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled ledger failure rolls back CLAIM and TAKE",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled account failure rolls back CLAIM and TAKE",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 23-25 controlled deferred failure rolls back CLAIM and TAKE",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 28 missing accounts fail closed for both actor types",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 32 delivery cancellation preserves original debit without refunds",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 36-39 forged TAKE price snapshot account and actor fields rejected",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 41 reverse SQL barrier refuses an operational CLAIM committed without debit",
+          "status": "skipped"
+        },
+        {
+          "name": "CHECK D additional adversarial barriers — real backend 42 database scan matches balance chains snapshots and historical/current payers",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL missing",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL amount",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL payer",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL actor",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL duplicate",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL orphan",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL valid",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL missing",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL amount",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL payer",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL actor",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL duplicate",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL orphan",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL valid",
+          "status": "skipped"
+        },
+        {
+          "name": "V1.10-D reverse history protection claim and release inside one SQL transaction cannot erase the required debit",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D reverse history protection an enforced debit cannot lose its durable winner history",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D reverse history protection runtime SQL cannot fabricate a historical exemption",
+          "status": "passed"
+        }
+      ]
+    },
+    "boundary": {
+      "migrated": [
+        {
+          "id": "496a8cdd-3ce8-47d7-9e88-412e859e2f5d",
+          "creditMode": "MONETIZED",
+          "status": "OPEN"
+        },
+        {
+          "id": "8174f681-4fc3-4222-bcf7-0e7c5cdd5f0b",
+          "creditMode": "MONETIZED",
+          "status": "CLAIMED"
+        },
+        {
+          "id": "8a3a7753-889f-4382-9bc0-ebc754454342",
+          "creditMode": "MONETIZED",
+          "status": "CLAIMED"
+        },
+        {
+          "id": "bb49b5ca-6b7c-4c0c-b0d1-f63e93546693",
+          "creditMode": "LEGACY",
+          "status": "OPEN"
+        }
+      ],
+      "legacy": {
+        "id": "bb49b5ca-6b7c-4c0c-b0d1-f63e93546693",
+        "awards": 0
+      },
+      "newAward": {
+        "id": "496a8cdd-3ce8-47d7-9e88-412e859e2f5d",
+        "amount": -7
+      },
+      "preDClaim": {
+        "id": "8a3a7753-889f-4382-9bc0-ebc754454342",
+        "retryStatus": 200,
+        "awards": 0
+      },
+      "preDTake": {
+        "id": "8174f681-4fc3-4222-bcf7-0e7c5cdd5f0b",
+        "awards": 0
+      },
+      "historyPreserved": true,
+      "historical": [
+        {
+          "id": "fd4d6c0c-33be-4320-9c19-3f342743d6cd",
+          "dispatchId": "8a3a7753-889f-4382-9bc0-ebc754454342",
+          "actorType": "PROVIDER",
+          "actorId": "88517b82-a0f6-4e1a-98ec-77cbeea93263",
+          "awardedAt": "2026-09-22T19:16:29.012Z",
+          "recordedAt": "2026-09-22T13:16:30.669Z"
+        },
+        {
+          "id": "3bb78995-6918-43ab-9977-da0faaebdd82",
+          "dispatchId": "8174f681-4fc3-4222-bcf7-0e7c5cdd5f0b",
+          "actorType": "INDEPENDENT_DRIVER",
+          "actorId": "a4c52c0d-4466-4e70-aa5b-c695a23002a8",
+          "awardedAt": "2026-09-22T19:16:29.068Z",
+          "recordedAt": "2026-09-22T13:16:30.669Z"
+        }
+      ],
+      "providerClassification": "PRE_ENFORCEMENT_AWARD",
+      "independentClassification": "PRE_ENFORCEMENT_AWARD",
+      "noRetroactiveDebit": true,
+      "scanViolations": 0,
+      "releaseThenNewAwardCharged": true
+    },
+    "regressionAttempts": [
+      {
+        "file": "b2b.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 14,
+        "passed": 14,
+        "failed": 0
+      },
+      {
+        "file": "core.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 7,
+        "passed": 7,
+        "failed": 0
+      },
+      {
+        "file": "credit-consumption.e2e-spec.ts",
+        "attempt": 1,
+        "status": 1,
+        "total": 33,
+        "passed": 32,
+        "failed": 1
+      },
+      {
+        "file": "credit-policies.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 19,
+        "passed": 19,
+        "failed": 0
+      },
+      {
+        "file": "credits.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 24,
+        "passed": 24,
+        "failed": 0
+      },
+      {
+        "file": "delivery-assignments.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 13,
+        "passed": 13,
+        "failed": 0
+      },
+      {
+        "file": "delivery-quotes.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 11,
+        "passed": 11,
+        "failed": 0
+      },
+      {
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 15,
+        "passed": 15,
+        "failed": 0
+      },
+      {
+        "file": "delivery-requests-validation.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 7,
+        "passed": 7,
+        "failed": 0
+      },
+      {
+        "file": "dispatch-credit-snapshots.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 14,
+        "passed": 14,
+        "failed": 0
+      },
+      {
+        "file": "dispatch.e2e-spec.ts",
+        "attempt": 1,
+        "status": 1,
+        "total": 13,
+        "passed": 12,
+        "failed": 1
+      },
+      {
+        "file": "driver-self.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 7,
+        "passed": 7,
+        "failed": 0
+      },
+      {
+        "file": "drivers-vehicles.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 11,
+        "passed": 11,
+        "failed": 0
+      },
+      {
+        "file": "independent-drivers.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 23,
+        "passed": 23,
+        "failed": 0
+      },
+      {
+        "file": "pricing-admin.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 4,
+        "passed": 4,
+        "failed": 0
+      },
+      {
+        "file": "provider-admin-access.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 9,
+        "passed": 9,
+        "failed": 0
+      },
+      {
+        "file": "providers.e2e-spec.ts",
+        "attempt": 1,
+        "status": 0,
+        "total": 15,
+        "passed": 15,
+        "failed": 0
+      },
+      {
+        "file": "user-invitations.e2e-spec.ts",
+        "attempt": 1,
+        "status": 1,
+        "total": 24,
+        "passed": 21,
+        "failed": 0
+      },
+      {
+        "file": "user-invitations.e2e-spec.ts",
+        "attempt": 2,
+        "status": 0,
+        "total": 24,
+        "passed": 24,
+        "failed": 0
+      }
+    ],
+    "consumptionFinal": {
+      "total": 36,
+      "passed": 36,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "V1.10-D award and debit are one operation provider CLAIM debits exactly the cost shown and writes one SERVICE_AWARD",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation independent TAKE debits its own account and keeps the assignment in the same operation",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation an exact balance is enough and leaves zero; one credit less is refused and moves nothing",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation charges the cost frozen when the dispatch opened, not the policy in force now",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation a fleet reassignment or an assignment cancellation never charges again",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation a failed CLAIM or TAKE never charges",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D award and debit are one operation repeating the same CLAIM does not charge twice",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency 10 simultaneous claims on one dispatch: one winner, exactly one charge",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency provider CLAIM against independent TAKE: one winner, exactly one actor pays",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency two claims paid from one balance: only what the balance covers is charged",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency a balance that covers both services pays both and ends at zero",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency a recharge racing a claim serializes: never corruption",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D concurrency an administrative adjustment racing a claim keeps the balance consistent",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees a legacy dispatch is awarded without any charge and says so in the log",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees a monetized dispatch whose snapshot disappeared fails closed instead of being free",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees refuses every forged award written directly in SQL",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees the client cannot choose what it pays: forged fields are ignored or rejected",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees keeps the payment context and the recharge history untouched",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D legacy, corruption and database guarantees no secret reaches the logs of a charged award",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL missing",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL amount",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL payer",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL actor",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL duplicate",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL orphan",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity PROVIDER SQL valid",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL missing",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL amount",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL payer",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL actor",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL duplicate",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL orphan",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D deferred SQL award integrity INDEPENDENT_DRIVER SQL valid",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D reverse history protection claim and release inside one SQL transaction cannot erase the required debit",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D reverse history protection an enforced debit cannot lose its durable winner history",
+          "status": "passed"
+        },
+        {
+          "name": "V1.10-D reverse history protection runtime SQL cannot fabricate a historical exemption",
+          "status": "passed"
+        }
+      ]
+    },
+    "dispatchFinal": {
+      "total": 13,
+      "passed": 13,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot accepting a quote opens its dispatch automatically with the configured TTL",
+          "status": "passed"
+        },
+        {
+          "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot offers only ACTIVE providers with ACTIVE coverage for the zone and service type",
+          "status": "passed"
+        },
+        {
+          "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot keeps the acceptance when nobody is eligible: OPEN dispatch without candidates, flagged noProviderAvailable",
+          "status": "passed"
+        },
+        {
+          "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot repeated and concurrent acceptances keep 1 ACCEPTED quote and 1 dispatch",
+          "status": "passed"
+        },
+        {
+          "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot is atomic: if the dispatch cannot be created the quote is not accepted",
+          "status": "passed"
+        },
+        {
+          "name": "Provider claiming Provider Admin A lists available work (OFFER view without contacts) and claims it",
+          "status": "passed"
+        },
+        {
+          "name": "Provider claiming blocks non-candidates, wrong memberships, SUPER_ADMIN, DRIVER and IntegrationClient",
+          "status": "passed"
+        },
+        {
+          "name": "Provider claiming release: A claims → A releases → A cannot reclaim → B claims; only the owner releases",
+          "status": "passed"
+        },
+        {
+          "name": "Claim concurrency several providers claiming at once: exactly one winner, consistent database",
+          "status": "passed"
+        },
+        {
+          "name": "Expiration and cancellation an expired dispatch cannot be claimed and is persisted as EXPIRED",
+          "status": "passed"
+        },
+        {
+          "name": "Expiration and cancellation cancelling the delivery request cancels OPEN and CLAIMED dispatches, keeping the claim owner",
+          "status": "passed"
+        },
+        {
+          "name": "Expiration and cancellation enforces dispatch invariants in PostgreSQL",
+          "status": "passed"
+        },
+        {
+          "name": "Audit records dispatch events without tokens, secrets or customer contact data",
+          "status": "passed"
+        }
+      ]
+    },
+    "e2eTotal": 266,
+    "unitTotal": 178,
+    "quality": [
+      {
+        "name": "scan-local",
+        "status": 0
+      },
+      {
+        "name": "scan-adversarial",
+        "status": 0
+      },
+      {
+        "name": "scan-boundary",
+        "status": 0
+      },
+      {
+        "name": "generate",
+        "status": 0
+      },
+      {
+        "name": "validate",
+        "status": 0
+      },
+      {
+        "name": "tsc",
+        "status": 0
+      },
+      {
+        "name": "build",
+        "status": 0
+      },
+      {
+        "name": "openapi",
+        "status": 0
+      },
+      {
+        "name": "api-access",
+        "status": 0
+      },
+      {
+        "name": "docs-check",
+        "status": 0
+      },
+      {
+        "name": "oxlint",
+        "status": 0
+      },
+      {
+        "name": "eslint",
+        "status": 0
+      },
+      {
+        "name": "unit",
+        "status": 0
+      },
+      {
+        "name": "verify-migrations",
+        "status": 0
+      }
+    ],
+    "localMigrations": [
+      {
+        "label": "local",
+        "before": {
+          "Dispatch": {
+            "count": 44,
+            "sha256": "4218449a34455ae1aeb31dc9676887ba71116be7fe826f2c585af3a19b618f99"
+          },
+          "DispatchCandidate": {
+            "count": 79,
+            "sha256": "3efe703164bad71a961c032a5727c923829216d1706b5a9278f80ad146d25cd2"
+          },
+          "DeliveryAssignment": {
+            "count": 15,
+            "sha256": "cdbc0e7d2096c70bbc20d6dba3ef0c1ca8792ba0a08b5e01253e40f39ab54cb2"
+          },
+          "DispatchCreditSnapshot": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "CreditAccount": {
+            "count": 12,
+            "sha256": "e0182df82b2a45b3562c3c91a10ed6af92c3ba5a759a7bf7a38ef4963c9c293e"
+          },
+          "CreditLedgerEntry": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          }
+        },
+        "after": {
+          "Dispatch": {
+            "count": 44,
+            "sha256": "4218449a34455ae1aeb31dc9676887ba71116be7fe826f2c585af3a19b618f99"
+          },
+          "DispatchCandidate": {
+            "count": 79,
+            "sha256": "3efe703164bad71a961c032a5727c923829216d1706b5a9278f80ad146d25cd2"
+          },
+          "DeliveryAssignment": {
+            "count": 15,
+            "sha256": "cdbc0e7d2096c70bbc20d6dba3ef0c1ca8792ba0a08b5e01253e40f39ab54cb2"
+          },
+          "DispatchCreditSnapshot": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "CreditAccount": {
+            "count": 12,
+            "sha256": "e0182df82b2a45b3562c3c91a10ed6af92c3ba5a759a7bf7a38ef4963c9c293e"
+          },
+          "CreditLedgerEntry": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          }
+        },
+        "unchanged": true,
+        "historical": 0,
+        "checks": [
+          {
+            "name": "deploy",
+            "status": 0
+          },
+          {
+            "name": "status",
+            "status": 0
+          },
+          {
+            "name": "drift",
+            "status": 0
+          }
+        ]
+      },
+      {
+        "label": "test",
+        "before": {
+          "Dispatch": {
+            "count": 18,
+            "sha256": "115a64b0d2c0dd7afed6a073a844938638db52645cce7e0b4567c61db127a32e"
+          },
+          "DispatchCandidate": {
+            "count": 30,
+            "sha256": "860238a475e8374ea6bf2eca03058dbb39d98e2ddbe785894e78bc6d153e8436"
+          },
+          "DeliveryAssignment": {
+            "count": 13,
+            "sha256": "d1d9a3affc708a478e6db7a23167e996fc02629799879377710bdb10fcb95f3f"
+          },
+          "DispatchCreditSnapshot": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "CreditAccount": {
+            "count": 186,
+            "sha256": "a1bb97b5f9445b3c59c57df28f65f1307d0e21d286182f9d279fb56c879f55eb"
+          },
+          "CreditLedgerEntry": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          }
+        },
+        "after": {
+          "Dispatch": {
+            "count": 18,
+            "sha256": "115a64b0d2c0dd7afed6a073a844938638db52645cce7e0b4567c61db127a32e"
+          },
+          "DispatchCandidate": {
+            "count": 30,
+            "sha256": "860238a475e8374ea6bf2eca03058dbb39d98e2ddbe785894e78bc6d153e8436"
+          },
+          "DeliveryAssignment": {
+            "count": 13,
+            "sha256": "d1d9a3affc708a478e6db7a23167e996fc02629799879377710bdb10fcb95f3f"
+          },
+          "DispatchCreditSnapshot": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "CreditAccount": {
+            "count": 186,
+            "sha256": "a1bb97b5f9445b3c59c57df28f65f1307d0e21d286182f9d279fb56c879f55eb"
+          },
+          "CreditLedgerEntry": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          }
+        },
+        "unchanged": true,
+        "historical": 0,
+        "checks": [
+          {
+            "name": "deploy",
+            "status": 0
+          },
+          {
+            "name": "status",
+            "status": 0
+          },
+          {
+            "name": "drift",
+            "status": 0
+          }
+        ]
+      }
+    ],
+    "scans": [
+      {
+        "label": "local",
+        "dispatches": 44,
+        "legacy": 44,
+        "preEnforcementAwards": 0,
+        "enforcedAwards": 0,
+        "ledgerAwards": 0,
+        "violations": []
+      },
+      {
+        "label": "adversarial",
+        "dispatches": 86,
+        "legacy": 2,
+        "preEnforcementAwards": 0,
+        "enforcedAwards": 36,
+        "ledgerAwards": 36,
+        "violations": []
+      },
+      {
+        "label": "boundary",
+        "dispatches": 4,
+        "legacy": 1,
+        "preEnforcementAwards": 2,
+        "enforcedAwards": 3,
+        "ledgerAwards": 3,
+        "violations": []
+      }
+    ],
+    "logs": [
+      {
+        "file": ".tmp/fix-v110d/adversarial-backend.log",
+        "lines": 19299,
+        "unhandled": 0,
+        "deadlocks": 0,
+        "jwtValues": 0,
+        "credentialValues": 0,
+        "fiveXXLines": 4,
+        "events": [
+          "CREDIT_POLICY_VERSIONED",
+          "SERVICE_AWARD_CHARGED",
+          "SERVICE_AWARD_REJECTED_INSUFFICIENT_CREDITS",
+          "CREDIT_RECHARGED",
+          "CREDIT_ADJUSTED",
+          "LEGACY_DISPATCH_CREDIT_SKIPPED",
+          "SERVICE_AWARD_REJECTED"
+        ]
+      },
+      {
+        "file": ".tmp/check-v110d/backend.log",
+        "lines": 951,
+        "unhandled": 0,
+        "deadlocks": 0,
+        "jwtValues": 0,
+        "credentialValues": 0,
+        "fiveXXLines": 0,
+        "events": [
+          "CREDIT_POLICY_VERSIONED",
+          "SERVICE_AWARD_CHARGED"
+        ]
+      },
+      {
+        "file": ".tmp/check-v110d/migration-backend.log",
+        "lines": 956,
+        "unhandled": 0,
+        "deadlocks": 0,
+        "jwtValues": 0,
+        "credentialValues": 0,
+        "fiveXXLines": 0,
+        "events": [
+          "CREDIT_POLICY_VERSIONED",
+          "LEGACY_DISPATCH_CREDIT_SKIPPED",
+          "SERVICE_AWARD_CHARGED",
+          "PRE_ENFORCEMENT_AWARD"
+        ]
+      }
+    ],
+    "secretScan": {
+      "filesScanned": 35,
+      "filesWithSecretValues": [],
+      "preExistingEnvExcluded": true
+    }
+  },
+  "cleanup": {
+    "status": "complete",
+    "provenance": {
+      "proof": [
+        {
+          "db": "mandaria_check_d_70293be9_full_full_full_full_test",
+          "first_migration": "2026-09-22T18:48:52.400Z",
+          "last_migration": "2026-09-22T18:48:52.936Z",
+          "migrations": 15
+        },
+        {
+          "db": "mandaria_check_d_70293be9_full_full_full_full_full_test",
+          "first_migration": "2026-09-22T18:56:29.059Z",
+          "last_migration": "2026-09-22T18:56:29.581Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_check_d_70293be9_full_full_full_full_full_full_test",
+          "first_migration": "2026-09-22T18:57:09.862Z",
+          "last_migration": "2026-09-22T18:57:10.320Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_check_d_migration_1790102942419_test",
+          "first_migration": "2026-09-22T18:49:04.644Z",
+          "last_migration": "2026-09-22T18:49:17.916Z",
+          "migrations": 15
+        },
+        {
+          "db": "mandaria_check_d_migration_1790103592325_test",
+          "first_migration": "2026-09-22T18:59:54.263Z",
+          "last_migration": "2026-09-22T19:00:06.463Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_boundary_1790104043551_test",
+          "first_migration": "2026-09-22T19:07:25.416Z",
+          "last_migration": "2026-09-22T19:07:43.354Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_boundary_1790104176948_test",
+          "first_migration": "2026-09-22T19:09:38.955Z",
+          "last_migration": "2026-09-22T19:09:58.709Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_boundary_1790104569205_test",
+          "first_migration": "2026-09-22T19:16:11.223Z",
+          "last_migration": "2026-09-22T19:16:32.044Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_fix_adv_1790103706331_test",
+          "first_migration": "2026-09-22T19:01:48.613Z",
+          "last_migration": "2026-09-22T19:01:49.306Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_fix_reg_1790103680725_test",
+          "first_migration": "2026-09-22T19:01:22.395Z",
+          "last_migration": "2026-09-22T19:01:22.868Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_clean_367d889347_test",
+          "first_migration": "2026-09-22T19:02:13.751Z",
+          "last_migration": "2026-09-22T19:02:14.298Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_upgrade_367d889347_test",
+          "first_migration": "2026-09-22T19:02:16.497Z",
+          "last_migration": "2026-09-22T19:02:35.393Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_v19_367d889347_test",
+          "first_migration": "2026-09-22T19:02:50.458Z",
+          "last_migration": "2026-09-22T19:03:09.343Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_v110a_367d889347_test",
+          "first_migration": "2026-09-22T19:03:14.672Z",
+          "last_migration": "2026-09-22T19:03:38.140Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_clean_1a27c1fb63_test",
+          "first_migration": "2026-09-22T19:11:50.014Z",
+          "last_migration": "2026-09-22T19:11:50.543Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_upgrade_1a27c1fb63_test",
+          "first_migration": "2026-09-22T19:11:52.394Z",
+          "last_migration": "2026-09-22T19:12:08.210Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_v19_1a27c1fb63_test",
+          "first_migration": "2026-09-22T19:12:21.193Z",
+          "last_migration": "2026-09-22T19:12:34.996Z",
+          "migrations": 16
+        },
+        {
+          "db": "mandaria_v110a_1a27c1fb63_test",
+          "first_migration": "2026-09-22T19:12:38.649Z",
+          "last_migration": "2026-09-22T19:12:55.375Z",
+          "migrations": 16
+        }
+      ],
+      "artifactTimes": [
+        {
+          "file": "before-sql.json",
+          "modified": "2026-09-22T18:49:02.249Z"
+        },
+        {
+          "file": "before-migration.json",
+          "modified": "2026-09-22T18:49:20.072Z"
+        },
+        {
+          "file": "regression-database.json",
+          "modified": "2026-09-22T19:01:20.723Z"
+        },
+        {
+          "file": "verify-migrations.log",
+          "modified": "2026-09-22T19:03:43.521Z"
+        },
+        {
+          "file": "final-verify-migrations.log",
+          "modified": "2026-09-22T19:13:00.187Z"
+        }
+      ]
+    },
+    "dropped": [
+      "mandaria_check_d_70293be9_full_full_full_full_test",
+      "mandaria_check_d_70293be9_full_full_full_full_full_test",
+      "mandaria_check_d_70293be9_full_full_full_full_full_full_test",
+      "mandaria_check_d_migration_1790102942419_test",
+      "mandaria_check_d_migration_1790103592325_test",
+      "mandaria_boundary_1790104043551_test",
+      "mandaria_boundary_1790104176948_test",
+      "mandaria_boundary_1790104569205_test",
+      "mandaria_fix_adv_1790103706331_test",
+      "mandaria_fix_reg_1790103680725_test",
+      "mandaria_clean_367d889347_test",
+      "mandaria_upgrade_367d889347_test",
+      "mandaria_v19_367d889347_test",
+      "mandaria_v110a_367d889347_test",
+      "mandaria_clean_1a27c1fb63_test",
+      "mandaria_upgrade_1a27c1fb63_test",
+      "mandaria_v19_1a27c1fb63_test",
+      "mandaria_v110a_1a27c1fb63_test"
+    ],
+    "mainAndSharedTestPreserved": true,
+    "initialAutomaticReviewRejection": "Insufficient provenance for log-derived targets; resolved by per-database migration timestamps and fixed verified target list."
+  },
+  "git": {
+    "commit": false,
+    "push": false,
+    "preExistingEnvUnchanged": true
+  },
+  "verdict": "PASS"
+}

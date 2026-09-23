@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
   DispatchCandidateStatus,
+  DispatchCreditMode,
   DispatchStatus,
   ServiceType,
 } from '@prisma/client';
@@ -12,6 +13,18 @@ import {
   assignmentTtlMinutes,
 } from '../delivery-assignments/assignment-policy.js';
 import { pageResult } from '../common/pagination.dto.js';
+import {
+  awardRejectionCode,
+  chargeDispatchAward,
+} from '../credits/service-award.js';
+import type { AwardOutcome } from '../credits/service-award.js';
+import { preEnforcementSelect } from '../credits/award-boundary.js';
+import {
+  REFUND_INTEGRITY_EVENT,
+  refundDispatchAward,
+  refundLogFields,
+  refundRejectionCode,
+} from '../credits/service-refund.js';
 import {
   claimRejection,
   dispatchError,
@@ -30,6 +43,8 @@ type LockedDispatch = {
   status: DispatchStatus;
   expiresAt: Date;
   claimedByProviderId: string | null;
+  creditMode: DispatchCreditMode;
+  claimedAt: Date | null;
   serviceZoneId: string;
   serviceType: ServiceType;
 };
@@ -145,43 +160,70 @@ export class DispatchService {
    * Claims an OPEN dispatch for a candidate provider. The dispatch row is locked FOR UPDATE, so
    * concurrent claims run one after another and every later attempt sees CLAIMED (409). The
    * partial unique index on CLAIMED candidates and the Dispatch trigger back this up in SQL.
+   *
+   * V1.10-D: claiming a monetized dispatch and paying its frozen cost are the same transaction.
+   * The provider pays from its own credit account — a fleet driver never pays — and the charge is
+   * exactly DispatchCreditSnapshot.credits, with no policy lookup and no routing call. Without
+   * enough credits nothing happens at all: no claim, no candidate change, no ledger entry.
    */
   async claim(dispatchId: string, providerId: string, actorUserId: string) {
-    const outcome = await this.prisma.$transaction(async (tx) => {
-      const dispatch = await this.lock(tx, dispatchId);
-      const candidate = await this.candidate(tx, dispatchId, providerId);
-      const now = new Date();
-      const rejection = claimRejection(dispatch, candidate, providerId, now);
-      if (rejection === 'ALREADY_OWNER') return { kind: 'already' as const };
-      if (rejection === 'DISPATCH_EXPIRED' && dispatch.status === 'OPEN') {
+    const outcome = await this.charging(
+      { dispatchId, providerId, actorUserId },
+      this.prisma.$transaction(async (tx) => {
+        const dispatch = await this.lock(tx, dispatchId);
+        const candidate = await this.candidate(tx, dispatchId, providerId);
+        const now = new Date();
+        const rejection = claimRejection(dispatch, candidate, providerId, now);
+        if (rejection === 'ALREADY_OWNER') {
+          const historical = await tx.dispatchPreEnforcementAward.findFirst({
+            where: {
+              dispatchId,
+              actorType: 'PROVIDER',
+              actorId: providerId,
+              awardedAt: dispatch.claimedAt!,
+            },
+            select: { id: true },
+          });
+          return { kind: 'already' as const, historical: !!historical };
+        }
+        if (rejection === 'DISPATCH_EXPIRED' && dispatch.status === 'OPEN') {
+          await tx.dispatch.update({
+            where: { id: dispatchId },
+            data: { status: 'EXPIRED', expiredAt: now },
+          });
+          return { kind: 'expired' as const };
+        }
+        if (rejection) throw reject(rejection);
+        const eligible = await eligibleProviderIds(
+          tx,
+          dispatch.serviceZoneId,
+          dispatch.serviceType,
+          providerId,
+        );
+        if (!eligible.length) throw reject('PROVIDER_NOT_ELIGIBLE');
+        await tx.dispatchCandidate.update({
+          where: { dispatchId_providerId: { dispatchId, providerId } },
+          data: { status: 'CLAIMED', claimedAt: now },
+        });
         await tx.dispatch.update({
           where: { id: dispatchId },
-          data: { status: 'EXPIRED', expiredAt: now },
+          data: {
+            status: 'CLAIMED',
+            claimedByProviderId: providerId,
+            claimedAt: now,
+          },
         });
-        return { kind: 'expired' as const };
-      }
-      if (rejection) throw reject(rejection);
-      const eligible = await eligibleProviderIds(
-        tx,
-        dispatch.serviceZoneId,
-        dispatch.serviceType,
-        providerId,
-      );
-      if (!eligible.length) throw reject('PROVIDER_NOT_ELIGIBLE');
-      await tx.dispatchCandidate.update({
-        where: { dispatchId_providerId: { dispatchId, providerId } },
-        data: { status: 'CLAIMED', claimedAt: now },
-      });
-      await tx.dispatch.update({
-        where: { id: dispatchId },
-        data: {
-          status: 'CLAIMED',
-          claimedByProviderId: providerId,
-          claimedAt: now,
-        },
-      });
-      return { kind: 'claimed' as const };
-    });
+        // Charged last, with the claim already written: the guard in PostgreSQL only accepts a
+        // charge from the actor holding the dispatch, and a rejection here rolls the claim back.
+        const award = await chargeDispatchAward(
+          tx,
+          { id: dispatchId, creditMode: dispatch.creditMode },
+          { actorType: 'PROVIDER', providerId },
+          actorUserId,
+        );
+        return { kind: 'claimed' as const, award };
+      }),
+    );
     if (outcome.kind === 'expired') {
       this.logger.log({
         event: 'DISPATCH_EXPIRED',
@@ -192,13 +234,23 @@ export class DispatchService {
       });
       throw reject('DISPATCH_EXPIRED');
     }
-    if (outcome.kind === 'claimed')
+    if (outcome.kind === 'already' && outcome.historical) {
+      this.logger.log({
+        event: 'PRE_ENFORCEMENT_AWARD',
+        dispatchId,
+        providerId,
+        actorUserId,
+      });
+    }
+    if (outcome.kind === 'claimed') {
       this.logger.log({
         event: 'DISPATCH_CLAIMED',
         dispatchId,
         providerId,
         actorUserId,
       });
+      this.logAward(outcome.award, { dispatchId, providerId, actorUserId });
+    }
     return this.getForProvider(dispatchId, providerId);
   }
 
@@ -212,48 +264,76 @@ export class DispatchService {
     reason: string,
     actorUserId: string,
   ) {
-    const outcome = await this.prisma.$transaction(async (tx) => {
-      const dispatch = await this.lock(tx, dispatchId);
-      await this.candidate(tx, dispatchId, providerId);
-      if (
-        dispatch.status !== 'CLAIMED' ||
-        dispatch.claimedByProviderId !== providerId
-      )
-        throw reject('DISPATCH_NOT_CLAIMED_BY_PROVIDER');
-      // V1.8: resources must be freed first; the dispatch trigger enforces this in SQL too.
-      if (
-        await tx.deliveryAssignment.findFirst({
-          where: { dispatchId, status: 'ACTIVE' },
-          select: { id: true },
-        })
-      )
-        throw dispatchError(
-          'DISPATCH_HAS_ACTIVE_ASSIGNMENT',
-          'Cancel the active delivery assignment before releasing the dispatch',
+    const outcome = await this.reversing(
+      { dispatchId, providerId, actorUserId },
+      this.prisma.$transaction(async (tx) => {
+        const dispatch = await this.lock(tx, dispatchId);
+        await this.candidate(tx, dispatchId, providerId);
+        if (
+          dispatch.status !== 'CLAIMED' ||
+          dispatch.claimedByProviderId !== providerId
+        )
+          throw reject('DISPATCH_NOT_CLAIMED_BY_PROVIDER');
+        // V1.8: resources must be freed first; the dispatch trigger enforces this in SQL too.
+        if (
+          await tx.deliveryAssignment.findFirst({
+            where: { dispatchId, status: 'ACTIVE' },
+            select: { id: true },
+          })
+        )
+          throw dispatchError(
+            'DISPATCH_HAS_ACTIVE_ASSIGNMENT',
+            'Cancel the active delivery assignment before releasing the dispatch',
+          );
+        const now = new Date();
+        // Read before the claim is cleared: the boundary of V1.10-D is identified by claimedAt.
+        const awarded = await tx.dispatch.findUniqueOrThrow({
+          where: { id: dispatchId },
+          select: {
+            creditMode: true,
+            claimedAt: true,
+            preEnforcementAwards: { select: preEnforcementSelect },
+          },
+        });
+        await tx.dispatchCandidate.update({
+          where: { dispatchId_providerId: { dispatchId, providerId } },
+          data: { status: 'RELEASED', releasedAt: now, releaseReason: reason },
+        });
+        const expired = now >= dispatch.expiresAt;
+        await tx.dispatch.update({
+          where: { id: dispatchId },
+          data: {
+            status: expired ? 'EXPIRED' : 'OPEN',
+            claimedByProviderId: null,
+            claimedAt: null,
+            ...(expired ? { expiredAt: now } : {}),
+          },
+        });
+        // V1.10-E: giving the service back returns exactly the credits its award charged, in this
+        // same transaction. A service that was never charged returns nothing.
+        const refund = await refundDispatchAward(
+          tx,
+          { id: dispatchId, ...awarded },
+          { actorType: 'PROVIDER', providerId },
+          providerId,
+          'PROVIDER_RELEASE',
+          actorUserId,
         );
-      const now = new Date();
-      await tx.dispatchCandidate.update({
-        where: { dispatchId_providerId: { dispatchId, providerId } },
-        data: { status: 'RELEASED', releasedAt: now, releaseReason: reason },
-      });
-      const expired = now >= dispatch.expiresAt;
-      await tx.dispatch.update({
-        where: { id: dispatchId },
-        data: {
-          status: expired ? 'EXPIRED' : 'OPEN',
-          claimedByProviderId: null,
-          claimedAt: null,
-          ...(expired ? { expiredAt: now } : {}),
-        },
-      });
-      return { expired };
-    });
+        return { expired, refund };
+      }),
+    );
     this.logger.log({
       event: 'DISPATCH_RELEASED',
       dispatchId,
       providerId,
       actorUserId,
       reason,
+    });
+    this.logger.log({
+      ...refundLogFields(outcome.refund),
+      dispatchId,
+      providerId,
+      actorUserId,
     });
     if (outcome.expired)
       this.logger.log({
@@ -304,6 +384,73 @@ export class DispatchService {
     return adminDispatchView(dispatch);
   }
 
+  /** One line per economic outcome of an award: charged, or skipped because the dispatch is legacy. */
+  private logAward(
+    award: AwardOutcome,
+    context: { dispatchId: string; providerId: string; actorUserId: string },
+  ) {
+    if (award.kind === 'legacy') {
+      this.logger.log({
+        event: 'LEGACY_DISPATCH_CREDIT_SKIPPED',
+        ...context,
+        reason: 'DISPATCH_OPENED_BEFORE_CREDIT_SNAPSHOTS',
+      });
+      return;
+    }
+    this.logger.log({
+      event: 'SERVICE_AWARD_CHARGED',
+      ...context,
+      actorType: award.actorType,
+      creditAccountId: award.creditAccountId,
+      credits: award.credits,
+      creditSnapshotId: award.snapshotId,
+      entryId: award.entryId,
+      sequence: award.sequence,
+      balanceBefore: award.balanceBefore,
+      balanceAfter: award.balanceAfter,
+    });
+  }
+
+  /** Reports why an award was refused for economic reasons; the rejection itself is the answer. */
+  private async charging<T>(
+    context: { dispatchId: string; providerId: string; actorUserId: string },
+    work: Promise<T>,
+  ) {
+    try {
+      return await work;
+    } catch (error) {
+      const code = awardRejectionCode(error);
+      if (code)
+        this.logger.warn({
+          event:
+            code === 'INSUFFICIENT_CREDITS'
+              ? 'SERVICE_AWARD_REJECTED_INSUFFICIENT_CREDITS'
+              : 'SERVICE_AWARD_REJECTED',
+          ...context,
+          code,
+        });
+      throw error;
+    }
+  }
+
+  /** Reports a reversal refused because the award it should return is missing (corruption). */
+  private async reversing<T>(
+    context: { dispatchId: string; providerId: string; actorUserId: string },
+    work: Promise<T>,
+  ) {
+    try {
+      return await work;
+    } catch (error) {
+      if (refundRejectionCode(error) === 'CREDIT_REFUND_INTEGRITY_ERROR')
+        this.logger.error({
+          event: REFUND_INTEGRITY_EVENT,
+          ...context,
+          code: 'CREDIT_REFUND_INTEGRITY_ERROR',
+        });
+      throw error;
+    }
+  }
+
   private page(
     where: Prisma.DispatchWhereInput,
     query: { page: number; pageSize: number },
@@ -327,7 +474,7 @@ export class DispatchService {
   private async lock(tx: Prisma.TransactionClient, dispatchId: string) {
     const [row] = await tx.$queryRaw<
       LockedDispatch[]
-    >`SELECT d.id, d.status, d."expiresAt", d."claimedByProviderId", q."serviceZoneId", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
+    >`SELECT d.id, d.status, d."expiresAt", d."claimedByProviderId", d."creditMode", d."claimedAt", q."serviceZoneId", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
     if (!row) throw new NotFoundException('Dispatch not found');
     return row;
   }

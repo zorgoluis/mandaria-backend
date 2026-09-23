@@ -6,6 +6,12 @@ import type { INestApplication, LoggerService } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
 import request from 'supertest';
+import { ensureTestCreditPolicies } from './support/credit-policies.js';
+import {
+  fundForAward,
+  purgeFixtureCredits,
+  purgeFixtureDispatches,
+} from './support/credits.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith('_test'))
@@ -140,6 +146,12 @@ async function acceptedDispatch(
     where: { deliveryQuoteId: quote.id },
     include: { candidates: true },
   });
+  // V1.10-D: claiming debits the frozen cost. This suite is about the claim rules, so every
+  // candidate gets exactly what this one service costs: no case wins or loses for lack of funds.
+  for (const candidate of dispatch.candidates)
+    await fundForAward(prisma, dispatch.id, {
+      providerId: candidate.providerId,
+    });
   return { ...quote, dispatch };
 }
 async function quoted(zone: keyof typeof ZONES, goods: object) {
@@ -210,6 +222,8 @@ const detail = (key: string, dispatchId: string, providerId?: string) =>
     .auth(t[key], bearer);
 
 beforeAll(async () => {
+  // V1.10-C: accepting a quote opens a Dispatch, which needs ACTIVE credit policies.
+  await ensureTestCreditPolicies(prisma);
   const passwordHash = await argon2.hash(password);
   const user = async (
     key: string,
@@ -350,6 +364,7 @@ beforeAll(async () => {
 }, 120000);
 
 afterAll(async () => {
+  await purgeFixtureDispatches(prisma, clientIds);
   vi.useRealTimers();
   const zones = Object.values(zoneIds);
   const providers = Object.values(providerIds);
@@ -381,6 +396,7 @@ afterAll(async () => {
   });
   await prisma.ratePlan.deleteMany({ where: { serviceZoneId: { in: zones } } });
   await prisma.serviceZone.deleteMany({ where: { id: { in: zones } } });
+  await purgeFixtureCredits(prisma, { providerIds: providers });
   await prisma.providerMembership.deleteMany({
     where: { providerId: { in: providers } },
   });
@@ -959,15 +975,19 @@ describe.sequential('Expiration and cancellation', () => {
         },
       }),
     ).rejects.toThrow(/DISPATCH_INVALID/);
-    await prisma.dispatchCandidate.update({
-      where: {
-        dispatchId_providerId: {
-          dispatchId: dispatch.id,
-          providerId: providerIds.A,
+    await expect(
+      prisma.dispatchCandidate.update({
+        where: {
+          dispatchId_providerId: {
+            dispatchId: dispatch.id,
+            providerId: providerIds.A,
+          },
         },
-      },
-      data: { status: 'CLAIMED', claimedAt: now },
-    });
+        data: { status: 'CLAIMED', claimedAt: now },
+      }),
+    ).rejects.toThrow(/CREDIT_AWARD_REQUIRED/);
+    // Establish the legitimate claim and debit before checking the other SQL guards.
+    await claim('A', dispatch.id).expect(200);
     await expect(
       prisma.dispatchCandidate.update({
         where: {

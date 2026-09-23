@@ -88,14 +88,15 @@ export class VehicleResponse {
   @ApiProperty({ enum: VehicleType, example: 'MOTORCYCLE' }) type!: VehicleType;
   @ApiProperty({ enum: VehicleStatus, example: 'ACTIVE' })
   status!: VehicleStatus;
-  @ApiPropertyOptional({ nullable: true, example: 'Italika' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'Italika' })
   brand!: string | null;
-  @ApiPropertyOptional({ nullable: true, example: 'FT150' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'FT150' })
   model!: string | null;
-  @ApiPropertyOptional({ nullable: true, example: 2023 }) year!: number | null;
-  @ApiPropertyOptional({ nullable: true, example: 'Rojo' })
+  @ApiPropertyOptional({ type: 'integer', nullable: true, example: 2023 })
+  year!: number | null;
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'Rojo' })
   color!: string | null;
-  @ApiPropertyOptional({ nullable: true, example: 'ABC-123' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'ABC-123' })
   plate!: string | null;
   @ApiProperty({ type: VehicleCurrentAssignmentResponse, nullable: true })
   currentAssignment!: VehicleCurrentAssignmentResponse | null;
@@ -122,6 +123,7 @@ export class AssignmentResponse {
   @ApiProperty(uuid) vehicleId!: string;
   @ApiProperty(dateTime) assignedAt!: Date;
   @ApiProperty({
+    type: String,
     ...dateTime,
     nullable: true,
     description: 'null mientras la asignación está vigente.',
@@ -144,11 +146,12 @@ class DriverSelfProviderResponse {
   @ApiProperty({ enum: ProviderStatus }) status!: ProviderStatus;
 }
 class DriverSelfVehicleResponse extends VehicleSummaryResponse {
-  @ApiPropertyOptional({ nullable: true }) brand!: string | null;
-  @ApiPropertyOptional({ nullable: true }) model!: string | null;
-  @ApiPropertyOptional({ nullable: true }) year!: number | null;
-  @ApiPropertyOptional({ nullable: true }) color!: string | null;
-  @ApiPropertyOptional({ nullable: true }) plate!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) brand!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) model!: string | null;
+  @ApiPropertyOptional({ type: 'integer', nullable: true })
+  year!: number | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) color!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) plate!: string | null;
 }
 class DriverSelfAssignmentResponse {
   @ApiProperty(uuid) id!: string;
@@ -164,11 +167,11 @@ class DriverSelfIndependentResponse {
       'APPROVED habilita /driver/dispatches/available y /driver/dispatches/:id/take. Cualquier otro estado los rechaza con 409 INDEPENDENT_NOT_APPROVED.',
   })
   status!: IndependentDriverStatus;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   approvedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   suspendedAt!: Date | null;
-  @ApiPropertyOptional({ nullable: true }) reason!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) reason!: string | null;
   @ApiProperty({
     description:
       'true sólo si el perfil está APPROVED y no hay ninguna asignación de entrega ACTIVE, sea de flotilla o independiente: un repartidor ejecuta un servicio a la vez en cualquiera de los dos modelos.',

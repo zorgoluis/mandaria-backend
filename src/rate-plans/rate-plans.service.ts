@@ -339,8 +339,13 @@ export class RatePlansService {
   }
 
   /** Used by quoting: the single ACTIVE plan with bands, or null. */
-  findActive(serviceZoneId: string, serviceType: ServiceType) {
-    return this.prisma.ratePlan.findFirst({
+  /** Pass `tx` from inside an interactive transaction (see ServiceZonesService.resolveActive). */
+  findActive(
+    serviceZoneId: string,
+    serviceType: ServiceType,
+    db: Prisma.TransactionClient | PrismaService = this.prisma,
+  ) {
+    return db.ratePlan.findFirst({
       where: { serviceZoneId, serviceType, status: 'ACTIVE' },
       select: planSelect,
     });

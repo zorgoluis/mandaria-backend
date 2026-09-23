@@ -1,6 +1,10 @@
 import type { DispatchStatus, Prisma, ServiceType } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
 import { cancelActiveAssignments } from '../delivery-assignments/delivery-assignments.service.js';
+import { createDispatchCreditSnapshots } from '../credit-policies/dispatch-credit-snapshots.js';
+import { preEnforcementSelect } from '../credits/award-boundary.js';
+import { refundDispatchAward } from '../credits/service-refund.js';
+import type { RefundOutcome } from '../credits/service-refund.js';
 
 export const DISPATCH_ERRORS = {
   DISPATCH_EXPIRED: 409,
@@ -21,6 +25,41 @@ export type DispatchView = (typeof DISPATCH_VIEWS)[number];
 export const RELEASE_REASON_MIN = 3;
 export const RELEASE_REASON_MAX = 500;
 export const REQUEST_CANCELLED_REASON = 'DELIVERY_REQUEST_CANCELLED';
+
+/**
+ * Who paid for a dispatch that a cancellation is closing: the provider that held the claim, or the
+ * independent driver that took it. A dispatch still OPEN has no payer, so nothing to return.
+ */
+async function cancelledDispatchOwner(
+  tx: Prisma.TransactionClient,
+  row: {
+    claimedByProviderId: string | null;
+    claimedByIndependentDriverId: string | null;
+  },
+) {
+  if (row.claimedByProviderId)
+    return {
+      account: {
+        actorType: 'PROVIDER' as const,
+        providerId: row.claimedByProviderId,
+      },
+      boundaryActorId: row.claimedByProviderId,
+    };
+  if (!row.claimedByIndependentDriverId) return null;
+  const profile = await tx.independentDriverProfile.findUnique({
+    where: { driverId: row.claimedByIndependentDriverId },
+    select: { id: true },
+  });
+  return profile
+    ? {
+        account: {
+          actorType: 'INDEPENDENT_DRIVER' as const,
+          independentDriverProfileId: profile.id,
+        },
+        boundaryActorId: row.claimedByIndependentDriverId,
+      }
+    : null;
+}
 
 export const dispatchExpiry = (openedAt: Date, ttlMinutes: number) =>
   new Date(openedAt.getTime() + ttlMinutes * 60_000);
@@ -85,6 +124,9 @@ export async function eligibleProviderIds(
 /**
  * Opens the dispatch of a quote that has just been ACCEPTED, inside the same transaction, and
  * snapshots its candidates. Zero candidates is valid: the dispatch stays OPEN until it expires.
+ * V1.10-C: in the same transaction it freezes the credit cost of every actor that may be awarded
+ * it (DispatchCreditSnapshot), from the quote's canonical distance. A missing credit policy aborts
+ * the opening — and with it the acceptance — instead of publishing a free service.
  */
 export async function openDispatch(
   tx: Prisma.TransactionClient,
@@ -93,6 +135,7 @@ export async function openDispatch(
     deliveryRequestId: string;
     serviceZoneId: string;
     serviceType: ServiceType;
+    distanceMeters: number;
   },
   ttlMinutes: number,
   now: Date,
@@ -111,6 +154,11 @@ export async function openDispatch(
     },
     select: { id: true, expiresAt: true },
   });
+  const creditSnapshots = await createDispatchCreditSnapshots(
+    tx,
+    dispatch.id,
+    quote,
+  );
   if (providerIds.length)
     await tx.dispatchCandidate.createMany({
       data: providerIds.map((providerId) => ({
@@ -119,7 +167,7 @@ export async function openDispatch(
         offeredAt: now,
       })),
     });
-  return { ...dispatch, providerIds };
+  return { ...dispatch, providerIds, creditSnapshots };
 }
 
 /**
@@ -140,8 +188,11 @@ export async function closeDispatchesForCancelledRequest(
       status: DispatchStatus;
       expiresAt: Date;
       claimedByProviderId: string | null;
+      claimedByIndependentDriverId: string | null;
+      claimedAt: Date | null;
+      creditMode: 'LEGACY' | 'MONETIZED';
     }[]
-  >`SELECT id, status, "expiresAt", "claimedByProviderId" FROM "Dispatch" WHERE "deliveryRequestId" = ${deliveryRequestId}::uuid AND status IN ('OPEN', 'CLAIMED') FOR UPDATE`;
+  >`SELECT id, status, "expiresAt", "claimedByProviderId", "claimedByIndependentDriverId", "claimedAt", "creditMode" FROM "Dispatch" WHERE "deliveryRequestId" = ${deliveryRequestId}::uuid AND status IN ('OPEN', 'CLAIMED') FOR UPDATE`;
   const assignments = await cancelActiveAssignments(
     tx,
     rows.map((row) => row.id),
@@ -153,6 +204,7 @@ export async function closeDispatchesForCancelledRequest(
     dispatchId: string;
     providerId: string | null;
   }[] = [];
+  const refunds: RefundOutcome[] = [];
   for (const row of rows) {
     const expired = effectiveDispatchStatus(row, now) === 'EXPIRED';
     await tx.dispatch.update({
@@ -165,11 +217,32 @@ export async function closeDispatchesForCancelledRequest(
             cancellationReason: REQUEST_CANCELLED_REASON,
           },
     });
+    // V1.10-E: cancelling the delivery reverses the award, so whoever paid for it gets the exact
+    // credits back in this same transaction. A dispatch nobody had won was never charged.
+    const owner = await cancelledDispatchOwner(tx, row);
+    if (owner)
+      refunds.push(
+        await refundDispatchAward(
+          tx,
+          {
+            id: row.id,
+            creditMode: row.creditMode,
+            claimedAt: row.claimedAt,
+            preEnforcementAwards: await tx.dispatchPreEnforcementAward.findMany(
+              { where: { dispatchId: row.id }, select: preEnforcementSelect },
+            ),
+          },
+          owner.account,
+          owner.boundaryActorId,
+          'DELIVERY_CANCELLED',
+          actorUserId,
+        ),
+      );
     events.push({
       event: expired ? 'DISPATCH_EXPIRED' : 'DISPATCH_CANCELLED',
       dispatchId: row.id,
       providerId: row.claimedByProviderId,
     });
   }
-  return { events, assignments };
+  return { events, assignments, refunds };
 }

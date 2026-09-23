@@ -108,13 +108,13 @@ export class ProviderDispatchesController {
   @ApiOkResponse({ type: ProviderDispatchResponse })
   @ApiErrorDescriptions({
     ...errors,
-    409: 'DISPATCH_ALREADY_CLAIMED (otro proveedor ganó; también el perdedor de una carrera concurrente) | DISPATCH_EXPIRED (now >= expiresAt; se persiste EXPIRED) | DISPATCH_CANCELLED | DISPATCH_RECLAIM_NOT_ALLOWED (mi proveedor ya lo liberó) | PROVIDER_NOT_ELIGIBLE (proveedor ya no ACTIVE o cobertura de zona/servicio INACTIVE).',
+    409: 'DISPATCH_ALREADY_CLAIMED (otro proveedor ganó; también el perdedor de una carrera concurrente) | DISPATCH_EXPIRED (now >= expiresAt; se persiste EXPIRED) | DISPATCH_CANCELLED | DISPATCH_RECLAIM_NOT_ALLOWED (mi proveedor ya lo liberó) | PROVIDER_NOT_ELIGIBLE (proveedor ya no ACTIVE o cobertura de zona/servicio INACTIVE) | INSUFFICIENT_CREDITS (el saldo del proveedor no cubre el creditCost del servicio; no se reclama nada) | CREDIT_ACCOUNT_UNAVAILABLE (el proveedor no tiene cuenta de créditos) | CREDIT_SNAPSHOT_UNAVAILABLE (servicio monetizado sin costo congelado) | CREDIT_MOVEMENT_CONFLICT (la cuenta cambió durante el cobro; reintentar).',
     429: 'Límite de 60 peticiones/minuto por IP.',
   })
   @ApiOperation({
     summary: 'Reclamar Dispatch para mi proveedor',
     description:
-      'Sin body (cualquier campo, incluido providerId, se rechaza con 400): el proveedor sale de la membership (providerId en query sólo selecciona entre mis memberships) y debe ser candidato OFFERED de un Dispatch OPEN y vigente, además de seguir elegible. Bloqueo de fila del Dispatch: con claims simultáneos gana exactamente uno y el resto recibe 409 sin cambios. Repetir el claim del propio ganador devuelve 200 sin cambios. No asigna Driver ni Vehicle. SUPER_ADMIN, DRIVER e IntegrationClient no pueden reclamar. 60/min por IP.' +
+      'Sin body (cualquier campo, incluido providerId, se rechaza con 400): el proveedor sale de la membership (providerId en query sólo selecciona entre mis memberships) y debe ser candidato OFFERED de un Dispatch OPEN y vigente, además de seguir elegible. Bloqueo de fila del Dispatch: con claims simultáneos gana exactamente uno y el resto recibe 409 sin cambios. Repetir el claim del propio ganador devuelve 200 sin cambios. No asigna Driver ni Vehicle. SUPER_ADMIN, DRIVER e IntegrationClient no pueden reclamar. 60/min por IP. V1.10-D: reclamar un servicio monetizado cobra en la misma transacción el creditCost congelado a la cuenta de créditos del proveedor (un SERVICE_AWARD por servicio, nunca dos) y sin saldo suficiente no hay claim ni cargo; los Dispatches anteriores a V1.10-C no se cobran. Liberar no devuelve créditos todavía.' +
       PROVIDER_SCOPE_DOC,
   })
   claim(
@@ -134,13 +134,13 @@ export class ProviderDispatchesController {
   @ApiOkResponse({ type: ProviderDispatchResponse })
   @ApiErrorDescriptions({
     ...errors,
-    409: 'DISPATCH_NOT_CLAIMED_BY_PROVIDER: el Dispatch no está CLAIMED por mi proveedor (liberado, de otro, cancelado o vencido).',
+    409: 'CREDIT_REFUND_INTEGRITY_ERROR (el servicio se cobró y su cargo no aparece: no se libera ni se devuelve nada hasta corregir los datos) | DISPATCH_NOT_CLAIMED_BY_PROVIDER: el Dispatch no está CLAIMED por mi proveedor (liberado, de otro, cancelado o vencido).',
     429: 'Límite de 20 peticiones/minuto por IP.',
   })
   @ApiOperation({
     summary: 'Liberar Dispatch reclamado por mi proveedor',
     description:
-      'Sólo el proveedor que tiene el claim. Mi candidatura pasa a RELEASED (con motivo) y no podrá reclamarlo de nuevo. Dentro de la ventana el Dispatch vuelve a OPEN para los demás candidatos OFFERED (si no queda ninguno sigue OPEN hasta vencer); tras expiresAt pasa a EXPIRED. Liberaciones simultáneas o repetidas: una aplica y el resto recibe 409. 20/min por IP.' +
+      'Sólo el proveedor que tiene el claim. Mi candidatura pasa a RELEASED (con motivo) y no podrá reclamarlo de nuevo. Dentro de la ventana el Dispatch vuelve a OPEN para los demás candidatos OFFERED (si no queda ninguno sigue OPEN hasta vencer); tras expiresAt pasa a EXPIRED. Liberaciones simultáneas o repetidas: una aplica y el resto recibe 409. 20/min por IP. V1.10-E: si el servicio se había cobrado, liberarlo devuelve en la misma transacción el 100% de esos créditos con un SERVICE_REFUND que compensa al SERVICE_AWARD original (que nunca se modifica); una devolución por cargo como máximo, y un Dispatch que nunca pagó no devuelve nada.' +
       PROVIDER_SCOPE_DOC,
   })
   release(

@@ -106,12 +106,12 @@ export class DriverDispatchesController {
   @ApiOkResponse({ type: DriverDispatchResponse })
   @ApiErrorDescriptions({
     ...base,
-    409: `${notApproved} | DISPATCH_ALREADY_CLAIMED (lo tomó un proveedor u otro repartidor) | DISPATCH_EXPIRED | DISPATCH_CANCELLED | DISPATCH_NOT_OPEN_TO_INDEPENDENT (ese ServiceType no admite independientes) | DISPATCH_RETAKE_NOT_ALLOWED (yo lo liberé) | DRIVER_NOT_ELIGIBLE | VEHICLE_NOT_ELIGIBLE | DRIVER_BUSY | VEHICLE_BUSY (ya tengo, o el vehículo tiene, una asignación ACTIVE en cualquiera de los dos modelos) | TAKE_CONFLICT.`,
+    409: `${notApproved} | DISPATCH_ALREADY_CLAIMED (lo tomó un proveedor u otro repartidor) | DISPATCH_EXPIRED | DISPATCH_CANCELLED | DISPATCH_NOT_OPEN_TO_INDEPENDENT (ese ServiceType no admite independientes) | DISPATCH_RETAKE_NOT_ALLOWED (yo lo liberé) | DRIVER_NOT_ELIGIBLE | VEHICLE_NOT_ELIGIBLE | DRIVER_BUSY | VEHICLE_BUSY (ya tengo, o el vehículo tiene, una asignación ACTIVE en cualquiera de los dos modelos) | TAKE_CONFLICT | INSUFFICIENT_CREDITS (mi saldo no cubre el creditCost del servicio; no se toma nada) | CREDIT_ACCOUNT_UNAVAILABLE | CREDIT_SNAPSHOT_UNAVAILABLE (servicio monetizado sin costo congelado) | CREDIT_MOVEMENT_CONFLICT.`,
   })
   @ApiOperation({
     summary: 'Tomar un servicio',
     description:
-      'Operación atómica: en una sola transacción el Dispatch pasa a CLAIMED a nombre de este repartidor y se crea su DeliveryAssignment ACTIVE en modo INDEPENDENT. Nunca queda un claim sin asignación ni una asignación sin claim. El repartidor se resuelve desde el JWT y la pertenencia del vehículo se relee en la base de datos, así que un vehicleId de un proveedor o de otro repartidor responde 404. Bloquea la misma fila de Dispatch que el claim de proveedor: si un proveedor reclama y un independiente toma a la vez, gana exactamente uno y el otro recibe 409. Máximo una asignación ACTIVE por Dispatch, por Driver y por Vehicle, contando flotilla e independiente: un repartidor ocupado en un servicio de proveedor no puede tomar uno propio, y al revés. Devuelve el servicio con access OWNER y su paymentContext. Mandaria no verifica si el repartidor dispone del efectivo para adelantar la mercancía: no hay wallet ni crédito.',
+      'Operación atómica: en una sola transacción el Dispatch pasa a CLAIMED a nombre de este repartidor y se crea su DeliveryAssignment ACTIVE en modo INDEPENDENT. Nunca queda un claim sin asignación ni una asignación sin claim. El repartidor se resuelve desde el JWT y la pertenencia del vehículo se relee en la base de datos, así que un vehicleId de un proveedor o de otro repartidor responde 404. Bloquea la misma fila de Dispatch que el claim de proveedor: si un proveedor reclama y un independiente toma a la vez, gana exactamente uno y el otro recibe 409. Máximo una asignación ACTIVE por Dispatch, por Driver y por Vehicle, contando flotilla e independiente: un repartidor ocupado en un servicio de proveedor no puede tomar uno propio, y al revés. Devuelve el servicio con access OWNER y su paymentContext. Mandaria no verifica si el repartidor dispone del efectivo para adelantar la mercancía. V1.10-D: tomar un servicio monetizado cobra en la misma transacción el creditCost congelado a la cuenta de créditos del repartidor (un SERVICE_AWARD por servicio); sin saldo suficiente no hay claim, ni asignación, ni cargo. Liberar no devuelve créditos todavía.',
   })
   take(
     @Param('dispatchId', new ParseUUIDPipe()) dispatchId: string,
@@ -127,12 +127,12 @@ export class DriverDispatchesController {
   @ApiOkResponse({ type: DriverDispatchResponse })
   @ApiErrorDescriptions({
     ...base,
-    409: `${notApproved} | DISPATCH_NOT_CLAIMED_BY_DRIVER: el Dispatch no está tomado por este repartidor.`,
+    409: `${notApproved} | DISPATCH_NOT_CLAIMED_BY_DRIVER: el Dispatch no está tomado por este repartidor. | CREDIT_REFUND_INTEGRITY_ERROR: el servicio se cobró y su cargo no aparece.`,
   })
   @ApiOperation({
     summary: 'Liberar un servicio que tomé',
     description:
-      'Operación atómica con motivo obligatorio: la asignación ACTIVE pasa a CANCELLED con el motivo, se limpia el claim independiente y el Dispatch vuelve a OPEN para quien pueda tomarlo (un proveedor candidato u otro repartidor); si la ventana ya cerró queda EXPIRED, igual que la liberación de proveedor de V1.7. El repartidor y el vehículo quedan libres. No existe reasignación para el rol DRIVER: un repartidor no puede pasarle el servicio a otro ni asignarse uno ajeno; liberar es la única salida. Quien libera no puede volver a tomar ese mismo Dispatch.',
+      'Operación atómica con motivo obligatorio: la asignación ACTIVE pasa a CANCELLED con el motivo, se limpia el claim independiente y el Dispatch vuelve a OPEN para quien pueda tomarlo (un proveedor candidato u otro repartidor); si la ventana ya cerró queda EXPIRED, igual que la liberación de proveedor de V1.7. El repartidor y el vehículo quedan libres. No existe reasignación para el rol DRIVER: un repartidor no puede pasarle el servicio a otro ni asignarse uno ajeno; liberar es la única salida. Quien libera no puede volver a tomar ese mismo Dispatch. V1.10-E: si el servicio se había cobrado, liberarlo devuelve en la misma transacción el 100% de esos créditos a la cuenta del repartidor, con un SERVICE_REFUND que compensa al SERVICE_AWARD original.',
   })
   release(
     @Param('dispatchId', new ParseUUIDPipe()) dispatchId: string,

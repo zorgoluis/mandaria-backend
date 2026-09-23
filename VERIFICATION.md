@@ -1,3 +1,469 @@
+# CHECK FINAL V1.10-E — Refunds & Reversals, validación adversarial (2026-09-23)
+
+Rama `v1.10-credit-monetization`, HEAD `0a5ab3f` + V1.10-E sin commit, paquete 1.10.0, `NODE_ENV=test`, routing `spy` (proveedor doble con contador). Validador temporal fuera del código del producto (`.tmp/check-v110e/`) contra la aplicación real levantada en puerto efímero sobre `mandaria_test`, con autenticación real y fixtures propios. Migraciones reales (17), sin `db push`. `mandaria_db` no se tocó. **69/69 comprobaciones PASS, 0 FAIL. Sin cambios de código ni de reglas durante el CHECK.**
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1-2 | Línea base y estados reales | Dispatch {OPEN,CLAIMED,EXPIRED,CANCELLED}, DeliveryRequest {CREATED,CANCELLED}, DeliveryAssignment {ACTIVE,REASSIGNED,CANCELLED}; 0 saldos negativos y 0 descuadres; eventos de reversión: `/provider/.../release`, `/driver/.../release`, cancelación de DeliveryRequest; **no existen** STARTED/IN_PROGRESS/PICKED_UP |
+| 3-6 | Devolución del proveedor | 20 → cargo −7 → 13 → release → **20**; la fila del award queda idéntica; refund +7; con la política cambiada a 20 créditos/km el refund sigue siendo +7; **0 llamadas de routing** |
+| 7-8 | Release y otro proveedor | A queda en neto 0 y B paga su propio −7; el mismo proveedor **no puede** volver a reclamar (409 `DISPATCH_RECLAIM_NOT_ALLOWED`), así que «award #2 del mismo proveedor» no existe en el dominio |
+| 9-10 | Reasignación y cancelación de asignación | Dos reasignaciones y una cancelación de asignación: 0 devoluciones, saldo intacto, Dispatch sigue CLAIMED por su proveedor |
+| 11-12 | Cancelación de la entrega | Devuelve +7 al proveedor y deja el Dispatch CANCELLED; cancelar antes de que alguien gane no escribe ningún movimiento (ni de 0 créditos) |
+| 13-14 | Repartidor independiente | TAKE −14 y devolución +14 tanto por release como por cancelación; siempre a la cuenta del repartidor, nunca a la del proveedor; el refund cae en la **misma cuenta** que pagó |
+| 15-17 | Duplicados | Dos releases seguidos → 1 refund (el segundo 409); 10 releases simultáneos → 1 refund; 10 cancelaciones simultáneas → 1 refund |
+| 18-20 | Carreras y repetición | Release contra cancelación → 1 refund (nunca saldo +7 de más); 20 operaciones concurrentes → 1 refund y 0 duplicados en toda la base; devolver de nuevo un award ya compensado no acredita nada |
+| 21-23 | Frontera histórica | LEGACY: reclamado y liberado sin award ni refund (`SERVICE_REFUND_SKIPPED_LEGACY`); la exención PRE_ENFORCEMENT **no se puede fabricar** (`CREDIT_HISTORY_IMMUTABLE`, sólo migración); ENFORCED sin cargo → **falla cerrado** 409 `CREDIT_REFUND_INTEGRITY_ERROR`, nada se mueve y queda `SERVICE_REFUND_INTEGRITY_FAILURE` |
+| 24-33, 36, 38-40 | 20 escrituras forjadas en SQL | Rechazadas todas: sin award, award inexistente, +8, +6, −7, 0, a otro proveedor, a un repartidor, del award de otro Dispatch, apuntando a otro Dispatch, sin reversión operacional, duplicada (secuencial y 4 concurrentes), UPDATE y DELETE de award y de refund, y subir el saldo sin ledger |
+| 34-35, 37 | Reversión operacional en SQL | Liberar o cancelar a mano un servicio pagado → `CREDIT_REFUND_REQUIRED` (trigger diferido) y el Dispatch queda intacto; la transacción legítima (reversión + refund) **sí** confirma |
+| 41-44 | Rollback con fallo inyectado | Con un trigger temporal que hace fallar el `SERVICE_REFUND` de esa cuenta: release y cancelación fallan y revierten todo (Dispatch CLAIMED, DeliveryRequest CREATED, saldo 13, 0 refunds); al retirar la inyección el mismo release funciona |
+| 45-49 | Concurrencia económica | Refund contra recarga → saldo 30 con ledger reconstruible; refund contra ajuste → 12 sin lost update; refund contra un cobro nuevo → sólo los dos órdenes válidos; release de A contra claim de B → un único dueño y B paga sólo si gana; cancelación contra claim → neto 0 |
+| 50-55 | Seguridad de API | `refundAmount`, `credits`, `amount`, `awardId`, `reversesEntryId`, `creditAccountId`, `actorType`, `refundReason` y `balanceAfter` enviados por el cliente no deciden nada (el contrato rechaza el cuerpo con 400); 24 intentos sobre 6 rutas plausibles de refund manual con SUPER_ADMIN, PROVIDER_ADMIN, DRIVER y B2B → **404** |
+| 56-59 | Regresiones e integridad | `deliveryFee` 60.00 MXN, `goodsValue` 800.00, `driverAdvanceAmount` 800.00 y el modo de pago intactos; los 2 snapshots idénticos; la fila completa del award idéntica; cada refund responde quién pagó, cuánto, por qué Dispatch, cuándo y por qué motivo |
+| 60-62 | Ledger y varios awards | 24 movimientos (RECHARGE, SERVICE_AWARD, SERVICE_REFUND, ADMIN_ADJUSTMENT) reconstruyen exactamente el saldo; devolver uno de tres awards sólo afecta a ese; el refund nombra su award (el de B, con importe distinto al de A, para descartar la heurística del «último award») |
+| 63-65 | Escaneos | 0 violaciones: sin refund sin award, cuenta o Dispatch equivocados, importe distinto al opuesto, refunds no positivos, duplicados, actor incoherente, saldos negativos, descuadres, reversión sin devolución o devolución con el servicio aún adjudicado. LEGACY y PRE_ENFORCEMENT reportados aparte: 0 créditos gratis |
+| 66-67 | Migración V1.10-D → V1.10-E | Base temporal con el esquema previo a la frontera, historia sembrada (cuentas, recarga, ajuste, 3 Dispatches: LEGACY, ENFORCED con award y uno pre-enforcement), migración de frontera V1.10-D aplicada (crea la exención) y luego **V1.10-E con `migrate deploy`**: todas las tablas previas idénticas (filas y hash), **0 devoluciones creadas**, saldo 373, 1 award, 1 exención, 4 snapshots, sin drift. Base temporal eliminada |
+| 68-74 | Regresión y calidad | prisma validate, migrate status (ambas), sin drift (ambas), verify-migrations (cadena V1.0 → V1.10-E), build, Oxlint, ESLint, docs:check PASS; **188/188 unitarias**; **288/288 E2E en 19 archivos**, sin caída de workers en esta corrida |
+| 75 | Conteo adversarial | **69 PASS / 0 FAIL** |
+| 76 | Logs | 3307 líneas: 0 JWT, 0 cabeceras de autorización, 0 secretos B2B/SMTP, 0 respuestas 5xx, 0 unhandled, 0 deadlocks, 0 errores de serialización; 19 `SERVICE_REFUND_ISSUED`, 1 `SERVICE_REFUND_SKIPPED_LEGACY`, 1 `SERVICE_REFUND_INTEGRITY_FAILURE`; los errores SQL provocados a propósito quedaron en el cliente del CHECK, no en el servidor |
+| 77 | Limpieza | Fixtures del CHECK eliminados de `mandaria_test` (0 proveedores, 0 clientes, 0 usuarios `@check-v110e.test`), 0 descuadres, 0 saldos negativos, políticas operativas base intactas (2 ACTIVE); triggers de inyección retirados; bases temporales borradas |
+| 78 | Documentación | README, BITACORA, VERIFICATION y API-CONTRACT dicen explícitamente que el `SERVICE_AWARD` nunca se modifica y que la devolución es un `SERVICE_REFUND` compensatorio; ninguno afirma lo contrario |
+
+**Bugs del producto encontrados: ninguno.** No se modificó código ni reglas durante el CHECK.
+
+**Errores del propio validador (corregidos en el validador, no en el producto):** identificadores de vehículo en minúsculas contra el CHECK de formato; el límite real de 20 releases/minuto por IP exigía reiniciar la aplicación entre bloques de tormenta; una premisa equivocada en el punto 62 (el costo se congela al **abrir** el Dispatch, no al reclamarlo, así que los tres awards salían iguales); y restos de una corrida anterior del propio CHECK que descuadraban dos cuentas de fixtures en la línea base. Ninguno afectó al producto.
+
+**Defecto heredado ya reportado (sigue abierto):** `test/migrations/award-boundary.check.ts`, commiteado en V1.10-D, importa Prisma desde `.tmp/check-v110d/...`; rompe `tsc -p tsconfig.json` con 4 errores (el `build` del proyecto no lo ve). No se tocó en este CHECK.
+
+**Riesgos restantes.** Sin penalización por reservar y soltar (reclamar y liberar repetidamente tiene costo neto 0). Sólo devoluciones completas. Un Dispatch monetizado cuyo cargo desaparezca queda inrevertible hasta corregir los datos. El dueño de las tablas puede desactivar triggers: en producción, rol que no sea dueño y base que no termine en `_test`.
+
+# Verificación V1.10-E — Refunds & Reversals (2026-09-23)
+
+Rama `v1.10-credit-monetization` sobre `0a5ab3f` (V1.10-D publicada), paquete 1.10.0, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push. **V1.10-E nunca modifica un SERVICE_AWARD: una devolución es un SERVICE_REFUND compensatorio e inmutable, y sólo existen devoluciones completas asociadas a eventos operacionales soportados.**
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260923000300_service_refunds` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; **0 devoluciones creadas**: los awards históricos quedan exactamente como estaban |
+| `verify-migrations` | PASS: limpia, V1.0 → V1.10, datos V1.9 → V1.10 y V1.10-A ledger → V1.10-B → V1.10-C → V1.10-D → **V1.10-E**; 0 SERVICE_REFUND en las bases migradas; trigger de refund, trigger diferido de reversión, índice único parcial, CHECK, FK y enum presentes; el ledger V1.10-A conserva cada columna anterior con el mismo valor |
+| prisma validate / migrate status (ambas) / drift (ambas) | PASS / al día / vacío |
+| build, Oxlint, ESLint, docs:check | PASS |
+| tsc | 4 errores **preexistentes** en `test/migrations/award-boundary.check.ts` (importa Prisma desde `.tmp/check-v110d/...`, ver «Defectos heredados»); 0 en el código de V1.10-E |
+| Unitarias | **188/188** (10 nuevas de devoluciones) |
+| E2E por archivo | **288/288** en 19 archivos (22 nuevas); `providers` y `user-invitations` sufrieron la caída nativa de workers de Windows y pasaron completas al repetirlas |
+| Release de proveedor | Saldo 20 → award −7 → 13 → release → **20**; el award queda idéntico byte a byte y el refund +7 lo referencia con motivo `PROVIDER_RELEASE`; impacto neto 0 |
+| Política irrelevante | Con la política cambiada a 20 créditos/km después del cobro, la devolución sigue siendo **+7** |
+| Release y nuevo proveedor | A libera (neto 0) y B reclama pagando **su propio** award; al liberar B recibe su propia devolución (2 awards, 2 refunds) |
+| Release de repartidor independiente | Devuelve a la cuenta del repartidor (14), nunca a la del proveedor de su flotilla; motivo `INDEPENDENT_RELEASE` |
+| Cancelación de la entrega | Devuelve al proveedor (7) y al repartidor (14) según quién tuviera el servicio; motivo `DELIVERY_CANCELLED`; el Dispatch queda CANCELLED |
+| Cancelación sin adjudicación | 0 awards, 0 refunds y **ningún movimiento de 0 créditos** |
+| Reasignación y cancelación de asignación | Asignar, reasignar y cancelar la asignación **no devuelven nada**: el Dispatch sigue reclamado por el proveedor; al liberarlo después sí se devuelve |
+| Duplicados | Release repetido → 409 y 1 solo refund; cancelación repetida (×3) → 200 y 1 solo refund |
+| Alta contención | 10 reversiones simultáneas (5 releases + 5 cancelaciones) → **1 refund** y saldo íntegro |
+| Release contra cancelación | Simultáneos → exactamente **1** refund; estado final permitido por las reglas existentes |
+| Devolución contra recarga y ajuste | Release + recarga 20 + ajuste 5 simultáneos → 200/201/201, saldo 32 y ledger reconstruible entrada por entrada |
+| Devolución contra un cobro nuevo | Sólo dos resultados posibles según el orden serializado (el nuevo claim cobra la devolución, o falla por saldo); ningún otro |
+| Legacy | Release de un Dispatch LEGACY: 0 devolución, nada se mueve, log `SERVICE_REFUND_SKIPPED_LEGACY` |
+| Pre-enforcement | La exención histórica es **sólo de migración** (V1.10-D): un intento de fabricarla se rechaza con `CREDIT_HISTORY_IMMUTABLE`, así que la clase no se puede forjar; la regla de no devolver para esa clase está cubierta por unitaria |
+| Corrupción (ENFORCED sin cargo) | Release → 409 `CREDIT_REFUND_INTEGRITY_ERROR`, **falla cerrado**: nada se mueve, el Dispatch sigue CLAIMED y queda `SERVICE_REFUND_INTEGRITY_FAILURE` en el log |
+| Garantías SQL (14 escrituras forjadas) | Rechazadas: devolución sin reversión operacional, de un award inexistente, sin award, del award de otro, acreditada a otro proveedor, apuntando a otro Dispatch, con el actor equivocado, sin motivo, sobre una recarga, segunda devolución del mismo award (índice único), editar o borrar una devolución escrita, y devolver **más** o **menos** que el award |
+| Reversión por SQL sin devolución | Liberar o cancelar a mano un servicio pagado → `CREDIT_REFUND_REQUIRED` (trigger diferido); el Dispatch queda intacto |
+| Escaneo de integridad | 0 devoluciones sin award, 0 con cuenta o Dispatch equivocados, 0 con importe distinto al opuesto, 0 duplicadas, 0 saldos negativos, 0 descuadres y 0 servicios cerrados con cargo sin devolver |
+| Contexto de pago | `deliveryFee` 60.00 MXN, `goodsValue` 800.00 y `driverAdvanceAmount` 800.00 intactos tras la devolución; los créditos no son pesos |
+| Logs | Sin JWT ni contraseñas en ninguna línea de devolución |
+
+**Defectos heredados encontrados (no introducidos por V1.10-E).** `test/migrations/award-boundary.check.ts`, commiteado en V1.10-D (`ec98980`), importa `PrismaClient` desde `../../.tmp/check-v110d/previous-c/node_modules/@prisma/client/index.js`: un directorio temporal fuera del repositorio. Eso rompe `tsc -p tsconfig.json` con 4 errores (el `build` del proyecto no lo ve porque `tsconfig.build.json` excluye `test`) y el archivo no está enganchado a ningún script ni configuración de Vitest. Propuesta: sacarlo del repositorio (como el resto de validadores temporales) o reapuntarlo a `@prisma/client`. No se tocó en esta tarea.
+
+**Defectos propios corregidos.** El helper de purga de fixtures borraba el ledger en un solo paso y ahora un refund retiene su award (FK RESTRICT): se borran primero las devoluciones. Un fixture de `independent-drivers` revertía Dispatches a mano y la nueva garantía lo rechazó correctamente: ahora purga el cargo antes (sólo en bases `*_test`). Una aserción de V1.10-A exigía 0 movimientos SERVICE_* en **toda** la base y ahora se acota a su propio Dispatch, porque otras suites escriben movimientos legítimos.
+
+**Riesgos conocidos.** No hay penalización por reservar y soltar: un proveedor puede reclamar y liberar repetidamente con costo neto 0. Sólo existen devoluciones completas; una penalización por etapa exigirá estados de ejecución que el modelo todavía no tiene. Un Dispatch monetizado cuyo cargo desaparezca queda inrevertible (409) hasta que un administrador corrija los datos. Sigue vigente que el dueño de las tablas puede desactivar triggers: en producción la aplicación debe usar un rol que no sea dueño y una base cuyo nombre no termine en `_test`.
+
+# Verificación correctiva V1.10-D — 2026-09-22
+
+**PASS — COMPLETADA Y VALIDADA.** Resultados de esta tarea, separados de las verificaciones históricas que siguen:
+
+- Ambos bloqueantes reproducidos antes del fix; evidencia histórica preservada.
+- 49/49 adversariales + 3/3 protección de historial; frontera B/C/D real con premios C gratis correctamente clasificados y siguiente premio cobrado.
+- 178/178 unitarias; 266/266 E2E en 18 archivos, con repeticiones documentadas.
+- Prisma generate/validate/status/drift, tsc/build, Oxlint/ESLint, docs:check y verify-migrations PASS.
+- Migración incremental `20260923000200_award_integrity_boundary` en local/test: hashes de seis tablas preservados, 0 cargos retroactivos.
+- Escáner: 0 violaciones; excepciones históricas reportadas aparte. Cleanup: 18 bases temporales propias eliminadas y evidencia exportada.
+- Detalles, incidencias y riesgos: [informe correctivo](docs/CHECK_V1_10_D_FIXES.md). No commit/push; no V1.10-E.
+
+---
+
+# CHECK V1.10-D — FAILED (2026-09-22)
+
+Validación actual del working tree: **dos defectos bloqueantes**, sin correcciones de producto. PostgreSQL permite un ganador MONETIZED sin award; la migración C→D clasifica adjudicaciones anteriores como MONETIZED sin débito y el retry CLAIM devuelve 200. Los resultados históricos siguientes no equivalen a aprobar este CHECK.
+
+Informe completo y matriz de las barreras: [CHECK_V1_10_D.md](docs/CHECK_V1_10_D.md). Evidencia: [v1.10-d-evidence.json](docs/checks/v1.10-d-evidence.json).
+
+- CHECK: 40 comprobaciones agrupadas, 37 PASS / 3 FAIL (dos defectos).
+- Regresión: 170 unitarias; 249 E2E en 18 archivos, con repetición del archivo cuyo fork nativo cayó (15/15 en la repetición).
+- Quality: Prisma validate/status/drift, verify-migrations, tsc, build, Oxlint, ESLint y docs:check PASS.
+- Bases existentes intactas; sólo dos 500 de fallos inyectados, revertidos. Cleanup de bases propias completado.
+- No commit, push ni V1.10-E.
+
+---
+
+# Verificación V1.10-D — Atomic CLAIM / TAKE Credit Consumption (2026-09-23)
+
+Rama `v1.10-credit-monetization` sobre `a4daeb5` (V1.10-C), paquete 1.10.0, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push. **V1.10-D cobra al adjudicar; todavía no devuelve.**
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260923000100_dispatch_credit_consumption` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; los 44 y 18 Dispatches existentes quedaron `creditMode: LEGACY` sin reescribir filas ni tocar su historia; 0 cargos retroactivos |
+| `verify-migrations` | PASS: limpia, V1.0 → V1.10, datos V1.9 → V1.10 y V1.10-A ledger → V1.10-B → V1.10-C → **V1.10-D**; en las bases migradas todo Dispatch es LEGACY, 0 SERVICE_AWARD/REFUND, trigger de modo, guardián del award, índice único parcial, CHECK y `creditMode` por defecto MONETIZED |
+| prisma validate / migrate status (ambas) / drift (ambas) | PASS / al día / vacío |
+| build, tsc, Oxlint, ESLint, docs:check | PASS |
+| OpenAPI | CLAIM y TAKE documentan el cobro y los 409 económicos (`INSUFFICIENT_CREDITS`, `CREDIT_ACCOUNT_UNAVAILABLE`, `CREDIT_SNAPSHOT_UNAVAILABLE`, `CREDIT_MOVEMENT_CONFLICT`); el cliente no envía costo, cuenta ni snapshot |
+| Unitarias | **170/170** (12 nuevas de consumo de créditos) |
+| E2E por archivo | **249/249** en 19 archivos (19 nuevas); `delivery-assignments` y `delivery-requests-b2b` sufrieron la caída nativa de workers de Windows y pasaron completos al repetirlos |
+| Provider CLAIM | Saldo 10, costo mostrado 7 → 200, saldo 3, exactamente 1 `SERVICE_AWARD` de −7 con `referenceType: DISPATCH`, `referenceId` del Dispatch, autor y cuenta del proveedor; `creditCost` mostrado = créditos cobrados |
+| Independent TAKE | Saldo 14, costo 14 → 200 con su asignación ACTIVE, saldo 0, 1 award; la cuenta del proveedor de su flotilla no se mueve |
+| Saldo exacto y saldo insuficiente | 7 − 7 = 0 permitido; con 6 créditos → 409 `INSUFFICIENT_CREDITS`, Dispatch OPEN, sin candidatura CLAIMED, sin asignación, ledger intacto; el mismo Dispatch lo reclama después quien sí puede pagar |
+| Costo autoritativo | Con la política cambiada a 20 créditos/km, el Dispatch abierto a 7 sigue cobrando **7**; uno nuevo congela 140 |
+| Sin recálculo ni routing | El cobro sólo lee el snapshot: el contador del proveedor de routing no aumenta durante CLAIM/TAKE, y las unitarias usan un doble de transacción sin política ni routing |
+| Un solo cargo | Repetir el CLAIM del dueño (×3) responde 200 y deja 1 award; el índice único parcial `(creditAccountId, referenceId)` rechaza un segundo cargo escrito a mano |
+| Reasignación, cancelación y release | Asignar, reasignar y cancelar la asignación no generan un segundo award; liberar tampoco devuelve créditos (V1.10-E) |
+| CLAIM fallido | Dispatch inexistente (404), rol incorrecto (403), B2B (401), vehículo ajeno (404) y llegar tarde (409): saldos y ledger idénticos |
+| Concurrencia sobre un Dispatch | 10 claims simultáneos: un único ganador y **1** award; sólo se movió la cuenta del ganador |
+| Provider CLAIM vs Independent TAKE | Simultáneos: 200 y 409; exactamente **1** actor paga, nunca los dos ni el perdedor |
+| Misma cuenta, dos servicios | Saldo 10 y dos servicios de 7: 1 éxito + 1 `INSUFFICIENT_CREDITS`, saldo 3, 1 award (nunca −4) |
+| Saldo compartido exacto | Saldo 14 y dos servicios de 7: ambos ganan, saldo 0, 2 awards |
+| Recarga y ajuste concurrentes | Recarga contra claim y ajuste contra claim: cualquiera de los dos órdenes es válido, el saldo siempre cuadra con el ledger reconstruido entrada por entrada y nunca queda negativo |
+| Dispatches legacy | Adjudicados sin cobro, con `LEGACY_DISPATCH_CREDIT_SKIPPED` en el log, sin movimiento de 0 créditos y sin snapshot inventado |
+| Snapshot faltante en monetizado | **Falla cerrado**: 409 `CREDIT_SNAPSHOT_UNAVAILABLE` en CLAIM y en TAKE, Dispatch sigue OPEN, nada cobrado |
+| Garantías SQL | 14 escrituras forjadas rechazadas con su razón: segundo award (índice único), award de un Dispatch no reclamado, de uno legacy, cargado a otro proveedor, con importe falsificado, sin referencia, apuntando a algo que no es un Dispatch, con signo positivo, que dejaría saldo negativo, editar o borrar un award, mover el saldo sin ledger y reetiquetar un Dispatch monetizado como legacy |
+| Seguridad | `creditCost`, `credits`, `amount`, `creditSnapshotId`, `creditAccountId`, `actorType` y `type` enviados por el cliente no cambian el cargo (el contrato de CLAIM rechaza cuerpos) |
+| Contexto de pago | `deliveryFee` 60.00 MXN, `goodsValue` 800.00, `driverAdvanceAmount` 800.00 y `creditCost` 7 créditos conviven sin conversión; la historia de recargas queda intacta (`SERVICE_AWARD` −7 sobre `RECHARGE` +20) |
+| Humo real (`dist/main.js` sobre `mandaria_db`, sólo lectura) | **6/6**: los 44 Dispatches son LEGACY y se leen sin costo inventado, ningún monetizado sin snapshot, 0 cargos retroactivos, políticas operativas intactas, nada escrito, log sin secretos ni 5xx |
+| Mutaciones | **5/5 detectadas**: no saltar los legacy, no fallar cerrado sin snapshot, quitar la comprobación de saldo, cobrar un importe distinto al congelado y quitar el bloqueo de la cuenta |
+| Logs | `SERVICE_AWARD_CHARGED` (con cuenta, créditos, snapshot, secuencia y saldos), `SERVICE_AWARD_REJECTED_INSUFFICIENT_CREDITS` y `LEGACY_DISPATCH_CREDIT_SKIPPED`, sin JWT ni contraseñas |
+
+**Defectos propios corregidos durante la implementación.** El backfill de la migración chocaba con el guard V1.7 que congela los Dispatches resueltos (se resolvió etiquetando por valor por defecto y ejecutando el único UPDATE necesario con ese trigger desactivado dentro de la transacción de la migración); la inmutabilidad del nuevo modo impedía construir un Dispatch legacy en pruebas (se permitió con el mismo interruptor de fixtures que ya usan ledger y políticas, que PostgreSQL sólo honra en bases `*_test`); y un filtro de logs de V1.10-C capturaba por subcadena el nuevo motivo `DISPATCH_OPENED_BEFORE_CREDIT_SNAPSHOTS`.
+
+**Riesgos conocidos.** No hay devoluciones: liberar un servicio pagado, cancelar la asignación o cancelar la entrega dejan los créditos consumidos hasta V1.10-E, y un proveedor que reclama y libera repetidamente gasta sin ejecutar. Un saldo en cero deja al actor fuera de juego sin alertas ni recarga automática. Entre congelar el costo y cobrarlo puede pasar tiempo y ya no se puede corregir salvo cancelando el Dispatch. Un Dispatch monetizado que pierda su snapshot queda inadjudicable a propósito y exige intervención administrativa. Sigue vigente que el dueño de las tablas puede desactivar triggers: en producción la aplicación debe usar un rol que no sea dueño y una base cuyo nombre no termine en `_test`.
+
+# CHECK V1.10-C — Dispatch Credit Snapshot, validación adversarial (2026-09-22)
+
+Rama `v1.10-credit-monetization`, HEAD `7881efb` + V1.10-C sin commit, paquete 1.10.0; `mandaria_db` y `mandaria_test` al día (14 migraciones). Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (puerto 3016, base `mandaria_test`), con fixtures propios, logins reales y reinicios para no agotar los límites de peticiones, cotizaciones y logins. `mandaria_db` sólo se leyó (consultas y `pg_dump`). Sin cambios de código: **33/33 PASS**.
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Línea base | Ledger sin roturas ni descuadres, 0 saldos negativos; 2 políticas ACTIVE sin duplicados; 14 migraciones aplicadas; cálculo 6240 m → 7; cuenta nueva con saldo 0 |
+| 2 | Escenario de dos actores | Políticas PROVIDER 1/km e INDEPENDENT_DRIVER 2/km (mínimo 3); Dispatch real con distancia canónica 6240 m → exactamente 2 snapshots |
+| 3 | Costo del proveedor | DB y API: `billableKm` 7 × 1 = **7** |
+| 4 | Costo del independiente | DB y API: 7 × 2 = **14** |
+| 5 | Aislamiento de vistas | Proveedor: única clave de créditos `creditCost` = 7 (detalle y listado); repartidor: 14; SUPER_ADMIN audita los dos; proveedor y repartidor reciben 403 en `/admin/dispatches/:id` y `/admin/credit-policies` |
+| 6 | Inmutabilidad del snapshot | Tras versionar a 3/km y 4/km, las filas de A son idénticas byte a byte y la API sigue devolviendo 7 / 14 |
+| 7 | Dispatch nuevo | Con las políticas nuevas y la misma distancia: **21 / 28**; A sigue en 7 / 14 aunque recalcular hoy daría 21 / 28 |
+| 8 | Política histórica | Cada snapshot referencia la versión exacta usada (v3, hoy INACTIVE) con su `policyVersion`, no la ACTIVE actual; A se creó dentro de la ventana de vigencia de esa versión |
+| 9 | Inmutabilidad por SQL | UPDATE de créditos, de política/versión y de `createdAt`, DELETE, DELETE con un valor de purga falso y TRUNCATE → `CREDIT_SNAPSHOT_IMMUTABLE`; A intacto |
+| 10 | Snapshot duplicado | Segundo `PROVIDER` en la misma apertura → índice único (`Unique constraint`); fila extra sobre un Dispatch existente → `CREDIT_SNAPSHOT_INVALID` |
+| 11 | Datos inválidos | credits 0, negativos, > 1 000 000 y falsificados → `CREDIT_SNAPSHOT_MISMATCH`; distancia < 0 y FK de política inexistente → `CREDIT_SNAPSHOT_INVALID`; PER_KM sin `billableKm` → CHECK 23514; el CHECK acota además créditos 1–1 000 000 y distancia ≥ 0 |
+| 12 | Actor cruzado | Fila PROVIDER con la política del independiente, fila INDEPENDENT con la del proveedor y versión superada del actor correcto → `CREDIT_SNAPSHOT_INVALID` |
+| 13 | ServiceType cruzado | Enum real = {LOCAL_DELIVERY}: el escenario **no puede ejecutarse sin inventar dominio** y no se agregó ningún ServiceType. La comparación de `serviceType` (contra la cotización y contra la política) sí existe en el guardián SQL |
+| 14 | Sin política de PROVIDER | Aceptar → 409 `CREDIT_POLICY_UNAVAILABLE`; cotización OFFERED, 0 Dispatch, 0 snapshots huérfanos; al restaurarla, el mismo reintento abre con 21/28 |
+| 15 | Sin política de INDEPENDENT_DRIVER | Idéntico (LOCAL_DELIVERY = BOTH, el independiente está permitido) |
+| 16 | Política irrelevante | `credit_required_actors('LOCAL_DELIVERY')` = PROVIDER,INDEPENDENT_DRIVER; ningún ServiceType real excluye a un actor, así que el caso se cubre con la prueba de dominio «a FLEET-only or INDEPENDENT-only service gets only its own actor» |
+| 17 | Rollback transaccional | Servidor real con el 2.º actor a 1 000 000/km: 422 `CREDIT_COST_OUT_OF_RANGE`, cotización OFFERED, 0 Dispatch, 0 snapshots, sin `DISPATCH_OPENED` en el log. Por SQL: 1.er snapshot insertado y 2.º falsificado → `CREDIT_SNAPSHOT_MISMATCH` y no queda nada |
+| 18 | Carrera con la activación | 12 aperturas simultáneas + 2 versiones nuevas: 12 × 200 y 2 × 201; cada snapshot coincide exactamente con una versión (0 incoherencias); reparto PROVIDER 2 viejas/10 nuevas, INDEPENDENT 1/11; 1 Dispatch quedó con un actor viejo y el otro nuevo (ver garantía abajo) |
+| 19 | Reintentos | Re-aceptar A ×3 → 200 idempotente y sigue con 2 snapshots; 10 aceptaciones simultáneas → 1 Dispatch, 2 snapshots; **0 duplicados** en toda la base |
+| 20 | Llamadas de routing | 1 por cotización, **0 al aceptar y snapshotear**, 0 al re-aceptar; 20 `ROUTING_CALCULATED` para 20 cotizaciones |
+| 21 | FLAT | `calculationType` FLAT, `credits` = `flatCredits` = 5, sin evidencia falsa (`billableKm`, `creditsPerKm`, `minimumCredits`, `calculatedCredits` y rango en NULL) |
+| 22 | DISTANCE_RANGE | 6240 m → rango #2 [3000, 10000) → 8 con id, posición y límites; tras reemplazar la política por PER_KM la fila es idéntica y sigue siendo interpretable (API incluida) |
+| 23 | Distancia 0 | Cotización real de 0 m: FLAT → 5, primer rango → 3, PER_KM 1/km mínimo 3 → `billableKm` 0, calculado 0, **credits 3** |
+| 24 | Independencia de cuentas | 185 cuentas con el mismo saldo y `updatedAt` tras 24 Dispatches (46 snapshots) |
+| 25 | Independencia del ledger | Entradas y secuencia sin cambios; **0** SERVICE_AWARD / SERVICE_REFUND |
+| 26 | CLAIM con saldo 0 | Saldo 0 y `creditCost` 7 → claim 200 CLAIMED, saldo sigue 0, sin movimientos |
+| 27 | TAKE con saldo 0 | Saldo 0 y `creditCost` 14 → take 200, saldo sigue 0, sin movimientos |
+| 28 | Contexto de pago | `deliveryFee` 60.00 MXN, `goodsValue` 300.00, `driverAdvanceAmount` 300.00 (cadenas con moneda) y `creditCost` entero sin moneda; A y B comparten tarifa 60.00 con créditos 7 y 21 (ninguna conversión ni suma cruzada) |
+| 29 | Aislamiento B2B | 20 rutas de créditos y de dispatch con el token de IntegrationClient → 401; los payloads B2B (alta, cotización, aceptación, lectura) no contienen ninguna clave de créditos |
+| 30 | Dispatch legacy | Fixture sin snapshots: proveedor y repartidor `creditCost: null`, admin `[]` + `legacyWithoutCreditSnapshots: true`, listados 200; los 18 Dispatches previos de `mandaria_test` se leen igual; CLAIM 200 y **no se creó ningún snapshot retroactivo** |
+| 31 | Migración V1.10-B → V1.10-C | Base temporal con el esquema V1.10-B (13 migraciones) y **los datos reales de `mandaria_db`** (28 tablas idénticas): al aplicar sólo la migración V1.10-C, las 28 tablas quedan con las mismas filas y el mismo hash; 44 Dispatches, 0 snapshots, 44 legacy, ledger y políticas sin tocar; sin drift contra `schema.prisma`. Base temporal y volcado eliminados |
+| 32 | Escaneo de base | `mandaria_test` (46 snapshots) y `mandaria_db` (0): **0 duplicados, 0 huérfanos, 0 créditos ≤ 0, 0 distancias < 0, 0 desajustes de política y 0 de costo recalculado en SQL, 0 conjuntos incompletos** |
+| 33 | OpenAPI | `creditCost` entero anulable en proveedor y repartidor; `creditSnapshots` como arreglo de `DispatchCreditSnapshotResponse` (18 propiedades tipadas, enum de actor, 0 sin estructura); `legacyWithoutCreditSnapshots` booleano; 0 esquemas B2B con créditos |
+| 34-35 | Regresión y calidad | prisma validate, migrate status (ambas), sin drift (ambas), verify-migrations, build, tsc, Oxlint, ESLint, docs:check PASS; **158 unitarias**; **E2E 230/230 en 17 archivos** (sin caída de workers en esta corrida) |
+| 36 | Limpieza | Fixtures, usuarios, credenciales temporales y versiones de política del CHECK eliminados; políticas ACTIVE base restauradas (PER_KM 1/km, mínimo 3, autor de E2E) en `mandaria_test`; `mandaria_db` idéntica antes y después |
+| — | Logs | 1216 líneas sin secretos ni JWT, 0 respuestas 5xx; los 24 `DISPATCH_OPENED` incluyen `creditCosts` |
+
+**Garantía de concurrencia (detalle del punto 18).** Cada actor se resuelve bajo un bloqueo consultivo **compartido** `(71600020, "LOCAL_DELIVERY:<actor>")` que la apertura mantiene hasta el COMMIT, mientras que crear una versión lo toma en **exclusiva**. Por eso ningún snapshot mezcla dos versiones. Los actores se resuelven uno tras otro (PROVIDER y luego INDEPENDENT_DRIVER) y cada cambio de política es su propia transacción, así que un Dispatch puede quedar legítimamente con el proveedor en la versión anterior y el independiente en la nueva si esa segunda versión se confirma entre las dos resoluciones: cada costo sigue siendo exactamente el vigente en su propia resolución, y es el snapshot —no la política— lo que V1.10-D cobrará.
+
+**Bugs del producto:** ninguno; sin cambios de código. **Del validador (corregidos en el validador):** `now()` local usado como `effectiveUntil` en una base con marcas UTC (la restricción `CreditPolicy_values_check` lo rechazó correctamente) y un contador de limpieza que confundía la política base restaurada con las del propio CHECK.
+
+**Riesgos restantes.** Los ya documentados de V1.10-C: hay que crear las políticas antes de aceptar cotizaciones en cada entorno (si no, 409 en toda aceptación); los Dispatches legacy no tienen costo y V1.10-D debe decidir cómo tratarlos; los actores requeridos viven en dos lugares (`SERVICE_EXECUTION_MODES` y `credit_required_actors()`), así que cambiar un modo exige migración. Además: una combinación puede quedar sin política ACTIVE sólo escribiendo SQL directo (la API nunca desactiva sin reemplazar) y en ese estado no hay endpoint para volver a activarla; y el dueño de las tablas puede desactivar triggers, por lo que en producción la aplicación debe usar un rol que no sea dueño y una base cuyo nombre no termine en `_test`.
+
+# Verificación V1.10-C — Dispatch Credit Snapshot (2026-09-22)
+
+Rama `v1.10-credit-monetization` sobre `7881efb` (V1.10-B), paquete 1.10.0, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push. **V1.10-C no cobra: CLAIM y TAKE no consumen créditos.**
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260922001400_dispatch_credit_snapshots` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; 28 tablas previas con las mismas filas y contenido; 0 snapshots creados (sin backfill) |
+| `verify-migrations` | PASS: limpia, V1.0 → V1.10, datos V1.9 → V1.10 y V1.10-A ledger → V1.10-B → V1.10-C; 0 snapshots en las bases migradas (el Dispatch EXPIRED retrocompletado en V1.7 queda legacy); 4 restricciones, índice único, 3 triggers y `credit_required_actors('LOCAL_DELIVERY')` = `PROVIDER,INDEPENDENT_DRIVER` |
+| prisma validate / migrate status (ambas) / drift (ambas) | PASS / al día / vacío |
+| build, tsc, Oxlint, ESLint, docs:check | PASS |
+| OpenAPI | `creditCost` entero anulable en las 8 respuestas de proveedor y repartidor (listas, detalle, claim/take/release); `creditSnapshots` + `legacyWithoutCreditSnapshots` en admin; esquemas B2B sin datos de créditos; 0 objetos sin estructura |
+| Unitarias | **158/158** (10 nuevas de snapshot + `dispatch.spec` ampliado) |
+| E2E por archivo | **230/230** en 17 archivos (14 nuevas); `provider-admin-access` sufrió la caída nativa de workers de Windows y pasó 9/9 dos veces al repetir |
+| Costo por actor | Distancia 6240 m: proveedor ve `creditCost` 7, repartidor independiente 14 (política 2/km), admin ambos snapshots con evidencia, B2B sin datos de créditos |
+| Cambio de política | Dispatch A abierto con v1 sigue 7/14 tras crear v2; Dispatch B nuevo 21/28 |
+| Evidencia FLAT y DISTANCE_RANGE | FLAT con `flatCredits`; 12 400 m → rango 2 `[10000,20000)` → 20, con id, posición y límites del rango |
+| Concurrencia | 10 aceptaciones simultáneas → 1 Dispatch y 2 snapshots; carrera con creación de versiones → cada snapshot coincide exactamente con una versión |
+| Fallo cerrado | Sin política INDEPENDENT_DRIVER → 409 `CREDIT_POLICY_UNAVAILABLE`, cotización OFFERED, 0 Dispatch, 0 snapshots huérfanos; al restaurar, la aceptación da [35, 28] |
+| Garantías SQL | 20 escrituras directas rechazadas con su razón (costo o distancia falsos, política INACTIVE u otro actor, actor no permitido, Dispatch no OPEN/antiguo/reclamado, UPDATE, DELETE, TRUNCATE, faltante al COMMIT, duplicado); borrado en cascada con el Dispatch |
+| Legacy | Dispatch sin snapshot: `creditCost: null`, admin `[]` + `legacyWithoutCreditSnapshots: true`; CLAIM funciona |
+| Economía intacta | CLAIM y TAKE con saldo 0 y costo > 0 → 200; saldos, `updatedAt` y ledger sin cambios; 0 SERVICE_AWARD/SERVICE_REFUND |
+| Logs | `DISPATCH_OPENED` incluye `creditCosts` (actor, créditos, versión, tipo); sin secretos |
+| Humo real (`dist/main.js` sobre `mandaria_db`, sólo lectura) | **5/5**: los 44 Dispatches existentes (28 CLAIMED, 14 EXPIRED, 2 CANCELLED) se leen como legacy; un CLAIMED con asignación ACTIVE se lee bien; políticas operativas v1 PER_KM 1/3 presentes; Dispatches, asignaciones, snapshots (0) y ledger (0) idénticos; log sin secretos ni 5xx |
+| Mutaciones | **5/5 detectadas**: BOTH sin repartidor independiente, costo 0 aceptado, legacy informado como 0, bloqueo exclusivo en vez de compartido, apertura sin snapshots |
+
+Estado final: `mandaria_db` con 0 snapshots y sus 44 Dispatches legacy intactos. En `mandaria_test` las suites de políticas purgan todos los snapshots con el interruptor `_test` (necesario para poder borrar políticas, FK RESTRICT), así que los Dispatches de fixtures que quedan aparecen sin snapshot; es un artefacto de limpieza sólo de la base de pruebas.
+
+# CHECK V1.10-B — Credit Policy Engine (2026-09-22)
+
+Rama `v1.10-credit-monetization`, HEAD `5e8e14b` + V1.10-B sin commit, paquete 1.10.0; `mandaria_db` y `mandaria_test` al día (13 migraciones). Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (puerto 3014, base `mandaria_test`), con fixtures propios, logins reales y reinicios para no agotar los límites de peticiones y logins. `mandaria_db` sólo se leyó. Sin cambios de código. **Resultado: 29/29.**
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Línea base V1.10-A | Ledger sin roturas ni descuadres, 0 saldos negativos, todo proveedor con cuenta; recarga y ajuste 201; 147 unitarias; `credits` 24/24 y `credit-policies` 19/19 |
+| 2 | Matriz de políticas | PROVIDER e INDEPENDENT_DRIVER resuelven cada uno su propia ACTIVE |
+| 3 | PER_KM 1/km, mínimo 3 | 0, 1, 999, 1000, 1001, 2999, 3000 m → 3; 3001 → 4; 6240 → 7 (ambos actores; también `billableKm` y `minimumApplied`) |
+| 4 | Nueva tarifa 2/km | 6240 m → 7 km × 2 = 14 |
+| 5 | FLAT 5 (temporal en INDEPENDENT_DRIVER) | 9 distancias de 0 a 2 147 483 647 m → 5 |
+| 6 | DISTANCE_RANGE `[0,3000)3 [3000,5000)5 [5000,10000)8 [10000,∞)15` | Antes/en/después de cada frontera exacto; en base: inicio 0, sin huecos ni solapes, un único rango abierto y al final; cada metro de 0 a 12 000 cae en exactamente un rango |
+| 7 | Rangos inválidos | Solape, hueco, inicio > 0, dos abiertos, invertido, vacío, créditos 0/negativos/decimales, último cerrado, sin máximo, 51 rangos → 400; nada creado |
+| 8 | Historial v1/v2/v3 | Preservado; una sola ACTIVE; `effectiveUntil` de cada versión = `effectiveFrom` de la siguiente; payload de v1 idéntico al de su creación |
+| 9 | Inmutabilidad histórica | API: PATCH/PUT/DELETE 404, versionar desde v1 409, `version`/`id` en el cuerpo 400. SQL: cambiar tarifa, tipo o versión de v1, editar o borrar rangos y borrar v1 → `CREDIT_POLICY_IMMUTABLE`; v1 intacta |
+| 10 | Versionado concurrente | 12 simultáneas desde la ACTIVE → 1 × 201 + 11 × 409 (versiones 1..4); 6 cadenas concurrentes de 3 → versiones 1..9 únicas y contiguas, 1 ACTIVE, fechas encadenadas |
+| 11 | Activación concurrente | No existe endpoint de activación (una versión se activa al crearse). Carrera directa en SQL de 4 «desactivar + insertar»: 1 aplicada, 3 `CREDIT_POLICY_VERSION_INVALID`; reactivar INACTIVE → `CREDIT_POLICY_IMMUTABLE`; siempre 1 ACTIVE |
+| 12 | Sin política | Ambas combinaciones sin ACTIVE → 409 `CREDIT_POLICY_UNAVAILABLE`; con sólo una vacía, la otra sigue calculando. Nunca 0 |
+| 13 | Aislamiento de actores | Cambiar PROVIDER (2/km) deja INDEPENDENT_DRIVER en 7; su FLAT deja PROVIDER en 14 |
+| 14 | Distancia canónica | Servidor con `ROUTING_PROVIDER=google` y clave inutilizable: los cálculos responden 3/3/7/25/124 y el log no registra ningún evento de routing; ningún import de routing en `src/credit-policies`; el detector sí ve las cotizaciones reales del paso 24 |
+| 15 | Distancias inválidas | -1, NaN, ±Infinity, 2 147 483 648, 1e20, 20 dígitos, abc, true, vacía, 1.5, 0x10, con espacio, ausente y repetida → 400; 0 m → 3 (mínimo) |
+| 16 | Enteros | 1.5/km, mínimo 3.2, flat 5.7, créditos de rango 2.5, límite 500.5 y tarifa en texto → 400; los 47 costos devueltos son enteros seguros ≥ 0 |
+| 17 | Desbordamiento | 1 000 000/km: 0 y 1000 m → 1 000 000; 1001 m y distancia máxima → 422 `CREDIT_COST_OUT_OF_RANGE`; tarifas 1 000 001, 2⁵³, -1, mínimo y flat fuera de límite → 400 |
+| 18 | Autorización | SUPER_ADMIN 200; PROVIDER_ADMIN, DRIVER de flotilla e independiente 403; IntegrationClient y anónimo 401 (5 rutas) |
+| 19 | Campos falsificados | `version`, `createdByUserId`, `id`, `status` (ARCHIVED/ACTIVE), `createdAt`, fechas, `serviceType`/`actorType` al versionar, `id`/`position` de rango, `DRIVER`, `FREIGHT`, `PER_MINUTE` → 400 |
+| 20 | Invariantes SQL | 16 escrituras inválidas rechazadas (segunda ACTIVE, versión duplicada/0/negativa/saltada, nacida INACTIVE, tarifa NULL/0, campos cruzados, FLAT 0, rangos ausentes o con hueco, mínimo fuera de límite, vigencia invertida, TRUNCATE) |
+| 21 | Migración V1.10-A → V1.10-B | `verify-migrations` PASS (base V1.10-A con ledger → V1.10-B idéntica, 0 políticas creadas); aplicación real sin reset verificada en la implementación (26 tablas con mismas filas y contenido) |
+| 22 | Cuentas | 185 cuentas con el mismo saldo y `updatedAt` tras todos los cálculos y versiones |
+| 23 | Ledger | Mismo número de entradas y secuencia; 0 SERVICE_AWARD/SERVICE_REFUND |
+| 24 | CLAIM con saldo 0 | 200, CLAIMED, 0 movimientos |
+| 25 | TAKE con saldo 0 | 200, tomado por el independiente, 0 movimientos |
+| 26 | Cambio de política con operaciones vivas | Tras 2 versiones nuevas, los 2 Dispatch, 2 asignaciones, candidatos, cuentas y ledger idénticos |
+| 27 | OpenAPI | Enums exactos (actorType, calculationType, status, serviceType), enteros en versiones/créditos/distancias/paginación, rangos e items con `$ref`, sin DELETE/PATCH/PUT, 0 objetos sin estructura en 169 esquemas |
+| 28 | Regresión | Unitarias **147/147**; E2E **216/216** en 16 archivos (`delivery-requests-b2b` sufrió la caída nativa de workers y pasó 15/15 dos veces al repetir) |
+| 29 | Calidad | prisma validate, migrate status (ambas), sin drift, verify-migrations, build, tsc, Oxlint, ESLint, docs:check PASS |
+| 30 | Limpieza | `mandaria_test`: 0 políticas (como estaba), 0 fixtures. `mandaria_db`: políticas operativas intactas (v1 PER_KM 1/km, mínimo 3, para ambos actores) |
+| — | Logs | 2012 líneas sin contraseñas, JWT, clientSecret ni secretos de firma; eventos de política con actor; 0 respuestas 5xx |
+
+**Bugs del producto:** ninguno; sin cambios de código. **Del validador (corregidos en el validador):** foto económica tomada antes de la recarga/ajuste de la línea base; detector de routing que contaba prosa de comentarios como imports; parche de limpieza roto por la sustitución de comandos de bash (una corrida dejó fixtures, que se limpiaron).
+
+**Incidente de limpieza (mandaria_test).** Al final ejecuté por error el limpiador de fixtures con el prefijo genérico `E2E_`: borró de `mandaria_test` restos acumulados de corridas E2E anteriores (las 1 300 DeliveryRequest con sus cotizaciones, dispatches y stops, y las zonas `E2E_`) antes de detenerse en una FK. `mandaria_db` no se tocó. Son datos desechables que ninguna suite necesita (cada una crea los suyos); la regresión E2E completa se repitió después sobre la base limpiada con el resultado indicado en la fila 28.
+
+# Verificación V1.10-B — Credit Policy Engine (2026-09-22)
+
+Rama `v1.10-credit-monetization` sobre `5e8e14b` (CHECK V1.10-A), paquete 1.10.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push. **V1.10-B sólo calcula: CLAIM y TAKE no consumen créditos.**
+
+| Verificación | Resultado |
+|---|---|
+| Línea base (HEAD `5e8e14b`, barrera final del CHECK V1.10-A) | 131 unitarias; E2E 197/197 |
+| Migración `20260922001300_credit_policies` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; 26 tablas previas con las mismas filas y el mismo contenido (hash por tabla); 0 políticas creadas por la migración |
+| `verify-migrations` | PASS: limpia, V1.0 → V1.10, datos V1.9 → V1.10 y **nueva base V1.10-A con ledger → V1.10-B** (cuentas, saldos y movimientos idénticos; 0 políticas); objetos V1.10-B presentes |
+| prisma validate / migrate status (ambas) / drift | PASS / al día / vacío |
+| build, tsc, Oxlint, ESLint, Prettier, docs:check | PASS |
+| OpenAPI | 4 rutas `/admin/credit-policies` (sin DELETE/PATCH/PUT), 7 esquemas nuevos, 0 objetos sin estructura |
+| Unitarias | **147/147** (131 + 16 V1.10-B) |
+| E2E por archivo | **216/216** en 16 archivos (19 V1.10-B); `independent-drivers` sufrió la caída nativa de workers y pasó 23/23 dos veces al repetir |
+| PER_KM 1 crédito/km, mínimo 3 | 0, 1, 999, 1000, 1001 m → 3; 6240 m → 7 (unitarias y HTTP); casos donde el mínimo no domina (2 créditos/km: 2001 m → 6, 6240 m → 14) |
+| FLAT | Mismo costo para 0 m … 2 147 483 647 m |
+| DISTANCE_RANGE `[0,3000)→3, [3000,5000)→5, [5000,10000)→8, [10000,∞)→15` | 0/1/2999 → 3; 3000/3001/4999 → 5; 5000/5001/9999 → 8; 10000/10001/máx → 15; cada distancia en exactamente un rango |
+| Configuración ambigua | PER_KM con `flatCredits` o `ranges`, FLAT con `minimumCredits`/`ranges`, huecos, solapes, primer rango ≠ 0, último cerrado, 51 rangos, créditos 0/decimales/texto/2⁵³ → 400 |
+| Campos falsificados | `version`, `status`, `createdByUserId`, `effectiveFrom`, `effectiveUntil`, `id`, `actorType: DRIVER`, `serviceType: FREIGHT` → 400 |
+| Distancia inválida | -1, 1.5, abc, 1e20, vacía, con espacio, 2 147 483 648, NaN, Infinity y parámetro repetido → 400; en la función pura → `CREDIT_DISTANCE_INVALID` |
+| Desbordamiento | 1 000 000 créditos/km × 2 km → 422 `CREDIT_COST_OUT_OF_RANGE` (nunca truncado) |
+| Sin política ACTIVE | 409 `CREDIT_POLICY_UNAVAILABLE` para ambos actores; nunca 0 créditos |
+| Versionado v1 → v2 → v3 → v4 | 4 versiones, sólo v4 ACTIVE; payload de v1 idéntico; `effectiveUntil` de cada una = `effectiveFrom` de la siguiente |
+| Versionar desde una INACTIVE | 409 `CREDIT_POLICY_VERSION_CONFLICT`; nada escrito |
+| Concurrencia | 10 versiones simultáneas desde la ACTIVE → 1 × 201 + 9 × 409; 10 cadenas concurrentes de 3 → versiones contiguas 1..n, 1 ACTIVE; 8 creaciones iniciales simultáneas → 1 v1 + 7 × 409 |
+| Ataques SQL directos | **28/28 rechazados** por la garantía correcta: segunda ACTIVE (índice parcial), versión duplicada/0/-1/saltada y nacida INACTIVE (trigger), PER_KM sin tarifa (CHECK con `IS NOT NULL`), campos cruzados y límites (CHECK), rangos sin rangos/solapados/con hueco/sin 0/cerrados/en PER_KM/añadidos después (trigger diferido), edición, reactivación, cambio de autor, DELETE, TRUNCATE y otro valor del interruptor (`CREDIT_POLICY_IMMUTABLE`) |
+| Autorización | PROVIDER_ADMIN y DRIVER 403, B2B y anónimo 401 en las 5 rutas |
+| Ledger y cuentas | Tras 16 cálculos por HTTP: saldos, `updatedAt`, número de entradas y secuencia máxima idénticos; 0 SERVICE_AWARD/REFUND |
+| Regresión V1.10-A y CLAIM/TAKE | `credits.e2e` 24/24 (recarga, ajuste, idempotencia, saldo no negativo, ledger inmutable; CLAIM y TAKE con saldo 0 sin movimiento) |
+| Servidor real `dist/main.js` sobre `mandaria_db` | 14/14: políticas del seed listadas, 0/800/1001/6240/25 000 m → 3/3/3/7/25 para ambos actores, anónimo 401, saldos/ledger/políticas sin cambios, sin secretos en el log |
+| Seed local | `db:seed:local-credit-policies` crea v1 PER_KM 1/3 para PROVIDER e INDEPENDENT_DRIVER en `mandaria_db`; segunda ejecución «kept existing v1» |
+| Mutaciones M1–M6 | 6/6 detectadas (km redondeados hacia abajo, mínimo ignorado, máximo de rango inclusivo, campo ajeno aceptado, versionar desde una reemplazada, costo sin límite) |
+| Auditoría | `CREDIT_POLICY_CREATED`/`CREDIT_POLICY_VERSIONED` con configuración, versión anterior y `actorUserId`; sin contraseñas, JWT ni clientSecret |
+
+**Defectos encontrados durante la implementación (propios, corregidos antes de entregar):** (1) el trigger diferido usaba `CASE … NEW."creditPolicyId"`, que falla en cada inserción de política (el mensaje en español «el registro "new" no tiene un campo…» llegó como `P2022 column "registro"`); se cambió por `IF` y, como la migración no estaba commiteada y sus tablas estaban vacías, se retiró y reaplicó localmente; (2) `?distanceMeters=` vacío se convertía en 0 m con `Number('')`; ahora sólo se convierten cadenas de dígitos; (3) el CHECK de cálculo habría aceptado `PER_KM` con tarifa NULL (un CHECK que evalúa a NULL pasa); se añadieron `IS NOT NULL` explícitos. En pruebas: supertest ligado al objeto servidor cerraba el servidor entre peticiones concurrentes; la suite usa ahora un puerto efímero real.
+
+No verificado: Docker; comportamiento de V1.10-C/D (fuera de alcance).
+
+# CHECK V1.10-A — Credit Accounts & Immutable Ledger (2026-09-21)
+
+Rama `v1.10-credit-monetization` (HEAD `c612f6c`), paquete 1.10.0. Validación adversarial contra `dist/main.js` en ejecución (puerto 3012, base `mandaria_test`, routing local_fake) y PostgreSQL real, con fixtures propios, logins reales, fallos inyectados con triggers temporales (sólo en `mandaria_test`, retirados al terminar) y limpieza total. `mandaria_db` se consultó en sólo lectura salvo la migración. Sin commit ni push.
+
+**Estado de partida del entorno.** El cliente Prisma de `node_modules` era del 17-sep y `mandaria_db` y `mandaria_test` estaban en V1.8: las migraciones de V1.9 y V1.10 nunca se habían aplicado en esta máquina, así que la primera línea base falló (tsc, build y casi todas las E2E) por entorno, no por el producto. Se regeneró el cliente, se respaldaron ambas bases con `pg_dump` y se aplicaron las migraciones sin reset.
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1 | Propiedad de cuentas | 1 cuenta por proveedor (creado por API y por SQL), 1 por independiente APPROVED, 0 para Driver de flotilla (API 404 CREDIT_ACCOUNT_NOT_FOUND); cuentas duplicadas de proveedor e independiente rechazadas por los únicos; aprobar → suspender → aprobar sigue en 1 |
+| 2 | Saldos iniciales (`mandaria_db`, datos reales) | 12 proveedores → 12 cuentas en 0; 0 independientes aprobados; 0 entradas de ledger; ninguna RECHARGE inventada |
+| 3 | Recarga | 0 + 500 = 500 y 500 + 200 = 700 en API, DB y ledger (2 entradas encadenadas, actor registrado) |
+| 4 | Recargas inválidas | 0, -1, 1.5, 1 000 001, texto, 10¹², método inexistente, OTHER sin motivo, campos forjados (balance, ownerType), sin Idempotency-Key y key corta → 400 ×12; saldo intacto |
+| 5 | Ajustes | +100 → 800, -50 → 750 con motivo; sin motivo, 0 y decimal → 400 |
+| 6 | Saldo negativo | Con 20, -21 → 409 INSUFFICIENT_CREDITS; cuenta (incl. `updatedAt`) y ledger sin cambios |
+| 7 | Atomicidad | Fallo inyectado antes y **después** de mover el saldo → 409 CREDIT_MOVEMENT_CONFLICT sin medio movimiento; UPDATE directo del saldo → CREDIT_BALANCE_WITHOUT_LEDGER; entrada con saldo viejo → CREDIT_LEDGER_STALE; reintentar la misma key aplica una sola vez |
+| 8 | Concurrencia | Con 10, -8 ∥ -8 → 1 × 201 + 1 × 409, saldo 2; +100 ∥ +200 ∥ +300 → exactamente 602 |
+| 9 | Alta contención | 60 movimientos mixtos simultáneos en ~0,6 s: 58 × 201 + 2 × 409; saldo 16 = 50 + suma aplicada; 70 entradas encadenadas sin roturas |
+| 10 | Idempotencia | Misma RECHARGE y mismo ADJUSTMENT con la misma key → 1 movimiento (201 y 200 `Idempotent-Replayed`); cuerpo distinto o otro tipo con la misma key → 409 CREDIT_IDEMPOTENCY_CONFLICT; 5 copias simultáneas → 1 movimiento (recarga y ajuste); la key es por cuenta |
+| 11 | Ledger inmutable | UPDATE, DELETE, deleteMany, TRUNCATE, GUC con otro valor y borrar una cuenta con historia → rechazados |
+| 12 | Restricciones | 19 estados inválidos escritos en SQL, todos rechazados (saldo inicial ≠ 0, negativo, UPDATE directo, duplicados, combinaciones de dueño inválidas, cambio de dueño, importe 0 o fuera de límite, descuadre, saldo negativo, signos por tipo, falta de actor/key/motivo, key repetida) |
+| 13 | Matemática del ledger | En todas las cuentas de ambas bases: before + amount = after, cadena continua, primera en 0, última = saldo: **0 violaciones** |
+| 14 | Autorización | SUPER_ADMIN lee/recarga/ajusta por rutas admin; PROVIDER_ADMIN sólo lee lo suyo; independiente sólo lo suyo; flotilla 404; B2B y anónimo 401; no existen rutas de escritura para dueños (404) |
+| 15 | Aislamiento de proveedores | `providerId` ajeno 403, `accountId`/`creditAccountId` 400, rutas admin 403; la vista del dueño no expone actor ni Idempotency-Key |
+| 16 | Aislamiento de independientes | Parámetros con el driver o la cuenta de B → se devuelve la cuenta propia o 400; rutas admin y de proveedor 403; 0 fugas |
+| 17 | Suspensión / rechazo | Cuenta y ledger se conservan y siguen legibles (proveedor suspendido; independiente suspendido y rechazado) |
+| 18 | Sin DELETE | 12 rutas de créditos en OpenAPI, ninguna DELETE/PATCH/PUT; 8 intentos → 404 |
+| 19 | Créditos ≠ dinero | Ningún campo de moneda, formato decimal ni número no entero en los 8 esquemas de créditos ni en las respuestas |
+| 20 | Regresión CLAIM | Proveedor con saldo 0 reclama (200, CLAIMED); ledger sin cambios |
+| 21 | Regresión TAKE | Independiente con saldo 0 toma (200); ledger sin cambios; 0 entradas SERVICE_* |
+| 22 | Migración | `mandaria_db` y `mandaria_test`: V1.8 → V1.9 → V1.10 sin reset; las 23 tablas previas con las mismas filas y el mismo contenido en sus columnas originales (hash por tabla); `verify-migrations` (limpia, V1.0 → V1.10 y datos V1.9 → V1.10) PASS |
+| 23 | OpenAPI | Cuenta, entrada, entrada admin, recarga, ajuste, movimiento y páginas con tipos exactos; paginación `integer`; Idempotency-Key obligatoria; 0 objetos sin estructura |
+| 24 | Logs / secretos | 2477 líneas sin contraseña, JWT (humanos, B2B ni de firma), clientSecret, SMTP ni clave de Google; 0 cadenas con forma de JWT; eventos de crédito presentes; 0 respuestas 5xx |
+| 25 | Regresión | Unitarias **131/131**; E2E **197/197** en 15 archivos (`credits` y `drivers-vehicles` sufrieron la caída nativa de workers y pasaron 24/24 y 11/11 dos veces al repetir) |
+| 26 | Calidad | prisma validate, migrate status (ambas), verify-migrations, build, tsc, Oxlint, ESLint, Prettier, docs:check PASS |
+| 27 | Limpieza | Fixtures del CHECK: 0 restos. Restos de corridas de `credits` interrumpidas por la caída de workers (5 proveedores, 12 usuarios, 20 movimientos) eliminados de `mandaria_test`. Las 12 cuentas de migración de `mandaria_db` intactas |
+
+**Defecto real encontrado y corregido.** El interruptor `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`, documentado como exclusivo de bases de prueba, funcionaba en **cualquier** base y para **cualquier** rol con permiso DELETE: fijar un GUC propio no requiere privilegios. Prueba con un rol temporal sin privilegios de dueño en `mandaria_test`: no podía desactivar el trigger, pero sí borró una entrada del ledger con el interruptor; lo mismo ocurría en `mandaria_db` (probado dentro de una transacción revertida). La mitigación del README («usar un rol sin privilegios de dueño») no lo cerraba. Corrección: migración `20260921001200_credit_ledger_purge_test_only`, que sólo acepta el interruptor si el nombre de la base termina en `_test` (misma regla que `scripts/test-database-url.ts`). Después: en `mandaria_db` el borrado con interruptor se rechaza (`CREDIT_LEDGER_IMMUTABLE`) y en `mandaria_test` sigue sirviendo para limpiar fixtures. `verify-migrations` comprueba la restricción; README actualizado.
+
+**Imprecisión preexistente corregida (sólo documentación).** La paginación compartida desde V1.2 (`page`, `pageSize`, `total`, `totalPages` en 21 respuestas y los parámetros `page`/`pageSize`) se publicaba como `number`; ahora `integer` con sus límites. Sin cambios de validación ni de respuesta.
+
+**Otras clasificaciones.** Errores de tsc/build/E2E de la primera línea base → entorno (cliente Prisma y bases sin migrar). Los 2 errores de tsc en `test/credits.spec.ts` → orden de ejecución (los tests importan tipos de `dist/`, que venía de la compilación fallida). Caídas de workers → nativas de Windows. Dos fallos del validador → expectativas equivocadas corregidas en el validador (la prosa «sin decimales ni moneda» coincidía con el patrón).
+
+# Corrección — cotizaciones concurrentes de V1.6 (2026-09-21)
+
+Rama `v1.10-credit-monetization`, sobre el commit `533bf10` (V1.10-A). El fallo que se venía arrastrando desde la línea base de V1.9 — `test/delivery-quotes.e2e-spec.ts > 20 cotizaciones concurrentes` — era un **defecto real del producto**, no del entorno.
+
+**Causa.** `DeliveryQuotesService.quote()` abre una transacción interactiva, bloquea la DeliveryRequest `FOR UPDATE` y, dentro de ella, resolvía la zona (`ServiceZonesService.resolveActive`, dos veces en paralelo) y la tarifa (`RatePlansService.findActive`) con el **cliente global** de Prisma, no con `tx`. Cada una de esas consultas necesita **otra** conexión del pool mientras la transacción retiene la suya. Con tantas cotizaciones simultáneas como conexiones del pool, todas quedaban esperando el bloqueo de la fila y quien lo tenía esperaba una conexión que nunca se liberaba: interbloqueo hasta el timeout del pool (10 s), `P2024` y `500` en casi todas.
+
+**Reproducción aislada** (fuera de la aplicación, 20 transacciones sobre la misma fila en `mandaria_test`):
+
+| Variante | Resultado |
+|---|---|
+| Consultas con el cliente global dentro de la transacción (código anterior) | **0/20 OK**; todas fallan a los **10 015 ms** con `P2024` — la misma firma que los `500` a ~10 s del test |
+| Mismas consultas con `tx` | **20/20 OK en 634 ms** |
+| Sólo bloqueo `FOR UPDATE` + 150 ms de espera (control) | 20/20 OK en ~3,1 s: el bloqueo y el pool por sí solos no eran el problema |
+
+**Corrección.** `resolveActive` y `findActive` aceptan opcionalmente el cliente de la transacción (por defecto el global, así que los demás llamadores no cambian) y `quote()` les pasa `tx`; las dos búsquedas de zona pasan a ser secuenciales dentro de la misma conexión. Sin cambios de esquema, de contrato ni de respuestas.
+
+**¿Hay más casos?** Se revisaron todas las transacciones interactivas de `src/` buscando consultas con `this.prisma` o llamadas a otros servicios dentro del cuerpo: sólo existían estas tres, en la cotización. Las otras tres llamadas encontradas no consultan la base (routing HTTP, lectura de configuración, validación pura).
+
+**Verificación.**
+
+| Verificación | Resultado |
+|---|---|
+| `delivery-quotes.e2e-spec.ts` | **11/11 en 3 corridas seguidas** (antes 10/11 siempre) |
+| Prueba unitaria nueva en `test/pricing.spec.ts` | Comprueba que zona y tarifa reciben `tx` y que no se llama al routing si no hay tarifa. **Validada por mutación**: quitando `tx` de la llamada, falla; restaurado, pasa |
+| TypeScript / Oxlint / ESLint / Prettier / docs:check | PASS |
+| Unitarias | **131 PASS** (130 + 1) |
+| E2E por archivo | **197 PASS, 15/15 archivos, 0 fallos**: primera corrida completamente verde registrada en el proyecto (un archivo necesitó un reintento por la caída conocida de workers en Windows, no por un fallo de prueba) |
+
+**Nota de entorno.** Mientras se ejecutaba, una tarea en segundo plano trabajaba en un worktree dentro de la carpeta del repositorio (`.claude/worktrees/`) y Vitest tomaba también sus copias de los specs. Las corridas de esta verificación usan `--exclude '.claude/**'`; los resultados anteriores son sólo del repositorio principal.
+
+# Verificación V1.10-A — Credit Accounts & Immutable Ledger (2026-09-21)
+
+Rama `v1.10-credit-monetization`, paquete 1.10.0, Node.js 24.15.0, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push.
+
+**Nota de partida:** el encargo daba por completada una «V1.9-C Service Coverage». No existe en el repositorio: ni en ninguna rama local o remota, ni en el historial, ni en la documentación; la rama parte de V1.9 (PR #14) más un commit de documentación, y la única cobertura es la `ProviderServiceCoverage` de V1.7. V1.10-A no depende de ella, así que se construyó sobre V1.9 y la regresión cubre la cobertura que sí existe.
+
+| Verificación | Resultado |
+|---|---|
+| Línea base **antes** de modificar | PASS; 113 unitarias; E2E 162 (1 fallo preexistente, ver nota) |
+| Prisma validate / migrate status | PASS / al día (11 migraciones) |
+| Drift `migrate diff` schema ↔ migraciones (shadow DB temporal, eliminada después) | Vacío |
+| Migración `20260921001100_credit_accounts_ledger` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; 10 y 47 proveedores con exactamente una cuenta cada uno; 3 y 2 perfiles independientes aprobados alguna vez con cuenta; saldo 0 y **0 movimientos** en ambas |
+| `verify-migrations.mjs` | PASS en tres bases: instalación limpia; V1.0 → … → V1.9 → V1.10 con datos; y una base **llevada a V1.9 con datos reales** antes de aplicar V1.10 |
+| TypeScript / Build / Oxlint / ESLint / Prettier (archivos nuevos) | PASS |
+| `docs:openapi` + `docs:check` | 1.10.0; **+12 rutas, +8 esquemas, 0 eliminados**; 0 campos ambiguos `type: object` en los esquemas nuevos; `balance`, `amount` y `credits` publicados como `integer`; 0 campos `currency` en rutas de créditos |
+| `npm test` | **130 PASS** (113 previas + 17 de V1.10-A) |
+| E2E por archivo, 15 archivos | **186 PASS** (162 previas + 24 de V1.10-A); 14 archivos OK; `delivery-quotes` con el fallo preexistente |
+| Tormenta de concurrencia contra `dist/main.js` (fuera del repositorio) | **7/7** |
+| Escaneo de invariantes del ledger en ambas bases | **0 violaciones** en 11 consultas cada una |
+
+## Migración sobre datos reales de V1.9
+
+La base `mandaria_v19_*_test` se llevó migración a migración hasta V1.9 y se le cargaron datos de V1.9: dos proveedores (uno SUSPENDED) y tres perfiles independientes — APPROVED, SUSPENDED después de haber sido aprobado, y PENDING nunca aprobado. Tras aplicar V1.10:
+
+- las filas de `User`, `DeliveryProvider`, `Driver` e `IndependentDriverProfile` son **idénticas byte a byte** a las previas;
+- cada proveedor, también el suspendido, tiene una cuenta con saldo 0;
+- el perfil APPROVED y el SUSPENDED-tras-aprobación tienen cuenta; el PENDING **no**;
+- el ledger está vacío: ninguna recarga inventada;
+- después, los triggers toman el relevo: un proveedor nuevo recibe su cuenta, el perfil PENDING al aprobarse recibe la suya, y reaprobar el suspendido no crea una segunda.
+
+## Pruebas nuevas
+
+`test/credits.spec.ts` (17): convención de signo por tipo; `MAX_CREDIT_BALANCE + MAX_CREDIT_MOVEMENT` < 2³¹ (sin desbordamiento posible); saldo negativo y límite superior rechazados; todos los conflictos son 409; validación estricta — `0`, `-5`, `1.5`, `7.25`, `0.01`, `"10"`, `null`, `true` y valores fuera de límite rechazados; `reason` obligatorio sólo con OTHER; caracteres de control rechazados en `reason` y `externalReference`; `ownerType`, `providerId`, `creditAccountId`, `balance` y `createdByUserId` forjados en el cuerpo rechazados; Idempotency-Key ausente, corta, con espacios, demasiado larga o repetida rechazada; las vistas nunca exponen la huella del cuerpo y ocultan actor y key al dueño; débito insuficiente bajo bloqueo sin escribir; replay por key y conflicto por cuerpo distinto sin escribir; una guarda de PostgreSQL traducida a 409.
+
+`test/credits.e2e-spec.ts` (24, HTTP real contra la aplicación y PostgreSQL):
+
+| Área | Resultado |
+|---|---|
+| Cuenta de proveedor | Proveedores creados por SQL y por la API reciben exactamente una cuenta con saldo 0 y sin movimientos |
+| Cuenta independiente | 404 antes de aprobar; creada al aprobar; conservada al suspender; reaprobar no duplica |
+| Driver de flotilla | `GET /driver/credits` → 404 `CREDIT_ACCOUNT_NOT_FOUND`; ninguna cuenta en la base |
+| Recarga | 201, `Idempotent-Replayed: false`, entrada RECHARGE con actor, método y referencia; saldo 500 |
+| Idempotencia | Misma key y cuerpo → 200 con el movimiento original; cuerpo distinto → 409; recarga y ajuste con la misma key → 409; 1 sola entrada por key |
+| Key y OTHER | Sin key → 400; key corta → 400; OTHER sin motivo → 400; con motivo → 201 |
+| Ajuste | +50 y −20 aplicados; sobregiro → 409 `INSUFFICIENT_CREDITS` sin escribir ninguna entrada |
+| Entradas inválidas | 0, decimales, texto, ±1 000 001, `null`, 2³¹ y campos forjados → 400; referencia con salto de línea → 400; el proveedor B nunca tocado |
+| Ruta independiente | Recarga y ajuste por `/admin/drivers/:driverId/independent/credits`; Driver de flotilla, Driver y proveedor inexistentes → 404 |
+| PROVIDER_ADMIN | Lee su cuenta e historial sin actor, key ni huella; no hay ruta de mutación (404); rutas de admin → 403 |
+| Aislamiento | Admin de B sobre la cuenta de A (propia y admin) → 403; `providerId` repetido en la query → 400 |
+| DRIVER independiente | Lee sólo lo suyo; mutaciones y cuenta de proveedor → 403 |
+| B2B y roles | Token B2B y sin token → 401 en las 8 rutas probadas; SUPER_ADMIN en rutas propias de dueño → 403 |
+| Historial | Ordenado por `sequence` descendente; página 2 exacta; `pageSize` 0/101, `page` 0/texto → 400 |
+| Inmutabilidad | UPDATE, DELETE y TRUNCATE por SQL rechazados (`CREDIT_LEDGER_IMMUTABLE`); UPDATE rechazado **incluso** con el interruptor de purga; borrar un proveedor con historial rechazado |
+| Ataques SQL (16) | Todos rechazados, cada uno por el objeto esperado: UPDATE directo del saldo, segunda cuenta, ownerType incoherente, dos dueños, cuenta con saldo inicial, cambio de dueño, recarga negativa, saldo negativo, movimiento 0, aritmética falsa, `balanceBefore` obsoleto, cantidad absurda, SERVICE_AWARD positivo, recarga sin actor o sin key, ajuste sin motivo |
+| Concurrencia | +100/+200/+300 simultáneas → +600 y 3 entradas; −8/−8 sobre 10 → 201 + 409, saldo 2; 8 movimientos mixtos → saldo = suma de los aplicados; la misma key ×5 → 1 × 201 + 4 × 200, una entrada |
+| **CLAIM/TAKE sin créditos** | Proveedor con saldo 0 reclama (200) y un independiente con saldo 0 toma (200); **ningún movimiento nuevo** en el ledger y 0 entradas SERVICE_AWARD/SERVICE_REFUND |
+| Suspensión | Proveedor suspendido conserva saldo e historial legibles |
+| Auditoría | CREDIT_RECHARGED, CREDIT_ADJUSTED, CREDIT_MOVEMENT_REPLAYED, CREDIT_IDEMPOTENCY_CONFLICT y CREDIT_MOVEMENT_REJECTED con actor, cuenta, dueño, entrada, importe y saldos; 0 secretos |
+
+La suite se ejecutó 3 veces seguidas con 24/24 y no deja residuos (0 proveedores, 0 usuarios y 0 entradas de la suite).
+
+## Tormenta de concurrencia contra el servidor real
+
+Validador temporal fuera del repositorio contra `dist/main.js` en ejecución (base `mandaria_test`, reinicios del servidor para no consumir el límite por IP):
+
+| Escenario | Resultado |
+|---|---|
+| 60 recargas y ajustes simultáneos sobre **una** cuenta | 60 aplicados; saldo 3250 = exactamente el esperado; cadena íntegra |
+| 30 débitos simultáneos de 7 sobre un saldo de exactamente 70 | **10 aplicados, 20 rechazados, saldo 0**: ningún sobregiro |
+| 25 copias simultáneas de la misma Idempotency-Key | 1 × 201 + 24 × 200, todas con la misma entrada; +13 una sola vez |
+| La misma key con cuerpos distintos en paralelo (10) | 1 creada, 5 conflictos (cuerpo distinto), 4 replays (mismo cuerpo que la ganadora); 1 entrada |
+| Cadena final | 75 entradas sin un solo hueco |
+| Servidor | 0 respuestas 5xx; 0 secretos en 1 304 líneas de log |
+
+## Escaneo de invariantes del ledger
+
+11 consultas sobre `mandaria_db` y `mandaria_test`: todo proveedor tiene cuenta; todo perfil aprobado alguna vez la tiene y ninguno nunca aprobado; 0 saldos negativos; 0 dueños incoherentes; 0 entradas con aritmética falsa; 0 roturas de cadena; toda cadena empieza en 0; el último `balanceAfter` coincide siempre con el saldo; 0 entradas SERVICE_*; 0 keys duplicadas. **0 violaciones** en ambas.
+
+## Defectos encontrados durante la implementación
+
+- **Nulos publicados como `type: object`.** Los campos `string | null` de las respuestas nuevas salían en OpenAPI como objetos sin estructura, porque TypeScript refleja la unión como `Object`. Se declaró el tipo explícito en todos; auditoría de los esquemas nuevos en 0. El mismo defecto existe en **130 campos de versiones anteriores** (V1.1–V1.9, incluidos varios de V1.9): no se corrigió aquí por estar fuera de alcance y quedó propuesto como tarea aparte.
+- **400 sin documentar en `GET /driver/credits`.** La regresión de V1.4 (`driver-self.e2e-spec.ts`) exige que toda ruta de drivers documente 400/401/403/429; la ruta nueva no documentaba 400. Corregido; todas las rutas de créditos cumplen la convención.
+- **CORS no exponía `Idempotent-Replayed`.** Un navegador no podía leer esa cabecera. Se añadió a `exposedHeaders`.
+- Errores del propio validador, corregidos en el validador: un correo con mayúsculas en el alta (el login normaliza a minúsculas) y la lectura del resultado de un script abortado.
+
+## Fallo preexistente, ajeno a V1.10-A
+
+`test/delivery-quotes.e2e-spec.ts > 20 cotizaciones concurrentes` falla igual que en la línea base previa: agotamiento del pool de conexiones de Prisma (500 a los ~10 s) en el camino de cotización V1.6.
+
+## No verificado
+
+Docker; entrega SMTP real; `docs/API-CONTRACT.md` de `mandaria-frontend` (otro repositorio, no modificado).
+
 # CHECK V1.9-A — Independent Driver Security, Concurrency & Integrity (2026-09-18)
 
 Rama `v1.9-independent_drivers`, paquete 1.9.0. Validador adversarial temporal **fuera del repositorio** contra `dist/main.js` en ejecución (puerto 3019, base `mandaria_test`, `ROUTING_PROVIDER=local_fake`), con fixtures propios, logins reales y limpieza total. Reinicios del servidor para no consumir el límite por IP (100/min, 5 logins/min, 30 cotizaciones/min). **Se encontraron y corrigieron 3 defectos reales** (una sola causa raíz); ver abajo.
