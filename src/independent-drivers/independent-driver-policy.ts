@@ -9,6 +9,7 @@ export const INDEPENDENT_ERRORS = {
   DISPATCH_EXPIRED: 409,
   DISPATCH_CANCELLED: 409,
   DISPATCH_ALREADY_CLAIMED: 409,
+  DISPATCH_DELIVERED: 409,
   DISPATCH_NOT_OPEN_TO_INDEPENDENT: 409,
   DISPATCH_RETAKE_NOT_ALLOWED: 409,
   DISPATCH_NOT_CLAIMED_BY_DRIVER: 409,
@@ -98,6 +99,7 @@ export type TakeRejectionCode =
   | 'DISPATCH_CANCELLED'
   | 'DISPATCH_EXPIRED'
   | 'DISPATCH_ALREADY_CLAIMED'
+  | 'DISPATCH_DELIVERED'
   | 'DISPATCH_NOT_OPEN_TO_INDEPENDENT'
   | 'DISPATCH_RETAKE_NOT_ALLOWED';
 export function takeRejection(
@@ -113,6 +115,7 @@ export function takeRejection(
   if (dispatch.status === 'EXPIRED') return 'DISPATCH_EXPIRED';
   if (dispatch.status === 'OPEN' && now >= dispatch.expiresAt)
     return 'DISPATCH_EXPIRED';
+  if (dispatch.status === 'DELIVERED') return 'DISPATCH_DELIVERED';
   if (dispatch.status === 'CLAIMED') return 'DISPATCH_ALREADY_CLAIMED';
   if (!allowsIndependent(dispatch.serviceType))
     return 'DISPATCH_NOT_OPEN_TO_INDEPENDENT';

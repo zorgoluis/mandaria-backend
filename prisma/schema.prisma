@@ -40,6 +40,7 @@ model User {
   createdInvitations UserInvitation[] @relation("InvitationCreator")
   revokedInvitations UserInvitation[] @relation("InvitationRevoker")
   creditLedgerEntries CreditLedgerEntry[]
+  dispatchesDelivered Dispatch[] @relation("DispatchDeliveredBy")
   creditPolicies CreditPolicy[]
   independentProfilesApproved IndependentDriverProfile[] @relation("IndependentProfileApprover")
   independentProfilesSuspended IndependentDriverProfile[] @relation("IndependentProfileSuspender")
@@ -553,11 +554,15 @@ enum DispatchCreditMode {
   LEGACY
   MONETIZED
 }
+/// V1.11-A: DELIVERED closes a service that was physically delivered. It is terminal and keeps
+/// its claim owner, so the credits charged at CLAIM/TAKE stay consumed: the refund guards only
+/// return credits when the payer stops holding the service or the service is cancelled.
 enum DispatchStatus {
   OPEN
   CLAIMED
   EXPIRED
   CANCELLED
+  DELIVERED
 }
 enum DispatchCandidateStatus {
   OFFERED
@@ -589,6 +594,10 @@ model Dispatch {
   /// claimedByProviderId: each execution model has its own column and its own foreign key.
   claimedByIndependentDriverId String? @db.Uuid
   claimedAt DateTime?
+  /// V1.11-A: when the delivery was confirmed and by whom. Both are written by the server from the
+  /// authenticated principal, never from the request body, and never change afterwards.
+  deliveredAt DateTime?
+  deliveredByUserId String? @db.Uuid
   expiredAt DateTime?
   cancelledAt DateTime?
   cancellationReason String?
@@ -597,12 +606,14 @@ model Dispatch {
   deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
   deliveryQuote DeliveryQuote @relation(fields: [deliveryQuoteId], references: [id], onDelete: Cascade)
   claimedByIndependentDriver Driver? @relation("DispatchIndependentClaim", fields: [claimedByIndependentDriverId], references: [id], onDelete: Restrict)
+  deliveredBy User? @relation("DispatchDeliveredBy", fields: [deliveredByUserId], references: [id], onDelete: Restrict)
   candidates DispatchCandidate[]
   deliveryAssignments DeliveryAssignment[]
   @@index([deliveryRequestId])
   @@index([status, expiresAt])
   @@index([claimedByProviderId, status])
   @@index([claimedByIndependentDriverId, status])
+  @@index([status, deliveredAt])
   @@index([createdAt, id])
 }
 
@@ -639,10 +650,15 @@ model DispatchCandidate {
 /// ACTIVE: the driver and vehicle currently operating the dispatch. REASSIGNED: replaced by a newer
 /// assignment. CANCELLED: ended without replacement (unassign or delivery cancellation).
 /// Execution states (picked up, in transit, delivered) belong to later versions.
+/// V1.11-A: COMPLETED is the successful end of an assignment, written when the delivery is
+/// confirmed. It reuses the V1.8 ending mechanism (endedAt/endedByUserId) instead of inventing a
+/// second one, and carries no endReason because nothing failed. Like any non-ACTIVE row it frees
+/// the driver and the vehicle for another service while the history stays.
 enum DeliveryAssignmentStatus {
   ACTIVE
   REASSIGNED
   CANCELLED
+  COMPLETED
 }
 enum DeliveryAssignmentEndReason {
   DRIVER_UNAVAILABLE

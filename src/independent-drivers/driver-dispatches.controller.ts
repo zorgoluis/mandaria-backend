@@ -23,6 +23,7 @@ import { ApiErrorDescriptions } from '../common/api-errors.decorator.js';
 import { PaginationQueryDto } from '../common/pagination.dto.js';
 import { IndependentDispatchesService } from './independent-dispatches.service.js';
 import {
+  CompleteServiceDto,
   ReleaseDispatchDto,
   TakeDispatchDto,
 } from './independent-drivers.dto.js';
@@ -140,5 +141,26 @@ export class DriverDispatchesController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.dispatches.release(req.user.id, dispatchId, dto);
+  }
+
+  @Post('dispatches/:dispatchId/deliver')
+  @HttpCode(200)
+  @dispatchParam
+  @ApiOkResponse({ type: DriverDispatchResponse })
+  @ApiErrorDescriptions({
+    ...base,
+    409: 'DISPATCH_NOT_CLAIMED_BY_DRIVER: el servicio no está tomado por este repartidor (nunca lo tomó, lo liberó, o lo tiene otro) | NO_ACTIVE_ASSIGNMENT: el servicio no tiene asignación ACTIVE que cerrar | DELIVERY_CONFLICT: el Dispatch o su asignación cambiaron durante la confirmación; reintentar.',
+  })
+  @ApiOperation({
+    summary: 'Confirmar la entrega de un servicio que tomé',
+    description:
+      'Sin body (cualquier campo se rechaza con 400): el repartidor sale del JWT y la fecha la pone el servidor. Cierre operativo mínimo del flujo independiente TAKE -> DELIVERED: en una sola transacción mi asignación ACTIVE queda COMPLETED (sin motivo de fin: nada falló) y el Dispatch pasa a DELIVERED con deliveredAt y deliveredByUserId. DELIVERED es terminal e irreversible: el servicio ya no se puede liberar ni volver a tomar, y una cancelación posterior de la DeliveryRequest no lo toca. Yo y mi vehículo quedamos libres de inmediato para otro servicio, conservando el historial. Sólo el repartidor que tomó el servicio: SUPER_ADMIN, PROVIDER_ADMIN, otro repartidor y los clientes B2B no pueden confirmar entregas. Cuesta 0 créditos y no genera SERVICE_REFUND: el cargo hecho al tomarlo es lo que el servicio entregado paga. No recalcula precio, ruta, política ni costo en créditos. A diferencia de tomar un servicio, confirmar la entrega no vuelve a exigir el perfil APPROVED: el trabajo ya se hizo y una suspensión posterior no puede dejar el servicio sin cerrar. Repetir la confirmación devuelve 200 sin cambios.',
+  })
+  deliver(
+    @Param('dispatchId', new ParseUUIDPipe()) dispatchId: string,
+    @Body() _body: CompleteServiceDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.dispatches.complete(req.user.id, dispatchId);
   }
 }

@@ -162,6 +162,13 @@ export class TakeDispatchDto {
   @IsUUID()
   vehicleId!: string;
 }
+/**
+ * Confirmar la entrega no lleva body (V1.11-A): el repartidor sale del JWT y la fecha la pone el
+ * servidor. Declarar el DTO vacío hace que el ValidationPipe rechace cualquier campo con 400 en
+ * lugar de ignorarlo.
+ */
+export class CompleteServiceDto {}
+
 export class ReleaseDispatchDto {
   @ApiProperty({
     enum: INDEPENDENT_RELEASE_REASONS,

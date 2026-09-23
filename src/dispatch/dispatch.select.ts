@@ -27,6 +27,8 @@ export const dispatchSelect = {
   expiredAt: true,
   cancelledAt: true,
   cancellationReason: true,
+  deliveredAt: true,
+  deliveredByUserId: true,
   createdAt: true,
   updatedAt: true,
   deliveryQuote: {
@@ -138,7 +140,8 @@ export function providerDispatchView(
   const mine = dispatch.candidates.find((c) => c.providerId === providerId);
   const owner = dispatch.claimedByProviderId === providerId;
   const access: 'OWNER' | 'OFFER' | 'SUMMARY' =
-    owner && (status === 'CLAIMED' || status === 'CANCELLED')
+    owner &&
+    (status === 'CLAIMED' || status === 'CANCELLED' || status === 'DELIVERED')
       ? 'OWNER'
       : status === 'OPEN' && mine?.status === 'OFFERED'
         ? 'OFFER'
@@ -156,6 +159,9 @@ export function providerDispatchView(
     claimedByMe: owner,
     claimedAt: owner ? dispatch.claimedAt : null,
     cancelledAt: dispatch.cancelledAt,
+    // V1.11-A: when this service was delivered. Only the owner delivered it, so only the owner
+    // reads the stamp; for everyone else the dispatch is simply resolved.
+    deliveredAt: owner ? dispatch.deliveredAt : null,
     // V1.10-C: what claiming this dispatch costs a provider, frozen when it opened. Credits, not
     // money (never part of service.deliveryFee or goods). null = opened before V1.10-C (legacy).
     creditEnforcementMode: creditEnforcementMode(
@@ -271,6 +277,10 @@ export function adminDispatchView(dispatch: DispatchRecord, now = new Date()) {
     expiredAt: dispatch.expiredAt,
     cancelledAt: dispatch.cancelledAt,
     cancellationReason: dispatch.cancellationReason,
+    // V1.11-A: the operational close, for auditing. deliveredByUserId is the human that confirmed
+    // it — the provider's PROVIDER_ADMIN or the independent driver itself.
+    deliveredAt: dispatch.deliveredAt,
+    deliveredByUserId: dispatch.deliveredByUserId,
     createdAt: dispatch.createdAt,
     updatedAt: dispatch.updatedAt,
     deliveryRequest: {

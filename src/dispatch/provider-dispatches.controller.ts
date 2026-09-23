@@ -31,6 +31,7 @@ import { DispatchService } from './dispatch.service.js';
 import { ProviderCoveragesService } from './provider-coverages.service.js';
 import {
   ClaimDispatchDto,
+  CompleteDeliveryDto,
   ProviderDispatchListQueryDto,
   ProviderDispatchScopeDto,
   ReleaseDispatchDto,
@@ -156,6 +157,32 @@ export class ProviderDispatchesController {
       dto.reason,
       req.user.id,
     );
+  }
+
+  @Post('dispatches/:dispatchId/deliver')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @dispatchParam
+  @ApiOkResponse({ type: ProviderDispatchResponse })
+  @ApiErrorDescriptions({
+    ...errors,
+    409: 'DISPATCH_NOT_CLAIMED_BY_PROVIDER: el Dispatch no está CLAIMED por mi proveedor (liberado, de otro, cancelado o vencido) | NO_ACTIVE_ASSIGNMENT: todavía no hay Driver y Vehicle asignados, así que no hay nada que entregar | DELIVERY_CONFLICT: el Dispatch o su asignación cambiaron durante la confirmación; reintentar.',
+    429: 'Límite de 20 peticiones/minuto por IP.',
+  })
+  @ApiOperation({
+    summary: 'Confirmar la entrega de un Dispatch de mi proveedor',
+    description:
+      'Sin body (cualquier campo se rechaza con 400): quién confirma sale del JWT y la fecha la pone el servidor. Cierre operativo mínimo del flujo de proveedor CLAIM -> ASSIGN -> DELIVERED: en una sola transacción la asignación ACTIVE queda COMPLETED (sin motivo de fin: nada falló) y el Dispatch pasa a DELIVERED con deliveredAt y deliveredByUserId. DELIVERED es terminal e irreversible: el servicio ya no se puede liberar, reasignar, cancelar ni volver a reclamar, y una cancelación posterior de la DeliveryRequest no lo toca. El Driver y el Vehicle quedan libres de inmediato para otro servicio, conservando el historial. Sólo el PROVIDER_ADMIN del proveedor dueño del claim: SUPER_ADMIN, otros proveedores, el rol DRIVER y los clientes B2B no pueden confirmar entregas. Cuesta 0 créditos y no genera SERVICE_REFUND: el cargo hecho al reclamar es lo que el servicio entregado paga. No recalcula precio, ruta, política ni costo en créditos. Repetir la confirmación del mismo proveedor devuelve 200 sin cambios. 20/min por IP.' +
+      PROVIDER_SCOPE_DOC,
+  })
+  deliver(
+    @Query() _scope: ProviderDispatchScopeDto,
+    @CurrentProvider() provider: ProviderProfile,
+    @Param('dispatchId', new ParseUUIDPipe()) dispatchId: string,
+    @Body() _body: CompleteDeliveryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.dispatches.complete(dispatchId, provider.id, req.user.id);
   }
 
   @Get('service-coverages')

@@ -29,6 +29,7 @@ export const driverDispatchSelect = {
   claimedByIndependentDriverId: true,
   claimedAt: true,
   cancelledAt: true,
+  deliveredAt: true,
   deliveryQuote: {
     select: {
       serviceType: true,
@@ -140,6 +141,8 @@ export function driverDispatchView(
     takenByMe: owner,
     claimedAt: owner ? dispatch.claimedAt : null,
     cancelledAt: dispatch.cancelledAt,
+    // V1.11-A: when I delivered it. Only the driver that carried the service reads this stamp.
+    deliveredAt: owner ? dispatch.deliveredAt : null,
     // V1.10-C: what taking this dispatch costs me, frozen when it opened. Credits, not money.
     // null = opened before V1.10-C (legacy).
     creditEnforcementMode: creditEnforcementMode(

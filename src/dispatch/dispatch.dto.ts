@@ -45,6 +45,13 @@ export class ProviderDispatchScopeDto {
  */
 export class ClaimDispatchDto {}
 
+/**
+ * Completion takes no body either (V1.11-A): quién entrega sale del JWT y cuándo lo decide el
+ * servidor. Ningún campo del cliente puede alterar la entrega, así que cualquiera se rechaza con
+ * 400 en lugar de ignorarse.
+ */
+export class CompleteDeliveryDto {}
+
 export class ProviderDispatchListQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional(providerIdOption)
   @optional()

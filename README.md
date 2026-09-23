@@ -1,4 +1,4 @@
-# Mandaria — V1.10-D Atomic CLAIM / TAKE Credit Consumption
+# Mandaria — V1.11-A MVP Delivery Completion
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
@@ -14,7 +14,7 @@ Contrato: [API-CONTRACT](docs/API-CONTRACT.md). Resultados: [corrección del CHE
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). V1.10-A agrega la base contable de los créditos Mandaria: una cuenta por proveedor y por repartidor independiente, con un ledger inmutable, recargas y ajustes manuales de SUPER_ADMIN; **todavía no se cobra ningún crédito al adjudicar servicios** (ver [Credit Accounts & Immutable Ledger](#credit-accounts--immutable-ledger-v110-a)). V1.10-B agrega el motor de políticas de créditos: cuánto cuesta adjudicarse un servicio según serviceType, quién paga y la distancia canónica, con versiones inmutables; **sólo calcula, no cobra** (ver [Credit Policy Engine](#credit-policy-engine-v110-b)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). V1.10-A agrega la base contable de los créditos Mandaria: una cuenta por proveedor y por repartidor independiente, con un ledger inmutable, recargas y ajustes manuales de SUPER_ADMIN; **todavía no se cobra ningún crédito al adjudicar servicios** (ver [Credit Accounts & Immutable Ledger](#credit-accounts--immutable-ledger-v110-a)). V1.10-B agrega el motor de políticas de créditos: cuánto cuesta adjudicarse un servicio según serviceType, quién paga y la distancia canónica, con versiones inmutables; **sólo calcula, no cobra** (ver [Credit Policy Engine](#credit-policy-engine-v110-b)). V1.10-C congela el costo en créditos de cada Dispatch al abrirlo, V1.10-D lo cobra en el mismo acto de adjudicarlo y V1.10-E lo devuelve completo cuando esa adjudicación se deshace. V1.11-A agrega el **cierre operativo de la entrega**: el proveedor dueño del claim, o el repartidor independiente que tomó el servicio, confirma que se entregó; el Dispatch queda `DELIVERED` de forma terminal e irreversible, la asignación queda `COMPLETED` y el repartidor y el vehículo vuelven a estar libres. Cuesta 0 créditos y no devuelve ninguno (ver [MVP Delivery Completion](#mvp-delivery-completion-v111-a)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -28,6 +28,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `dispatch/`: V1.7 Dispatch, candidatos, coberturas de proveedor, claim y liberación.
 - `delivery-assignments/`: V1.8 asignación de Driver y Vehicle al Dispatch reclamado, con historial, reasignación y plazo.
 - `independent-drivers/`: V1.9 perfil independiente, vehículos propios y las operaciones `take`/`release` del repartidor.
+- `deliveries/`: V1.11 cierre operativo de la entrega, compartido por el flujo de proveedor y el independiente.
 - `credits/`: V1.10-A cuentas de créditos, ledger inmutable, recargas, ajustes y cobro atómico CLAIM/TAKE; sin refunds todavía.
 - `credit-policies/`: V1.10-B políticas de créditos versionadas y cálculo puro del costo de un servicio; no debita cuentas.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
@@ -1769,6 +1770,82 @@ Migración `20260923000300_service_refunds`: columnas `reversesEntryId` (FK al p
 
 Pruebas: `test/credit-refunds.spec.ts` (importe desde el award, cuenta correcta, idempotencia, frontera histórica, fallo cerrado, conflicto) y `test/credit-refunds.e2e-spec.ts` (release de proveedor y de repartidor, cancelación de la entrega, cambio de política irrelevante, segundo proveedor, reasignación sin devolución, duplicados y 10 reversiones simultáneas, carrera release/cancelación, devolución contra recarga/ajuste/cobro nuevo, legacy, corrupción, 14 escrituras forjadas rechazadas en SQL, reversión por SQL sin devolución rechazada y escaneo de integridad).
 
+## MVP Delivery Completion (V1.11-A)
+
+Responde: **¿cómo se cierra operativamente un servicio que ya se entregó?** Hasta V1.10 un Dispatch adjudicado se quedaba `CLAIMED` para siempre: el repartidor y el vehículo seguían ocupados y la única salida era liberar o cancelar, es decir, declarar que el servicio **no** se hizo. V1.11-A agrega el final normal.
+
+```text
+Proveedor      CLAIM -> ASSIGN (Driver + Vehicle) -> POST .../deliver -> DELIVERED
+Independiente  TAKE  (claim + assignment en un paso) -> POST .../deliver -> DELIVERED
+```
+
+Es una extensión **mínima**: un estado terminal más en `DispatchStatus`, un estado final más en `DeliveryAssignmentStatus` y dos columnas de sello. **No** es una máquina de estados de entrega: no existen «recogido», «en camino» ni «intento fallido», y no hay GPS, tracking, sockets ni prueba de entrega (foto, firma, OTP).
+
+### Quién puede confirmar la entrega
+
+Exactamente el actor que tiene el servicio adjudicado, resuelto siempre desde el JWT:
+
+| Endpoint | Rol | Quién exactamente |
+|---|---|---|
+| `POST /api/v1/provider/dispatches/:dispatchId/deliver` | `PROVIDER_ADMIN` | El proveedor dueño del claim (membership vigente) |
+| `POST /api/v1/driver/dispatches/:dispatchId/deliver` | `DRIVER` | El repartidor independiente que tomó el servicio |
+
+**Nadie más.** SUPER_ADMIN no puede cerrar entregas ajenas (403: no tiene membership y no es un actor operativo), un cliente B2B tampoco (401: no es un token humano), otro proveedor candidato recibe 409 y un proveedor que nunca fue candidato recibe 404, igual que con un id inexistente. Un repartidor de flotilla **no** cierra el servicio de su proveedor: en V1.8 el Driver no tiene voz sobre el Dispatch, y V1.11-A no se la inventa.
+
+Ninguno de los dos endpoints lleva body: quién confirma sale del token y **la fecha la pone el servidor**. Cualquier campo enviado se rechaza con 400, así que un cliente no puede retrofechar una entrega ni atribuírsela a otro usuario.
+
+### Qué hace exactamente, en una sola transacción
+
+1. Bloquea la fila del Dispatch (`FOR UPDATE`, el mismo bloqueo que usan CLAIM, TAKE y RELEASE).
+2. Comprueba que el actor sigue teniendo el claim.
+3. Cierra la asignación **ACTIVE** como `COMPLETED`, con `endedAt` y `endedByUserId` y **sin `endReason`**: no falló nada.
+4. Pone el Dispatch en `DELIVERED` con `deliveredAt` y `deliveredByUserId`.
+
+O se confirman los cuatro pasos o no ocurre ninguno. El orden no es una preferencia: `dispatch_guard` **rechaza en SQL** que un Dispatch salga de `CLAIMED` con una asignación ACTIVE viva, y rechaza un Dispatch `DELIVERED` que no tenga su asignación `COMPLETED`. Un claim sin Driver ni Vehicle asignados no se puede entregar (409 `NO_ACTIVE_ASSIGNMENT`): un servicio lo entrega quien lo llevaba.
+
+### El repartidor y el vehículo quedan libres
+
+`COMPLETED` reutiliza el mecanismo de cierre de asignaciones de V1.8 en lugar de inventar un segundo. Como los índices únicos parciales sólo restringen filas `ACTIVE`, al completarse la asignación el Driver y el Vehicle quedan disponibles **de inmediato** para otro servicio —en cualquiera de los dos modelos de ejecución— mientras la fila permanece como historia con su `driverId`, su `vehicleId` y su `assignedAt` intactos.
+
+### DELIVERED es terminal e irreversible
+
+Un servicio entregado ya no se libera, ni se reasigna, ni se cancela, ni se vuelve a reclamar o tomar (409 `DISPATCH_DELIVERED`), y **una cancelación posterior de la DeliveryRequest no lo toca**: el cierre de Dispatches de una solicitud cancelada sólo alcanza a los que están `OPEN` o `CLAIMED`. El sello de entrega se escribe una vez y no se puede reescribir ni borrar; el dueño del claim se congela en esa misma transición. Todo esto está garantizado por PostgreSQL (`dispatch_guard`, `Dispatch_values_check`, `delivery_assignment_guard`), no sólo por el servicio: una escritura directa por SQL también es rechazada.
+
+Repetir la confirmación del actor legítimo devuelve **200 sin cambios** —la misma semántica que repetir el claim ganador—, así que un reintento por timeout de red es seguro.
+
+### Cuesta 0 créditos
+
+Entregar **no es un evento económico**. Los créditos ya se cobraron al adjudicar el servicio (V1.10-D) y entregarlo es exactamente lo que esos créditos pagaron: la confirmación no consume créditos, no escribe ninguna entrada en el ledger y **no genera ningún `SERVICE_REFUND`**. El trigger `dispatch_award_refund_required` retorna antes para `DELIVERED`, y como la entrega **conserva al dueño del claim**, `service_refund_guard` tampoco aceptaría una devolución contra un servicio entregado. Tampoco se recalcula nada: ni precio, ni ruta, ni política de créditos, ni el costo congelado del snapshot.
+
+### Errores (`code`)
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| `DISPATCH_NOT_CLAIMED_BY_PROVIDER` | 409 | El Dispatch no está `CLAIMED` por mi proveedor (liberado, de otro, cancelado o vencido) |
+| `DISPATCH_NOT_CLAIMED_BY_DRIVER` | 409 | El servicio no está tomado por este repartidor |
+| `NO_ACTIVE_ASSIGNMENT` | 409 | No hay Driver y Vehicle asignados: no hay nada que entregar |
+| `DELIVERY_CONFLICT` | 409 | El Dispatch o su asignación cambiaron durante la confirmación (carrera perdida, nunca un 500) |
+| `DISPATCH_DELIVERED` | 409 | Se intenta reclamar o tomar un servicio ya entregado |
+
+### Auditoría
+
+Mandaria no tiene tabla de eventos ni outbox, así que la señal de entrega son dos cosas duraderas y una legible: el propio Dispatch (`status`, `deliveredAt`, `deliveredByUserId`), la asignación `COMPLETED` con `endedAt`/`endedByUserId`, y el log estructurado `DELIVERY_COMPLETED` con el Dispatch, la asignación, el modo (`FLEET`/`INDEPENDENT`), el actor y el instante. Ni tokens, ni contraseñas, ni secretos B2B, ni datos de contacto. `deliveredAt` se expone al dueño del servicio en las vistas de proveedor y de repartidor, y a SUPER_ADMIN junto con `deliveredByUserId`.
+
+### La capacidad no se vuelve a pedir al cerrar
+
+La confirmación del repartidor independiente **no repite la puerta de aprobación**: el trabajo ya se hizo en la calle y una suspensión que llegara en medio no puede dejar un servicio terminado atascado en `CLAIMED` con el repartidor y el vehículo bloqueados. En la práctica V1.9 ya impide suspender a un repartidor con una asignación ACTIVE, así que esto es defensa en profundidad, no un hueco.
+
+### Base de datos
+
+Dos migraciones, porque PostgreSQL no permite usar un valor de enum en la misma transacción que lo agrega:
+
+- `20260923001500_delivery_completion_states`: `DispatchStatus.DELIVERED` y `DeliveryAssignmentStatus.COMPLETED`.
+- `20260923001600_delivery_completion_rules`: columnas `deliveredAt` y `deliveredByUserId` (FK a `User`, RESTRICT), índice `Dispatch_status_deliveredAt_idx`, `Dispatch_values_check` reescrito (DELIVERED exige dueño único, `claimedAt`, sello completo y ausencia de `expiredAt`/`cancelledAt`; cualquier otro estado no lleva sello), `DeliveryAssignment_values_check` reescrito (COMPLETED exige `endedAt`, `endedByUserId` y **sin** motivo), `dispatch_guard` extendido (`CLAIMED -> DELIVERED` como única entrada, terminalidad, sello inmutable, dueño congelado y asignación cerrada obligatoria) y `dispatch_award_refund_required` con retorno temprano para `DELIVERED`.
+
+**Ninguna migración entrega nada:** ningún Dispatch histórico pasa a `DELIVERED` ni ninguna asignación a `COMPLETED`, y las dos columnas nuevas son anulables sin default.
+
+Código: `src/deliveries/delivery-completion.ts` (transacción compartida por los dos modelos de ejecución), conectado a `DispatchService.complete` y a `IndependentDispatchesService.complete`. Pruebas: `test/delivery-completion.spec.ts` (contrato, orden de escrituras, bloqueos, idempotencia, cero escrituras económicas, mapeo de guardas, terminalidad en ambos modelos) y `test/delivery-completion.e2e-spec.ts` (flujo de proveedor y de independiente por HTTP real, liberación de recursos, autorización de los cinco principales, terminalidad frente a release/reassign/cancel/claim/take y cancelación tardía de la DeliveryRequest, saldo y ledger sin cambios, 0 devoluciones, sin recálculo de precio ni snapshot, once escrituras forjadas rechazadas en SQL y tres carreras de concurrencia).
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -1823,6 +1900,9 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.10-C: los Dispatches anteriores a V1.10-C no tienen snapshot (`creditCost: null`); V1.10-D los marca `creditMode: LEGACY` y los adjudica sin cobro.
 - V1.10-E: liberar un servicio pagado o cancelar la entrega **sí** devuelve los créditos completos; cancelar sólo la asignación o reasignar **no**, porque el servicio sigue adjudicado. Un proveedor puede reclamar y liberar repetidamente sin costo neto: no hay penalización por reservar y soltar, y eso queda como decisión de negocio a revisar.
 - V1.10-E: sólo existen devoluciones completas. No hay refunds parciales ni penalización por etapa porque el modelo todavía no tiene estados de ejecución (recogido, en camino); introducirlos exigirá una versión posterior.
+- V1.11-A: la entrega se confirma **por declaración** del actor que ejecutó el servicio; Mandaria no la verifica (no hay foto, firma, OTP ni GPS). Un proveedor o repartidor puede declarar entregado algo que no entregó, y como `DELIVERED` es irreversible, corregirlo exigiría una operación administrativa que hoy no existe.
+- V1.11-A: no existe cierre por SUPER_ADMIN ni por el cliente B2B, ni cierre automático por tiempo. Un servicio cuyo actor nunca confirme se queda `CLAIMED` indefinidamente, ocupando su Driver y su Vehicle, hasta que lo libere o se cancele la DeliveryRequest.
+- V1.11-A: no hay entrega fallida ni parcial. Un intento infructuoso sólo se puede expresar liberando o cancelando, que económicamente devuelve los créditos como si el servicio nunca se hubiera adjudicado.
 - V1.10-E: un Dispatch monetizado cuyo cargo desaparezca queda inrevertible (409 `CREDIT_REFUND_INTEGRITY_ERROR`) hasta que un administrador corrija los datos: es deliberado, para no regalar créditos.
 - V1.10-D: un proveedor sin saldo deja de poder reclamar, así que un servicio puede quedarse sin quien lo tome por falta de créditos, no por falta de capacidad. Operativamente hay que vigilar los saldos (no hay recarga automática ni alertas).
 - V1.10-D: el costo se congela al abrir y se cobra al adjudicar; entre ambos momentos puede pasar tiempo y el precio ya no se puede corregir salvo cancelando el Dispatch.
@@ -1836,8 +1916,8 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.10-E / V1.10-F+
+## Fuera de V1.11-A / V1.11-B+
 
-No se implementaron devoluciones parciales, penalizaciones ni caducidad de créditos, devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron estados intermedios de ejecución (recogido, en camino, intento fallido), prueba de entrega (foto, firma, OTP), entrega parcial o fallida, devolución al origen, calificación del servicio, liquidaciones ni facturación por entrega, cierre de entregas por SUPER_ADMIN o por el cliente B2B, cierre automático por tiempo, devoluciones parciales, penalizaciones ni caducidad de créditos, devolución automática, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API y auditoría persistente siguen pendientes.

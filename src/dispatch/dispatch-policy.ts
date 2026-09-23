@@ -10,6 +10,7 @@ export const DISPATCH_ERRORS = {
   DISPATCH_EXPIRED: 409,
   DISPATCH_CANCELLED: 409,
   DISPATCH_ALREADY_CLAIMED: 409,
+  DISPATCH_DELIVERED: 409,
   DISPATCH_RECLAIM_NOT_ALLOWED: 409,
   DISPATCH_NOT_CLAIMED_BY_PROVIDER: 409,
   PROVIDER_NOT_ELIGIBLE: 409,
@@ -92,6 +93,8 @@ export function claimRejection(
   const status = effectiveDispatchStatus(dispatch, now);
   if (status === 'CANCELLED') return 'DISPATCH_CANCELLED';
   if (status === 'EXPIRED') return 'DISPATCH_EXPIRED';
+  // V1.11-A: a delivered service is over for everyone, including the provider that delivered it.
+  if (status === 'DELIVERED') return 'DISPATCH_DELIVERED';
   if (status === 'CLAIMED')
     return dispatch.claimedByProviderId === providerId
       ? 'ALREADY_OWNER'

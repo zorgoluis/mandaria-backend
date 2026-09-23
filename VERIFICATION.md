@@ -1,3 +1,116 @@
+# Verificación V1.11-A — MVP Delivery Completion (2026-09-23)
+
+Rama `v1.11-mvp-delivery-completion` sobre `5d079db` (merge de V1.10), paquete **1.11.0**, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.
+
+| Verificación | Resultado |
+|---|---|
+| Migraciones `20260923001500_delivery_completion_states` y `20260923001600_delivery_completion_rules` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; **0 filas históricas modificadas**: ningún Dispatch pasó a `DELIVERED` ni ninguna asignación a `COMPLETED`. `mandaria_db` al cierre: 76 Dispatches (0 DELIVERED), 54 asignaciones (0 COMPLETED) |
+| `prisma validate`; `migrate status` y drift (`migrate diff` esquema ↔ base) en **ambas** bases | Válido / al día / **sin diferencias** |
+| `verify-migrations` (4 bases desechables) | PASS: limpia, V1.0 → V1.10, datos V1.9 → V1.10 y V1.10-A → B → C → D → E → **V1.11-A**; en las cuatro: 0 DELIVERED, 0 COMPLETED, ambos valores de enum presentes, `deliveredAt`/`deliveredByUserId` anulables y sin default, índice `Dispatch_status_deliveredAt_idx`, FK RESTRICT, los dos CHECK reescritos y el retorno temprano de `dispatch_award_refund_required` |
+| build (`nest build`), Oxlint, ESLint, `docs:check` | PASS |
+| `tsc -p tsconfig.json` | **1 error preexistente** en `test/migrations/award-boundary.check.ts` (importa Prisma desde `.tmp/check-v110d/…`, defecto heredado ya reportado en V1.10-E); **0 en el código y las pruebas de V1.11-A** |
+| Unitarias | **202/202 en 19 archivos**; 22 nuevas en `test/delivery-completion.spec.ts`. Línea base medida en este árbol antes de agregarlas: **180 en 18 archivos** |
+| E2E por archivo | **317/317 en 20 archivos**, sin ningún archivo en rojo; 29 nuevas en `test/delivery-completion.e2e-spec.ts`. Línea base: 288 en 19 archivos, igual a la registrada en V1.10-E |
+| OpenAPI y matriz de acceso | Regenerados: dos rutas nuevas en `docs/API_ACCESS.md` (`POST /api/v1/provider/dispatches/{dispatchId}/deliver` → PROVIDER_ADMIN y `POST /api/v1/driver/dispatches/{dispatchId}/deliver` → DRIVER) y `info.version` sincronizado a 1.11.0 |
+
+## Flujo de proveedor (HTTP real)
+
+| Escenario | Resultado |
+|---|---|
+| CLAIM → ASSIGN → `POST /provider/dispatches/:id/deliver` | 200; Dispatch `DELIVERED`, `deliveredByUserId` = el PROVIDER_ADMIN autenticado, `deliveredAt` del servidor, `claimedByProviderId` congelado, `cancelledAt`/`expiredAt` nulos, `access` sigue siendo OWNER |
+| Asignación cerrada | `COMPLETED` con `endedAt` **idéntico** a `deliveredAt` y `endedByUserId` del mismo usuario; `endReason` y `endReasonDetail` nulos; `driverId`, `vehicleId` y `assignedAt` intactos |
+| Liberación de recursos | 0 asignaciones ACTIVE del Driver tras entregar; el **mismo** Driver y el **mismo** Vehicle ejecutan y entregan el Dispatch siguiente |
+| Confirmación repetida | 200 sin cambios: `deliveredAt` y `updatedAt` idénticos, sigue habiendo una sola asignación |
+| Claim sin Driver ni Vehicle | 409 `NO_ACTIVE_ASSIGNMENT`; el Dispatch sigue `CLAIMED` |
+| Body con `deliveredAt`, `deliveredByUserId` o `providerId` | 400 en los tres casos; el Dispatch sigue `CLAIMED` |
+
+## Flujo independiente (HTTP real)
+
+| Escenario | Resultado |
+|---|---|
+| TAKE → `POST /driver/dispatches/:id/deliver` | 200; `DELIVERED`, `claimedByIndependentDriverId` conservado, `deliveredByUserId` = el propio repartidor; asignación `COMPLETED` en modo `INDEPENDENT` sin motivo de fin |
+| Disponibilidad posterior | `GET /driver/me` devuelve `independent.canTakeServices: true` y `activeDeliveryAssignment: null`; el repartidor toma y entrega otro servicio a continuación |
+| Servicio liberado | 409 `DISPATCH_NOT_CLAIMED_BY_DRIVER` |
+| Suspensión durante la ejecución | **Imposible por dominio**: suspender a un repartidor con asignación ACTIVE responde 409 `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT` (invariante V1.9). Tras entregar, la suspensión sí procede (200), el repartidor suspendido ya no puede tomar servicios y el entregado permanece `DELIVERED` |
+| La puerta de aprobación no se repite al cerrar | Unitaria con doble de Prisma: `complete` escribe la entrega sin leer nunca `IndependentDriverProfile` |
+
+## Autorización — sólo el actor que tiene el servicio
+
+| Principal | Resultado |
+|---|---|
+| SUPER_ADMIN | **403** en las dos rutas |
+| Driver de flotilla del proveedor que ejecuta el servicio | **403** (rol global distinto de PROVIDER_ADMIN) |
+| Cliente B2B | **401** (no es token humano) |
+| Sin token | **401** |
+| Otro proveedor candidato | **409** `DISPATCH_NOT_CLAIMED_BY_PROVIDER` |
+| Proveedor que nunca fue candidato | **404**, igual que un id inexistente |
+| Otro DRIVER no habilitado como independiente | **409** |
+| PROVIDER_ADMIN sobre un servicio tomado por un independiente | **409** `DISPATCH_NOT_CLAIMED_BY_PROVIDER` |
+| Proveedor que liberó, o servicio cancelado | **409** `DISPATCH_NOT_CLAIMED_BY_PROVIDER` |
+
+En todos los casos el Dispatch quedó `CLAIMED` y su asignación `ACTIVE`: ninguna denegación escribió nada.
+
+## Terminalidad e irreversibilidad
+
+| Intento sobre un Dispatch `DELIVERED` | Resultado |
+|---|---|
+| `POST /provider/.../release` | 409 `DISPATCH_NOT_CLAIMED_BY_PROVIDER` |
+| `POST /provider/.../assignment/reassign` | 409 `DISPATCH_NOT_CLAIMED_BY_PROVIDER` |
+| `POST /provider/.../assignment/cancel` | 409 `DISPATCH_NOT_CLAIMED_BY_PROVIDER` |
+| `POST /provider/.../claim` (el dueño y otro candidato) | 409 `DISPATCH_DELIVERED` en ambos |
+| `POST /driver/.../take` | 409 `DISPATCH_DELIVERED`; además no aparece en `GET /driver/dispatches/available` |
+| Cancelar la DeliveryRequest después de entregar | 200 en la cancelación y el Dispatch **no cambia**: sigue `DELIVERED`, `cancelledAt` nulo, `deliveredAt` idéntico y su asignación sigue `COMPLETED` |
+
+## Cero impacto económico
+
+| Verificación | Resultado |
+|---|---|
+| Saldo del proveedor antes/después de entregar | **Idéntico**; 0 entradas nuevas en el ledger para ese Dispatch; el `SERVICE_AWARD` sigue siendo exactamente uno |
+| Saldo del repartidor independiente | **Idéntico** tras entregar; 0 `SERVICE_REFUND` |
+| Recálculo | La Quote conserva `amount`, `distanceMeters` y hasta su `updatedAt`; los `DispatchCreditSnapshot` conservan sus créditos |
+| Devolución forzada por SQL contra un servicio entregado | Rechazada; siguen 0 `SERVICE_REFUND` |
+| Logs | Un solo `DELIVERY_COMPLETED` por entrega, con Dispatch, asignación, modo, actor e instante; **0 coincidencias** del JWT del proveedor, del token B2B, de la contraseña de fixtures o del teléfono de contacto |
+
+## Escrituras forjadas en SQL rechazadas (11)
+
+`DELIVERED` con la asignación todavía ACTIVE (`DISPATCH_HAS_ACTIVE_ASSIGNMENT`); `DELIVERED` sin sello y sello sin `DELIVERED` (`Dispatch_values_check`, 2); reabrir a `CLAIMED`, cancelar, reescribir `deliveredAt` y reescribir `deliveredByUserId` sobre un entregado (`DISPATCH_IMMUTABLE`, 4); devolver una asignación `COMPLETED` a `ACTIVE` (`DELIVERY_ASSIGNMENT_IMMUTABLE`); `COMPLETED` con motivo de fallo y `COMPLETED` sin autor del cierre (`DeliveryAssignment_values_check`, 2); e insertar un `SERVICE_REFUND` contra el award de un servicio entregado.
+
+## Concurrencia
+
+| Carrera | Resultado |
+|---|---|
+| 6 confirmaciones simultáneas del mismo proveedor | Exactamente **una** asignación, en `COMPLETED`; Dispatch `DELIVERED` una sola vez; todas las respuestas 200 o 409, ninguna 5xx |
+| Entrega contra liberación (proveedor) | Exactamente una de las dos aplica: o `DELIVERED` + asignación `COMPLETED` + 0 devoluciones, o `OPEN` + `deliveredAt` nulo + asignación `CANCELLED`. Nunca ambas |
+| Entrega contra liberación (independiente) | Igual, y en los dos desenlaces el repartidor queda con **0** asignaciones ACTIVE |
+
+## Defectos propios encontrados y corregidos durante la implementación
+
+- `claimRejection` (V1.7) y `takeRejection` (V1.9) no contemplaban `DELIVERED`: un candidato podía intentar reclamar un servicio ya entregado y el rechazo llegaba desde un trigger de PostgreSQL, lo que en el flujo de proveedor habría salido como 500. Se agregó el código de dominio `DISPATCH_DELIVERED` (409) en ambos modelos de ejecución.
+- La vista de proveedor degradaba a `SUMMARY` al entregar, dejando al dueño sin el detalle del servicio que acababa de cerrar; `DELIVERED` se agregó al conjunto `OWNER`.
+- `src/setup.ts` publicaba la versión OpenAPI fija `1.10.0`, que dejó de coincidir con `package.json` al subir a 1.11.0 y hacía fallar la comprobación de contrato de `driver-self.e2e-spec.ts`. Sincronizada.
+
+## Errores del propio arnés de pruebas (no del producto)
+
+Ruta equivocada para crear el vehículo del repartidor independiente; `financialContext` omitido en la creación de la DeliveryRequest; siete inicios de sesión contra el límite real de 5/minuto por IP (ahora se reinicia la aplicación entre bloques); casos que dejaban asignaciones ACTIVE y hacían fallar al siguiente con `DRIVER_BUSY`; una premisa equivocada sobre suspender a un repartidor en plena ejecución (lo impide V1.9, y la prueba ahora verifica esa garantía); y una aserción que apuntaba a `DeliveryAssignment_values_check` cuando el motivo `OTHER` disparaba antes `DeliveryAssignment_reason_check`.
+
+## Acoplamiento entre suites E2E detectado y neutralizado
+
+Una corrida de la suite nueva que Vitest mató a mitad (caída nativa de workers en Windows) dejó fixtures en `mandaria_test` con asignaciones ACTIVE y Dispatches `CLAIMED` sin ejecutor. `independent-drivers.e2e-spec.ts` recorre **toda** la base —su `freeAll()` cierra cualquier asignación ACTIVE y una de sus aserciones cuenta Dispatches independientes reclamados sin asignación ACTIVE en toda la base—, así que ese archivo falló dos veces por datos ajenos, no por código: 15/23 la primera vez y 1/23 la segunda. Correcciones aplicadas a la suite nueva:
+
+- su limpieza entre casos ya no deja un Dispatch `CLAIMED` sin ejecutor: cierra la asignación **y** saca el Dispatch de `CLAIMED`, purgando el cargo con el interruptor que PostgreSQL sólo honra en bases `*_test`, igual que hace `freeAll()`;
+- su limpieza final resuelve los fixtures **por prefijo** en la base, no desde memoria, y se ejecuta también **antes** de crear los suyos, de modo que una corrida interrumpida se limpia sola en la siguiente.
+
+Tras estos cambios la suite completa quedó en 317/317 con 20 de 20 archivos en verde. Queda anotado, sin tocarlo, que `freeAll()` de `independent-drivers` sigue siendo global en lugar de limitarse a sus propios fixtures.
+
+## Incidencias y notas de entorno
+
+- La caída nativa de workers de Vitest en Windows apareció en varias corridas (`providers`, `user-invitations`, `credit-refunds`, `delivery-quotes`, `delivery-requests-b2b` y la suite nueva); todas pasaron completas al repetirlas, como en versiones anteriores. En la corrida final sólo `user-invitations` necesitó un reintento.
+- Discrepancia en el conteo histórico: este árbol (HEAD `5d079db`, que ya incluye V1.10-E) tiene **180** pruebas unitarias antes de esta tarea, mientras que el registro de V1.10-E anota 188. No se reprodujo ni se investigó esa cifra; las de esta verificación son las medidas ahora.
+
+## Limpieza
+
+Fixtures de la suite nueva eliminados de `mandaria_test`: 0 usuarios `@completion.test`, 0 proveedores `E2E_DEL_`, 0 asignaciones ACTIVE en toda la base, 0 Dispatches independientes reclamados sin ejecutor y 0 Dispatches `DELIVERED` residuales. Las 4 bases desechables que `verify-migrations` creó en esta tarea fueron eliminadas; las de tareas anteriores no se tocaron. No quedó ningún servidor ni worker levantado. `mandaria_db` sólo recibió las dos migraciones nuevas; **no se modificó `.env`**.
+
 # CHECK FINAL V1.10-E — Refunds & Reversals, validación adversarial (2026-09-23)
 
 Rama `v1.10-credit-monetization`, HEAD `0a5ab3f` + V1.10-E sin commit, paquete 1.10.0, `NODE_ENV=test`, routing `spy` (proveedor doble con contador). Validador temporal fuera del código del producto (`.tmp/check-v110e/`) contra la aplicación real levantada en puerto efímero sobre `mandaria_test`, con autenticación real y fixtures propios. Migraciones reales (17), sin `db push`. `mandaria_db` no se tocó. **69/69 comprobaciones PASS, 0 FAIL. Sin cambios de código ni de reglas durante el CHECK.**
