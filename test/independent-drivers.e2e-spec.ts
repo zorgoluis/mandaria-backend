@@ -200,17 +200,31 @@ async function freeAll() {
         endReason: 'OPERATIONAL_CHANGE',
       },
     });
-    await prisma.dispatch.updateMany({
-      where: { id: a.dispatchId, status: 'CLAIMED' },
-      data: {
-        status: 'CANCELLED',
-        cancelledAt: new Date(),
-        cancellationReason: 'E2E_CLEANUP',
-        claimedByProviderId: null,
-        claimedByIndependentDriverId: null,
-        claimedAt: null,
-      },
-    });
+    // V1.10-E: reversing a paid dispatch by hand would owe its refund, and the database says so.
+    // This is fixture teardown, not a business event, so the award is purged with the *_test-only
+    // switch and the reversal then has nothing to return.
+    await prisma.$transaction([
+      prisma.$executeRawUnsafe(
+        `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
+      ),
+      prisma.creditLedgerEntry.deleteMany({
+        where: { type: 'SERVICE_REFUND', referenceId: a.dispatchId },
+      }),
+      prisma.creditLedgerEntry.deleteMany({
+        where: { type: 'SERVICE_AWARD', referenceId: a.dispatchId },
+      }),
+      prisma.dispatch.updateMany({
+        where: { id: a.dispatchId, status: 'CLAIMED' },
+        data: {
+          status: 'CANCELLED',
+          cancelledAt: new Date(),
+          cancellationReason: 'E2E_CLEANUP',
+          claimedByProviderId: null,
+          claimedByIndependentDriverId: null,
+          claimedAt: null,
+        },
+      }),
+    ]);
   }
 }
 

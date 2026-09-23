@@ -1160,9 +1160,14 @@ describe('V1.10-A does not charge credits yet', () => {
     ).body;
     expect(after.balance).toBe(0);
     expect(await prisma.creditLedgerEntry.count()).toBe(entries);
+    // Scoped to this suite's own dispatch: since V1.10-D/E other suites legitimately write
+    // SERVICE_* entries in this shared database, and a crashed run can leave some behind.
     expect(
       await prisma.creditLedgerEntry.count({
-        where: { type: { in: ['SERVICE_AWARD', 'SERVICE_REFUND'] } },
+        where: {
+          type: { in: ['SERVICE_AWARD', 'SERVICE_REFUND'] },
+          referenceId: dispatchId,
+        },
       }),
     ).toBe(0);
   });

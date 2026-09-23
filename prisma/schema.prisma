@@ -706,6 +706,12 @@ enum CreditAccountOwnerType {
 /// V1.10 sign convention (enforced by CHECK): RECHARGE and SERVICE_REFUND are credits (> 0),
 /// SERVICE_AWARD is a debit (< 0), ADMIN_ADJUSTMENT may be either but never 0. Only RECHARGE and
 /// ADMIN_ADJUSTMENT are produced in V1.10-A; the other two are reserved for claim/take charging.
+/// V1.10-E: why a SERVICE_REFUND exists. Only operational events the backend really supports.
+enum CreditRefundReason {
+  PROVIDER_RELEASE
+  INDEPENDENT_RELEASE
+  DELIVERY_CANCELLED
+}
 enum CreditLedgerEntryType {
   RECHARGE
   SERVICE_AWARD
@@ -764,6 +770,11 @@ model CreditLedgerEntry {
   /// A partial unique index allows at most one SERVICE_AWARD per account and Dispatch.
   referenceType String?
   referenceId String? @db.Uuid
+  /// V1.10-E: the SERVICE_AWARD this SERVICE_REFUND compensates, and the operational event that
+  /// caused it. The award itself is never modified: a refund is a new, opposite entry that points
+  /// at it, and a partial unique index allows at most one refund per award (full refunds only).
+  reversesEntryId String? @db.Uuid
+  refundReason CreditRefundReason?
   /// Human actor. Required for RECHARGE and ADMIN_ADJUSTMENT.
   createdByUserId String? @db.Uuid
   /// Client-supplied key, unique per account; only its request fingerprint is kept alongside it.
@@ -772,9 +783,12 @@ model CreditLedgerEntry {
   createdAt DateTime @default(now())
   creditAccount CreditAccount @relation(fields: [creditAccountId], references: [id], onDelete: Restrict)
   createdBy User? @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  reverses CreditLedgerEntry? @relation("CreditLedgerReversal", fields: [reversesEntryId], references: [id], onDelete: Restrict)
+  reversedBy CreditLedgerEntry[] @relation("CreditLedgerReversal")
   @@unique([creditAccountId, idempotencyKey])
   @@index([creditAccountId, sequence])
   @@index([type, createdAt])
+  @@index([reversesEntryId])
 }
 
 /// V1.10-B: how a credit policy turns the canonical distance of a service into credits.

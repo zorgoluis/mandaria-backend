@@ -513,9 +513,10 @@ describe.sequential('V1.10-D award and debit are one operation', () => {
       .auth(t.indep, bearer)
       .send({ reason: 'OPERATIONAL_ISSUE' })
       .expect(200);
-    // V1.10-D does not refund on release: the credits stay consumed until V1.10-E.
-    expect(await independentBalance(prisma, ids.driver)).toBe(0);
+    // V1.10-E: releasing returns exactly what the award charged, without touching the award.
+    expect(await independentBalance(prisma, ids.driver)).toBe(14);
     expect(await awardsOf(dispatch.id)).toHaveLength(1);
+    expect((await awardsOf(dispatch.id))[0].amount).toBe(-14);
   });
 
   it('an exact balance is enough and leaves zero; one credit less is refused and moves nothing', async () => {
@@ -659,13 +660,13 @@ describe.sequential('V1.10-D award and debit are one operation', () => {
     // Mandaria sold the dispatch once; who executes it inside the fleet is not another sale.
     expect(await awardsOf(dispatch.id)).toHaveLength(1);
     expect(await providerBalance(prisma, ids.providerA)).toBe(afterClaim);
-    // Releasing does not give the credits back either (refunds are V1.10-E).
+    // Releasing, on the other hand, does give the credits back (V1.10-E), and the award stays.
     await api()
       .post(`/api/v1/provider/dispatches/${dispatch.id}/release`)
       .auth(t.A, bearer)
       .send({ reason: 'Prueba V1.10-D' })
       .expect(200);
-    expect(await providerBalance(prisma, ids.providerA)).toBe(afterClaim);
+    expect(await providerBalance(prisma, ids.providerA)).toBe(afterClaim + 7);
     expect(await awardsOf(dispatch.id)).toHaveLength(1);
     await prisma.deliveryAssignment.deleteMany({
       where: { dispatchId: dispatch.id },

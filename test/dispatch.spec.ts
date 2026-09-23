@@ -288,6 +288,10 @@ describe('opening and cancellation inside the caller transaction', () => {
           status: 'CLAIMED',
           expiresAt: at(-60_000),
           claimedByProviderId: 'A',
+          claimedByIndependentDriverId: null,
+          claimedAt: at(-120_000),
+          // A dispatch that predates credit snapshots: it never paid, so nothing comes back.
+          creditMode: 'LEGACY',
         },
       ]),
       dispatch: { update },
@@ -295,13 +299,17 @@ describe('opening and cancellation inside the caller transaction', () => {
         findMany: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
       },
+      // V1.10-E: the cancellation looks for the award of whoever held the dispatch.
+      dispatchPreEnforcementAward: { findMany: vi.fn().mockResolvedValue([]) },
+      creditAccount: { findUnique: vi.fn().mockResolvedValue(null) },
+      creditLedgerEntry: { findFirst: vi.fn(), create: vi.fn() },
     };
-    const { events, assignments } = await closeDispatchesForCancelledRequest(
-      t as never,
-      'r1',
-      at(-1),
-    );
+    const { events, assignments, refunds } =
+      await closeDispatchesForCancelledRequest(t as never, 'r1', at(-1));
     expect(assignments).toEqual([]);
+    // Nothing was charged for these dispatches, so nothing is returned.
+    expect(refunds).toEqual([{ kind: 'none', boundary: 'LEGACY' }]);
+    expect(t.creditLedgerEntry.create).not.toHaveBeenCalled();
     expect(events).toEqual([
       { event: 'DISPATCH_CANCELLED', dispatchId: 'open', providerId: null },
       { event: 'DISPATCH_EXPIRED', dispatchId: 'lapsed', providerId: null },

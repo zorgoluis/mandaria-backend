@@ -1,3 +1,81 @@
+# CHECK FINAL V1.10-E — Refunds & Reversals, validación adversarial (2026-09-23)
+
+Rama `v1.10-credit-monetization`, HEAD `0a5ab3f` + V1.10-E sin commit, paquete 1.10.0, `NODE_ENV=test`, routing `spy` (proveedor doble con contador). Validador temporal fuera del código del producto (`.tmp/check-v110e/`) contra la aplicación real levantada en puerto efímero sobre `mandaria_test`, con autenticación real y fixtures propios. Migraciones reales (17), sin `db push`. `mandaria_db` no se tocó. **69/69 comprobaciones PASS, 0 FAIL. Sin cambios de código ni de reglas durante el CHECK.**
+
+| # | Verificación | Resultado |
+|---|---|---|
+| 1-2 | Línea base y estados reales | Dispatch {OPEN,CLAIMED,EXPIRED,CANCELLED}, DeliveryRequest {CREATED,CANCELLED}, DeliveryAssignment {ACTIVE,REASSIGNED,CANCELLED}; 0 saldos negativos y 0 descuadres; eventos de reversión: `/provider/.../release`, `/driver/.../release`, cancelación de DeliveryRequest; **no existen** STARTED/IN_PROGRESS/PICKED_UP |
+| 3-6 | Devolución del proveedor | 20 → cargo −7 → 13 → release → **20**; la fila del award queda idéntica; refund +7; con la política cambiada a 20 créditos/km el refund sigue siendo +7; **0 llamadas de routing** |
+| 7-8 | Release y otro proveedor | A queda en neto 0 y B paga su propio −7; el mismo proveedor **no puede** volver a reclamar (409 `DISPATCH_RECLAIM_NOT_ALLOWED`), así que «award #2 del mismo proveedor» no existe en el dominio |
+| 9-10 | Reasignación y cancelación de asignación | Dos reasignaciones y una cancelación de asignación: 0 devoluciones, saldo intacto, Dispatch sigue CLAIMED por su proveedor |
+| 11-12 | Cancelación de la entrega | Devuelve +7 al proveedor y deja el Dispatch CANCELLED; cancelar antes de que alguien gane no escribe ningún movimiento (ni de 0 créditos) |
+| 13-14 | Repartidor independiente | TAKE −14 y devolución +14 tanto por release como por cancelación; siempre a la cuenta del repartidor, nunca a la del proveedor; el refund cae en la **misma cuenta** que pagó |
+| 15-17 | Duplicados | Dos releases seguidos → 1 refund (el segundo 409); 10 releases simultáneos → 1 refund; 10 cancelaciones simultáneas → 1 refund |
+| 18-20 | Carreras y repetición | Release contra cancelación → 1 refund (nunca saldo +7 de más); 20 operaciones concurrentes → 1 refund y 0 duplicados en toda la base; devolver de nuevo un award ya compensado no acredita nada |
+| 21-23 | Frontera histórica | LEGACY: reclamado y liberado sin award ni refund (`SERVICE_REFUND_SKIPPED_LEGACY`); la exención PRE_ENFORCEMENT **no se puede fabricar** (`CREDIT_HISTORY_IMMUTABLE`, sólo migración); ENFORCED sin cargo → **falla cerrado** 409 `CREDIT_REFUND_INTEGRITY_ERROR`, nada se mueve y queda `SERVICE_REFUND_INTEGRITY_FAILURE` |
+| 24-33, 36, 38-40 | 20 escrituras forjadas en SQL | Rechazadas todas: sin award, award inexistente, +8, +6, −7, 0, a otro proveedor, a un repartidor, del award de otro Dispatch, apuntando a otro Dispatch, sin reversión operacional, duplicada (secuencial y 4 concurrentes), UPDATE y DELETE de award y de refund, y subir el saldo sin ledger |
+| 34-35, 37 | Reversión operacional en SQL | Liberar o cancelar a mano un servicio pagado → `CREDIT_REFUND_REQUIRED` (trigger diferido) y el Dispatch queda intacto; la transacción legítima (reversión + refund) **sí** confirma |
+| 41-44 | Rollback con fallo inyectado | Con un trigger temporal que hace fallar el `SERVICE_REFUND` de esa cuenta: release y cancelación fallan y revierten todo (Dispatch CLAIMED, DeliveryRequest CREATED, saldo 13, 0 refunds); al retirar la inyección el mismo release funciona |
+| 45-49 | Concurrencia económica | Refund contra recarga → saldo 30 con ledger reconstruible; refund contra ajuste → 12 sin lost update; refund contra un cobro nuevo → sólo los dos órdenes válidos; release de A contra claim de B → un único dueño y B paga sólo si gana; cancelación contra claim → neto 0 |
+| 50-55 | Seguridad de API | `refundAmount`, `credits`, `amount`, `awardId`, `reversesEntryId`, `creditAccountId`, `actorType`, `refundReason` y `balanceAfter` enviados por el cliente no deciden nada (el contrato rechaza el cuerpo con 400); 24 intentos sobre 6 rutas plausibles de refund manual con SUPER_ADMIN, PROVIDER_ADMIN, DRIVER y B2B → **404** |
+| 56-59 | Regresiones e integridad | `deliveryFee` 60.00 MXN, `goodsValue` 800.00, `driverAdvanceAmount` 800.00 y el modo de pago intactos; los 2 snapshots idénticos; la fila completa del award idéntica; cada refund responde quién pagó, cuánto, por qué Dispatch, cuándo y por qué motivo |
+| 60-62 | Ledger y varios awards | 24 movimientos (RECHARGE, SERVICE_AWARD, SERVICE_REFUND, ADMIN_ADJUSTMENT) reconstruyen exactamente el saldo; devolver uno de tres awards sólo afecta a ese; el refund nombra su award (el de B, con importe distinto al de A, para descartar la heurística del «último award») |
+| 63-65 | Escaneos | 0 violaciones: sin refund sin award, cuenta o Dispatch equivocados, importe distinto al opuesto, refunds no positivos, duplicados, actor incoherente, saldos negativos, descuadres, reversión sin devolución o devolución con el servicio aún adjudicado. LEGACY y PRE_ENFORCEMENT reportados aparte: 0 créditos gratis |
+| 66-67 | Migración V1.10-D → V1.10-E | Base temporal con el esquema previo a la frontera, historia sembrada (cuentas, recarga, ajuste, 3 Dispatches: LEGACY, ENFORCED con award y uno pre-enforcement), migración de frontera V1.10-D aplicada (crea la exención) y luego **V1.10-E con `migrate deploy`**: todas las tablas previas idénticas (filas y hash), **0 devoluciones creadas**, saldo 373, 1 award, 1 exención, 4 snapshots, sin drift. Base temporal eliminada |
+| 68-74 | Regresión y calidad | prisma validate, migrate status (ambas), sin drift (ambas), verify-migrations (cadena V1.0 → V1.10-E), build, Oxlint, ESLint, docs:check PASS; **188/188 unitarias**; **288/288 E2E en 19 archivos**, sin caída de workers en esta corrida |
+| 75 | Conteo adversarial | **69 PASS / 0 FAIL** |
+| 76 | Logs | 3307 líneas: 0 JWT, 0 cabeceras de autorización, 0 secretos B2B/SMTP, 0 respuestas 5xx, 0 unhandled, 0 deadlocks, 0 errores de serialización; 19 `SERVICE_REFUND_ISSUED`, 1 `SERVICE_REFUND_SKIPPED_LEGACY`, 1 `SERVICE_REFUND_INTEGRITY_FAILURE`; los errores SQL provocados a propósito quedaron en el cliente del CHECK, no en el servidor |
+| 77 | Limpieza | Fixtures del CHECK eliminados de `mandaria_test` (0 proveedores, 0 clientes, 0 usuarios `@check-v110e.test`), 0 descuadres, 0 saldos negativos, políticas operativas base intactas (2 ACTIVE); triggers de inyección retirados; bases temporales borradas |
+| 78 | Documentación | README, BITACORA, VERIFICATION y API-CONTRACT dicen explícitamente que el `SERVICE_AWARD` nunca se modifica y que la devolución es un `SERVICE_REFUND` compensatorio; ninguno afirma lo contrario |
+
+**Bugs del producto encontrados: ninguno.** No se modificó código ni reglas durante el CHECK.
+
+**Errores del propio validador (corregidos en el validador, no en el producto):** identificadores de vehículo en minúsculas contra el CHECK de formato; el límite real de 20 releases/minuto por IP exigía reiniciar la aplicación entre bloques de tormenta; una premisa equivocada en el punto 62 (el costo se congela al **abrir** el Dispatch, no al reclamarlo, así que los tres awards salían iguales); y restos de una corrida anterior del propio CHECK que descuadraban dos cuentas de fixtures en la línea base. Ninguno afectó al producto.
+
+**Defecto heredado ya reportado (sigue abierto):** `test/migrations/award-boundary.check.ts`, commiteado en V1.10-D, importa Prisma desde `.tmp/check-v110d/...`; rompe `tsc -p tsconfig.json` con 4 errores (el `build` del proyecto no lo ve). No se tocó en este CHECK.
+
+**Riesgos restantes.** Sin penalización por reservar y soltar (reclamar y liberar repetidamente tiene costo neto 0). Sólo devoluciones completas. Un Dispatch monetizado cuyo cargo desaparezca queda inrevertible hasta corregir los datos. El dueño de las tablas puede desactivar triggers: en producción, rol que no sea dueño y base que no termine en `_test`.
+
+# Verificación V1.10-E — Refunds & Reversals (2026-09-23)
+
+Rama `v1.10-credit-monetization` sobre `0a5ab3f` (V1.10-D publicada), paquete 1.10.0, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. Sin commit ni push. **V1.10-E nunca modifica un SERVICE_AWARD: una devolución es un SERVICE_REFUND compensatorio e inmutable, y sólo existen devoluciones completas asociadas a eventos operacionales soportados.**
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260923000300_service_refunds` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; **0 devoluciones creadas**: los awards históricos quedan exactamente como estaban |
+| `verify-migrations` | PASS: limpia, V1.0 → V1.10, datos V1.9 → V1.10 y V1.10-A ledger → V1.10-B → V1.10-C → V1.10-D → **V1.10-E**; 0 SERVICE_REFUND en las bases migradas; trigger de refund, trigger diferido de reversión, índice único parcial, CHECK, FK y enum presentes; el ledger V1.10-A conserva cada columna anterior con el mismo valor |
+| prisma validate / migrate status (ambas) / drift (ambas) | PASS / al día / vacío |
+| build, Oxlint, ESLint, docs:check | PASS |
+| tsc | 4 errores **preexistentes** en `test/migrations/award-boundary.check.ts` (importa Prisma desde `.tmp/check-v110d/...`, ver «Defectos heredados»); 0 en el código de V1.10-E |
+| Unitarias | **188/188** (10 nuevas de devoluciones) |
+| E2E por archivo | **288/288** en 19 archivos (22 nuevas); `providers` y `user-invitations` sufrieron la caída nativa de workers de Windows y pasaron completas al repetirlas |
+| Release de proveedor | Saldo 20 → award −7 → 13 → release → **20**; el award queda idéntico byte a byte y el refund +7 lo referencia con motivo `PROVIDER_RELEASE`; impacto neto 0 |
+| Política irrelevante | Con la política cambiada a 20 créditos/km después del cobro, la devolución sigue siendo **+7** |
+| Release y nuevo proveedor | A libera (neto 0) y B reclama pagando **su propio** award; al liberar B recibe su propia devolución (2 awards, 2 refunds) |
+| Release de repartidor independiente | Devuelve a la cuenta del repartidor (14), nunca a la del proveedor de su flotilla; motivo `INDEPENDENT_RELEASE` |
+| Cancelación de la entrega | Devuelve al proveedor (7) y al repartidor (14) según quién tuviera el servicio; motivo `DELIVERY_CANCELLED`; el Dispatch queda CANCELLED |
+| Cancelación sin adjudicación | 0 awards, 0 refunds y **ningún movimiento de 0 créditos** |
+| Reasignación y cancelación de asignación | Asignar, reasignar y cancelar la asignación **no devuelven nada**: el Dispatch sigue reclamado por el proveedor; al liberarlo después sí se devuelve |
+| Duplicados | Release repetido → 409 y 1 solo refund; cancelación repetida (×3) → 200 y 1 solo refund |
+| Alta contención | 10 reversiones simultáneas (5 releases + 5 cancelaciones) → **1 refund** y saldo íntegro |
+| Release contra cancelación | Simultáneos → exactamente **1** refund; estado final permitido por las reglas existentes |
+| Devolución contra recarga y ajuste | Release + recarga 20 + ajuste 5 simultáneos → 200/201/201, saldo 32 y ledger reconstruible entrada por entrada |
+| Devolución contra un cobro nuevo | Sólo dos resultados posibles según el orden serializado (el nuevo claim cobra la devolución, o falla por saldo); ningún otro |
+| Legacy | Release de un Dispatch LEGACY: 0 devolución, nada se mueve, log `SERVICE_REFUND_SKIPPED_LEGACY` |
+| Pre-enforcement | La exención histórica es **sólo de migración** (V1.10-D): un intento de fabricarla se rechaza con `CREDIT_HISTORY_IMMUTABLE`, así que la clase no se puede forjar; la regla de no devolver para esa clase está cubierta por unitaria |
+| Corrupción (ENFORCED sin cargo) | Release → 409 `CREDIT_REFUND_INTEGRITY_ERROR`, **falla cerrado**: nada se mueve, el Dispatch sigue CLAIMED y queda `SERVICE_REFUND_INTEGRITY_FAILURE` en el log |
+| Garantías SQL (14 escrituras forjadas) | Rechazadas: devolución sin reversión operacional, de un award inexistente, sin award, del award de otro, acreditada a otro proveedor, apuntando a otro Dispatch, con el actor equivocado, sin motivo, sobre una recarga, segunda devolución del mismo award (índice único), editar o borrar una devolución escrita, y devolver **más** o **menos** que el award |
+| Reversión por SQL sin devolución | Liberar o cancelar a mano un servicio pagado → `CREDIT_REFUND_REQUIRED` (trigger diferido); el Dispatch queda intacto |
+| Escaneo de integridad | 0 devoluciones sin award, 0 con cuenta o Dispatch equivocados, 0 con importe distinto al opuesto, 0 duplicadas, 0 saldos negativos, 0 descuadres y 0 servicios cerrados con cargo sin devolver |
+| Contexto de pago | `deliveryFee` 60.00 MXN, `goodsValue` 800.00 y `driverAdvanceAmount` 800.00 intactos tras la devolución; los créditos no son pesos |
+| Logs | Sin JWT ni contraseñas en ninguna línea de devolución |
+
+**Defectos heredados encontrados (no introducidos por V1.10-E).** `test/migrations/award-boundary.check.ts`, commiteado en V1.10-D (`ec98980`), importa `PrismaClient` desde `../../.tmp/check-v110d/previous-c/node_modules/@prisma/client/index.js`: un directorio temporal fuera del repositorio. Eso rompe `tsc -p tsconfig.json` con 4 errores (el `build` del proyecto no lo ve porque `tsconfig.build.json` excluye `test`) y el archivo no está enganchado a ningún script ni configuración de Vitest. Propuesta: sacarlo del repositorio (como el resto de validadores temporales) o reapuntarlo a `@prisma/client`. No se tocó en esta tarea.
+
+**Defectos propios corregidos.** El helper de purga de fixtures borraba el ledger en un solo paso y ahora un refund retiene su award (FK RESTRICT): se borran primero las devoluciones. Un fixture de `independent-drivers` revertía Dispatches a mano y la nueva garantía lo rechazó correctamente: ahora purga el cargo antes (sólo en bases `*_test`). Una aserción de V1.10-A exigía 0 movimientos SERVICE_* en **toda** la base y ahora se acota a su propio Dispatch, porque otras suites escriben movimientos legítimos.
+
+**Riesgos conocidos.** No hay penalización por reservar y soltar: un proveedor puede reclamar y liberar repetidamente con costo neto 0. Sólo existen devoluciones completas; una penalización por etapa exigirá estados de ejecución que el modelo todavía no tiene. Un Dispatch monetizado cuyo cargo desaparezca queda inrevertible (409) hasta que un administrador corrija los datos. Sigue vigente que el dueño de las tablas puede desactivar triggers: en producción la aplicación debe usar un rol que no sea dueño y una base cuyo nombre no termine en `_test`.
+
 # Verificación correctiva V1.10-D — 2026-09-22
 
 **PASS — COMPLETADA Y VALIDADA.** Resultados de esta tarea, separados de las verificaciones históricas que siguen:

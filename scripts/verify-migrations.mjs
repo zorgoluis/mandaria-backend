@@ -842,7 +842,32 @@ try {
     '380',
   );
   prisma(v110aDb, ['migrate', 'deploy']);
-  assert.deepEqual(economicSnapshot(), beforePolicies);
+  /**
+   * Compares the economy keeping only the columns that existed before the migration: a later
+   * version may add a column (V1.10-E adds the refund reference), and that is not a change to the
+   * data it preserved. Every value of every previous column must still be identical.
+   */
+  const sameEconomyAs = (after, before) => {
+    const parsed = before.map((json) => JSON.parse(json ?? 'null'));
+    const normalize = (rows, previous) =>
+      JSON.stringify(
+        !previous?.length || !rows?.length
+          ? rows
+          : rows.map((row) =>
+              Object.fromEntries(
+                Object.keys(previous[0]).map((key) => [key, row[key]]),
+              ),
+            ),
+      );
+    return {
+      after: after.map((json, i) =>
+        normalize(JSON.parse(json ?? 'null'), parsed[i]),
+      ),
+      before: parsed.map((rows, i) => normalize(rows, parsed[i])),
+    };
+  };
+  const economy = sameEconomyAs(economicSnapshot(), beforePolicies);
+  assert.deepEqual(economy.after, economy.before);
   assert.equal(
     sql(v110aDb, ['-c', 'SELECT count(*) FROM "CreditPolicy"']),
     '0',
@@ -977,8 +1002,48 @@ try {
       `'MONETIZED'::"DispatchCreditMode"`,
     );
   }
+  // V1.10-E: refunds compensate an award with a new entry; the migration creates none, and the
+  // guarantees that keep a refund tied to its award are in place.
+  for (const db of [upgradeDb, v19Db, v110aDb])
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM "CreditLedgerEntry" WHERE "type" = 'SERVICE_REFUND'`,
+      ]),
+      '0',
+    );
+  for (const db of [cleanDb, upgradeDb, v110aDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_trigger WHERE tgname IN ('CreditLedgerEntry_service_refund_guard','Dispatch_award_refund_required')",
+      ]),
+      '2',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_indexes WHERE indexname = 'CreditLedgerEntry_refund_award_key' AND indexdef LIKE '%WHERE%SERVICE_REFUND%'",
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        "SELECT count(*) FROM pg_constraint WHERE conname IN ('CreditLedgerEntry_refund_check','CreditLedgerEntry_reversesEntryId_fkey')",
+      ]),
+      '2',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid WHERE t.typname = 'CreditRefundReason'`,
+      ]),
+      '3',
+    );
+  }
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; V1.4-V1.10 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D -> V1.10-E (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; no refund created by migration; V1.4-V1.10 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

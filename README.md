@@ -1705,6 +1705,70 @@ Migración `20260923000100_dispatch_credit_consumption`: columna `Dispatch.credi
 
 Pruebas: `test/credit-consumption.spec.ts` (costo del snapshot, saldo exacto, insuficiente, cuenta correcta por actor, fallo cerrado sin snapshot, sin cuenta, legacy, duplicado y conflicto) y `test/credit-consumption.e2e-spec.ts` (cobro real en CLAIM y TAKE, cambio de política irrelevante, reasignación y release sin segundo cargo, 10 claims simultáneos, proveedor contra independiente, dos claims contra un mismo saldo, saldo compartido exacto, recarga y ajuste concurrentes, legacy, corrupción, 14 escrituras forjadas rechazadas en SQL, contexto de pago y logs). Los tests de éxito fondean con `test/support/credits.ts` exactamente lo que cuesta el servicio.
 
+## Refunds & Reversals (V1.10-E)
+
+Responde: **¿qué pasa con los créditos cuando la adjudicación que Mandaria cobró se deshace?** Vuelven completos, con un movimiento nuevo que compensa al cargo original. **El `SERVICE_AWARD` nunca se modifica, ni se borra, ni se pone en cero:** la devolución es un `SERVICE_REFUND` inmutable que lo referencia.
+
+```text
+SERVICE_AWARD   -7   (al adjudicar, V1.10-D)
+SERVICE_REFUND  +7   (al revertirse, V1.10-E)
+---------------------
+impacto neto     0   ← la historia muestra las dos operaciones
+```
+
+### Qué evento devuelve créditos
+
+Sólo eventos operacionales que el backend ya soporta y que realmente revierten la adjudicación:
+
+| Evento real | Motivo persistido | Quién recibe |
+|---|---|---|
+| `POST /provider/dispatches/:id/release` | `PROVIDER_RELEASE` | La cuenta del proveedor que pagó |
+| `POST /driver/dispatches/:id/release` | `INDEPENDENT_RELEASE` | La cuenta del repartidor que pagó |
+| Cancelar la DeliveryRequest (B2B o SUPER_ADMIN) | `DELIVERY_CANCELLED` | Quien tuviera el servicio adjudicado |
+
+**No devuelven créditos:** reasignar Driver/Vehicle ni cancelar sólo la asignación. El proveedor sigue siendo dueño del servicio: cambiar quién conduce no deshace la venta. Tampoco existe un endpoint para pedir créditos: una devolución es siempre consecuencia de una operación ya autorizada. Para correcciones excepcionales sigue estando `ADMIN_ADJUSTMENT`.
+
+### Cuánto se devuelve
+
+El importe sale del **cargo realmente hecho**, no de la política vigente ni de un recálculo: si el award fue −7, el refund es +7, aunque hoy el servicio cueste 20. V1.10-E implementa **sólo devoluciones completas**: no hay refunds parciales, ni porcentajes, ni penalizaciones, ni comisiones. Si el negocio necesita penalizar por etapa, hará falta un modelo de ejecución más rico (hoy no existen estados como «recogido» o «en camino»).
+
+### Una devolución como máximo por cargo
+
+Un `SERVICE_REFUND` apunta a su award con `reversesEntryId`, y un índice único parcial permite **un solo refund por award**. Repetir el release, cancelar dos veces o lanzar diez reversiones simultáneas devuelve los créditos **una sola vez**. Un release repetido responde 409 (el servicio ya no es suyo) y una cancelación repetida responde 200 sin mover nada.
+
+Como V1.7/V1.9 no permiten que quien liberó vuelva a tomar el mismo servicio, cada cuenta tiene a lo sumo un award por Dispatch; si otro proveedor lo reclama después, paga **su propio** award y, si también libera, recibe **su propia** devolución.
+
+### Frontera histórica
+
+- **LEGACY** (Dispatch anterior a V1.10-C): nunca pagó, así que liberar o cancelar devuelve **0** y se registra `SERVICE_REFUND_SKIPPED_LEGACY`. No se inventa un award ni se consulta la política para calcular cuánto «habría» pagado.
+- **PRE_ENFORCEMENT_AWARD** (adjudicación anterior al cobro de V1.10-D): tampoco tuvo débito; devuelve 0 con `SERVICE_REFUND_SKIPPED_PRE_ENFORCEMENT`.
+- **ENFORCED sin award**: es corrupción, no un servicio gratis. La reversión **falla cerrado** con 409 `CREDIT_REFUND_INTEGRITY_ERROR`, no cambia nada y deja `SERVICE_REFUND_INTEGRITY_FAILURE` en el log.
+
+### Atomicidad
+
+La reversión operacional y la devolución son **una sola transacción**: el release (o la cancelación con sus transiciones) y el `SERVICE_REFUND` se confirman juntos o no ocurre nada. Si falla el ledger, se revierte también el estado operacional; si falla la operación, no se acredita saldo. La cuenta se bloquea `FOR UPDATE`, así que una devolución concurrente con una recarga, un ajuste o un cobro nuevo se serializa sin perder ninguna actualización y el ledger siempre se puede reconstruir entrada por entrada.
+
+### Errores (`code`)
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| `CREDIT_REFUND_INTEGRITY_ERROR` | 409 | La reversión debía devolver créditos y el cargo no existe (corrupción) |
+| `CREDIT_MOVEMENT_CONFLICT` | 409 | La cuenta cambió durante la devolución, o ya se había devuelto |
+
+### Auditoría
+
+Con el award y su refund se responde sin tocar la historia: quién pagó (la cuenta), cuánto (`amount`), por qué Dispatch (`referenceId`), cuándo (`createdAt`), si se devolvió (existe el refund), cuánto (su `amount`, siempre el opuesto) y por qué (`refundReason`). Eventos: `SERVICE_REFUND_ISSUED`, `SERVICE_REFUND_ALREADY_APPLIED`, `SERVICE_REFUND_SKIPPED_LEGACY`, `SERVICE_REFUND_SKIPPED_PRE_ENFORCEMENT` y `SERVICE_REFUND_INTEGRITY_FAILURE`.
+
+### Dinero y créditos
+
+Devolver créditos no toca `deliveryFee`, `goodsValue`, `driverAdvanceAmount` ni el modo de pago: 7 créditos no son 7 pesos y nunca se convierten.
+
+### Base de datos
+
+Migración `20260923000300_service_refunds`: columnas `reversesEntryId` (FK al propio ledger, RESTRICT) y `refundReason` (enum `CreditRefundReason`); índice único parcial de un refund por award; CHECK de forma (sólo un refund lleva referencia y motivo, y siempre nombra su Dispatch); `service_refund_guard`, que **re-deriva la devolución en SQL** desde el award —misma cuenta, mismo Dispatch, importe exactamente opuesto, actor coherente y reversión operacional ya escrita— y rechaza lo demás (`CREDIT_REFUND_INVALID`, `CREDIT_REFUND_MISMATCH`); y un trigger de restricción **diferido** en `Dispatch` que al COMMIT impide revertir un servicio pagado sin su devolución (`CREDIT_REFUND_REQUIRED`). La migración **no crea ninguna devolución**: los awards históricos quedan tal cual.
+
+Pruebas: `test/credit-refunds.spec.ts` (importe desde el award, cuenta correcta, idempotencia, frontera histórica, fallo cerrado, conflicto) y `test/credit-refunds.e2e-spec.ts` (release de proveedor y de repartidor, cancelación de la entrega, cambio de política irrelevante, segundo proveedor, reasignación sin devolución, duplicados y 10 reversiones simultáneas, carrera release/cancelación, devolución contra recarga/ajuste/cobro nuevo, legacy, corrupción, 14 escrituras forjadas rechazadas en SQL, reversión por SQL sin devolución rechazada y escaneo de integridad).
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
@@ -1757,7 +1821,9 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.10-B: las políticas sólo se calculan; desde V1.10-C cada Dispatch nuevo congela su costo por actor y proveedor/repartidor ven su `creditCost`, pero nada lo cobra todavía (V1.10-D).
 - V1.10-C: sin políticas ACTIVE para todos los actores del ServiceType, **ninguna cotización puede aceptarse** (409 `CREDIT_POLICY_UNAVAILABLE`): crear las políticas es parte del despliegue. Una política que calcule 0 créditos también bloquea la apertura (422).
 - V1.10-C: los Dispatches anteriores a V1.10-C no tienen snapshot (`creditCost: null`); V1.10-D los marca `creditMode: LEGACY` y los adjudica sin cobro.
-- V1.10-D: **no hay devoluciones**. Liberar un servicio ya pagado, cancelar la asignación o cancelar la entrega no devuelve créditos hasta V1.10-E; un proveedor que reclama y libera repetidamente gasta créditos sin ejecutar nada.
+- V1.10-E: liberar un servicio pagado o cancelar la entrega **sí** devuelve los créditos completos; cancelar sólo la asignación o reasignar **no**, porque el servicio sigue adjudicado. Un proveedor puede reclamar y liberar repetidamente sin costo neto: no hay penalización por reservar y soltar, y eso queda como decisión de negocio a revisar.
+- V1.10-E: sólo existen devoluciones completas. No hay refunds parciales ni penalización por etapa porque el modelo todavía no tiene estados de ejecución (recogido, en camino); introducirlos exigirá una versión posterior.
+- V1.10-E: un Dispatch monetizado cuyo cargo desaparezca queda inrevertible (409 `CREDIT_REFUND_INTEGRITY_ERROR`) hasta que un administrador corrija los datos: es deliberado, para no regalar créditos.
 - V1.10-D: un proveedor sin saldo deja de poder reclamar, así que un servicio puede quedarse sin quien lo tome por falta de créditos, no por falta de capacidad. Operativamente hay que vigilar los saldos (no hay recarga automática ni alertas).
 - V1.10-D: el costo se congela al abrir y se cobra al adjudicar; entre ambos momentos puede pasar tiempo y el precio ya no se puede corregir salvo cancelando el Dispatch.
 - V1.10-D: si un Dispatch monetizado pierde su snapshot (corrupción), nadie puede adjudicárselo (409 `CREDIT_SNAPSHOT_UNAVAILABLE`): es deliberado, pero exige intervención administrativa.
@@ -1770,8 +1836,8 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.10-D / V1.10-E+
+## Fuera de V1.10-E / V1.10-F+
 
-No se implementaron SERVICE_REFUND operativo ni devoluciones (V1.10-E), devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron devoluciones parciales, penalizaciones ni caducidad de créditos, devolución automática, caducidad de créditos, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, estados de ejecución de la entrega, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API y auditoría persistente siguen pendientes.

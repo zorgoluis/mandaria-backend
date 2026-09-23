@@ -134,13 +134,13 @@ export class ProviderDispatchesController {
   @ApiOkResponse({ type: ProviderDispatchResponse })
   @ApiErrorDescriptions({
     ...errors,
-    409: 'DISPATCH_NOT_CLAIMED_BY_PROVIDER: el Dispatch no está CLAIMED por mi proveedor (liberado, de otro, cancelado o vencido).',
+    409: 'CREDIT_REFUND_INTEGRITY_ERROR (el servicio se cobró y su cargo no aparece: no se libera ni se devuelve nada hasta corregir los datos) | DISPATCH_NOT_CLAIMED_BY_PROVIDER: el Dispatch no está CLAIMED por mi proveedor (liberado, de otro, cancelado o vencido).',
     429: 'Límite de 20 peticiones/minuto por IP.',
   })
   @ApiOperation({
     summary: 'Liberar Dispatch reclamado por mi proveedor',
     description:
-      'Sólo el proveedor que tiene el claim. Mi candidatura pasa a RELEASED (con motivo) y no podrá reclamarlo de nuevo. Dentro de la ventana el Dispatch vuelve a OPEN para los demás candidatos OFFERED (si no queda ninguno sigue OPEN hasta vencer); tras expiresAt pasa a EXPIRED. Liberaciones simultáneas o repetidas: una aplica y el resto recibe 409. 20/min por IP.' +
+      'Sólo el proveedor que tiene el claim. Mi candidatura pasa a RELEASED (con motivo) y no podrá reclamarlo de nuevo. Dentro de la ventana el Dispatch vuelve a OPEN para los demás candidatos OFFERED (si no queda ninguno sigue OPEN hasta vencer); tras expiresAt pasa a EXPIRED. Liberaciones simultáneas o repetidas: una aplica y el resto recibe 409. 20/min por IP. V1.10-E: si el servicio se había cobrado, liberarlo devuelve en la misma transacción el 100% de esos créditos con un SERVICE_REFUND que compensa al SERVICE_AWARD original (que nunca se modifica); una devolución por cargo como máximo, y un Dispatch que nunca pagó no devuelve nada.' +
       PROVIDER_SCOPE_DOC,
   })
   release(

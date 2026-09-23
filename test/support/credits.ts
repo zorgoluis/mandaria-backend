@@ -197,15 +197,19 @@ export async function purgeFixtureCredits(
   });
   if (!accounts.length) return 0;
   const ids = accounts.map((a) => a.id);
-  const [, deleted] = await prisma.$transaction([
+  const [, refunds, deleted] = await prisma.$transaction([
     prisma.$executeRawUnsafe(
       `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
     ),
+    // V1.10-E: a refund holds its award with a RESTRICT foreign key, so it goes first.
+    prisma.creditLedgerEntry.deleteMany({
+      where: { creditAccountId: { in: ids }, type: 'SERVICE_REFUND' },
+    }),
     prisma.creditLedgerEntry.deleteMany({
       where: { creditAccountId: { in: ids } },
     }),
   ]);
-  return deleted.count;
+  return refunds.count + deleted.count;
 }
 
 /** Current balance of a provider account, for assertions. */
@@ -244,6 +248,10 @@ export async function purgeFixtureDispatches(
     prisma.$executeRawUnsafe(
       `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
     ),
+    // V1.10-E: a refund holds its award with a RESTRICT foreign key, so it goes first.
+    prisma.creditLedgerEntry.deleteMany({
+      where: { type: 'SERVICE_REFUND', referenceId: { in: ids } },
+    }),
     prisma.creditLedgerEntry.deleteMany({
       where: { type: 'SERVICE_AWARD', referenceId: { in: ids } },
     }),
