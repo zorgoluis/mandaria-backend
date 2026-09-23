@@ -4,6 +4,8 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Entrega Git (2026-09-23):** V1.11-A publicado en `origin/v1.11-mvp-delivery-completion`, commit de implementación `c72fe32`; SHA local y remoto verificados iguales. 27 archivos (5 nuevos), comprobación de whitespace sin errores y 0 coincidencias de las 14 claves sensibles de `.env` en el contenido publicado. `.env` se excluyó del commit y sigue con su cambio local previo.
+
 - **Entrega Git (2026-09-22):** V1.10-D publicado en `origin/v1.10-credit-monetization`, commit de implementación `ec98980`; SHA local/remoto verificados iguales. Se incluye implementación, migraciones, pruebas, OpenAPI y evidencia; se excluye el cambio local preexistente de `.env`. Las menciones «sin commit/push» de verificaciones anteriores describen aquellas ejecuciones.
 
 - **Blocking Fixes V1.10-D (2026-09-22):** enforcement SQL diferido y excepciones históricas inmutables implementados; 52/52 barreras adversariales, 178 unitarias y 266 E2E pasan. Migración correctiva aplicada sin reset a ambas bases locales, datos financieros/operacionales preservados por hash. Cleanup completado: 18 bases propias eliminadas, documentación y evidencia exportadas. **COMPLETADA Y VALIDADA**. Ver `docs/CHECK_V1_10_D_FIXES.md`. Sin commit/push ni V1.10-E.
@@ -633,3 +635,11 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Documentación:** README (sección «MVP Delivery Completion (V1.11-A)», título, arquitectura, módulos, riesgos y fuera de alcance), VERIFICATION.md (sección nueva al inicio), OpenAPI y `docs/API_ACCESS.md` regenerados.
 - **Limpieza:** fixtures de la suite nueva eliminados de `mandaria_test`; las 4 bases desechables de `verify-migrations` de esta tarea eliminadas (las de tareas anteriores no se tocaron); sin servidores ni workers levantados; `.env` sin modificar y `mandaria_db` sólo migrada.
 - **Pendientes:** V1.11-B no iniciado. Sin estados intermedios de ejecución, prueba de entrega, entrega fallida o parcial, cierre administrativo ni cierre automático por tiempo: un servicio que nadie confirme se queda `CLAIMED` ocupando su Driver y su Vehicle. La entrega es una **declaración** del actor, no está verificada, y `DELIVERED` es irreversible. Sigue abierto el defecto heredado `test/migrations/award-boundary.check.ts` y la remediación de `.env` versionado.
+
+### 2026-09-23 — Commit y publicación de V1.11-A
+
+- **Solicitud:** commitear y hacer push en la rama actual.
+- **Cambios:** empaquetar V1.11-A ya verificada (implementación, dos migraciones, pruebas unitarias y E2E, `verify-migrations` ampliado, OpenAPI y matriz de acceso regenerados, versión 1.11.0 y documentación). No se modificó ninguna funcionalidad para esta operación.
+- **Verificaciones de esta tarea:** rama, remoto y divergencia revisados; `git fetch`; preparación selectiva que deja `.env` fuera del índice; `git diff --cached --check` sin errores de whitespace; barrido del diff staged contra las 14 claves sensibles de `.env` y contra patrones de JWT, API key de Google y clave privada → **0 coincidencias**; SHA local y remoto comparados tras el push. Las pruebas funcionales corresponden a la tarea anterior (202 unitarias y 317 E2E); no se repitieron para esta operación Git.
+- **Resultado:** commit `c72fe32c944b92e3bb1d6ceb4e5e6a10c23da94a` publicado en `origin/v1.11-mvp-delivery-completion`; `git ls-remote` devolvió el mismo SHA. 27 archivos, 5 de ellos nuevos. El árbol de trabajo quedó limpio salvo el cambio local preexistente de `.env`.
+- **Pendientes:** V1.11-B no iniciado. Sigue abierto el defecto heredado `test/migrations/award-boundary.check.ts` y la remediación de `.env` versionado por el propietario.
