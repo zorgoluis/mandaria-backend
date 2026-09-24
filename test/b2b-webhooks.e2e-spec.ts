@@ -1,11 +1,12 @@
 import 'reflect-metadata';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { Test } from '@nestjs/testing';
 import type { INestApplication, LoggerService } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
 import request from 'supertest';
+import { B2bWebhooksService } from '../dist/b2b-webhooks/b2b-webhooks.service.js';
 import { ensureTestCreditPolicies } from './support/credit-policies.js';
 import {
   fundForAward,
@@ -31,6 +32,11 @@ process.env.MAIL_PROVIDER = 'local_outbox';
 // Production refuses to start with this enabled.
 process.env.B2B_WEBHOOK_ALLOW_INSECURE_TARGETS = 'true';
 process.env.B2B_WEBHOOK_TIMEOUT_MS = '1500';
+// V1.12-D: a master key for the per-endpoint HMAC secrets, and a worker the suite drives itself
+// (poll 0) so every case is deterministic instead of waiting for a timer.
+process.env.B2B_WEBHOOK_SECRET_KEY = randomBytes(32).toString('hex');
+process.env.B2B_WEBHOOK_POLL_SECONDS = '0';
+process.env.B2B_WEBHOOK_LEASE_SECONDS = '5';
 
 const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
 const run = randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
@@ -468,6 +474,9 @@ async function removeFixtures() {
     prisma.$executeRawUnsafe(
       `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
     ),
+    prisma.b2bWebhookDelivery.deleteMany({
+      where: { integrationClientId: { in: clientIds } },
+    }),
     prisma.b2bWebhookDeliveryAttempt.deleteMany({
       where: { integrationClientId: { in: clientIds } },
     }),
@@ -654,11 +663,25 @@ async function waitForAttempts(eventId: string, count = 1, timeoutMs = 15000) {
 }
 const eventOf = (dispatchId: string) =>
   prisma.b2bOutboxEvent.findFirstOrThrow({ where: { dispatchId } });
+const secrets: Record<string, string> = {};
 const setEndpoint = (clientId: string, body: object) =>
   api()
     .put(`/api/v1/admin/integrations/${clientId}/webhook`)
     .auth(t.sa, bearer)
     .send(body);
+/** Configures the endpoint and issues its signing secret, which V1.12-D requires to deliver. */
+const configureEndpoint = async (clientId: string, body: object) => {
+  await setEndpoint(clientId, body).expect(200);
+  secrets[clientId] = await issueSecret(clientId);
+};
+const issueSecret = async (clientId: string) =>
+  (
+    await api()
+      .post(`/api/v1/admin/integrations/${clientId}/webhook/secret`)
+      .auth(t.sa, bearer)
+      .send({})
+      .expect(200)
+  ).body.secret as string;
 const deliverEvent = (eventId: string) =>
   api()
     .post(`/api/v1/admin/b2b-events/${eventId}/deliver`)
@@ -694,10 +717,10 @@ describe('V1.12-C a completed delivery reaches the client that asked for it', ()
   beforeEach(async () => {
     receiver.reset();
     otherReceiver.reset();
-    await setEndpoint(ids.b2bClient, {
+    await configureEndpoint(ids.b2bClient, {
       url: receiver.url,
       enabled: true,
-    }).expect(200);
+    });
   });
 
   it('a provider delivery is POSTed as the recorded event, with its id in a header', async () => {
@@ -807,10 +830,10 @@ describe('V1.12-C a failing client cannot undo a delivery', () => {
   });
   beforeEach(async () => {
     receiver.reset();
-    await setEndpoint(ids.b2bClient, {
+    await configureEndpoint(ids.b2bClient, {
       url: receiver.url,
       enabled: true,
-    }).expect(200);
+    });
   });
 
   it('every non-2xx is a transport failure and nothing else changes', async () => {
@@ -924,10 +947,10 @@ describe('V1.12-C without a destination there is nothing to attempt', () => {
   beforeEach(() => receiver.reset());
 
   it('a disabled endpoint means no request and no attempt', async () => {
-    await setEndpoint(ids.b2bClient, {
+    await configureEndpoint(ids.b2bClient, {
       url: receiver.url,
       enabled: false,
-    }).expect(200);
+    });
     const dispatch = await deliveredByProvider();
     const event = await eventOf(dispatch.id);
     // Give the background work a chance to do the wrong thing.
@@ -955,6 +978,9 @@ describe('V1.12-C without a destination there is nothing to attempt', () => {
       prisma.$executeRawUnsafe(
         `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
       ),
+      prisma.b2bWebhookDelivery.deleteMany({
+        where: { integrationClientId: ids.b2bClient },
+      }),
       prisma.b2bWebhookDeliveryAttempt.deleteMany({
         where: { integrationClientId: ids.b2bClient },
       }),
@@ -1019,8 +1045,8 @@ describe('V1.12-C one client, one destination', () => {
         })
         .expect(200)
     ).body.accessToken as string;
-    await setEndpoint(ids.b2bClient, { url: receiver.url }).expect(200);
-    await setEndpoint(other.body.id, { url: otherReceiver.url }).expect(200);
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
+    await configureEndpoint(other.body.id, { url: otherReceiver.url });
 
     const mine = await deliveredByProvider();
     const mineEvent = await eventOf(mine.id);
@@ -1038,12 +1064,18 @@ describe('V1.12-C one client, one destination', () => {
     await waitForAttempts(theirEvent.id);
 
     // Each receiver saw exactly its own event, and nothing of the other.
-    expect(
-      receiver.received.map((r) => r.headers['x-mandaria-event-id']),
-    ).toEqual([mineEvent.id]);
-    expect(
-      otherReceiver.received.map((r) => r.headers['x-mandaria-event-id']),
-    ).toEqual([theirEvent.id]);
+    const mineSeen = receiver.received.map(
+      (r) => r.headers['x-mandaria-event-id'],
+    );
+    const theirsSeen = otherReceiver.received.map(
+      (r) => r.headers['x-mandaria-event-id'],
+    );
+    expect(mineSeen).toContain(mineEvent.id);
+    expect(theirsSeen).toContain(theirEvent.id);
+    // V1.12-D: the worker drains everything eligible for a client, so what matters is not how
+    // many each receiver saw but that neither ever sees the other client's event.
+    expect(mineSeen).not.toContain(theirEvent.id);
+    expect(theirsSeen).not.toContain(mineEvent.id);
     const attempts = await prisma.b2bWebhookDeliveryAttempt.findMany({
       where: { eventId: { in: [mineEvent.id, theirEvent.id] } },
       select: { eventId: true, integrationClientId: true, endpointUrl: true },
@@ -1088,7 +1120,7 @@ describe('V1.12-C configuring a destination is an administrative act', () => {
   });
 
   it('only SUPER_ADMIN may trigger a delivery by hand', async () => {
-    await setEndpoint(ids.b2bClient, { url: receiver.url }).expect(200);
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
     const dispatch = await deliveredByProvider();
     const event = await eventOf(dispatch.id);
     await waitForAttempts(event.id);
@@ -1117,7 +1149,7 @@ describe('V1.12-C configuring a destination is an administrative act', () => {
   });
 
   it('a manual delivery makes exactly one more attempt and leaves the event alone', async () => {
-    await setEndpoint(ids.b2bClient, { url: receiver.url }).expect(200);
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
     receiver.reset();
     const dispatch = await deliveredByProvider();
     const event = await eventOf(dispatch.id);
@@ -1144,7 +1176,7 @@ describe('V1.12-C attempts are history', () => {
   withApp();
   beforeAll(async () => {
     await receiver.start();
-    await setEndpoint(ids.b2bClient, { url: receiver.url }).expect(200);
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
   });
   afterAll(async () => {
     await receiver.stop();
@@ -1285,5 +1317,558 @@ describe('V1.12-C attempts are history', () => {
         () => 'REJECTED',
       );
     expect(outcome).toBe('REJECTED');
+  });
+});
+
+/** V1.12-D helpers: the worker is driven explicitly, and the receiver verifies signatures. */
+const worker = () => app.get(B2bWebhooksService);
+const deliveryOf = (eventId: string) =>
+  prisma.b2bWebhookDelivery.findUniqueOrThrow({ where: { eventId } });
+const verifySignature = (
+  request: { raw: string; headers: Record<string, string> },
+  secret: string,
+) => {
+  const timestamp = request.headers['x-mandaria-timestamp'];
+  const expected = `v1=${createHmac('sha256', secret)
+    .update(`${timestamp}.${request.raw}`)
+    .digest('hex')}`;
+  return request.headers['x-mandaria-signature'] === expected;
+};
+/** Moves a pending delivery's schedule into the past, instead of waiting an hour for it. */
+const makeDue = (eventId: string) =>
+  prisma.b2bWebhookDelivery.update({
+    where: { eventId },
+    data: { nextAttemptAt: new Date(Date.now() - 1000) },
+  });
+
+describe('V1.12-D reliable delivery', () => {
+  withApp();
+  beforeAll(async () => {
+    await receiver.start();
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
+  });
+  afterAll(async () => {
+    await receiver.stop();
+  });
+  beforeEach(() => receiver.reset());
+
+  it('a provider delivery is signed, delivered on the first attempt and closed', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    const delivery = await deliveryOf(event.id);
+    expect(delivery).toMatchObject({
+      state: 'DELIVERED',
+      attemptCount: 1,
+      nextAttemptAt: null,
+      leaseOwner: null,
+      leaseExpiresAt: null,
+      exhaustedAt: null,
+    });
+    expect(delivery.deliveredAt).not.toBeNull();
+    const request = receiver.received.find(
+      (r) => r.headers['x-mandaria-event-id'] === event.id,
+    )!;
+    // The receiver verifies the signature over the exact bytes it received.
+    expect(verifySignature(request, secrets[ids.b2bClient])).toBe(true);
+    expect(request.headers['x-mandaria-timestamp']).toMatch(/^\d{10}$/);
+    const [attempt] = await prisma.b2bWebhookDeliveryAttempt.findMany({
+      where: { eventId: event.id },
+    });
+    expect(attempt.attemptNumber).toBe(1);
+  }, 30000);
+
+  it('an independent delivery travels the same way', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await openDispatch();
+    await take(t.indy, dispatch.id, vehicles.indy).expect(200);
+    await driverDeliver(t.indy, dispatch.id).expect(200);
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    expect((await deliveryOf(event.id)).state).toBe('DELIVERED');
+    const request = receiver.received.find(
+      (r) => r.headers['x-mandaria-event-id'] === event.id,
+    )!;
+    expect(verifySignature(request, secrets[ids.b2bClient])).toBe(true);
+    expect(
+      (request.body as { data: { execution: { mode: string } } }).data.execution
+        .mode,
+    ).toBe('INDEPENDENT');
+  }, 30000);
+
+  it('a failure is rescheduled, and the retry that succeeds carries the same event', async () => {
+    receiver.always({ status: 503 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    const failed = await deliveryOf(event.id);
+    expect(failed).toMatchObject({ state: 'PENDING', attemptCount: 1 });
+    // One minute out, per the policy, and not due yet.
+    expect(
+      Math.round(
+        (failed.nextAttemptAt!.getTime() - failed.lastAttemptAt!.getTime()) /
+          60000,
+      ),
+    ).toBe(1);
+    expect(await worker().tick()).toEqual([]);
+
+    receiver.always({ status: 200 });
+    await makeDue(event.id);
+    await worker().tick();
+    const delivered = await deliveryOf(event.id);
+    expect(delivered).toMatchObject({ state: 'DELIVERED', attemptCount: 2 });
+    const attempts = await prisma.b2bWebhookDeliveryAttempt.findMany({
+      where: { eventId: event.id },
+      orderBy: { attemptNumber: 'asc' },
+    });
+    expect(attempts.map((a) => [a.attemptNumber, a.result])).toEqual([
+      [1, 'FAILED'],
+      [2, 'SUCCEEDED'],
+    ]);
+    // Same event, same body; only the proof of when it was sent differs.
+    const sent = receiver.received.filter(
+      (r) => r.headers['x-mandaria-event-id'] === event.id,
+    );
+    expect(sent).toHaveLength(2);
+    expect(sent[0].raw).toBe(sent[1].raw);
+    // Each attempt is signed afresh over its own timestamp. Two retries inside the same second
+    // legitimately produce the same proof, which is why the property asserted here is that both
+    // verify against the active secret; the unit tests pin the clock to show they differ.
+    expect(sent[0].headers['x-mandaria-event-id']).toBe(
+      sent[1].headers['x-mandaria-event-id'],
+    );
+    expect(sent.every((r) => verifySignature(r, secrets[ids.b2bClient]))).toBe(
+      true,
+    );
+  }, 30000);
+
+  it('five failures exhaust it, and nothing is deleted', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    for (let i = 0; i < 4; i += 1) {
+      await makeDue(event.id);
+      await worker().tick();
+    }
+    const exhausted = await deliveryOf(event.id);
+    expect(exhausted).toMatchObject({
+      state: 'EXHAUSTED',
+      attemptCount: 5,
+      nextAttemptAt: null,
+      deliveredAt: null,
+    });
+    expect(exhausted.exhaustedAt).not.toBeNull();
+    // The worker will not touch it again.
+    expect(await worker().tick()).toEqual([]);
+    expect(
+      await prisma.b2bWebhookDeliveryAttempt.count({
+        where: { eventId: event.id },
+      }),
+    ).toBe(5);
+    expect(await eventOf(dispatch.id)).toEqual(event);
+    receiver.always({ status: 200 });
+  }, 30000);
+
+  it('a terminal answer stops it at once, without spending the schedule', async () => {
+    receiver.always({ status: 422 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    expect(await deliveryOf(event.id)).toMatchObject({
+      state: 'EXHAUSTED',
+      attemptCount: 1,
+    });
+    receiver.always({ status: 200 });
+  }, 30000);
+
+  it('an administrator can rescue an exhausted handover', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    for (let i = 0; i < 4; i += 1) {
+      await makeDue(event.id);
+      await worker().tick();
+    }
+    expect((await deliveryOf(event.id)).state).toBe('EXHAUSTED');
+    receiver.always({ status: 200 });
+    const manual = await deliverEvent(event.id).expect(200);
+    expect(manual.body).toMatchObject({
+      result: 'SUCCEEDED',
+      state: 'DELIVERED',
+    });
+    const rescued = await deliveryOf(event.id);
+    expect(rescued).toMatchObject({ state: 'DELIVERED', attemptCount: 6 });
+    expect(rescued.exhaustedAt).toBeNull();
+  });
+});
+
+describe('V1.12-D the work survives the process', () => {
+  withApp();
+  beforeAll(async () => {
+    await receiver.start();
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
+  });
+  afterAll(async () => {
+    await receiver.stop();
+  });
+  beforeEach(() => receiver.reset());
+
+  it('an event committed while nothing could send it is found after a restart', async () => {
+    // The crash window of V1.12-C: the event commits and no request ever happens. Here the
+    // endpoint is disabled at completion time, so nothing in this process can send it.
+    await setEndpoint(ids.b2bClient, {
+      url: receiver.url,
+      enabled: false,
+    }).expect(200);
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(receiver.received).toHaveLength(0);
+    expect(
+      await prisma.b2bWebhookDelivery.count({ where: { eventId: event.id } }),
+    ).toBe(0);
+
+    // A whole new process, with no memory of anything, finds the work in the outbox.
+    await app.close();
+    app = await bootstrap();
+    await setEndpoint(ids.b2bClient, {
+      url: receiver.url,
+      enabled: true,
+    }).expect(200);
+    receiver.always({ status: 200 });
+    await worker().tick();
+    await waitForAttempts(event.id);
+    expect((await deliveryOf(event.id)).state).toBe('DELIVERED');
+    expect(
+      receiver.received.map((r) => r.headers['x-mandaria-event-id']),
+    ).toContain(event.id);
+  }, 30000);
+
+  it('an abandoned lease expires and another worker takes the work over', async () => {
+    receiver.always({ status: 503 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    // A worker took it and died: the lease is still in the future, owned by nobody alive.
+    await prisma.b2bWebhookDelivery.update({
+      where: { eventId: event.id },
+      data: {
+        nextAttemptAt: new Date(Date.now() - 1000),
+        leaseOwner: 'dead-worker',
+        leaseExpiresAt: new Date(Date.now() + 60_000),
+      },
+    });
+    expect(await worker().tick()).toEqual([]);
+    // The lease lapses, and the work is recoverable again.
+    await prisma.b2bWebhookDelivery.update({
+      where: { eventId: event.id },
+      data: { leaseExpiresAt: new Date(Date.now() - 1000) },
+    });
+    receiver.always({ status: 200 });
+    const done = await worker().tick();
+    expect(done).toHaveLength(1);
+    expect((await deliveryOf(event.id)).state).toBe('DELIVERED');
+  }, 30000);
+
+  it('two workers against the same database do not do the same work twice', async () => {
+    receiver.always({ status: 200 });
+    // A second backend, its own worker, same database.
+    const second = await bootstrap();
+    try {
+      const events: string[] = [];
+      for (let i = 0; i < 4; i += 1) {
+        const dispatch = await deliveredByProvider();
+        events.push((await eventOf(dispatch.id)).id);
+      }
+      // Both drain at once. Every event must be handed over exactly once between them.
+      await Promise.all([
+        worker().tick(),
+        second.get(B2bWebhooksService).tick(),
+        worker().tick(),
+      ]);
+      for (const eventId of events) {
+        const rows = await prisma.b2bWebhookDeliveryAttempt.findMany({
+          where: { eventId },
+        });
+        expect([eventId, rows.length]).toEqual([eventId, 1]);
+        expect((await deliveryOf(eventId)).state).toBe('DELIVERED');
+      }
+      expect(
+        await prisma.b2bWebhookDelivery.count({
+          where: { eventId: { in: events } },
+        }),
+      ).toBe(4);
+    } finally {
+      await second.close();
+    }
+  });
+});
+
+describe('V1.12-D the secret and its rotation', () => {
+  withApp();
+  beforeAll(async () => {
+    await receiver.start();
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
+  });
+  afterAll(async () => {
+    await receiver.stop();
+  });
+  beforeEach(() => receiver.reset());
+
+  it('is shown once and never again', async () => {
+    const issued = await api()
+      .post(`/api/v1/admin/integrations/${ids.b2bClient}/webhook/secret`)
+      .auth(t.sa, bearer)
+      .send({})
+      .expect(200);
+    secrets[ids.b2bClient] = issued.body.secret as string;
+    expect(issued.body.secret).toMatch(/^[A-Za-z0-9_-]{40,}$/);
+    expect(issued.body.algorithm).toBe('HMAC-SHA256');
+    const read = await api()
+      .get(`/api/v1/admin/integrations/${ids.b2bClient}/webhook`)
+      .auth(t.sa, bearer)
+      .expect(200);
+    expect(read.body.secretConfigured).toBe(true);
+    expect(JSON.stringify(read.body)).not.toContain(issued.body.secret);
+    expect(read.body.secret).toBeUndefined();
+    expect(read.body.secretCiphertext).toBeUndefined();
+  }, 30000);
+
+  it('is stored encrypted, never in plain text, and never leaks anywhere else', async () => {
+    const secret = await issueSecret(ids.b2bClient);
+    secrets[ids.b2bClient] = secret;
+    const row = await prisma.b2bWebhookEndpoint.findUniqueOrThrow({
+      where: { integrationClientId: ids.b2bClient },
+    });
+    expect(row.secretCiphertext).not.toContain(secret);
+    expect(row.secretCiphertext).toMatch(/^v1:/);
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    // Not in the event, not in the attempt, not in what travelled, not in the logs.
+    const scan = JSON.stringify([
+      await eventOf(dispatch.id),
+      await prisma.b2bWebhookDeliveryAttempt.findMany({
+        where: { eventId: event.id },
+      }),
+      receiver.received,
+      logs.slice(-400),
+    ]);
+    expect(scan).not.toContain(secret);
+    expect(scan).not.toContain(process.env.B2B_WEBHOOK_SECRET_KEY);
+  }, 30000);
+
+  it('rotating changes what new attempts sign, and rewrites no history', async () => {
+    receiver.always({ status: 503 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    const first = receiver.received.find(
+      (r) => r.headers['x-mandaria-event-id'] === event.id,
+    )!;
+    const oldSecret = secrets[ids.b2bClient];
+    expect(verifySignature(first, oldSecret)).toBe(true);
+    const newSecret = await issueSecret(ids.b2bClient);
+    secrets[ids.b2bClient] = newSecret;
+    expect(newSecret).not.toBe(oldSecret);
+
+    receiver.always({ status: 200 });
+    await makeDue(event.id);
+    await worker().tick();
+    const sent = receiver.received.filter(
+      (r) => r.headers['x-mandaria-event-id'] === event.id,
+    );
+    expect(sent).toHaveLength(2);
+    // Each attempt is signed with the secret active at the time; the old one is not regenerated.
+    expect(verifySignature(sent[1], newSecret)).toBe(true);
+    expect(verifySignature(sent[1], oldSecret)).toBe(false);
+    expect(verifySignature(sent[0], oldSecret)).toBe(true);
+    expect((await deliveryOf(event.id)).state).toBe('DELIVERED');
+  }, 30000);
+
+  it('without a secret nothing is sent, and it resumes once there is one', async () => {
+    await prisma.b2bWebhookEndpoint.update({
+      where: { integrationClientId: ids.b2bClient },
+      data: { secretCiphertext: null, secretSetAt: null },
+    });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(await worker().tick()).toEqual([]);
+    expect(
+      receiver.received.map((r) => r.headers['x-mandaria-event-id']),
+    ).not.toContain(event.id);
+    const manual = await deliverEvent(event.id).expect(200);
+    expect(manual.body).toEqual({ kind: 'skipped', reason: 'NO_SECRET' });
+    // Nothing was lost: with a secret the work is found again.
+    secrets[ids.b2bClient] = await issueSecret(ids.b2bClient);
+    receiver.always({ status: 200 });
+    await worker().tick();
+    await waitForAttempts(event.id);
+    expect((await deliveryOf(event.id)).state).toBe('DELIVERED');
+  });
+});
+
+describe('V1.12-D the boundary and the admin view', () => {
+  withApp();
+  beforeAll(async () => {
+    await receiver.start();
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
+  });
+  afterAll(async () => {
+    await receiver.stop();
+  });
+  beforeEach(() => receiver.reset());
+
+  it('an event older than the boundary is never taken by the worker', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    // Reproduce a pre-V1.12-D event: the boundary moves past it, and its state is cleared.
+    await prisma.$transaction([
+      prisma.$executeRawUnsafe(
+        `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
+      ),
+      prisma.b2bWebhookDelivery.deleteMany({ where: { eventId: event.id } }),
+    ]);
+    await prisma.b2bWebhookEndpoint.update({
+      where: { integrationClientId: ids.b2bClient },
+      data: { deliverFrom: new Date(event.occurredAt.getTime() + 1000) },
+    });
+    receiver.reset();
+    expect(await worker().tick()).toEqual([]);
+    expect(receiver.received).toHaveLength(0);
+    expect(
+      await prisma.b2bWebhookDelivery.count({ where: { eventId: event.id } }),
+    ).toBe(0);
+
+    // An administrator can still hand it over, and doing so does not enrol it in the retry loop.
+    const manual = await deliverEvent(event.id).expect(200);
+    expect(manual.body).toMatchObject({
+      kind: 'attempted',
+      result: 'SUCCEEDED',
+      state: 'UNTRACKED',
+    });
+    expect(
+      await prisma.b2bWebhookDelivery.count({ where: { eventId: event.id } }),
+    ).toBe(0);
+    expect(await worker().tick()).toEqual([]);
+    await prisma.b2bWebhookEndpoint.update({
+      where: { integrationClientId: ids.b2bClient },
+      data: { deliverFrom: new Date() },
+    });
+  }, 30000);
+
+  it('a disabled endpoint pauses the work and re-enabling resumes it, losing nothing', async () => {
+    receiver.always({ status: 503 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    await setEndpoint(ids.b2bClient, {
+      url: receiver.url,
+      enabled: false,
+    }).expect(200);
+    await makeDue(event.id);
+    // Disabled: no attempt made, no state invented, and the work is still owed.
+    expect(await worker().tick()).toEqual([]);
+    expect(await deliveryOf(event.id)).toMatchObject({
+      state: 'PENDING',
+      attemptCount: 1,
+    });
+    receiver.always({ status: 200 });
+    await setEndpoint(ids.b2bClient, {
+      url: receiver.url,
+      enabled: true,
+    }).expect(200);
+    await worker().tick();
+    expect((await deliveryOf(event.id)).state).toBe('DELIVERED');
+  }, 30000);
+
+  it('changing the endpoint sends the retry to the new URL without rewriting history', async () => {
+    receiver.always({ status: 503 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    const [first] = await waitForAttempts(event.id);
+    expect(first.endpointUrl).toBe(receiver.url);
+
+    otherReceiver.reset();
+    await otherReceiver.start();
+    try {
+      await setEndpoint(ids.b2bClient, { url: otherReceiver.url }).expect(200);
+      otherReceiver.always({ status: 200 });
+      await makeDue(event.id);
+      await worker().tick();
+      const attempts = await prisma.b2bWebhookDeliveryAttempt.findMany({
+        where: { eventId: event.id },
+        orderBy: { attemptedAt: 'asc' },
+      });
+      expect(attempts.map((a) => a.endpointUrl)).toEqual([
+        receiver.url,
+        otherReceiver.url,
+      ]);
+      // The historical attempt still records where it actually went.
+      expect(
+        await prisma.b2bWebhookDeliveryAttempt.findUniqueOrThrow({
+          where: { id: first.id },
+        }),
+      ).toEqual(first);
+    } finally {
+      await otherReceiver.stop();
+      await setEndpoint(ids.b2bClient, { url: receiver.url }).expect(200);
+    }
+  }, 30000);
+
+  it('an administrator can see what is owed without ever seeing a secret', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    const view = await api()
+      .get(`/api/v1/admin/integrations/${ids.b2bClient}/webhook/deliveries`)
+      .auth(t.sa, bearer)
+      .expect(200);
+    const row = (view.body as Record<string, unknown>[]).find(
+      (r) => r.eventId === event.id,
+    )!;
+    expect(row).toMatchObject({
+      state: 'PENDING',
+      attemptCount: 1,
+      lastResult: 'FAILED',
+      lastHttpStatus: 500,
+      lastFailureKind: 'HTTP_STATUS',
+    });
+    expect(row.nextAttemptAt).not.toBeNull();
+    expect(JSON.stringify(view.body)).not.toContain(secrets[ids.b2bClient]);
+    receiver.always({ status: 200 });
+  }, 30000);
+
+  it('only SUPER_ADMIN may issue a secret or read the delivery state', async () => {
+    const secretPath = `/api/v1/admin/integrations/${ids.b2bClient}/webhook/secret`;
+    const viewPath = `/api/v1/admin/integrations/${ids.b2bClient}/webhook/deliveries`;
+    expect({
+      secretProvider: (await api().post(secretPath).auth(t.A, bearer).send({}))
+        .status,
+      secretDriver: (await api().post(secretPath).auth(t.indy, bearer).send({}))
+        .status,
+      secretB2b: (await api().post(secretPath).auth(t.b2b, bearer).send({}))
+        .status,
+      secretAnon: (await api().post(secretPath).send({})).status,
+      viewProvider: (await api().get(viewPath).auth(t.A, bearer)).status,
+      viewB2b: (await api().get(viewPath).auth(t.b2b, bearer)).status,
+      viewAnon: (await api().get(viewPath)).status,
+    }).toEqual({
+      secretProvider: 403,
+      secretDriver: 403,
+      secretB2b: 401,
+      secretAnon: 401,
+      viewProvider: 403,
+      viewB2b: 401,
+      viewAnon: 401,
+    });
   });
 });

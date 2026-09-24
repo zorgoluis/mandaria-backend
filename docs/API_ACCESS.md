@@ -44,6 +44,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/rotate | bearer | SUPER_ADMIN | — | Create replacement with the same scopes/expiry; revoke old credential explicitly after transition |
 | GET | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Consultar el endpoint de webhook de un IntegrationClient |
 | PUT | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Configurar el endpoint de webhook de un IntegrationClient |
+| GET | /api/v1/admin/integrations/{id}/webhook/deliveries | bearer | SUPER_ADMIN | — | Estado de entrega de los eventos de un IntegrationClient |
+| POST | /api/v1/admin/integrations/{id}/webhook/secret | bearer | SUPER_ADMIN | — | Generar o rotar el secreto de firma del webhook |
 | GET | /api/v1/admin/providers | bearer | SUPER_ADMIN | — | Listar proveedores con filtros y paginación |
 | POST | /api/v1/admin/providers | bearer | SUPER_ADMIN | — | Crear proveedor FLEET o INDEPENDENT |
 | GET | /api/v1/admin/providers/{id} | bearer | SUPER_ADMIN | — | Consultar proveedor por ID |

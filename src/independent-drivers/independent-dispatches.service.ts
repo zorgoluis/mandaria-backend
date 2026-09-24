@@ -447,8 +447,10 @@ export class IndependentDispatchesService {
         deliveredAt: outcome.deliveredAt.toISOString(),
       });
       this.logger.log(recordedEventLog(outcome.event));
-      // V1.12-C: same rule as the fleet flow. The commit happened; transport starts after it.
-      this.webhooks.scheduleFirstAttempt(outcome.event.eventId);
+      // V1.12-D: the transaction has already committed and the event is durable, so this is
+      // only a nudge for latency. If the process dies right here the worker rediscovers the
+      // event from the outbox; transport never decides whether a delivery happened.
+      this.webhooks.nudge();
     }
     return this.viewFor(driver.id, dispatchId);
   }

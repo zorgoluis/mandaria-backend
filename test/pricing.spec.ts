@@ -400,6 +400,7 @@ describe('V1.6 configuration and quote views', () => {
         SMTP_HOST: 'smtp.example.com',
         MAIL_FROM: 'Mandaria <no-reply@example.com>',
         MANDARIA_WEB_URL: 'https://app.example.com',
+        B2B_WEBHOOK_SECRET_KEY: 'k'.repeat(64),
       }).ROUTING_PROVIDER,
     ).toBe('google');
     for (const bad of [

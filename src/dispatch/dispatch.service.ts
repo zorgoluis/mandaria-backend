@@ -387,10 +387,10 @@ export class DispatchService {
         deliveredAt: outcome.deliveredAt.toISOString(),
       });
       this.logger.log(recordedEventLog(outcome.event));
-      // V1.12-C: the transaction has already committed, so transport starts here and never
-      // inside it. The provider's answer does not wait for the client's server, and a client
-      // that is down, slow or answering 500 cannot undo a delivery that already happened.
-      this.webhooks.scheduleFirstAttempt(outcome.event.eventId);
+      // V1.12-D: the transaction has already committed and the event is durable, so this is
+      // only a nudge for latency. If the process dies right here the worker rediscovers the
+      // event from the outbox; transport never decides whether a delivery happened.
+      this.webhooks.nudge();
     }
     return this.getForProvider(dispatchId, providerId);
   }

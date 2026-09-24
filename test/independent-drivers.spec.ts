@@ -329,7 +329,7 @@ describe('V1.9 vehicle limit', () => {
 describe('V1.9 driver identity is never taken from the payload', () => {
   const service = (tx: Record<string, unknown>) =>
     new IndependentDispatchesService(prismaDouble([], tx).prisma, {
-      scheduleFirstAttempt: () => undefined,
+      nudge: () => undefined,
     } as unknown as B2bWebhooksService);
   it('rejects a DRIVER without an independent profile', async () => {
     const svc = service({
@@ -443,7 +443,7 @@ describe('V1.9 take serializes against suspension', () => {
   it('locks the profile row together with the driver row', async () => {
     const { prisma, queryRaw } = takeDouble(() => ({ id: 'a' }));
     await new IndependentDispatchesService(prisma, {
-      scheduleFirstAttempt: () => undefined,
+      nudge: () => undefined,
     } as unknown as B2bWebhooksService)
       .take('u', 'disp', 'v')
       .catch(() => undefined);
@@ -472,7 +472,7 @@ describe('V1.9 take serializes against suspension', () => {
     });
     await expect(
       new IndependentDispatchesService(prisma, {
-        scheduleFirstAttempt: () => undefined,
+        nudge: () => undefined,
       } as unknown as B2bWebhooksService).take('u', 'disp', 'v'),
     ).rejects.toMatchObject({
       status: 409,

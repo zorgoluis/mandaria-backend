@@ -35053,6 +35053,7 @@
     },
     "/api/v1/admin/integrations/{id}/webhook": {
       "get": {
+        "description": "Devuelve la configuración y **si** hay secreto, nunca el secreto. El valor sólo se muestra una vez, al generarlo o rotarlo.",
         "operationId": "AdminB2bWebhooksController_get",
         "parameters": [
           {
@@ -35096,7 +35097,7 @@
         ]
       },
       "put": {
-        "description": "Un endpoint por IntegrationClient en esta versión. La URL se valida como superficie SSRF al escribirla y otra vez al usarla, porque el DNS puede cambiar en medio. No existen todavía política de reintentos, cabeceras propias ni suscripción por tipo de evento: sólo existe delivery.completed.",
+        "description": "Un endpoint por IntegrationClient. La URL se valida como superficie SSRF al escribirla y otra vez al usarla, porque el DNS puede cambiar en medio. Al crearlo, `deliverFrom` queda en este instante: sólo los eventos posteriores entran en la entrega automática, de modo que configurar un webhook hoy no dispara el historial. Deshabilitarlo detiene los envíos sin perder el estado; volver a habilitarlo los reanuda desde donde iban.",
         "operationId": "AdminB2bWebhooksController_upsert",
         "parameters": [
           {
@@ -35150,9 +35151,104 @@
         ]
       }
     },
+    "/api/v1/admin/integrations/{id}/webhook/secret": {
+      "post": {
+        "description": "El secreto se genera con CSPRNG, se guarda cifrado (AES-256-GCM bajo `B2B_WEBHOOK_SECRET_KEY`) y **se devuelve una sola vez**: después sólo es visible que existe. Rotar no recrea el IntegrationClient ni toca el historial: cada intento firma con el secreto activo en ese momento, así que un reintento posterior a la rotación ya viaja con el nuevo y las firmas antiguas no se regeneran.",
+        "operationId": "AdminB2bWebhooksController_issueSecret",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSecretResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generar o rotar el secreto de firma del webhook",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/integrations/{id}/webhook/deliveries": {
+      "get": {
+        "description": "Hasta 100 entregas, las más recientes primero: estado, intentos hechos, próximo intento y el resultado del último. No expone el secreto ni el cuerpo del evento.",
+        "operationId": "AdminB2bWebhooksController_deliveries",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookDeliveryResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Estado de entrega de los eventos de un IntegrationClient",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
     "/api/v1/admin/b2b-events/{eventId}/deliver": {
       "post": {
-        "description": "Realiza **un** intento y registra su resultado. No hay reintentos automáticos en V1.12-C: un fallo queda como intento FAILED y se detiene ahí. No modifica el evento, que es inmutable, ni el Dispatch, ni los créditos.",
+        "description": "Realiza **un** intento y registra su resultado. Toma el lease antes, así que nunca corre en paralelo con el worker: si éste lo tiene en ese momento, responde 409. Un evento PENDING avanza su calendario normalmente; uno EXHAUSTED puede pasar a DELIVERED si ahora responde; uno ya DELIVERED se reenvía a propósito y queda auditado sin cambiar de estado; uno anterior a la frontera se envía como en V1.12-C, sin crear estado ni entrar al ciclo de reintentos. No modifica el evento, que es inmutable, ni el Dispatch, ni los créditos.",
         "operationId": "AdminB2bWebhooksController_deliver",
         "parameters": [
           {
@@ -35174,9 +35270,6 @@
                 }
               }
             }
-          },
-          "204": {
-            "description": "No aplica."
           },
           "401": {
             "description": "Requires a human access token"
@@ -54402,6 +54495,20 @@
           "enabled": {
             "type": "boolean"
           },
+          "secretConfigured": {
+            "type": "boolean",
+            "description": "Si hay secreto de firma configurado. El secreto en sí no se devuelve nunca."
+          },
+          "secretSetAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliverFrom": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Frontera de la entrega automática: sólo los eventos ocurridos a partir de este instante entran al worker. Los anteriores siguen siendo entregables a mano."
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -54416,6 +54523,8 @@
           "integrationClientId",
           "url",
           "enabled",
+          "secretConfigured",
+          "deliverFrom",
           "createdAt",
           "updatedAt"
         ]
@@ -54432,11 +54541,120 @@
           "enabled": {
             "type": "boolean",
             "default": true,
-            "description": "Deshabilitar conserva la configuración y detiene las entregas: los eventos se siguen registrando y no se intenta ningún envío."
+            "description": "Deshabilitar conserva la configuración y detiene las entregas: los eventos se siguen registrando, el estado de entrega se conserva y el worker no los toca hasta volver a habilitarlo."
           }
         },
         "required": [
           "url"
+        ]
+      },
+      "WebhookSecretResponse": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "El secreto en claro. **Se muestra una sola vez**; después sólo es visible que existe."
+          },
+          "secretSetAt": {
+            "type": "object",
+            "format": "date-time"
+          },
+          "algorithm": {
+            "type": "string",
+            "example": "HMAC-SHA256"
+          },
+          "signatureHeader": {
+            "type": "string",
+            "example": "X-Mandaria-Signature"
+          },
+          "signedMessage": {
+            "type": "string",
+            "example": "{timestamp}.{rawBody}",
+            "description": "Mensaje firmado: el valor de X-Mandaria-Timestamp, un punto, y los bytes exactos del cuerpo recibido. La firma viaja como `v1=<hex>`."
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "secret",
+          "secretSetAt",
+          "algorithm",
+          "signatureHeader",
+          "signedMessage",
+          "note"
+        ]
+      },
+      "WebhookDeliveryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "DELIVERED",
+              "EXHAUSTED"
+            ]
+          },
+          "attemptCount": {
+            "type": "number"
+          },
+          "nextAttemptAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastAttemptAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "exhaustedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "leaseExpiresAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Hasta cuándo un worker tiene tomada esta entrega."
+          },
+          "lastResult": {
+            "type": "string",
+            "enum": [
+              "SUCCEEDED",
+              "FAILED"
+            ],
+            "nullable": true
+          },
+          "lastHttpStatus": {
+            "type": "object",
+            "nullable": true
+          },
+          "lastFailureKind": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "state",
+          "attemptCount"
         ]
       },
       "WebhookAttemptResponse": {
@@ -54448,11 +54666,15 @@
               "attempted",
               "skipped"
             ],
-            "description": "skipped significa que no hubo petición HTTP porque el cliente no tiene endpoint o lo tiene deshabilitado; no es un fallo y no deja intento."
+            "description": "skipped significa que no hubo petición HTTP porque el cliente no tiene endpoint, lo tiene deshabilitado o aún no tiene secreto; no es un fallo y no deja intento."
           },
           "attemptId": {
             "type": "string",
             "format": "uuid"
+          },
+          "attemptNumber": {
+            "type": "number",
+            "description": "Ordinal del intento dentro de la entrega fiable. Ausente para un evento anterior a la frontera, que se entrega sin estado."
           },
           "result": {
             "type": "string",
@@ -54477,11 +54699,26 @@
           "durationMs": {
             "type": "number"
           },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "DELIVERED",
+              "EXHAUSTED",
+              "UNTRACKED"
+            ],
+            "description": "UNTRACKED: el evento es anterior a la frontera y se entregó sin crear estado ni entrar al ciclo de reintentos."
+          },
+          "nextAttemptAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "reason": {
             "type": "string",
             "enum": [
               "NO_ENDPOINT",
-              "ENDPOINT_DISABLED"
+              "ENDPOINT_DISABLED",
+              "NO_SECRET"
             ]
           }
         },

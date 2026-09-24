@@ -1,3 +1,110 @@
+# Verificación V1.12-D — Reliable & Secure B2B Webhook Delivery (2026-09-24)
+
+Rama `v1.12-B2B_webhook_delivery` sobre `ad93f30`, paquete **1.12.0** (sin cambio de versión: los subentregables de V1.12 comparten minor). Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea.
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260926000100_reliable_webhook_delivery` en ambas bases (sin reset) | PASS; **0 filas existentes modificadas**, **0 estados de entrega creados**, **0 eventos entregados retroactivamente**, **ninguna petición HTTP durante la migración** y ningún intento de V1.12-C reescrito |
+| `prisma validate`; `migrate status` y drift en **ambas** bases | Válido / al día (22 migraciones) / **sin diferencias** |
+| `verify-migrations` (4 bases desechables), ampliado con V1.12-D | PASS: cadena V1.0 → V1.12-C → **V1.12-D**; en las cuatro: 0 estados creados por migración, las 3 columnas nuevas del endpoint, el único por evento, las 2 claves foráneas compuestas, el índice parcial del ordinal, los 2 CHECK y los 2 triggers de guarda |
+| `tsc`, build, Oxlint, ESLint, `docs:check` | PASS; **0 errores de `tsc`** |
+| Unitarias | **262/262 en 23 archivos**; 17 nuevas en `test/b2b-webhook-reliability.spec.ts`. Línea base: 245 |
+| E2E por archivo | **385/385 en 23 archivos**; 18 nuevas en `test/b2b-webhooks.e2e-spec.ts` (37 en total en ese archivo). Línea base: 367 |
+| CHECK adversarial V1.12-D | **20/20** contra Nest real, PostgreSQL real y un receptor HTTP local que **verifica la firma** (`.tmp/check-v112d/`) |
+| OpenAPI y matriz de acceso | Regenerados: 2 rutas administrativas nuevas (`POST …/webhook/secret`, `GET …/webhook/deliveries`), ambas SUPER_ADMIN. El contrato B2B no cambió |
+
+## Entrega fiable (E2E y CHECK)
+
+| Escenario | Resultado |
+|---|---|
+| Proveedor: entrega firmada al primer intento | PASS; `DELIVERED`, `attemptCount` 1, lease liberado, `attemptNumber` 1; el receptor **verifica la firma** sobre los bytes exactos que recibió |
+| Independiente | PASS; idéntico salvo `execution.mode` |
+| Fallo → reintento → éxito | PASS; el primer fallo programa +1 minuto exacto y el worker no lo toca antes de tiempo; el reintento entrega. Mismo cuerpo byte a byte en ambos envíos, ambos verificables |
+| Curva completa | PASS; los cuatro intervalos medidos son **1, 5, 15 y 60 minutos**, y el quinto fallo deja `EXHAUSTED` con 5 intentos, sin borrar evento ni intentos; el worker ya no lo toca |
+| Respuesta terminal (422) | PASS; `EXHAUSTED` al primer intento, sin gastar el calendario |
+| Matriz HTTP completa | PASS; 200/201/202/204 → `DELIVERED`; 400/401/403/404/409/410/422 → `EXHAUSTED`; 408/425/429/500/503 → `PENDING`. En los 16 casos el Dispatch sigue `DELIVERED` |
+| Timeout y conexión rechazada | PASS; `TIMEOUT` y `NETWORK`, ambos reintentables; el proceso sigue sano |
+| Redirect | PASS; **no se sigue**; una sola petición salió y el estado queda terminal |
+| Rescate manual de un `EXHAUSTED` | PASS; pasa a `DELIVERED`, `exhaustedAt` se limpia y el intento queda auditado |
+
+## Durabilidad y concurrencia
+
+| Escenario | Resultado |
+|---|---|
+| Ventana de caída de V1.12-C | PASS; un evento que ningún proceso pudo enviar se descubre desde el Outbox tras cerrar y rearrancar la aplicación |
+| Lease abandonado | PASS; mientras el lease de un worker muerto sigue vigente, nadie lo toca; al caducar, otro worker lo recupera y lo entrega |
+| Dos y tres workers contra la misma base | PASS; cada evento se entrega **exactamente una vez** entre todos; lo que un worker no alcanza queda para la pasada siguiente |
+| Duplicado demostrado a propósito | PASS; reproducido «el receptor respondió y Mandaria murió antes de registrarlo»: el mismo `eventId` llega dos veces con el mismo cuerpo. **Es el contrato at-least-once, no un defecto** |
+| Reinicio | PASS; evento, estado e intentos idénticos |
+
+## El secreto
+
+| Verificación | Resultado |
+|---|---|
+| Generación | PASS; CSPRNG, 50 secretos distintos de ≥43 caracteres |
+| Cifrado | PASS; AES-256-GCM, `v1:<iv>:<tag>:<ciphertext>`, distinto cada vez para el mismo secreto; descifra de vuelta |
+| Manipulación | PASS; ciphertext alterado, clave equivocada, versión desconocida y basura: los cuatro rechazados, sin revelar cuál |
+| Clave maestra | PASS; acepta hex y base64 de 32 bytes, rechaza ausente, vacía o corta; **producción no arranca sin ella** |
+| Se muestra una vez | PASS; el `GET` devuelve `secretConfigured` y nunca el secreto ni el ciphertext |
+| Fuga | PASS; no aparece en respuestas, en el listado de entregas, en el evento, en los intentos, en el estado, en lo que viajó, en 600 líneas de log, en la fila del endpoint ni en `docs/openapi.json` |
+| Texto plano en la columna | PASS; rechazado por `B2bWebhookEndpoint_secret_check` |
+| Rotación | PASS; los intentos nuevos firman con el secreto nuevo, el intento anterior sigue verificando con el suyo, y la historia no se reescribe |
+| Firma | PASS; cuerpo alterado, timestamp alterado o secreto equivocado fallan la verificación; un reintento lleva el mismo `eventId` y cuerpo con su propia prueba |
+
+## Lo que PostgreSQL refuse
+
+| Intento | Rechazado por |
+|---|---|
+| `DELIVERED` sin sello, `PENDING` sin calendario, medio lease | `B2bWebhookDelivery_values_check` |
+| Bajar el contador de intentos | `B2B_WEBHOOK_DELIVERY_INVALID` |
+| Mover el estado a otro evento o a otro cliente | `B2B_WEBHOOK_DELIVERY_IMMUTABLE` |
+| Borrar o truncar el estado | `B2B_WEBHOOK_DELIVERY_IMMUTABLE` |
+| Reabrir o resellar un `DELIVERED` | `B2B_WEBHOOK_DELIVERY_IMMUTABLE` |
+| Reprogramar un `EXHAUSTED` | `B2B_WEBHOOK_DELIVERY_INVALID` |
+| Segundo estado para el mismo evento | índice único |
+| Cambiar el resultado o el ordinal de un intento, o borrarlo | `B2B_WEBHOOK_ATTEMPT_IMMUTABLE` |
+| Modificar el payload del Outbox | `B2B_EVENT_IMMUTABLE` |
+
+Escaneo de integridad, **0 en los doce**: `delivered_without_success`, `exhausted_without_attempts`, `duplicate_state`, `foreign_client`, `foreign_endpoint`, `attempt_foreign_event`, `invalid_lease`, `lease_on_finished`, `pending_without_schedule`, `success_without_2xx`, `plaintext_secret`, `duplicate_ordinal`.
+
+## Frontera de elegibilidad
+
+| Verificación | Resultado |
+|---|---|
+| Eventos de V1.12-B y V1.12-C | PASS; `deliverFrom` quedó en el instante de la migración, así que **ninguno** entra en la entrega automática, tengan o no intento previo y sea cual sea su resultado |
+| Un evento anterior a la frontera | PASS; el worker no lo toca; entregarlo a mano funciona y **no** crea estado ni lo inscribe en el ciclo de reintentos |
+| Endpoint nuevo | PASS; `deliverFrom` en «ahora», sin avalancha histórica |
+| Endpoint deshabilitado | PASS; sin intento, el trabajo sigue `PENDING` y se reanuda al rehabilitarlo, sin perder historial |
+| Cambio de endpoint | PASS; el reintento va a la URL nueva y el intento histórico conserva la URL a la que fue |
+| Sin secreto | PASS; el worker no lo recoge y la entrega manual responde `NO_SECRET`; al emitir un secreto, el trabajo se recupera |
+
+## SSRF (regresión completa)
+
+Los 17 destinos hostiles siguen rechazados bajo ajustes de producción: `http`, loopback IPv4 e IPv6, IPv4 disfrazada de IPv6 (`::ffff:…`), link-local y metadatos, privadas, CGNAT, ULA, credenciales embebidas, `file://`, `ftp://` y nombres internos; un destino público legítimo se acepta. Un nombre público que resuelve dentro de la red se rechaza **en cada intento**. Redirects siguen sin seguirse. Producción no arranca sin `B2B_WEBHOOK_SECRET_KEY` ni con el interruptor de destinos inseguros.
+
+## Preservación
+
+Créditos (cuentas, saldos, ledger, `SERVICE_AWARD`, `SERVICE_REFUND`, snapshots, políticas) y routing medidos **después** de abrir el servicio y antes de entregarlo: el transporte no añade ningún asiento ni ninguna llamada de routing. El Dispatch sigue `DELIVERED` en los 16 casos de la matriz HTTP, incluidos los fallos. Contexto de pago sin tocar. Ninguna lógica específica de Coita Eats.
+
+## Defectos encontrados durante esta tarea (propios, corregidos antes de cerrar)
+
+1. **Nada vencía nunca.** El worker comparaba `nextAttemptAt` y `leaseExpiresAt` contra una `Date` enlazada en SQL crudo. Prisma la envía como `timestamptz` y PostgreSQL reinterpretaba las columnas `timestamp` en la zona del servidor (`America/Mexico_City`), desplazando cada comparación seis horas: ningún reintento llegaba a estar listo. **Lo encontró la suite E2E.** Corregido comparando contra `now() AT TIME ZONE 'UTC'` del lado de la base.
+2. **Resellar una entrega ya entregada.** Una entrega manual sobre un `DELIVERED` volvía a escribir `deliveredAt` y el guard la rechazaba con un 500. Corregido sellando una sola vez.
+3. **Lease sobre trabajo terminado.** La entrega manual tomaba lease incluso sobre un estado terminal, lo que el CHECK prohíbe con razón: el lease es un concepto del worker y el worker sólo mira `PENDING`. Corregido tomándolo sólo cuando corresponde.
+4. **Rescate imposible.** Al rescatar un `EXHAUSTED` no se limpiaba `exhaustedAt`, y una fila `DELIVERED` que además dijera estar agotada es una contradicción que el CHECK rechaza. Corregido.
+
+Los cuatro los encontraron las pruebas o el CHECK, no una lectura optimista del código.
+
+## Nota sobre la base de pruebas
+
+Varias corridas murieron por la caída nativa de workers de Vitest en Windows —más frecuente ahora porque la suite de webhooks levanta aplicaciones Nest adicionales y servidores HTTP— y dejaron fixtures huérfanas, incluida una asignación `ACTIVE` que bloqueaba `independent-drivers` (cuyo `freeAll()` recorre **toda** la base, fragilidad ya anotada desde V1.11-A). Se hizo una **purga acotada por prefijo** de las fixtures `E2E_*`/`TEST_*` en `mandaria_test`, conservando el autor de las políticas de crédito; **no** se reseteó ninguna base. Con la base limpia, las 23 suites pasan por archivo.
+
+## `CURRENT_TIMESTAMP` (fuera de alcance, por instrucción)
+
+La refactorización global sigue sin hacerse. Las tablas nuevas de V1.12-D **no** dependen de esa semántica: sus `createdAt`/`recordedAt` heredan el mismo default, pero ninguna garantía los usa, y todas las comparaciones operativas se hacen contra `now() AT TIME ZONE 'UTC'`, explícito en el código y en la documentación.
+
+---
+
 # Verificación V1.12-C — B2B Webhook Delivery (2026-09-24)
 
 Rama `v1.12-B2B_webhook_delivery` sobre `ab16681` (merge de V1.12-B, PR #16), paquete **1.12.0** (sin cambio de versión: los subentregables de V1.12 comparten minor). Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.

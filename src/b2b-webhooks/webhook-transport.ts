@@ -1,6 +1,7 @@
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { B2B_EVENT_TYPES } from '../b2b-events/b2b-outbox.js';
+import { signWebhook } from './webhook-secret.js';
 import {
   WebhookTargetError,
   assertResolvedAddresses,
@@ -11,6 +12,9 @@ import {
 /** Header a consumer can read without parsing the body, and the deduplication key it will use. */
 export const EVENT_ID_HEADER = 'x-mandaria-event-id';
 export const EVENT_TYPE_HEADER = 'x-mandaria-event-type';
+/** V1.12-D signature contract: Unix seconds of **this attempt**, and `v1=<hex>` computed over it. */
+export const TIMESTAMP_HEADER = 'x-mandaria-timestamp';
+export const SIGNATURE_HEADER = 'x-mandaria-signature';
 
 export type Fetch = typeof fetch;
 export type Resolver = (hostname: string) => Promise<string[]>;
@@ -71,6 +75,10 @@ export async function attemptWebhookDelivery(
   options: {
     timeoutMs: number;
     policy: WebhookTargetPolicy;
+    /** V1.12-D: when present, the request is signed with it. */
+    secret?: string;
+    /** Injectable so a test can pin the signature timestamp. */
+    now?: Date;
     fetcher?: Fetch;
     resolver?: Resolver;
   },
@@ -101,16 +109,25 @@ export async function attemptWebhookDelivery(
     };
   }
 
+  // The exact bytes that will be sent, built once. The signature covers these and not a second
+  // serialization of the same object: a receiver verifies what it received, byte for byte.
+  const rawBody = JSON.stringify(webhookBody(event));
+  const timestamp = Math.floor((options.now ?? new Date()).getTime() / 1000);
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    [EVENT_ID_HEADER]: event.id,
+    [EVENT_TYPE_HEADER]: B2B_EVENT_TYPES[event.type],
+    [TIMESTAMP_HEADER]: String(timestamp),
+  };
+  if (options.secret)
+    headers[SIGNATURE_HEADER] = signWebhook(options.secret, timestamp, rawBody);
+
   let response: Response;
   try {
     response = await fetcher(target.toString(), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        [EVENT_ID_HEADER]: event.id,
-        [EVENT_TYPE_HEADER]: B2B_EVENT_TYPES[event.type],
-      },
-      body: JSON.stringify(webhookBody(event)),
+      headers,
+      body: rawBody,
       redirect: 'manual',
       signal: AbortSignal.timeout(options.timeoutMs),
     });

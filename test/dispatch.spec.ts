@@ -421,7 +421,7 @@ describe('DispatchService authorization inside the transaction', () => {
         prisma as unknown as PrismaService,
         new ConfigService({ LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES: 5 }),
         {
-          scheduleFirstAttempt: () => undefined,
+          nudge: () => undefined,
         } as unknown as B2bWebhooksService,
       ),
     };

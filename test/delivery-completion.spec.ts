@@ -478,7 +478,7 @@ describe('V1.11-A the independent completion does not re-run the approval gate',
       $transaction: (fn: (t: typeof client) => unknown) => fn(client),
     } as unknown as PrismaService;
     const service = new IndependentDispatchesService(prisma, {
-      scheduleFirstAttempt: () => undefined,
+      nudge: () => undefined,
     } as unknown as B2bWebhooksService);
     // A suspension landing mid-service must never strand a finished delivery, so the only thing
     // checked is that this driver holds the claim.

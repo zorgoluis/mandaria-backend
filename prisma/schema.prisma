@@ -72,6 +72,7 @@ model IntegrationClient {
   outboxEvents B2bOutboxEvent[]
   webhookEndpoint B2bWebhookEndpoint?
   webhookAttempts B2bWebhookDeliveryAttempt[]
+  webhookDeliveries B2bWebhookDelivery[]
 }
 model IntegrationCredential {
   id String @id @default(uuid()) @db.Uuid
@@ -953,6 +954,7 @@ model B2bOutboxEvent {
   deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
   dispatch Dispatch? @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict)
   attempts B2bWebhookDeliveryAttempt[]
+  delivery B2bWebhookDelivery?
   /// V1.12-C: lets a delivery attempt reference (event, owner) as one unit, so PostgreSQL
   /// refuses an attempt that pairs an event with a client that does not own it.
   @@unique([id, integrationClientId])
@@ -972,6 +974,17 @@ model B2bWebhookEndpoint {
   integrationClientId String @unique @db.Uuid
   url String
   enabled Boolean @default(true)
+  /// V1.12-D: the HMAC secret, encrypted with AES-256-GCM under the master key in
+  /// B2B_WEBHOOK_SECRET_KEY. Never stored in plaintext, never returned by a read: the value is
+  /// shown once, when it is generated or rotated, and after that only its presence is visible.
+  secretCiphertext String?
+  secretSetAt DateTime?
+  /// V1.12-D enforcement boundary. Only events that happened from this instant on enter
+  /// automatic delivery. It is set to «now» when an endpoint is configured, so wiring a webhook
+  /// months later cannot unleash an avalanche of history, and the migration set it for the
+  /// endpoints that already existed, so nothing recorded under V1.12-B or V1.12-C is ever sent
+  /// on its own. Older events are still deliverable by hand, one at a time.
+  deliverFrom DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdByUserId String @db.Uuid
@@ -980,6 +993,7 @@ model B2bWebhookEndpoint {
   createdBy User @relation("WebhookEndpointCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
   updatedBy User @relation("WebhookEndpointUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict)
   attempts B2bWebhookDeliveryAttempt[]
+  deliveries B2bWebhookDelivery[]
   /// Lets an attempt reference (endpoint, owner) as one unit: an event of one client can never
   /// be recorded as delivered to the endpoint of another.
   @@unique([id, integrationClientId])
@@ -1024,6 +1038,10 @@ model B2bWebhookDeliveryAttempt {
   failureKind B2bWebhookFailureKind?
   /// A short, sanitized classification. Never a response body, headers or credentials.
   failureDetail String?
+  /// V1.12-D: which attempt this was for its event, assigned under the delivery lease so two
+  /// workers cannot mint the same ordinal. Null for the V1.12-C attempts, which were made
+  /// before the counter existed and are not rewritten.
+  attemptNumber Int?
   recordedAt DateTime @default(now())
   event B2bOutboxEvent @relation(fields: [eventId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
   endpoint B2bWebhookEndpoint @relation(fields: [endpointId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
@@ -1031,4 +1049,58 @@ model B2bWebhookDeliveryAttempt {
   @@index([eventId, attemptedAt])
   @@index([integrationClientId, attemptedAt, id])
   @@index([result, attemptedAt])
+}
+
+/// V1.12-D transport state. Deliberately small: what is left to do, and who is doing it.
+enum B2bWebhookDeliveryState {
+  /// Still owed to the client: either waiting for its next attempt or being attempted right now.
+  PENDING
+  /// The endpoint answered 2xx. Terminal; nothing is ever sent again on its own.
+  DELIVERED
+  /// The policy ran out of attempts, or the endpoint answered something retrying cannot fix.
+  /// Terminal for the worker, still recoverable by an administrator.
+  EXHAUSTED
+}
+
+/// V1.12-D: the mutable operational projection of handing one event to one client.
+///
+/// Three things are kept apart on purpose: the **event** is an immutable fact (V1.12-B), an
+/// **attempt** is immutable history (V1.12-C), and this row is the only mutable part — what is
+/// still owed and when to try again. Turning the outbox itself into a queue would have made the
+/// fact editable, which is exactly what V1.12-B was built to prevent.
+///
+/// The row is not created with the event. The worker discovers eligible events durably from the
+/// outbox and materialises this row when it first picks one up, so an event is never lost to a
+/// crash between the commit and the first request, and an event whose client had no webhook yet
+/// is not condemned to never having one.
+model B2bWebhookDelivery {
+  id String @id @default(uuid()) @db.Uuid
+  /// One transport state per event: a second one would mean two workers owed the same handover.
+  eventId String @unique @db.Uuid
+  integrationClientId String @db.Uuid
+  endpointId String @db.Uuid
+  state B2bWebhookDeliveryState @default(PENDING)
+  /// Attempts already made. The next ordinal and the next delay are both derived from it, under
+  /// the lease, never from counting rows.
+  attemptCount Int @default(0)
+  /// When the worker may try again. Null once the state is terminal.
+  nextAttemptAt DateTime?
+  /// The lease: who is working on this and until when. A worker that dies leaves an expired
+  /// lease, and the next one takes it over; nothing stays blocked forever.
+  leaseOwner String?
+  leaseExpiresAt DateTime?
+  lastAttemptAt DateTime?
+  deliveredAt DateTime?
+  exhaustedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  event B2bOutboxEvent @relation(fields: [eventId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  endpoint B2bWebhookEndpoint @relation(fields: [endpointId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  /// Required by the composite foreign key to the event; `eventId` alone is already unique, so
+  /// this states the same invariant in the shape the relation needs.
+  @@unique([eventId, integrationClientId])
+  /// The worker queue: what is PENDING and due, oldest first.
+  @@index([state, nextAttemptAt])
+  @@index([integrationClientId, state])
 }
