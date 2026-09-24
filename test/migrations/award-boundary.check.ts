@@ -5,11 +5,11 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 
 import type { INestApplication } from '@nestjs/common';
-import { PrismaClient } from '../../.tmp/check-v110d/previous-c/node_modules/@prisma/client/index.js';
 import * as argon2 from 'argon2';
 import request from 'supertest';
 import { ensureTestCreditPolicies } from '../support/credit-policies.js';
 import { setProviderBalance } from '../support/credits.js';
+import { preBoundaryPrismaClient } from './pre-boundary-client.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith('_test'))
@@ -24,7 +24,7 @@ process.env.INTEGRATION_ACCESS_TOKEN_EXPIRES_IN = '3600';
 process.env.DISPATCH_TTL_MINUTES = '60';
 process.env.MAIL_PROVIDER = 'local_outbox';
 
-const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
+const prisma = await preBoundaryPrismaClient(databaseUrl);
 const run = randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
 const PREFIX = 'E2E_CCON_';
 const password = randomBytes(24).toString('base64url');

@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { CreditFixtureClient } from './credit-client.js';
 
 /**
  * V1.10-C: opening a Dispatch (accepting a quote) requires an ACTIVE credit policy for every actor
@@ -14,7 +14,7 @@ import type { PrismaClient } from '@prisma/client';
 export const BASELINE_POLICY_AUTHOR =
   'credit-policy-baseline@mandaria-e2e.test';
 
-export async function ensureTestCreditPolicies(prisma: PrismaClient) {
+export async function ensureTestCreditPolicies(prisma: CreditFixtureClient) {
   const [{ db }] = await prisma.$queryRawUnsafe<{ db: string }[]>(
     'SELECT current_database() AS db',
   );

@@ -24,6 +24,12 @@ import {
   refundLogFields,
   refundRejectionCode,
 } from '../credits/service-refund.js';
+import { recordedEventLog } from '../b2b-events/b2b-outbox.js';
+import {
+  DELIVERY_COMPLETED_EVENT,
+  completeDelivery,
+  completing,
+} from '../deliveries/delivery-completion.js';
 import {
   RELEASE_END_REASON,
   independentError,
@@ -399,6 +405,49 @@ export class IndependentDispatchesService {
   }
 
   /**
+   * V1.11-A: the driver that took the service declares it delivered. One transaction closes its
+   * ACTIVE assignment as COMPLETED and resolves the dispatch as DELIVERED, which is terminal: the
+   * service can no longer be released and the driver and the vehicle are free to take another one.
+   * It costs zero credits and returns zero — the award paid at take time is what the delivery
+   * earns, and a delivered service is never refunded.
+   *
+   * The completion is only refused because the driver does not hold this service. It deliberately
+   * does not re-run the approval gate: the work was already done in the street, and a suspension
+   * landing in the meantime must not leave a finished service stuck as CLAIMED with the driver and
+   * the vehicle blocked.
+   */
+  async complete(userId: string, dispatchId: string) {
+    const driver = await this.prisma.driver.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!driver) throw new NotFoundException('Driver profile not found');
+    const outcome = await completing(
+      this.prisma.$transaction((tx) =>
+        completeDelivery(
+          tx,
+          dispatchId,
+          { mode: 'INDEPENDENT', driverId: driver.id },
+          userId,
+        ),
+      ),
+    );
+    if (outcome.kind === 'completed') {
+      this.logger.log({
+        event: DELIVERY_COMPLETED_EVENT,
+        dispatchId,
+        assignmentId: outcome.assignmentId,
+        mode: 'INDEPENDENT',
+        driverId: driver.id,
+        actorUserId: userId,
+        deliveredAt: outcome.deliveredAt.toISOString(),
+      });
+      this.logger.log(recordedEventLog(outcome.event));
+    }
+    return this.viewFor(driver.id, dispatchId);
+  }
+
+  /**
    * Maps a unique-index violation or a guard rejection (neither should happen under the locks) to
    * a clean 409. A PostgreSQL trigger firing is still a lost race, not an internal failure, so it
    * must never reach the client as a 500.
@@ -606,6 +655,7 @@ const REJECTION_MESSAGES: Record<TakeRejectionCode, string> = {
   DISPATCH_CANCELLED: 'Dispatch was cancelled',
   DISPATCH_ALREADY_CLAIMED:
     'Dispatch was already taken by a provider or another driver',
+  DISPATCH_DELIVERED: 'Dispatch was already delivered and is closed',
   DISPATCH_NOT_OPEN_TO_INDEPENDENT:
     'This service type is not available to independent drivers',
   DISPATCH_RETAKE_NOT_ALLOWED:

@@ -205,6 +205,14 @@ export class DriverDispatchResponse {
   claimedAt!: Date | null;
   @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
+  @ApiPropertyOptional({
+    type: String,
+    format: 'date-time',
+    nullable: true,
+    description:
+      'V1.11-A: momento en que confirmé la entrega. null si el servicio no está DELIVERED o no es mío.',
+  })
+  deliveredAt!: Date | null;
   @ApiProperty({
     type: 'integer',
     nullable: true,

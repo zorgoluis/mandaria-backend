@@ -104,10 +104,12 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/delivery-requests/{publicId}/cancel | integration-bearer | — | deliveries:cancel | Cancelar mi DeliveryRequest |
 | GET | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:read | Historial de Quotes de mi DeliveryRequest |
 | POST | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:create | Cotizar mi DeliveryRequest |
+| GET | /api/v1/delivery-requests/{publicId}/status | integration-bearer | — | deliveries:read | Consultar el estado logístico de mi DeliveryRequest |
 | PATCH | /api/v1/driver/availability | bearer | DRIVER | — | Cambiar mi disponibilidad |
 | GET | /api/v1/driver/credits | bearer | DRIVER | — | Mi saldo de créditos como repartidor independiente |
 | GET | /api/v1/driver/credits/ledger | bearer | DRIVER | — | Mi historial de créditos |
 | GET | /api/v1/driver/dispatches/{dispatchId} | bearer | DRIVER | — | Detalle de un servicio ofrecido o tomado por mí |
+| POST | /api/v1/driver/dispatches/{dispatchId}/deliver | bearer | DRIVER | — | Confirmar la entrega de un servicio que tomé |
 | POST | /api/v1/driver/dispatches/{dispatchId}/release | bearer | DRIVER | — | Liberar un servicio que tomé |
 | POST | /api/v1/driver/dispatches/{dispatchId}/take | bearer | DRIVER | — | Tomar un servicio |
 | GET | /api/v1/driver/dispatches/available | bearer | DRIVER | — | Servicios que puedo tomar |
@@ -137,6 +139,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/provider/dispatches/{dispatchId}/available-drivers | bearer | PROVIDER_ADMIN | — | Drivers asignables para mi Dispatch |
 | GET | /api/v1/provider/dispatches/{dispatchId}/available-vehicles | bearer | PROVIDER_ADMIN | — | Vehicles asignables para mi Dispatch |
 | POST | /api/v1/provider/dispatches/{dispatchId}/claim | bearer | PROVIDER_ADMIN | — | Reclamar Dispatch para mi proveedor |
+| POST | /api/v1/provider/dispatches/{dispatchId}/deliver | bearer | PROVIDER_ADMIN | — | Confirmar la entrega de un Dispatch de mi proveedor |
 | POST | /api/v1/provider/dispatches/{dispatchId}/release | bearer | PROVIDER_ADMIN | — | Liberar Dispatch reclamado por mi proveedor |
 | GET | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Listar invitaciones de repartidores de mi proveedor |
 | POST | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Invitar repartidor a mi proveedor |

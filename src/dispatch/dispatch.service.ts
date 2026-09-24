@@ -25,6 +25,12 @@ import {
   refundLogFields,
   refundRejectionCode,
 } from '../credits/service-refund.js';
+import { recordedEventLog } from '../b2b-events/b2b-outbox.js';
+import {
+  DELIVERY_COMPLETED_EVENT,
+  completeDelivery,
+  completing,
+} from '../deliveries/delivery-completion.js';
 import {
   claimRejection,
   dispatchError,
@@ -52,6 +58,7 @@ const REJECTION_MESSAGES: Record<DispatchErrorCode, string> = {
   DISPATCH_EXPIRED: 'Dispatch window has closed',
   DISPATCH_CANCELLED: 'Dispatch was cancelled',
   DISPATCH_ALREADY_CLAIMED: 'Dispatch was already claimed by another provider',
+  DISPATCH_DELIVERED: 'Dispatch was already delivered and is closed',
   DISPATCH_RECLAIM_NOT_ALLOWED:
     'This provider released the dispatch and cannot claim it again',
   DISPATCH_NOT_CLAIMED_BY_PROVIDER:
@@ -343,6 +350,42 @@ export class DispatchService {
         actorUserId,
         reason: 'RELEASED_AFTER_WINDOW',
       });
+    return this.getForProvider(dispatchId, providerId);
+  }
+
+  /**
+   * V1.11-A: the provider that holds the claim declares the service delivered. One transaction
+   * ends its ACTIVE assignment as COMPLETED and resolves the dispatch as DELIVERED, which is
+   * terminal: the service can no longer be released, reassigned or cancelled, and the driver and
+   * the vehicle are free for the next one. It costs zero credits and returns zero — the award paid
+   * at claim time is what the delivery earns.
+   */
+  async complete(dispatchId: string, providerId: string, actorUserId: string) {
+    const outcome = await completing(
+      this.prisma.$transaction(async (tx) => {
+        // Same visibility rule as claim and release: a non-candidate cannot tell this dispatch
+        // from a missing one, so ids stay unprobeable.
+        await this.candidate(tx, dispatchId, providerId);
+        return completeDelivery(
+          tx,
+          dispatchId,
+          { mode: 'FLEET', providerId },
+          actorUserId,
+        );
+      }),
+    );
+    if (outcome.kind === 'completed') {
+      this.logger.log({
+        event: DELIVERY_COMPLETED_EVENT,
+        dispatchId,
+        assignmentId: outcome.assignmentId,
+        mode: 'FLEET',
+        providerId,
+        actorUserId,
+        deliveredAt: outcome.deliveredAt.toISOString(),
+      });
+      this.logger.log(recordedEventLog(outcome.event));
+    }
     return this.getForProvider(dispatchId, providerId);
   }
 

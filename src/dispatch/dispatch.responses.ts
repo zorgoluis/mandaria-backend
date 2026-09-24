@@ -18,7 +18,7 @@ import {
 } from '../credit-policies/dispatch-credit-snapshots.responses.js';
 
 const statusDoc =
-  'Estado efectivo. OPEN: reclamable hasta expiresAt. CLAIMED: tomado por un proveedor (su claim no caduca con expiresAt). EXPIRED: ventana cerrada sin claim vigente (un OPEN vencido se informa EXPIRED aunque aún no se haya persistido). CANCELLED: la DeliveryRequest fue cancelada.';
+  'Estado efectivo. OPEN: reclamable hasta expiresAt. CLAIMED: tomado por un proveedor (su claim no caduca con expiresAt). EXPIRED: ventana cerrada sin claim vigente (un OPEN vencido se informa EXPIRED aunque aún no se haya persistido). CANCELLED: la DeliveryRequest fue cancelada. DELIVERED (V1.11-A): el servicio se entregó; es terminal e irreversible y ya no admite liberación, reasignación ni cancelación.';
 
 class ZoneRefResponse {
   @ApiProperty({ example: 'OCOZOCOAUTLA' }) code!: string;
@@ -122,7 +122,7 @@ export class ProviderDispatchResponse {
   @ApiProperty({
     enum: ['OWNER', 'OFFER', 'SUMMARY'],
     description:
-      'OWNER: mi proveedor tiene el claim (detalle completo con contactos). OFFER: puedo reclamarlo (ruta, direcciones, paquetes sin texto libre, tarifa y mercancía; sin contactos, instrucciones ni referencias). SUMMARY: sin detalle del servicio (tomado por otro, vencido, cancelado o liberado por mí). Nunca se exponen el IntegrationClient ni otros candidatos.',
+      'OWNER: mi proveedor tiene el claim (detalle completo con contactos). OFFER: puedo reclamarlo (ruta, direcciones, paquetes sin texto libre, tarifa y mercancía; sin contactos, instrucciones ni referencias). SUMMARY: sin detalle del servicio (tomado por otro, vencido, cancelado o liberado por mí). Un servicio DELIVERED sigue siendo OWNER para quien lo entregó. Nunca se exponen el IntegrationClient ni otros candidatos.',
   })
   access!: string;
   @ApiProperty({ enum: ServiceType }) serviceType!: ServiceType;
@@ -139,6 +139,14 @@ export class ProviderDispatchResponse {
   claimedAt!: Date | null;
   @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
+  @ApiPropertyOptional({
+    type: String,
+    format: 'date-time',
+    nullable: true,
+    description:
+      'V1.11-A: momento en que mi proveedor confirmó la entrega. null si el servicio no está DELIVERED o si no soy el dueño del claim.',
+  })
+  deliveredAt!: Date | null;
   @ApiProperty({
     type: 'integer',
     nullable: true,
@@ -217,6 +225,21 @@ export class AdminDispatchResponse {
     example: 'DELIVERY_REQUEST_CANCELLED',
   })
   cancellationReason!: string | null;
+  @ApiPropertyOptional({
+    type: String,
+    format: 'date-time',
+    nullable: true,
+    description: 'V1.11-A: momento en que se confirmó la entrega.',
+  })
+  deliveredAt!: Date | null;
+  @ApiPropertyOptional({
+    type: String,
+    format: 'uuid',
+    nullable: true,
+    description:
+      'V1.11-A: User que confirmó la entrega (PROVIDER_ADMIN del proveedor dueño, o el propio repartidor independiente). Nunca un SUPER_ADMIN ni un cliente B2B.',
+  })
+  deliveredByUserId!: string | null;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
   @ApiProperty({ format: 'date-time' }) updatedAt!: Date;
   @ApiProperty({ type: AdminRequestRefResponse })
