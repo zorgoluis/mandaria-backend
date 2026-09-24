@@ -1,5 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsIn,
+  IsISO8601,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
+import { B2bEventType } from '@prisma/client';
+import { PaginationQueryDto } from '../common/pagination.dto.js';
+import {
+  NO_DELIVERY_REASONS,
+  REDELIVERY_OUTCOMES,
+  TRANSPORT_STATES,
+} from './webhook-operations.js';
 
 export class UpsertWebhookEndpointDto {
   @ApiProperty({
@@ -141,4 +157,227 @@ export class WebhookAttemptResponse {
     enum: ['NO_ENDPOINT', 'ENDPOINT_DISABLED', 'NO_SECRET'],
   })
   reason?: string;
+  @ApiPropertyOptional({
+    enum: REDELIVERY_OUTCOMES,
+    description:
+      'Qué ocurrió, en términos operativos: DELIVERED (el receptor aceptó), RESCHEDULED (falló y hay otro intento programado), EXHAUSTED (falló y ya no habrá más), FAILED o SKIPPED (no se intentó nada). Una pantalla no debe leer el 200 de esta ruta como «enviado».',
+  })
+  outcome?: string;
+}
+
+/** V1.12-E: filters an operator actually needs, not a generic search engine. */
+export class AdminEventListQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'Eventos de este IntegrationClient.',
+  })
+  @IsOptional()
+  @IsUUID()
+  integrationClientId?: string;
+
+  @ApiPropertyOptional({
+    enum: B2bEventType,
+    description: 'Tipo interno del evento; hoy sólo existe DELIVERY_COMPLETED.',
+  })
+  @IsOptional()
+  @IsEnum(B2bEventType)
+  type?: B2bEventType;
+
+  @ApiPropertyOptional({
+    enum: TRANSPORT_STATES,
+    description:
+      'Estado del **transporte**, no del evento. NO_DELIVERY es derivado: el evento existe y es legítimo, pero está fuera de la entrega fiable (sin endpoint, anterior a la frontera, o todavía sin recoger).',
+  })
+  @IsOptional()
+  @IsIn(TRANSPORT_STATES as unknown as string[])
+  transportState?: (typeof TRANSPORT_STATES)[number];
+
+  @ApiPropertyOptional({
+    example: 'MDR-000123',
+    description: 'La DeliveryRequest del evento, por su identificador público.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  deliveryRequestPublicId?: string;
+
+  @ApiPropertyOptional({
+    example: 'ORDER-4711',
+    description:
+      'Referencia externa exacta del cliente: por dónde empieza «mi pedido X no recibió actualización».',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  externalReference?: string;
+
+  @ApiPropertyOptional({ format: 'date-time' })
+  @IsOptional()
+  @IsISO8601()
+  occurredFrom?: string;
+
+  @ApiPropertyOptional({ format: 'date-time' })
+  @IsOptional()
+  @IsISO8601()
+  occurredTo?: string;
+}
+
+export class AdminEventSummaryResponse {
+  @ApiProperty({ format: 'uuid' })
+  eventId!: string;
+  @ApiProperty({ example: 'delivery.completed' })
+  type!: string;
+  @ApiProperty({ format: 'date-time' })
+  occurredAt!: Date;
+  @ApiProperty({ format: 'date-time' })
+  recordedAt!: Date;
+  @ApiProperty({ format: 'uuid' })
+  integrationClientId!: string;
+  @ApiProperty()
+  integrationClientName!: string;
+  @ApiProperty()
+  integrationClientCode!: string;
+  @ApiProperty({ example: 'MDR-000123' })
+  deliveryRequestPublicId!: string;
+  @ApiPropertyOptional({ nullable: true, example: 'ORDER-4711' })
+  externalReference!: string | null;
+  @ApiProperty({
+    enum: TRANSPORT_STATES,
+    description:
+      'Estado del transporte. El evento en sí no tiene estado: ocurrió.',
+  })
+  transportState!: string;
+  @ApiPropertyOptional({
+    enum: NO_DELIVERY_REASONS,
+    nullable: true,
+    description:
+      'Por qué está fuera de la entrega fiable. Ninguno es un fallo.',
+  })
+  noDeliveryReason!: string | null;
+  @ApiProperty()
+  attemptCount!: number;
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  lastAttemptAt!: Date | null;
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  nextAttemptAt!: Date | null;
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  deliveredAt!: Date | null;
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  exhaustedAt!: Date | null;
+  @ApiProperty({ description: 'Un worker lo tiene tomado en este momento.' })
+  inFlight!: boolean;
+}
+
+export class AdminEventPageResponse {
+  @ApiProperty({ type: AdminEventSummaryResponse, isArray: true })
+  items!: AdminEventSummaryResponse[];
+  @ApiProperty()
+  total!: number;
+  @ApiProperty()
+  page!: number;
+  @ApiProperty()
+  pageSize!: number;
+  @ApiProperty()
+  totalPages!: number;
+}
+
+export class AdminAttemptResponse {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Nulo en los intentos de V1.12-C.',
+  })
+  attemptNumber!: number | null;
+  @ApiProperty({ format: 'date-time' })
+  attemptedAt!: Date;
+  @ApiProperty()
+  durationMs!: number;
+  @ApiProperty({ enum: ['SUCCEEDED', 'FAILED'] })
+  result!: string;
+  @ApiPropertyOptional({ nullable: true })
+  httpStatus!: number | null;
+  @ApiPropertyOptional({
+    enum: ['HTTP_STATUS', 'TIMEOUT', 'NETWORK', 'INVALID_ENDPOINT'],
+    nullable: true,
+  })
+  failureKind!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Clasificación saneada y acotada. Nunca el cuerpo remoto ni una traza interna.',
+  })
+  failureDetail!: string | null;
+  @ApiProperty({ description: 'La URL exacta a la que fue este intento.' })
+  endpointUrl!: string;
+}
+
+export class AdminEventDetailResponse extends AdminEventSummaryResponse {
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: true,
+    description:
+      'La instantánea pública congelada de V1.12-B: exactamente lo que el cliente debía recibir. No se reconstruye.',
+  })
+  payload!: unknown;
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Configuración del destino. Nunca incluye el secreto ni su cifrado.',
+  })
+  endpoint!: {
+    id: string;
+    url: string;
+    enabled: boolean;
+    deliverFrom: Date;
+    secretConfigured: boolean;
+    secretSetAt: Date | null;
+  } | null;
+  @ApiProperty({ type: AdminAttemptResponse, isArray: true })
+  attempts!: AdminAttemptResponse[];
+}
+
+export class WebhookRescueResponse {
+  @ApiProperty({
+    enum: ['RESCHEDULED', 'ALREADY_PENDING'],
+    description:
+      'RESCHEDULED: volvió a la cola y el worker lo tomará. ALREADY_PENDING: ya estaba pendiente y no se hizo nada. **No** significa entregado: aquí no se intenta nada.',
+  })
+  outcome!: string;
+  @ApiProperty({ format: 'uuid' })
+  eventId!: string;
+}
+
+export class WebhookHealthResponse {
+  @ApiProperty({ description: 'Entregas pendientes en toda la base.' })
+  pending!: number;
+  @ApiProperty()
+  exhausted!: number;
+  @ApiProperty()
+  delivered!: number;
+  @ApiProperty({ description: 'Tomadas por algún worker ahora mismo.' })
+  leased!: number;
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  oldestPendingDueAt!: Date | null;
+  @ApiProperty({
+    description:
+      'Configuración y memoria de **esta** instancia. Con varios backends, ninguno conoce el estado de los demás: no es salud global.',
+  })
+  thisInstance!: {
+    workerEnabled: boolean;
+    pollSeconds: number;
+    leaseSeconds: number;
+    lastPollAt: Date | null;
+  };
+}
+
+export class WebhookClientSummaryResponse {
+  @ApiProperty()
+  events!: number;
+  @ApiProperty()
+  pending!: number;
+  @ApiProperty()
+  delivered!: number;
+  @ApiProperty()
+  exhausted!: number;
 }

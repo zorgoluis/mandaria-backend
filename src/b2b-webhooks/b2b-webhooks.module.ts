@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module.js';
 import { AdminB2bWebhooksController } from './admin-b2b-webhooks.controller.js';
 import { B2bWebhooksService } from './b2b-webhooks.service.js';
+import { WebhookOperationsService } from './webhook-operations.service.js';
 
 /**
  * V1.12-C transport. Global, because the delivery paths of both execution models schedule the
@@ -11,7 +12,7 @@ import { B2bWebhooksService } from './b2b-webhooks.service.js';
 @Module({
   imports: [AuthModule],
   controllers: [AdminB2bWebhooksController],
-  providers: [B2bWebhooksService],
-  exports: [B2bWebhooksService],
+  providers: [B2bWebhooksService, WebhookOperationsService],
+  exports: [B2bWebhooksService, WebhookOperationsService],
 })
 export class B2bWebhooksModule {}

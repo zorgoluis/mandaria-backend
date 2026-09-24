@@ -1,3 +1,93 @@
+# Verificación V1.12-E — Webhook Operations & Observability (2026-09-24)
+
+Rama `v1.12-B2B_webhook_delivery` sobre `81b118b`, paquete **1.12.0** (sin cambio de versión: los subentregables de V1.12 comparten minor). Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260927000100_webhook_operations` en ambas bases (sin reset) | PASS; crea **un índice** y reemplaza la función de guarda. **0 filas modificadas**, 0 estados creados, 0 eventos entregados |
+| `prisma validate`; `migrate status` y drift en **ambas** bases | Válido / al día (23 migraciones) / **sin diferencias** |
+| `verify-migrations` (4 bases desechables), ampliado con V1.12-E | PASS: cadena V1.0 → V1.12-D → **V1.12-E**; en las cuatro: el índice del listado presente y la guarda estrechada (sigue prohibiendo reabrir un `DELIVERED` y bajar el contador; ya no prohíbe `EXHAUSTED → PENDING`) |
+| `tsc`, build, Oxlint, ESLint, `docs:check` | PASS; **0 errores de `tsc`** |
+| Unitarias | **270/270 en 24 archivos**; 8 nuevas en `test/b2b-webhook-operations.spec.ts`. Línea base: 262 |
+| E2E (suite completa, una corrida) | **402/402 en 23 archivos**; 17 nuevas en `test/b2b-webhooks.e2e-spec.ts` (54 en total en ese archivo). Línea base: 385 |
+| CHECK adversarial V1.12-E | **12/12** contra Nest real y PostgreSQL real (`.tmp/check-v112e/`). **Ningún defecto de producto encontrado** |
+| OpenAPI y matriz de acceso | Regenerados: **5 rutas nuevas**, todas SUPER_ADMIN; 7 esquemas nuevos. Ninguno menciona el secreto ni su ciphertext. El contrato B2B **no cambió** |
+
+## La vista operativa
+
+| Escenario | Resultado |
+|---|---|
+| Buscar por la referencia externa del cliente | PASS; un solo evento, con `transportState` `DELIVERED`, su `publicId`, el nombre público `delivery.completed` y el número de intentos |
+| Buscar por `publicId`, en minúsculas | PASS; el mismo evento |
+| Detalle | PASS; sobre, **instantánea congelada idéntica a la fila del Outbox** (no una reconstrucción), destino, estado y los intentos en orden con su resultado, código HTTP, clasificación y la URL a la que fue cada uno |
+| Orden y paginación | PASS; `occurredAt` descendente con el id como desempate; recorrer la lista de una en una reconstruye exactamente la misma secuencia, sin repetir ni saltar |
+| Filtros | PASS; cliente, estado de transporte, `publicId` y referencia externa acotan la misma lista, no producen otra; un cliente ajeno devuelve vacío |
+| Rango invertido | PASS; 400, en vez de una lista vacía que parecería ausencia de datos |
+| `NO_DELIVERY` | PASS; las tres razones (`NO_ENDPOINT`, `BEFORE_BOUNDARY`, `NOT_YET_PICKED_UP`) y el evento intacto; sus intentos históricos siguen visibles, porque `NO_DELIVERY` habla del estado, no de la historia |
+| `NO_DELIVERY` nunca se persiste | PASS (CHECK); el enum de PostgreSQL sigue teniendo exactamente `PENDING`, `DELIVERED`, `EXHAUSTED`, y el evento no tiene ninguna fila de transporte |
+| Lease en curso | PASS; `inFlight` explica el silencio en vez de dejarlo sin explicación; un lease ya caducado **no** se presenta como trabajo en curso |
+| Salud | PASS; los conteos coinciden con la base, y `thisInstance` se reporta aparte. En la suite el bucle está apagado a propósito y la respuesta **lo dice** (`workerEnabled: false`, `pollSeconds: 0`) en vez de afirmar un bucle que no corre |
+| Resumen por cliente | PASS; `pending + delivered + exhausted` coincide con el conteo real, y `events` con el total del listado |
+
+## Las acciones administrativas
+
+| Escenario | Resultado |
+|---|---|
+| Rescate de un `EXHAUSTED` | PASS; `RESCHEDULED`, estado `PENDING` con próximo intento, `exhaustedAt` y el lease limpios. **No envía nada**: con el endpoint en pausa, el receptor no recibe ninguna petición |
+| El rescate no borra historia | PASS; los mismos ids de intento antes y después, y `attemptCount` sigue en 5 |
+| Un rescate compra un intento | PASS; al reanudar, el sexto intento falla y vuelve a `EXHAUSTED` con `attemptCount` 6; puede rescatarse otra vez |
+| Dos y tres rescates simultáneos | PASS; exactamente uno responde `RESCHEDULED` y el resto `ALREADY_PENDING`; el contador no se mueve y no se programa trabajo por duplicado |
+| Rescatar lo que no corresponde | PASS; `DELIVERED` → 409 `WEBHOOK_ALREADY_DELIVERED`; sin estado → 409 `WEBHOOK_DELIVERY_NOT_TRACKED`; evento inexistente → 409 |
+| Reenvío manual clasificado | PASS; fallo con intentos restantes → `RESCHEDULED`; éxito → `DELIVERED`; sin destino → `SKIPPED`; el reenvío de algo ya entregado no mueve `deliveredAt` |
+| Dos reenvíos simultáneos | PASS; 200 y 409 `WEBHOOK_DELIVERY_IN_PROGRESS`; **exactamente una petición** llegó al receptor |
+| Reenvío con el lease tomado por un worker | PASS; 409 y ninguna petición; el detalle muestra `inFlight: true` |
+
+## Lo que PostgreSQL sigue refusando
+
+| Intento | Rechazado por |
+|---|---|
+| Reabrir o resellar un `DELIVERED`, por API o por SQL | 409 / `B2B_WEBHOOK_DELIVERY_IMMUTABLE` |
+| Bajar el contador de intentos | `B2B_WEBHOOK_DELIVERY_INVALID` |
+| `EXHAUSTED → PENDING` sin próximo intento, o conservando el sello de rendición | `B2bWebhookDelivery_values_check` |
+| Cambiar `occurredAt` o el payload del evento, o borrarlo | `B2B_EVENT_IMMUTABLE` |
+| Cambiar el resultado de un intento | `B2B_WEBHOOK_ATTEMPT_IMMUTABLE` |
+
+La transición de rescate se permite **sólo** hacia una fila `PENDING` bien formada; el CHECK de valores, que no cambió, es lo que lo garantiza.
+
+## Secreto, roles y no-efectos
+
+| Verificación | Resultado |
+|---|---|
+| Secreto | PASS; no aparece —ni en claro ni cifrado, ni el nombre de la columna— en el listado, el detalle, la salud, el resumen ni en `docs/openapi.json`. Sólo `secretConfigured` y `secretSetAt` |
+| Logs de las acciones | PASS; `B2B_WEBHOOK_RESCUED` y `B2B_WEBHOOK_REDELIVERY_REQUESTED` con el id del evento y del actor, **sin secreto y sin el cuerpo del evento** |
+| Roles, sobre las **seis** rutas | PASS; PROVIDER_ADMIN 403, DRIVER 403, anónimo 401 y **token B2B 401** (no es una sesión humana, así que no llega siquiera a evaluarse el rol) |
+| Filtros hostiles | PASS; `pageSize` 1000, página 0, negativos, no numéricos, estado inventado, el nombre público en vez del enum interno, UUID inválido, fecha inválida y referencia de 300 caracteres: **los diez rechazados con 400**. Una página más allá del final es una página vacía, no un error ni una repetición |
+| Inyección SQL en `externalReference` y `publicId` | PASS; tratados como datos, resultado vacío, el conteo de eventos intacto |
+| Aislamiento del detalle | PASS; el detalle de un evento no contiene otro evento; el payload congelado no contiene `dispatchId`, `deliveryRequestId` ni el id del cliente; 404 para un id inexistente y 400 para uno malformado, nunca 500 |
+| Preservación | PASS; leer la vista y rescatar no cambian el evento, el Dispatch ni la economía (cuentas, saldos, ledger, `SERVICE_AWARD`, `SERVICE_REFUND`, snapshots, políticas), medida antes y después |
+
+## Defectos encontrados durante esta tarea
+
+**Ninguno de producto.** Los cinco fueron de la propia suite, y las pruebas —no una lectura optimista— los expusieron:
+
+1. **El receptor de pruebas mataba al proceso.** Varios casos cortan a propósito la petición de Mandaria (timeout, conexión cerrada). El servidor HTTP de la suite no tenía manejador de `error`, así que el socket moribundo emitía un error no capturado y el worker de Vitest **moría en silencio a mitad de corrida**. Se reprodujo también con la suite **ya commiteada**, de modo que era previo a este trabajo. Corregido con manejadores en `req`, `res` y el servidor, y no escribiendo sobre una respuesta ya destruida.
+2. **La frontera quedaba en el futuro.** Un caso mueve `deliverFrom` al instante de su evento + 1 s; todo lo creado en ese segundo siguiente quedaba fuera de la entrega fiable y los casos posteriores no veían ningún intento. Corregido fijando la frontera al instante de cada caso.
+3. **Reinscribir un evento que ya tenía intentos.** Retrasar la frontera un minuto ofrecía al worker eventos cuyo estado de transporte un caso anterior había borrado; inscribir uno choca con el único `(eventId, attemptNumber)` y **aborta la pasada entera**, con el error tragado por `nudge()`. Es una situación que sólo crean las fixtures —el producto nunca borra una fila de transporte— pero explica por qué una pasada puede quedarse sin hacer nada y queda anotado.
+4. **Carreras contra el aviso de completion.** Afirmar el estado inmediatamente después de un rescate compite con el `nudge` que el propio rescate dispara. Corregido pausando el endpoint mientras se afirma qué hizo la acción por sí sola, y reanudándolo para comprobar que el worker la recoge.
+5. **Reabrir un `DELIVERED` en una fixture.** Un caso volvía una entrega ya entregada a `PENDING` para montar una carrera; **PostgreSQL lo rechazó, con razón**. El caso se reescribió para dejarla pendiente fallando el primer intento, que es la situación real.
+
+Además, tres aserciones de V1.12-C que comparaban el cuerpo exacto de una respuesta `skipped` se actualizaron para incluir el campo `outcome` que V1.12-E añade.
+
+## Nota sobre la base de pruebas
+
+Una corrida anterior caída dejó 20 usuarios huérfanos con el mismo sufijo de corrida. Se purgaron **acotados por ese sufijo**, conservando el autor de las políticas de crédito; **no se reseteó ninguna base**. Tras la corrección del receptor (defecto 1), la suite completa corre de principio a fin sin caídas nativas.
+
+## Lo que no se hizo
+
+No se implementaron tipos de evento nuevos, ni cambios en la política de reintentos, la firma, el secreto o la política SSRF; V1.12-E no toca esa maquinaria. No hay registro de workers ni salud de flota, ni rescate masivo, ni auditoría persistente de las acciones administrativas (quedan en el log de la aplicación), ni API B2B de lectura de eventos. Docker sigue sin ejecutarse por instrucción del propietario.
+
+---
+
 # Verificación V1.12-D — Reliable & Secure B2B Webhook Delivery (2026-09-24)
 
 Rama `v1.12-B2B_webhook_delivery` sobre `ad93f30`, paquete **1.12.0** (sin cambio de versión: los subentregables de V1.12 comparten minor). Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea.

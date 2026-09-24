@@ -961,6 +961,8 @@ model B2bOutboxEvent {
   @@index([integrationClientId, occurredAt, id])
   @@index([type, occurredAt])
   @@index([deliveryRequestId])
+  /// V1.12-E: the administrative listing, newest first with a stable tiebreak.
+  @@index([occurredAt, id])
 }
 
 /// V1.12-C: where a B2B client wants to be notified. One endpoint per IntegrationClient in this

@@ -592,6 +592,12 @@ function createReceiver() {
     async start() {
       const { createServer } = await import('node:http');
       server = createServer((req, res) => {
+        // Several cases cut Mandaria's request off on purpose (the timeout, the closed
+        // connection). The socket then dies under this handler, and an unhandled 'error' on it
+        // takes the whole worker process down mid-suite — which is exactly how runs were
+        // disappearing. Nothing here needs to react to it beyond not dying.
+        req.on('error', () => undefined);
+        res.on('error', () => undefined);
         const chunks: Buffer[] = [];
         req.on('data', (c: Buffer) => chunks.push(c));
         req.on('end', () => {
@@ -616,6 +622,7 @@ function createReceiver() {
           });
           const next = script.shift() ?? fallback;
           const answer = () => {
+            if (res.destroyed || res.writableEnded) return;
             if (next.location) {
               res.writeHead(next.status ?? 302, { Location: next.location });
               res.end();
@@ -628,6 +635,8 @@ function createReceiver() {
           else answer();
         });
       });
+      server.on('clientError', (_error, socket) => socket.destroy());
+      server.on('error', () => undefined);
       await new Promise<void>((resolve) =>
         server!.listen(0, '127.0.0.1', resolve),
       );
@@ -962,11 +971,13 @@ describe('V1.12-C without a destination there is nothing to attempt', () => {
       }),
     ).toBe(0);
     expect((await dispatchRow(dispatch.id)).status).toBe('DELIVERED');
-    // And the manual route says why, instead of pretending something was tried.
+    // And the manual route says why, instead of pretending something was tried. V1.12-E adds the
+    // operator's reading of the same answer, which for a skip is that nothing was sent.
     const manual = await deliverEvent(event.id).expect(200);
     expect(manual.body).toEqual({
       kind: 'skipped',
       reason: 'ENDPOINT_DISABLED',
+      outcome: 'SKIPPED',
     });
   });
 
@@ -999,7 +1010,11 @@ describe('V1.12-C without a destination there is nothing to attempt', () => {
     ).toBe(0);
     expect((await dispatchRow(dispatch.id)).status).toBe('DELIVERED');
     const manual = await deliverEvent(event.id).expect(200);
-    expect(manual.body).toEqual({ kind: 'skipped', reason: 'NO_ENDPOINT' });
+    expect(manual.body).toEqual({
+      kind: 'skipped',
+      reason: 'NO_ENDPOINT',
+      outcome: 'SKIPPED',
+    });
   });
 });
 
@@ -1703,7 +1718,11 @@ describe('V1.12-D the secret and its rotation', () => {
       receiver.received.map((r) => r.headers['x-mandaria-event-id']),
     ).not.toContain(event.id);
     const manual = await deliverEvent(event.id).expect(200);
-    expect(manual.body).toEqual({ kind: 'skipped', reason: 'NO_SECRET' });
+    expect(manual.body).toEqual({
+      kind: 'skipped',
+      reason: 'NO_SECRET',
+      outcome: 'SKIPPED',
+    });
     // Nothing was lost: with a secret the work is found again.
     secrets[ids.b2bClient] = await issueSecret(ids.b2bClient);
     receiver.always({ status: 200 });
@@ -1871,4 +1890,609 @@ describe('V1.12-D the boundary and the admin view', () => {
       viewAnon: 401,
     });
   });
+});
+
+const listEvents = (query: Record<string, string | number> = {}) =>
+  api().get('/api/v1/admin/b2b-events').auth(t.sa, bearer).query(query);
+const eventDetail = (eventId: string) =>
+  api().get(`/api/v1/admin/b2b-events/${eventId}`).auth(t.sa, bearer);
+const rescueEvent = (eventId: string) =>
+  api()
+    .post(`/api/v1/admin/b2b-events/${eventId}/rescue`)
+    .auth(t.sa, bearer)
+    .send({});
+const eventIds = (body: { items: { eventId: string }[] }) =>
+  body.items.map((i) => i.eventId);
+/**
+ * Earlier blocks leave handovers pending against receivers that no longer listen. Once their
+ * backoff lapses they are due again, and a worker pass — which takes due work before it enrols a
+ * new event — spends itself on them. Parking them keeps each case about its own event; it asserts
+ * nothing and changes nothing these cases are about.
+ */
+const parkEarlierWork = () =>
+  prisma.b2bWebhookDelivery.updateMany({
+    where: { state: 'PENDING' },
+    data: { nextAttemptAt: new Date(Date.now() + 3_600_000) },
+  });
+const freshBlock = async () => {
+  receiver.reset();
+  await parkEarlierWork();
+  // The boundary is set to this instant: every event these cases create comes after it, and the
+  // ones whose transport state an earlier case removed stay behind it. Reaching further back would
+  // offer the worker an event that already has attempts, and enrolling it collides on the attempt
+  // number and takes the whole pass down with it.
+  await prisma.b2bWebhookEndpoint.updateMany({
+    where: { integrationClientId: ids.b2bClient },
+    data: { deliverFrom: new Date() },
+  });
+};
+
+/**
+ * Stops and resumes automatic delivery for the fixture client. Pausing is how these cases keep a
+ * worker pass out of the way while they assert what an administrative action did by itself.
+ */
+const pauseEndpoint = () =>
+  setEndpoint(ids.b2bClient, { url: receiver.url, enabled: false }).expect(200);
+const resumeEndpoint = () =>
+  setEndpoint(ids.b2bClient, { url: receiver.url, enabled: true }).expect(200);
+
+/** Spends the whole schedule against a receiver that keeps failing. */
+async function exhaust(eventId: string) {
+  await waitForAttempts(eventId);
+  for (let i = 0; i < 4; i += 1) {
+    await makeDue(eventId);
+    await worker().tick();
+  }
+  expect((await deliveryOf(eventId)).state).toBe('EXHAUSTED');
+}
+
+describe('V1.12-E answering «what happened with my order»', () => {
+  withApp();
+  beforeAll(async () => {
+    await receiver.start();
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
+  });
+  afterAll(async () => {
+    await receiver.stop();
+  });
+  beforeEach(freshBlock);
+
+  it('the reference the client already has is enough to find the event and read its transport', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    const page = await listEvents({
+      externalReference: dispatch.reference,
+    }).expect(200);
+    expect(page.body).toMatchObject({ total: 1, page: 1, totalPages: 1 });
+    expect(page.body.items[0]).toMatchObject({
+      eventId: event.id,
+      // The public name of the fact, never the internal enum.
+      type: 'delivery.completed',
+      integrationClientId: ids.b2bClient,
+      deliveryRequestPublicId: dispatch.requestPublicId,
+      externalReference: dispatch.reference,
+      transportState: 'DELIVERED',
+      noDeliveryReason: null,
+      attemptCount: 1,
+      inFlight: false,
+    });
+    expect(page.body.items[0].deliveredAt).not.toBeNull();
+    // The same order found by its Mandaria identifier, lowercase included.
+    const byPublicId = await listEvents({
+      deliveryRequestPublicId: dispatch.requestPublicId.toLowerCase(),
+    }).expect(200);
+    expect(eventIds(byPublicId.body)).toEqual([event.id]);
+  }, 30000);
+
+  it('the detail gathers the envelope, the frozen payload, the destination and every attempt', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    await makeDue(event.id);
+    await worker().tick();
+    const detail = (await eventDetail(event.id).expect(200)).body;
+    expect(detail).toMatchObject({
+      eventId: event.id,
+      type: 'delivery.completed',
+      transportState: 'PENDING',
+      attemptCount: 2,
+    });
+    // The very snapshot V1.12-B froze, not a reconstruction.
+    expect(detail.payload).toEqual(event.payload);
+    expect(detail.endpoint).toMatchObject({
+      url: receiver.url,
+      enabled: true,
+      secretConfigured: true,
+    });
+    expect(detail.attempts).toHaveLength(2);
+    expect(
+      detail.attempts.map((a: { attemptNumber: number }) => a.attemptNumber),
+    ).toEqual([1, 2]);
+    expect(detail.attempts[1]).toMatchObject({
+      result: 'FAILED',
+      httpStatus: 500,
+      failureKind: 'HTTP_STATUS',
+      endpointUrl: receiver.url,
+    });
+    receiver.always({ status: 200 });
+  }, 30000);
+
+  it('an event outside reliable delivery is NO_DELIVERY with a reason, and no reason is a fault', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    // Reproduce a V1.12-B/C era event: the fact exists, its transport state does not.
+    await prisma.$transaction([
+      prisma.$executeRawUnsafe(
+        `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
+      ),
+      prisma.b2bWebhookDelivery.deleteMany({ where: { eventId: event.id } }),
+    ]);
+    await prisma.b2bWebhookEndpoint.update({
+      where: { integrationClientId: ids.b2bClient },
+      data: { deliverFrom: new Date(event.occurredAt.getTime() + 1000) },
+    });
+    const older = (await eventDetail(event.id).expect(200)).body;
+    expect(older).toMatchObject({
+      transportState: 'NO_DELIVERY',
+      noDeliveryReason: 'BEFORE_BOUNDARY',
+      attemptCount: 0,
+      nextAttemptAt: null,
+    });
+    // The attempts it did make are history and are still there: NO_DELIVERY is about state.
+    expect(older.attempts.length).toBeGreaterThan(0);
+    // With no secret there is nothing to sign with, so the reason changes; the event does not.
+    await prisma.b2bWebhookEndpoint.update({
+      where: { integrationClientId: ids.b2bClient },
+      data: { secretCiphertext: null, secretSetAt: null },
+    });
+    expect((await eventDetail(event.id).expect(200)).body.noDeliveryReason).toBe(
+      'NO_ENDPOINT',
+    );
+    // And it is findable as such, which is how an operator sweeps for gaps.
+    const swept = await listEvents({
+      transportState: 'NO_DELIVERY',
+      externalReference: dispatch.reference,
+    }).expect(200);
+    expect(eventIds(swept.body)).toEqual([event.id]);
+    expect(await eventOf(dispatch.id)).toEqual(event);
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
+  }, 30000);
+
+  it('filters and pages agree with each other, without repeating or skipping a row', async () => {
+    receiver.always({ status: 200 });
+    const references: string[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      const dispatch = await deliveredByProvider();
+      await waitForAttempts((await eventOf(dispatch.id)).id);
+      references.push(dispatch.reference);
+      await freeFixtureResources();
+    }
+    const all = await listEvents({
+      integrationClientId: ids.b2bClient,
+      pageSize: 100,
+    }).expect(200);
+    const ordered = eventIds(all.body);
+    // Newest first, with the id as a stable tiebreak.
+    const occurred = all.body.items.map(
+      (i: { occurredAt: string }) => i.occurredAt,
+    );
+    expect([...occurred].sort().reverse()).toEqual(occurred);
+    // Walked one row at a time, the pages reconstruct exactly the same list.
+    const walked: string[] = [];
+    for (let page = 1; page <= Math.min(all.body.total, 5); page += 1) {
+      const step = await listEvents({
+        integrationClientId: ids.b2bClient,
+        page,
+        pageSize: 1,
+      }).expect(200);
+      expect(step.body).toMatchObject({ total: all.body.total, pageSize: 1 });
+      walked.push(step.body.items[0].eventId);
+    }
+    expect(walked).toEqual(ordered.slice(0, walked.length));
+    expect(new Set(walked).size).toBe(walked.length);
+    // A filter narrows that same list rather than producing a different one.
+    for (const reference of references) {
+      const one = await listEvents({ externalReference: reference }).expect(200);
+      expect(one.body.total).toBe(1);
+      expect(ordered).toContain(one.body.items[0].eventId);
+    }
+    // Another client's events are not this client's.
+    const empty = await listEvents({
+      integrationClientId: randomUUID(),
+    }).expect(200);
+    expect(empty.body).toMatchObject({ items: [], total: 0, totalPages: 0 });
+    // A range that cannot contain anything is refused rather than silently answered with nothing.
+    await listEvents({
+      occurredFrom: new Date().toISOString(),
+      occurredTo: new Date(Date.now() - 86_400_000).toISOString(),
+    }).expect(400);
+  }, 90000);
+});
+
+describe('V1.12-E acting on a handover that is stuck', () => {
+  withApp();
+  beforeAll(async () => {
+    await receiver.start();
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
+  });
+  afterAll(async () => {
+    await receiver.stop();
+  });
+  beforeEach(freshBlock);
+
+  it('a rescue queues work and says so; it never claims the event was delivered', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await exhaust(event.id);
+    const before = await prisma.b2bWebhookDeliveryAttempt.count({
+      where: { eventId: event.id },
+    });
+    // Paused, so the hint the rescue gives the worker cannot act on it: what is asserted here is
+    // that the rescue itself schedules work and sends nothing.
+    await pauseEndpoint();
+    receiver.reset();
+    const rescued = await rescueEvent(event.id).expect(200);
+    expect(rescued.body).toEqual({ outcome: 'RESCHEDULED', eventId: event.id });
+    const delivery = await deliveryOf(event.id);
+    expect(delivery).toMatchObject({
+      state: 'PENDING',
+      // Nothing is erased and the counter does not go back: a rescue buys one more attempt.
+      attemptCount: 5,
+      exhaustedAt: null,
+      leaseOwner: null,
+      leaseExpiresAt: null,
+    });
+    expect(delivery.nextAttemptAt).not.toBeNull();
+    expect(
+      await prisma.b2bWebhookDeliveryAttempt.count({
+        where: { eventId: event.id },
+      }),
+    ).toBe(before);
+    // The rescue attempted nothing itself; the worker is what picks it up.
+    expect(receiver.received).toHaveLength(0);
+    receiver.always({ status: 200 });
+    await resumeEndpoint();
+    await worker().tick();
+    expect((await deliveryOf(event.id)).state).toBe('DELIVERED');
+    expect(await eventOf(dispatch.id)).toEqual(event);
+  }, 60000);
+
+  it('a handover that fails again returns to EXHAUSTED and can be rescued once more', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await exhaust(event.id);
+    await pauseEndpoint();
+    await rescueEvent(event.id).expect(200);
+    await resumeEndpoint();
+    await worker().tick();
+    expect(await deliveryOf(event.id)).toMatchObject({
+      state: 'EXHAUSTED',
+      attemptCount: 6,
+    });
+    // Out of attempts again, and rescuable again: the counter never goes backwards, so each
+    // rescue buys exactly one more.
+    await pauseEndpoint();
+    expect((await rescueEvent(event.id).expect(200)).body.outcome).toBe(
+      'RESCHEDULED',
+    );
+    await resumeEndpoint();
+    receiver.always({ status: 200 });
+  }, 60000);
+
+  it('two simultaneous rescues do not queue the same work twice', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await exhaust(event.id);
+    await pauseEndpoint();
+    const [first, second] = await Promise.all([
+      rescueEvent(event.id),
+      rescueEvent(event.id),
+    ]);
+    expect([first.status, second.status]).toEqual([200, 200]);
+    expect([first.body.outcome, second.body.outcome].sort()).toEqual([
+      'ALREADY_PENDING',
+      'RESCHEDULED',
+    ]);
+    expect((await deliveryOf(event.id)).attemptCount).toBe(5);
+    await resumeEndpoint();
+    receiver.always({ status: 200 });
+  }, 60000);
+
+  it('a rescue refuses what it has no business touching, and says which is which', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    // Already handed over: what is being asked for is a redelivery, not a rescue.
+    const delivered = await rescueEvent(event.id).expect(409);
+    expect(delivered.body.code).toBe('WEBHOOK_ALREADY_DELIVERED');
+    // Outside reliable delivery there is no queue to put it back into.
+    await prisma.$transaction([
+      prisma.$executeRawUnsafe(
+        `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
+      ),
+      prisma.b2bWebhookDelivery.deleteMany({ where: { eventId: event.id } }),
+    ]);
+    const untracked = await rescueEvent(event.id).expect(409);
+    expect(untracked.body.code).toBe('WEBHOOK_DELIVERY_NOT_TRACKED');
+    await rescueEvent(randomUUID()).expect(409);
+  }, 30000);
+
+  it('a manual redelivery reports what actually happened, not that the call returned 200', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    // It failed on the wire and there are attempts left: rescheduled, never «delivered».
+    const retried = await deliverEvent(event.id).expect(200);
+    expect(retried.body).toMatchObject({
+      result: 'FAILED',
+      state: 'PENDING',
+      outcome: 'RESCHEDULED',
+    });
+    expect(retried.body.nextAttemptAt).toBeDefined();
+    receiver.always({ status: 200 });
+    const done = await deliverEvent(event.id).expect(200);
+    expect(done.body).toMatchObject({
+      result: 'SUCCEEDED',
+      state: 'DELIVERED',
+      outcome: 'DELIVERED',
+    });
+    const closed = await deliveryOf(event.id);
+    // A redelivery of something already delivered is deliberate and audited, and moves nothing.
+    const again = await deliverEvent(event.id).expect(200);
+    expect(again.body).toMatchObject({
+      state: 'DELIVERED',
+      outcome: 'DELIVERED',
+    });
+    const after = await deliveryOf(event.id);
+    expect(after.deliveredAt).toEqual(closed.deliveredAt);
+    expect(after.state).toBe('DELIVERED');
+  }, 30000);
+
+  it('a manual redelivery with nowhere to send says SKIPPED instead of pretending', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    await setEndpoint(ids.b2bClient, {
+      url: receiver.url,
+      enabled: false,
+    }).expect(200);
+    const skipped = await deliverEvent(event.id).expect(200);
+    expect(skipped.body).toEqual({
+      kind: 'skipped',
+      reason: 'ENDPOINT_DISABLED',
+      outcome: 'SKIPPED',
+    });
+    await setEndpoint(ids.b2bClient, {
+      url: receiver.url,
+      enabled: true,
+    }).expect(200);
+  }, 30000);
+
+  it('two simultaneous redeliveries never put the same event on the wire twice', async () => {
+    // It fails once, so the handover is still pending and still owed — a delivered one cannot be
+    // reopened, and nothing here tries to.
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    expect((await deliveryOf(event.id)).state).toBe('PENDING');
+    receiver.reset();
+    receiver.always({ status: 200, delayMs: 700 });
+    const [first, second] = await Promise.all([
+      deliverEvent(event.id),
+      deliverEvent(event.id),
+    ]);
+    expect([first.status, second.status].sort()).toEqual([200, 409]);
+    const refused = first.status === 409 ? first : second;
+    expect(refused.body.code).toBe('WEBHOOK_DELIVERY_IN_PROGRESS');
+    // Exactly one of them reached the client.
+    expect(receiver.received).toHaveLength(1);
+    receiver.always({ status: 200 });
+  }, 30000);
+
+  it('a redelivery while a worker holds the lease is refused rather than run alongside it', async () => {
+    receiver.always({ status: 503 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    await prisma.b2bWebhookDelivery.update({
+      where: { eventId: event.id },
+      data: {
+        leaseOwner: 'worker-holding-it',
+        leaseExpiresAt: new Date(Date.now() + 60_000),
+      },
+    });
+    receiver.reset();
+    const busy = await deliverEvent(event.id).expect(409);
+    expect(busy.body.code).toBe('WEBHOOK_DELIVERY_IN_PROGRESS');
+    expect(receiver.received).toHaveLength(0);
+    // And the operational view explains the silence instead of leaving it unexplained.
+    expect((await eventDetail(event.id).expect(200)).body.inFlight).toBe(true);
+    await prisma.b2bWebhookDelivery.update({
+      where: { eventId: event.id },
+      data: { leaseOwner: null, leaseExpiresAt: null },
+    });
+    receiver.always({ status: 200 });
+  }, 30000);
+});
+
+describe('V1.12-E the operational surface is administrative, and keeps its secrets', () => {
+  withApp();
+  beforeAll(async () => {
+    await receiver.start();
+    await configureEndpoint(ids.b2bClient, { url: receiver.url });
+  });
+  afterAll(async () => {
+    await receiver.stop();
+  });
+  beforeEach(freshBlock);
+
+  it('separates what the database knows from what only the answering instance knows', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    const health = (
+      await api()
+        .get('/api/v1/admin/webhooks/health')
+        .auth(t.sa, bearer)
+        .expect(200)
+    ).body;
+    expect(health.pending).toBeGreaterThan(0);
+    expect(health.oldestPendingDueAt).not.toBeNull();
+    // Configuration and memory of this backend, not a claim about the fleet. The suite drives the
+    // worker by hand, and health reports that honestly instead of a loop that is switched off.
+    expect(health.thisInstance).toMatchObject({
+      workerEnabled: false,
+      pollSeconds: 0,
+      leaseSeconds: 5,
+    });
+    expect(health.thisInstance.lastPollAt).not.toBeNull();
+    const summary = (
+      await api()
+        .get(`/api/v1/admin/integrations/${ids.b2bClient}/webhook/summary`)
+        .auth(t.sa, bearer)
+        .expect(200)
+    ).body;
+    expect(summary.events).toBeGreaterThan(0);
+    expect(summary.pending + summary.delivered + summary.exhausted).toBe(
+      await prisma.b2bWebhookDelivery.count({
+        where: { integrationClientId: ids.b2bClient },
+      }),
+    );
+    receiver.always({ status: 200 });
+  }, 30000);
+
+  it('no secret reaches any of it, in any form', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    const ciphertext = (
+      await prisma.b2bWebhookEndpoint.findUniqueOrThrow({
+        where: { integrationClientId: ids.b2bClient },
+        select: { secretCiphertext: true },
+      })
+    ).secretCiphertext!;
+    const bodies = JSON.stringify([
+      (await listEvents({ externalReference: dispatch.reference }).expect(200))
+        .body,
+      (await eventDetail(event.id).expect(200)).body,
+      (
+        await api()
+          .get('/api/v1/admin/webhooks/health')
+          .auth(t.sa, bearer)
+          .expect(200)
+      ).body,
+      (
+        await api()
+          .get(`/api/v1/admin/integrations/${ids.b2bClient}/webhook/summary`)
+          .auth(t.sa, bearer)
+          .expect(200)
+      ).body,
+    ]);
+    expect(bodies).not.toContain(secrets[ids.b2bClient]);
+    expect(bodies).not.toContain(ciphertext);
+    expect(bodies).not.toContain('secretCiphertext');
+    // What it does say is whether one exists, which is what an operator actually needs.
+    expect((await eventDetail(event.id).expect(200)).body.endpoint).toMatchObject(
+      { secretConfigured: true },
+    );
+  }, 30000);
+
+  it('reading or acting on it requires SUPER_ADMIN', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    const list = '/api/v1/admin/b2b-events';
+    const detail = `${list}/${event.id}`;
+    const rescue = `${detail}/rescue`;
+    const health = '/api/v1/admin/webhooks/health';
+    expect({
+      listProvider: (await api().get(list).auth(t.A, bearer)).status,
+      listDriver: (await api().get(list).auth(t.ana, bearer)).status,
+      // A B2B token is not a human session: it is not recognised on this surface at all.
+      listB2b: (await api().get(list).auth(t.b2b, bearer)).status,
+      listAnon: (await api().get(list)).status,
+      detailProvider: (await api().get(detail).auth(t.A, bearer)).status,
+      detailB2b: (await api().get(detail).auth(t.b2b, bearer)).status,
+      rescueProvider: (await api().post(rescue).auth(t.A, bearer).send({}))
+        .status,
+      rescueDriver: (await api().post(rescue).auth(t.indy, bearer).send({}))
+        .status,
+      rescueAnon: (await api().post(rescue).send({})).status,
+      healthProvider: (await api().get(health).auth(t.A, bearer)).status,
+      healthAnon: (await api().get(health)).status,
+    }).toEqual({
+      listProvider: 403,
+      listDriver: 403,
+      listB2b: 401,
+      listAnon: 401,
+      detailProvider: 403,
+      detailB2b: 401,
+      rescueProvider: 403,
+      rescueDriver: 403,
+      rescueAnon: 401,
+      healthProvider: 403,
+      healthAnon: 401,
+    });
+    expect(await eventOf(dispatch.id)).toBeTruthy();
+  }, 30000);
+
+  it('reading the operational view changes nothing: not the event, not the credits', async () => {
+    receiver.always({ status: 500 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    const beforeEvent = await eventOf(dispatch.id);
+    const beforeEconomy = await economy();
+    const beforeDispatch = await dispatchRow(dispatch.id);
+    const beforeAttempts = await prisma.b2bWebhookDeliveryAttempt.count();
+    const beforeDelivery = await deliveryOf(event.id);
+    await listEvents({ externalReference: dispatch.reference }).expect(200);
+    await eventDetail(event.id).expect(200);
+    await api()
+      .get('/api/v1/admin/webhooks/health')
+      .auth(t.sa, bearer)
+      .expect(200);
+    await api()
+      .get(`/api/v1/admin/integrations/${ids.b2bClient}/webhook/summary`)
+      .auth(t.sa, bearer)
+      .expect(200);
+    expect(await eventOf(dispatch.id)).toEqual(beforeEvent);
+    expect(await economy()).toEqual(beforeEconomy);
+    expect(await dispatchRow(dispatch.id)).toEqual(beforeDispatch);
+    expect(await prisma.b2bWebhookDeliveryAttempt.count()).toBe(beforeAttempts);
+    expect(await deliveryOf(event.id)).toEqual(beforeDelivery);
+    receiver.always({ status: 200 });
+  }, 30000);
+
+  it('SQL cannot rewrite the outbox to make the operational view lie', async () => {
+    receiver.always({ status: 200 });
+    const dispatch = await deliveredByProvider();
+    const event = await eventOf(dispatch.id);
+    await waitForAttempts(event.id);
+    for (const sql of [
+      `UPDATE "B2bOutboxEvent" SET "occurredAt" = "occurredAt" - interval '1 day' WHERE "id" = '${event.id}'`,
+      `UPDATE "B2bOutboxEvent" SET "payload" = '{}'::jsonb WHERE "id" = '${event.id}'`,
+      `DELETE FROM "B2bOutboxEvent" WHERE "id" = '${event.id}'`,
+      `UPDATE "B2bWebhookDeliveryAttempt" SET "result" = 'FAILED' WHERE "eventId" = '${event.id}'`,
+    ])
+      await expect(prisma.$executeRawUnsafe(sql)).rejects.toThrow();
+    expect(await eventOf(dispatch.id)).toEqual(event);
+    expect((await eventDetail(event.id).expect(200)).body.transportState).toBe(
+      'DELIVERED',
+    );
+  }, 30000);
 });

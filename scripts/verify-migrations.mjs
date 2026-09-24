@@ -1263,9 +1263,30 @@ try {
       ]),
       '2',
     );
+
+    // V1.12-E: the listing walks every client's events newest first, with a stable tiebreak.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_indexes WHERE indexname = 'B2bOutboxEvent_occurredAt_id_idx'`,
+      ]),
+      '1',
+    );
+    // V1.12-E narrowed the guard: an exhausted handover may be put back in the queue by an
+    // administrator, while a delivered one still never reopens and the count still never falls.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_proc WHERE proname = 'b2b_webhook_delivery_guard'
+            AND prosrc LIKE '%a delivered handover cannot be reopened%'
+            AND prosrc LIKE '%the attempt count cannot go backwards%'
+            AND prosrc NOT LIKE '%an exhausted handover is not rescheduled%'`,
+      ]),
+      '1',
+    );
   }
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D -> V1.10-E -> V1.11-A -> V1.12-B -> V1.12-C -> V1.12-D (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; no refund created by migration; no dispatch delivered nor assignment completed by migration; no B2B outbox event created by migration, with its partial unique index, composite ownership keys, immutability triggers and deferred enforcement present; no webhook endpoint or delivery attempt created by migration, with their ownership keys and append-only triggers present; no webhook delivery state created by migration, with the delivery boundary, the encrypted-secret check, the attempt ordinal and the delivery guards present; V1.4-V1.12 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D -> V1.10-E -> V1.11-A -> V1.12-B -> V1.12-C -> V1.12-D -> V1.12-E (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; no refund created by migration; no dispatch delivered nor assignment completed by migration; no B2B outbox event created by migration, with its partial unique index, composite ownership keys, immutability triggers and deferred enforcement present; no webhook endpoint or delivery attempt created by migration, with their ownership keys and append-only triggers present; no webhook delivery state created by migration, with the delivery boundary, the encrypted-secret check, the attempt ordinal and the delivery guards present; no operational state created by migration, with the listing index present and the delivery guard narrowed so an administrator can put an exhausted handover back in the queue while a delivered one still never reopens; V1.4-V1.12 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

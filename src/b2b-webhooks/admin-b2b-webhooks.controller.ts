@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -24,6 +25,8 @@ import { AccessGuard, Roles, RolesGuard } from '../auth/auth.guards.js';
 import type { AuthenticatedRequest } from '../auth/auth.guards.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { B2bWebhooksService } from './b2b-webhooks.service.js';
+import { WebhookOperationsService } from './webhook-operations.service.js';
+import { redeliveryOutcome } from './webhook-operations.js';
 import { WebhookTargetError } from './webhook-target.js';
 import {
   WebhookSecretError,
@@ -31,10 +34,16 @@ import {
   newWebhookSecret,
 } from './webhook-secret.js';
 import {
+  AdminEventDetailResponse,
+  AdminEventListQueryDto,
+  AdminEventPageResponse,
   UpsertWebhookEndpointDto,
   WebhookAttemptResponse,
+  WebhookClientSummaryResponse,
   WebhookDeliveryResponse,
   WebhookEndpointResponse,
+  WebhookHealthResponse,
+  WebhookRescueResponse,
   WebhookSecretResponse,
 } from './b2b-webhooks.dto.js';
 
@@ -79,6 +88,7 @@ export class AdminB2bWebhooksController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly webhooks: B2bWebhooksService,
+    private readonly operations: WebhookOperationsService,
   ) {}
 
   @Get('integrations/:id/webhook')
@@ -239,10 +249,20 @@ export class AdminB2bWebhooksController {
     description:
       'Realiza **un** intento y registra su resultado. Toma el lease antes, así que nunca corre en paralelo con el worker: si éste lo tiene en ese momento, responde 409. Un evento PENDING avanza su calendario normalmente; uno EXHAUSTED puede pasar a DELIVERED si ahora responde; uno ya DELIVERED se reenvía a propósito y queda auditado sin cambiar de estado; uno anterior a la frontera se envía como en V1.12-C, sin crear estado ni entrar al ciclo de reintentos. No modifica el evento, que es inmutable, ni el Dispatch, ni los créditos.',
   })
-  async deliver(@Param('eventId', new ParseUUIDPipe()) eventId: string) {
+  async deliver(
+    @Param('eventId', new ParseUUIDPipe()) eventId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    // Audited before anything is tried, so a request that then fails is still on record as having
+    // been made by a person.
+    this.operations.logRedeliveryRequest(eventId, req.user.id);
     const result = await this.webhooks.deliver(eventId);
     if (result.kind === 'skipped')
-      return { kind: result.kind, reason: result.reason };
+      return {
+        kind: result.kind,
+        reason: result.reason,
+        outcome: redeliveryOutcome(result),
+      };
     return {
       kind: result.kind,
       attemptId: result.attemptId,
@@ -256,6 +276,75 @@ export class AdminB2bWebhooksController {
       durationMs: result.outcome.durationMs,
       state: result.state,
       nextAttemptAt: result.nextAttemptAt ?? undefined,
+      // What actually happened, in the operator's words: delivered, rescheduled for later,
+      // out of attempts, or not tried at all. A screen must never read a 200 here as «sent».
+      outcome: redeliveryOutcome({
+        kind: result.kind,
+        outcomeResult: result.outcome.result,
+        state: result.state,
+      }),
     };
+  }
+
+  /** V1.12-E: what Mandaria owes its B2B clients, answerable without opening a SQL console. */
+  @Get('b2b-events')
+  @ApiOkResponse({ type: AdminEventPageResponse })
+  @ApiOperation({
+    summary: 'Listar eventos B2B y su estado de transporte',
+    description:
+      'Tres conceptos distintos conviven aquí: el **evento** es un hecho inmutable y no tiene estado; el **transporte** sí lo tiene (PENDING, DELIVERED, EXHAUSTED, y el derivado NO_DELIVERY); y los **intentos** son historia. Orden por `occurredAt` descendente con el id como desempate estable. Filtros por cliente, tipo, estado de transporte, `publicId`, referencia externa y rango de fechas.',
+  })
+  events(@Query() query: AdminEventListQueryDto) {
+    return this.operations.list(query);
+  }
+
+  @Get('b2b-events/:eventId')
+  @ApiOkResponse({ type: AdminEventDetailResponse })
+  @ApiOperation({
+    summary: 'Diagnóstico completo de un evento B2B',
+    description:
+      'Reúne en una respuesta el sobre, la instantánea pública congelada que el cliente debía recibir, su dueño, el destino configurado, el estado del transporte y el historial de intentos. Nunca incluye el secreto, ni cifrado ni descifrado.',
+  })
+  event(@Param('eventId', new ParseUUIDPipe()) eventId: string) {
+    return this.operations.detail(eventId);
+  }
+
+  /**
+   * Puts an exhausted handover back in the queue. It does not attempt anything here, which is why
+   * the answer says «rescheduled» and never «delivered».
+   */
+  @Post('b2b-events/:eventId/rescue')
+  @HttpCode(200)
+  @ApiOkResponse({ type: WebhookRescueResponse })
+  @ApiOperation({
+    summary: 'Devolver a la cola un evento con los reintentos agotados',
+    description:
+      'EXHAUSTED → PENDING, con el próximo intento ahora. **No intenta nada aquí**: programa trabajo y el worker lo recoge, así que la respuesta dice `RESCHEDULED` y nunca «entregado». No borra intentos, no reinicia el contador y no toca el evento; como el contador sigue donde estaba, un rescate compra un intento más y, si vuelve a fallar, regresa a EXHAUSTED y puede rescatarse otra vez. Dos rescates simultáneos no se duplican: el segundo encuentra la entrega ya pendiente y lo dice. Para intentarlo en el momento, usar `POST /admin/b2b-events/{eventId}/deliver`.',
+  })
+  rescue(
+    @Param('eventId', new ParseUUIDPipe()) eventId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.operations.rescue(eventId, req.user.id);
+  }
+
+  @Get('webhooks/health')
+  @ApiOkResponse({ type: WebhookHealthResponse })
+  @ApiOperation({
+    summary: 'Cuánto trabajo de webhooks queda, y qué hace esta instancia',
+    description:
+      'Los conteos son persistidos y compartidos por todos los backends. `thisInstance` es configuración y memoria **de la instancia que responde**: con varios backends corriendo el mismo bucle, ninguno sabe lo que hacen los demás, así que esto no es salud global y no se presenta como tal.',
+  })
+  health() {
+    return this.operations.health();
+  }
+
+  @Get('integrations/:id/webhook/summary')
+  @ApiOkResponse({ type: WebhookClientSummaryResponse })
+  @ApiOperation({
+    summary: 'Resumen de entregas de un IntegrationClient',
+  })
+  summary(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.operations.summaryFor(id);
   }
 }

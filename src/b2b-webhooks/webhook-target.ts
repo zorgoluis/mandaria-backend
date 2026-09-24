@@ -94,7 +94,10 @@ function ipv6Groups(value: string): number[] | null {
 }
 
 function isForbiddenIpv6(address: string) {
-  const value = address.toLowerCase().replace(/^\[|\]$/g, '').split('%')[0];
+  const value = address
+    .toLowerCase()
+    .replace(/^\[|\]$/g, '')
+    .split('%')[0];
   const g = ipv6Groups(value);
   if (!g) return true; // unparseable is not a destination we call
   const zeroPrefix = (count: number) => g.slice(0, count).every((x) => x === 0);

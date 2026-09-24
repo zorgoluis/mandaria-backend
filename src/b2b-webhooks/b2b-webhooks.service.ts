@@ -105,6 +105,8 @@ export class B2bWebhooksService implements OnModuleInit, OnApplicationShutdown {
   /** Identifies this process in a lease, so an operator can tell who holds what. */
   private readonly workerId = `${process.pid}-${randomUUID().slice(0, 8)}`;
   private timer: NodeJS.Timeout | undefined;
+  /** When this process last looked for work. Per-instance memory, and reported as such. */
+  private lastPoll: Date | null = null;
   private running: Promise<unknown> = Promise.resolve();
   private stopped = false;
 
@@ -174,9 +176,15 @@ export class B2bWebhooksService implements OnModuleInit, OnApplicationShutdown {
     void this.tick().catch(() => undefined);
   }
 
+  /** What V1.12-E reports as this instance's last poll; it knows nothing about other backends. */
+  get lastPollAt() {
+    return this.lastPoll;
+  }
+
   /** One pass of the worker. Exposed so tests drive it deterministically instead of waiting. */
   async tick(limit = 20): Promise<DeliveryOutcome[]> {
     if (this.stopped) return [];
+    this.lastPoll = new Date();
     const pass = this.drain(limit);
     this.running = pass.catch(() => undefined);
     return pass;
@@ -312,7 +320,9 @@ export class B2bWebhooksService implements OnModuleInit, OnApplicationShutdown {
     if (outcome.failureKind === 'HTTP_STATUS')
       // A status failure always carries its status; without one there is nothing to classify and
       // the safe reading is "do not hammer the receiver".
-      return outcome.httpStatus ? classifyStatus(outcome.httpStatus) : 'TERMINAL';
+      return outcome.httpStatus
+        ? classifyStatus(outcome.httpStatus)
+        : 'TERMINAL';
     return classifyFailure(outcome.failureKind);
   }
 
@@ -368,7 +378,9 @@ export class B2bWebhooksService implements OnModuleInit, OnApplicationShutdown {
           // delivered adds an attempt to the history; it does not move the moment it was handed
           // over, and PostgreSQL refuses that rewrite anyway.
           deliveredAt:
-            step.state === 'DELIVERED' && !delivery.deliveredAt ? now : undefined,
+            step.state === 'DELIVERED' && !delivery.deliveredAt
+              ? now
+              : undefined,
           // Rescuing an exhausted handover clears the giving-up stamp: it did get through in the
           // end, and a delivered row that still claimed to be exhausted would be a contradiction
           // PostgreSQL refuses anyway.
@@ -459,7 +471,8 @@ export class B2bWebhooksService implements OnModuleInit, OnApplicationShutdown {
       >`SELECT "id", "attemptCount", "leaseExpiresAt", "deliveredAt", "exhaustedAt", "state"
            FROM "B2bWebhookDelivery" WHERE "eventId" = ${eventId}::uuid FOR UPDATE`;
       if (!row) return null;
-      if (row.leaseExpiresAt && row.leaseExpiresAt > now) return 'BUSY' as const;
+      if (row.leaseExpiresAt && row.leaseExpiresAt > now)
+        return 'BUSY' as const;
       // A lease is a worker concept, and the worker only ever looks at PENDING work. Taking one on
       // something already delivered or exhausted would claim a contention that cannot happen —
       // and PostgreSQL refuses it, because a finished handover is nobody's to hold.
