@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { PrismaClient } from '@prisma/client';
 import { BASELINE_POLICY_AUTHOR } from './credit-policies.js';
+import type { CreditFixtureClient } from './credit-client.js';
 
 /**
  * V1.10-D: claiming or taking a monetized Dispatch debits its frozen cost, so a suite whose case
@@ -12,7 +13,7 @@ import { BASELINE_POLICY_AUTHOR } from './credit-policies.js';
  * moves the balance; nothing here bypasses the V1.10-A guarantees. Only for *_test databases.
  */
 async function recharge(
-  prisma: PrismaClient,
+  prisma: CreditFixtureClient,
   accountId: string,
   credits: number,
 ) {
@@ -88,7 +89,11 @@ export async function fundIndependentDriver(
  * Leaves the account at exactly `target` credits, adding a RECHARGE or removing with an
  * ADMIN_ADJUSTMENT, so a concurrency case can state the balance it is really about.
  */
-async function moveTo(prisma: PrismaClient, accountId: string, target: number) {
+async function moveTo(
+  prisma: CreditFixtureClient,
+  accountId: string,
+  target: number,
+) {
   const account = await prisma.creditAccount.findUniqueOrThrow({
     where: { id: accountId },
   });
@@ -122,7 +127,7 @@ async function moveTo(prisma: PrismaClient, accountId: string, target: number) {
 
 /** Leaves the provider account at exactly `target` credits. */
 export async function setProviderBalance(
-  prisma: PrismaClient,
+  prisma: CreditFixtureClient,
   providerId: string,
   target: number,
 ) {

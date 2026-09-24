@@ -1,3 +1,86 @@
+# Housekeeping técnico pre-V1.12-B (2026-09-23)
+
+Rama `v1.11-mvp-delivery-completion` sobre `a767e7c`, paquete **1.12.0** (sin cambio de versión). **No es una versión funcional:** no se tocaron reglas de negocio, dominio, migraciones ni contratos. **Sin commit ni push.** Dos problemas de higiene de pruebas, detectados repetidamente durante los CHECKs, quedan cerrados.
+
+## Problema A — `.tmp/` entraba en el descubrimiento de pruebas
+
+`vitest.config.e2e.ts` incluía `**/*.e2e-spec.ts` y `vitest.config.ts` incluía `**/*.spec.ts`, de modo que ambas suites recogían las copias de trabajo que un CHECK deja en `.tmp/`. Ambos `include` se acotaron a las carpetas oficiales y ambos `exclude` ganaron `.tmp/**`.
+
+| Descubrimiento | Antes | Después |
+|---|---|---|
+| E2E (`vitest.config.e2e.ts`) | **26** archivos: 21 oficiales + 5 de `.tmp/` (`check-v110d/adversarial`, `check-v110d/migration`, `check-v110d/supplement`, `check-v110e/adversarial`, `check-v112a/adversarial`) | **21** archivos, **0** de `.tmp/` |
+| Unitarias (`vitest.config.ts`) | **22** archivos / 224 pruebas (incluían 2 archivos de scratch) | **20** archivos / **216** pruebas oficiales |
+
+Verificado por ejecución real, no sólo por configuración: `npm run test:e2e` **sin filtro** recolectó 21 archivos y 331 pruebas, con 0 apariciones de `check-v112a` en la salida aunque ese archivo sigue en disco.
+
+**Corrección de una cifra publicada.** La verificación de V1.12-A informó «224/224 unitarias en 22 archivos». Ese conteo estaba inflado por este mismo defecto: dos `*.spec.ts` de scratch se colaban en la suite. La cifra oficial correcta, medida ahora, es **216/216 en 20 archivos**; las 14 pruebas nuevas de `test/delivery-status.spec.ts` siguen siendo reales y siguen pasando. La cifra E2E de V1.12-A (331 en 21 archivos) no estaba afectada porque aquella corrida se acotó a `test/`.
+
+## Problema B — `award-boundary.check.ts` dependía de `.tmp/`
+
+### Causa raíz
+
+`test/migrations/award-boundary.check.ts` importaba estáticamente `PrismaClient` desde `../../.tmp/check-v110d/previous-c/node_modules/@prisma/client/index.js`.
+
+Ese módulo **no es evidencia olvidada**: lo genera `scripts/verify-award-boundary.mjs`, un script oficial y versionado, que reconstruye los commits históricos `7881efb` (V1.10-B) y `a4daeb5` (V1.10-C), genera el Prisma Client de cada esquema de esa época y después ejecuta este check. El defecto es que un archivo del repositorio importaba **estáticamente** un artefacto que sólo existe después de correr ese script: en un clon limpio `tsc` habría fallado con «cannot find module», y en esta máquina fallaba con 4 errores de asignabilidad porque el cliente histórico no tiene `DispatchPreEnforcementAward`, el modelo que añade la propia migración de frontera.
+
+**El cliente histórico es necesario y no se puede sustituir por el oficial.** El check lee todos los Dispatch antes de aplicar la migración de frontera y otra vez después, y exige que las filas sean idénticas. Con el cliente actual la primera lectura fallaría (seleccionaría `creditMode`, que todavía no existe) y la comparación incluiría justamente la columna que la migración añade. Seleccionar con el cliente histórico es lo que expresa «comparar sólo las columnas que ya existían». Lo mismo vale para `setProviderBalance`: la base de este check queda en el esquema V1.10-D, sin las columnas que V1.10-E añade a `CreditLedgerEntry`.
+
+### Corrección
+
+- `test/migrations/pre-boundary-client.ts` (nuevo): carga ese cliente **en tiempo de ejecución** desde la ruta que el script genera, con un `import()` dinámico, y lo declara como `Omit<PrismaClient, 'dispatchPreEnforcementAward'>` usando el tipo oficial de `@prisma/client`. Si el artefacto no está, falla con el motivo («corre `scripts/verify-award-boundary.mjs`») en vez de con un error de resolución de módulos.
+- `test/support/credit-client.ts` (nuevo): `CreditFixtureClient`, la porción del Prisma Client que las fixtures de créditos realmente tocan (`$queryRawUnsafe`, `$transaction`, `user`, `creditAccount`, `creditLedgerEntry`, `creditPolicy`). `ensureTestCreditPolicies`, `setProviderBalance` y sus auxiliares `recharge`/`moveTo` pasan a declarar esa porción, de modo que aceptan tanto el cliente actual como uno generado para un esquema anterior. Ampliar un parámetro no afecta a ningún llamador existente.
+- **Sin `@ts-ignore`, sin `@ts-expect-error`, sin `any`, sin `skipLibCheck`, sin excluir el archivo de `tsc`.**
+
+### Resultado
+
+| | Antes | Después |
+|---|---|---|
+| Errores de `tsc` en `award-boundary.check.ts` | 4 | **0** |
+| Errores nuevos de `tsc` | — | **0** |
+| Total de errores de `tsc -p tsconfig.json` | 4 | **0** |
+
+Comprobado además **con `.tmp/check-v110d` ya borrado**: `tsc` sigue en 0. La independencia es real, no circunstancial.
+
+## Limpieza de `.tmp/` histórico
+
+| Directorio | Tamaño | Acción |
+|---|---|---|
+| `.tmp/check-v110d` | 64 MB | Eliminado |
+| `.tmp/fix-v110d` | 3.4 MB | Eliminado |
+| `.tmp/check-v110e` | 673 KB | Eliminado |
+| `.tmp/check-v112a` | 36 KB | **Conservado** |
+
+Prueba previa al borrado: los tres están ignorados por Git; ningún archivo oficial importa código desde ellos (`tsc` en 0 tras la corrección); las únicas referencias oficiales restantes son rutas de artefactos que `scripts/verify-award-boundary.mjs` **genera él mismo** en cada corrida (`previous-b/dist/main.js`, `previous-c/dist/main.js`, sus logs y su evidencia), y los commits `7881efb` y `a4daeb5` están disponibles localmente, así que la reconstrucción es completa. El registro `migration-database.json` apuntaba a `mandaria_boundary_1790104569205_test`, que ya no existe en PostgreSQL: no se huerfanó ninguna base.
+
+`.tmp/check-v112a/adversarial.e2e-spec.ts` se conserva porque es el CHECK de V1.12-A citado en la verificación recién publicada y, a diferencia de los anteriores, no se regenera desde Git. Ya no contamina nada: la exclusión lo mantiene fuera de ambas suites.
+
+La evidencia versionada en `docs/`, `VERIFICATION.md` y `BITACORA.md` no se tocó.
+
+## Puertas de calidad y regresión
+
+| Verificación | Resultado |
+|---|---|
+| `prisma validate` | Válido |
+| `migrate status` en `mandaria_db` y `mandaria_test` | Al día (19 migraciones, ninguna nueva) |
+| `verify-migrations` (4 bases desechables) | PASS, cadena V1.0 → V1.11-A sin cambios |
+| `tsc -p tsconfig.json` | **0 errores** (antes 4) |
+| `nest build`, Oxlint, ESLint, `docs:check` | PASS |
+| Unitarias (`npm test`) | **216/216 en 20 archivos** |
+| E2E por archivo | **331/331 en 21 archivos**, ninguno en rojo |
+| E2E en una corrida (`npm run test:e2e`) | 21 archivos y 331 pruebas recolectados, **0 fallos**; 2 archivos truncados por la caída nativa de workers en Windows, cubiertos por la corrida por archivo |
+| OpenAPI | No regenerado: ningún contrato cambió |
+
+`mandaria_test` no volvió a contaminarse y **no se reseteó** en esta tarea.
+
+## Riesgos que siguen abiertos
+
+- `award-boundary.check.ts` quedó escrito para el esquema V1.10-D: su base nunca aplica `20260923000300_service_refunds` (V1.10-E) ni las migraciones de V1.11-A. Sigue siendo válido para lo que comprueba (la frontera C → D), pero no cubre lo posterior. No se tocó: ampliarlo sería trabajo funcional, no housekeeping.
+- El directorio `.tmp/check-v110d` está codificado en dos sitios (`scripts/verify-award-boundary.mjs` y el propio check). Funciona porque el script lo crea antes de invocarlo, pero es acoplamiento por convención.
+- PostgreSQL local conserva **~88 bases desechables** de corridas de `verify-migrations` (`mandaria_clean_*`, `mandaria_upgrade_*`, `mandaria_v19_*`, `mandaria_v110a_*`, `mandaria_drift_*`). Ocupan disco y no las borré: eliminar bases es destructivo y queda fuera del alcance autorizado de este housekeeping.
+- La caída nativa de workers de Vitest en Windows sigue truncando archivos en corridas completas; por eso la medición oficial se hace por archivo.
+
+---
+
 # Verificación V1.12-A — B2B Delivery Status (2026-09-23)
 
 Rama `v1.11-mvp-delivery-completion` sobre `fa68b3b`, paquete **1.12.0**, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** **Sin migración**: no se agregó ni modificó ninguna columna, tabla, índice, constraint ni trigger. Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.
@@ -7,8 +90,8 @@ Rama `v1.11-mvp-delivery-completion` sobre `fa68b3b`, paquete **1.12.0**, Node.j
 | `prisma validate`; `migrate status` y drift (`migrate diff` esquema ↔ base) en **ambas** bases | Válido / al día (19 migraciones, ninguna nueva) / **sin diferencias** |
 | `verify-migrations` (cadena V1.0 → V1.11-A) | PASS sin cambios: V1.12-A no toca la cadena de migraciones |
 | build (`nest build`), Oxlint, ESLint, `docs:check` | PASS |
-| `tsc -p tsconfig.json` | **4 errores preexistentes** en `test/migrations/award-boundary.check.ts` (importa Prisma desde `.tmp/check-v110d/…`, defecto heredado ya reportado en V1.10-E y V1.11-A); **0 en el código y las pruebas de V1.12-A** |
-| Unitarias | **224/224 en 22 archivos**; 14 nuevas en `test/delivery-status.spec.ts`. Línea base: 210 |
+| `tsc -p tsconfig.json` | **4 errores preexistentes** en `test/migrations/award-boundary.check.ts` (importa Prisma desde `.tmp/check-v110d/…`, defecto heredado ya reportado en V1.10-E y V1.11-A); **0 en el código y las pruebas de V1.12-A**. **Corregido el 2026-09-23 por el housekeeping pre-V1.12-B:** ese defecto heredado ya no existe y `tsc` queda en 0 errores |
+| Unitarias | **224/224 en 22 archivos**; 14 nuevas en `test/delivery-status.spec.ts`. Línea base: 210. **Corregido el 2026-09-23 por el housekeeping pre-V1.12-B:** ese conteo estaba inflado porque `vitest.config.ts` recogía dos `*.spec.ts` de `.tmp/`; la cifra oficial es **216/216 en 20 archivos**, con las mismas 14 pruebas nuevas |
 | E2E por archivo | **331/331 en 21 archivos**, ninguno en rojo; 14 nuevas en `test/b2b-delivery-status.e2e-spec.ts`. Línea base: 317 en 20 archivos, igual a la registrada en V1.11-A |
 | CHECK adversarial V1.12-A | **9/9** contra la aplicación Nest real y PostgreSQL real (`.tmp/check-v112a/adversarial.e2e-spec.ts`), sin modificar el producto |
 | OpenAPI y matriz de acceso | Regenerados: ruta nueva `GET /api/v1/delivery-requests/{publicId}/status` (scope `deliveries:read`) en `docs/API_ACCESS.md`; esquemas `DeliveryStatusResponse` y `DeliveryExecutionResponse`; `info.version` sincronizado a 1.12.0 |
