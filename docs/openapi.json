@@ -16500,6 +16500,332 @@
         ]
       }
     },
+    "/api/v1/delivery-requests/{publicId}/status": {
+      "get": {
+        "description": "Requiere deliveries:read. Sólo lectura: Mandaria sigue siendo la única autoridad logística y un IntegrationClient no marca entregas, ni reclama, ni asigna. Devuelve un estado público y estable —REQUESTED, OPEN, ASSIGNED, DELIVERED, CANCELLED o EXPIRED— que no expone el modelo interno de Dispatch: quién ejecuta se resume en execution.mode (PROVIDER o INDEPENDENT) y no se publican Driver, Vehicle, créditos ni políticas. deliveredAt llega con la entrega y es null antes. Apto para sondeo periódico: la lectura no tiene efectos.",
+        "operationId": "DeliveryRequestsController_status",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "description": "Identificador operacional (MDR-NNNNNN).",
+            "schema": {
+              "example": "MDR-000123",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación fallida: campos, stops (1 PICKUP + 1 DROPOFF), packages, contexto financiero, filtros o Idempotency-Key. No se aceptan campos desconocidos ni integrationClientId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token B2B inválido, expirado, revocado o de un IntegrationClient/credencial suspendido. Un JWT humano no es válido aquí.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El token no incluye el scope requerido por la operación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe o pertenece a otro IntegrationClient (no se revela existencia).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones excedido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado; no se exponen SQL, payloads ni datos personales.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "integration-bearer": []
+          }
+        ],
+        "summary": "Consultar el estado logístico de mi DeliveryRequest",
+        "tags": [
+          "Delivery Requests (B2B)"
+        ],
+        "x-scopes": [
+          "deliveries:read"
+        ]
+      }
+    },
     "/api/v1/delivery-requests/{publicId}/cancel": {
       "post": {
         "description": "Requiere deliveries:cancel. CREATED → CANCELLED con reason y cancelledAt. Si ya estaba CANCELLED responde 200 con el estado actual y conserva la razón y fecha originales. No existe edición ni borrado: para corregir datos, cancelar y crear otra solicitud.",
@@ -48687,7 +49013,7 @@
   "info": {
     "title": "Mandaria Core",
     "description": "",
-    "version": "1.11.0",
+    "version": "1.12.0",
     "contact": {}
   },
   "tags": [],
@@ -51231,6 +51557,82 @@
           "total",
           "totalPages",
           "items"
+        ]
+      },
+      "DeliveryExecutionResponse": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "PROVIDER",
+              "INDEPENDENT"
+            ],
+            "description": "Quién ejecuta el servicio: PROVIDER (un proveedor con su flotilla) o INDEPENDENT (un repartidor independiente). No se exponen Driver, Vehicle ni membresías."
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "DeliveryStatusResponse": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "example": "MDR-000123",
+            "description": "Identificador Mandaria de la solicitud, el mismo que usan el resto de rutas B2B."
+          },
+          "externalReference": {
+            "type": "string",
+            "nullable": true,
+            "example": "ORDER-4711",
+            "description": "La referencia que envió el cliente al crear la solicitud, tratada como texto opaco."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "REQUESTED",
+              "OPEN",
+              "ASSIGNED",
+              "DELIVERED",
+              "CANCELLED",
+              "EXPIRED"
+            ],
+            "description": "Estado logístico público y estable: REQUESTED (sin servicio publicado todavía), OPEN (publicado, esperando quien lo tome), ASSIGNED (alguien lo está ejecutando), DELIVERED (entregado), CANCELLED (cancelado antes de entregar) o EXPIRED (nadie lo tomó dentro de su ventana). No refleja uno a uno los estados internos."
+          },
+          "execution": {
+            "nullable": true,
+            "description": "Presente desde que alguien se adjudica el servicio; null mientras nadie lo ha tomado.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DeliveryExecutionResponse"
+              }
+            ]
+          },
+          "requestedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Cuándo se creó la solicitud."
+          },
+          "deliveredAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Momento de la entrega. null mientras no se ha entregado; nunca 0 ni cadena vacía."
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Momento de la cancelación; null si la solicitud no está cancelada."
+          }
+        },
+        "required": [
+          "publicId",
+          "status",
+          "requestedAt"
         ]
       },
       "CancelDeliveryRequestDto": {

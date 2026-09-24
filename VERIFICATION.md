@@ -1,3 +1,83 @@
+# Verificación V1.12-A — B2B Delivery Status (2026-09-23)
+
+Rama `v1.11-mvp-delivery-completion` sobre `fa68b3b`, paquete **1.12.0**, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** **Sin migración**: no se agregó ni modificó ninguna columna, tabla, índice, constraint ni trigger. Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.
+
+| Verificación | Resultado |
+|---|---|
+| `prisma validate`; `migrate status` y drift (`migrate diff` esquema ↔ base) en **ambas** bases | Válido / al día (19 migraciones, ninguna nueva) / **sin diferencias** |
+| `verify-migrations` (cadena V1.0 → V1.11-A) | PASS sin cambios: V1.12-A no toca la cadena de migraciones |
+| build (`nest build`), Oxlint, ESLint, `docs:check` | PASS |
+| `tsc -p tsconfig.json` | **4 errores preexistentes** en `test/migrations/award-boundary.check.ts` (importa Prisma desde `.tmp/check-v110d/…`, defecto heredado ya reportado en V1.10-E y V1.11-A); **0 en el código y las pruebas de V1.12-A** |
+| Unitarias | **224/224 en 22 archivos**; 14 nuevas en `test/delivery-status.spec.ts`. Línea base: 210 |
+| E2E por archivo | **331/331 en 21 archivos**, ninguno en rojo; 14 nuevas en `test/b2b-delivery-status.e2e-spec.ts`. Línea base: 317 en 20 archivos, igual a la registrada en V1.11-A |
+| CHECK adversarial V1.12-A | **9/9** contra la aplicación Nest real y PostgreSQL real (`.tmp/check-v112a/adversarial.e2e-spec.ts`), sin modificar el producto |
+| OpenAPI y matriz de acceso | Regenerados: ruta nueva `GET /api/v1/delivery-requests/{publicId}/status` (scope `deliveries:read`) en `docs/API_ACCESS.md`; esquemas `DeliveryStatusResponse` y `DeliveryExecutionResponse`; `info.version` sincronizado a 1.12.0 |
+
+## Correspondencia entre estado interno y estado público (unitarias)
+
+| Escenario del dominio | Estado público | Resultado |
+|---|---|---|
+| DeliveryRequest `CREATED` sin Dispatch | `REQUESTED` | PASS; `execution`, `deliveredAt` y `cancelledAt` nulos |
+| DeliveryRequest `CANCELLED` sin Dispatch | `CANCELLED` | PASS; conserva `cancelledAt` |
+| `Dispatch.OPEN` sin candidaturas, dentro de la ventana | `OPEN` | PASS; `execution` nulo (un OPEN sin candidatos no es un error para el cliente) |
+| `Dispatch.OPEN` fuera de la ventana | `EXPIRED` | PASS; caducidad perezosa de V1.7 reutilizada, no reimplementada |
+| `Dispatch.CLAIMED` por proveedor / por independiente | `ASSIGNED` | PASS; `execution.mode` `PROVIDER` / `INDEPENDENT` |
+| Asignación de Driver y Vehicle sobre un servicio reclamado | `ASSIGNED` (sin cambio) | PASS; la asignación interna no es un estado público |
+| `Dispatch.DELIVERED` (ambos modelos) | `DELIVERED` | PASS; `deliveredAt` presente, `cancelledAt` nulo |
+| `Dispatch.CANCELLED` / `Dispatch.EXPIRED` | `CANCELLED` / `EXPIRED` | PASS; caducidad y cancelación no se confunden |
+| Entrega completada y **después** cancelación de la DeliveryRequest | `DELIVERED` | PASS; el Dispatch manda, `cancelledAt` sigue nulo |
+| Barrido de los cinco `DispatchStatus` internos | 5 estados públicos | PASS; ninguno produce `undefined`, `UNKNOWN` ni excepción |
+| Llaves expuestas | 7 exactas | PASS; `publicId`, `externalReference`, `status`, `execution`, `requestedAt`, `deliveredAt`, `cancelledAt` |
+
+## Ciclo real por HTTP (E2E)
+
+| Escenario | Resultado |
+|---|---|
+| Proveedor: `OPEN` → CLAIM → ASSIGN → DELIVER, consultando en cada paso | PASS; `OPEN` → `ASSIGNED` → `ASSIGNED` → `DELIVERED`; `deliveredAt` **idéntico** al de la fila del Dispatch |
+| Independiente: TAKE → DELIVER | PASS; misma forma pública con `execution.mode: INDEPENDENT` |
+| Solicitud sin cotización aceptada | PASS; `REQUESTED`, nunca 500 |
+| DeliveryRequest cancelada | PASS; `CANCELLED` con `cancelledAt`, `deliveredAt` nulo |
+| Dispatch caducado | PASS; `EXPIRED`, distinto de una cancelación |
+| Fuga de datos internos | PASS; ni el id del Dispatch ni `deliveredByUserId`, `driverId`, `vehicleId`, `providerId`, créditos, ledger, `goodsValue` ni `claimedBy*` aparecen en la respuesta |
+
+## Aislamiento y autorización (E2E)
+
+| Escenario | Resultado |
+|---|---|
+| Cliente B lee una solicitud del cliente A | PASS; 404 **indistinguible** del 404 de un `publicId` inexistente (idénticos salvo `timestamp` y `path`, que el propio llamante envió); ningún campo de la solicitud real se filtra; el dueño la sigue viendo con 200 |
+| `publicId` inexistente para el propio dueño | PASS; mismo 404 `Delivery request not found` |
+| Tokens SUPER_ADMIN, PROVIDER_ADMIN y DRIVER; sin token; token basura | PASS; **401 en los cinco** (un JWT humano no es válido en una ruta B2B) |
+| Token B2B sin scope `deliveries:read` | PASS; 403 |
+| Intentos de mutación (`POST`/`PATCH` `/status`, `/delivered`, claim, deliver y take de proveedor/repartidor con token B2B) | PASS; 404 o 401 en los seis; el Dispatch sigue `OPEN` |
+
+## La lectura no tiene consecuencias (E2E)
+
+| Escenario | Resultado |
+|---|---|
+| 12 lecturas seguidas de un servicio entregado | PASS; 12 respuestas idénticas; cuentas, saldos, ledger completo, snapshots y políticas **exactamente iguales**; Dispatch y asignación byte a byte iguales; 0 llamadas nuevas al proveedor de routing; ninguna línea de auditoría nueva que mencione la solicitud |
+| 15 lecturas simultáneas | PASS; 15 × 200, una sola respuesta distinta, economía intacta |
+| Lectura compitiendo con la entrega (10 lecturas ‖ 1 DELIVER) | PASS; toda lectura es `ASSIGNED` con `deliveredAt` nulo o `DELIVERED` con `deliveredAt` presente. **Nunca** se observó `DELIVERED` sin sello; al estabilizarse, `DELIVERED` |
+
+## CHECK adversarial V1.12-A (9/9, sin modificar el producto)
+
+| Barrera | Resultado |
+|---|---|
+| 14 identificadores hostiles (inyección SQL, `DROP TABLE`, longitud incorrecta, no ASCII, travesía de ruta, byte nulo, 400 caracteres, espacios) | PASS; sólo 400 o 404, **ningún 500**; la tabla objetivo de la inyección sigue intacta |
+| Identificador en minúsculas | PASS; 200 y devuelve el `publicId` canónico, igual que el resto de rutas B2B |
+| 10 rechazos repetidos del mismo recurso ajeno | PASS; una sola respuesta distinta: el 404 no crece en detalle al insistir |
+| `POST`, `PUT`, `PATCH` y `DELETE` sobre la ruta de estado | PASS; 404 en los cuatro; la fila del Dispatch queda idéntica |
+| Liberar un servicio ya reclamado (V1.10-E devuelve créditos) | PASS; la lectura vuelve a `OPEN` con `execution: null`; un segundo proveedor reclama y vuelve a reportarse `PROVIDER`. `execution` no es pegajoso |
+| 60 lecturas seguidas | PASS; sólo 200 o 429 (límite compartido por IP), nunca error; una sola respuesta distinta; economía intacta |
+| Reinicio de la aplicación entre dos lecturas | PASS; respuesta idéntica: proviene de la base, no de memoria de proceso |
+| Contrato publicado vs. respuesta viva | PASS; OpenAPI declara la ruta, su 404 y los seis estados; las llaves del esquema coinciden **exactamente** con las de la respuesta real |
+| Ciclo de vida completo observado | PASS; se alcanzaron `OPEN`, `ASSIGNED`, `DELIVERED`, `CANCELLED` y `EXPIRED`, todos dentro del contrato |
+
+## Nota sobre la base de pruebas
+
+Corridas E2E anteriores que Vitest mató a mitad (caída nativa de workers en Windows, y una corrida envenenada porque `vitest.config.e2e.ts` incluye `**/*.e2e-spec.ts` y recogió suites de CHECK dejadas en `.tmp/`, que agotaron el límite por IP) dejaron `mandaria_test` con 99 drivers, 48 proveedores, 383 solicitudes, 86 Dispatches `CLAIMED` y una asignación `ACTIVE` huérfana. Eso hacía fallar 17 pruebas ajenas a V1.12-A por paginación y recursos ocupados. Con autorización del propietario se ejecutó `npm run db:test:reset` sobre la base dedicada `mandaria_test` (`mandaria_db` no se tocó) y la batería completa quedó en verde. Queda anotado que la configuración E2E recoge suites de `.tmp/`.
+
+---
+
 # Verificación V1.11-A — MVP Delivery Completion (2026-09-23)
 
 Rama `v1.11-mvp-delivery-completion` sobre `5d079db` (merge de V1.10), paquete **1.11.0**, Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.

@@ -7,6 +7,10 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { closeDispatchesForCancelledRequest } from '../dispatch/dispatch-policy.js';
+import {
+  deliveryStatusSelect,
+  deliveryStatusView,
+} from '../deliveries/delivery-status.js';
 import { pageResult } from '../common/pagination.dto.js';
 import { IdempotencyService } from '../idempotency/idempotency.service.js';
 import {
@@ -188,6 +192,21 @@ export class DeliveryRequestsService {
       { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
     );
     return pageResult(items.map(toSummary), total, query);
+  }
+
+  /**
+   * V1.12-A: the logistics status of a request, for the IntegrationClient that owns it. Read-only
+   * and scoped exactly like every other B2B read: a request of another client is a 404, the same
+   * answer as one that does not exist, so ids cannot be probed. The translation itself lives in
+   * deliveryStatusView, the single place that turns internal logistics into the public contract.
+   */
+  async deliveryStatus(publicId: string, integrationClientId: string) {
+    const request = await this.prisma.deliveryRequest.findFirst({
+      where: { publicId, integrationClientId },
+      select: deliveryStatusSelect,
+    });
+    if (!request) throw new NotFoundException('Delivery request not found');
+    return deliveryStatusView(request);
   }
 
   /** Foreign and missing requests are indistinguishable (404). */

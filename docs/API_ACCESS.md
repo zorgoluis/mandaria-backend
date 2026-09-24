@@ -104,6 +104,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/delivery-requests/{publicId}/cancel | integration-bearer | — | deliveries:cancel | Cancelar mi DeliveryRequest |
 | GET | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:read | Historial de Quotes de mi DeliveryRequest |
 | POST | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:create | Cotizar mi DeliveryRequest |
+| GET | /api/v1/delivery-requests/{publicId}/status | integration-bearer | — | deliveries:read | Consultar el estado logístico de mi DeliveryRequest |
 | PATCH | /api/v1/driver/availability | bearer | DRIVER | — | Cambiar mi disponibilidad |
 | GET | /api/v1/driver/credits | bearer | DRIVER | — | Mi saldo de créditos como repartidor independiente |
 | GET | /api/v1/driver/credits/ledger | bearer | DRIVER | — | Mi historial de créditos |
