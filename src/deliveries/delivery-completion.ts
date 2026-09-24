@@ -1,13 +1,18 @@
 import { NotFoundException } from '@nestjs/common';
 import type { DispatchStatus, Prisma } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
+import {
+  recordDeliveryCompleted,
+  type B2bEvent,
+} from '../b2b-events/b2b-outbox.js';
 import { isGuardRejection } from '../independent-drivers/independent-driver-policy.js';
 
 /**
- * The audit signal of a delivery. Mandaria has no outbox or event table: the durable record is the
- * dispatch itself (`status`, `deliveredAt`, `deliveredByUserId`) plus the COMPLETED assignment,
- * and this structured log line is what an operator follows. It never carries tokens, secrets or
- * personal data — only ids, the mode and the timestamp.
+ * The operational audit signal of a delivery, for whoever runs Mandaria: the dispatch itself
+ * (`status`, `deliveredAt`, `deliveredByUserId`) plus the COMPLETED assignment, summarised in a
+ * structured log line. It never carries tokens, secrets or personal data — only ids, the mode and
+ * the timestamp. It is not the B2B event: since V1.12-B that is a durable row in `B2bOutboxEvent`,
+ * addressed to the client, while this stays an internal trace.
  */
 export const DELIVERY_COMPLETED_EVENT = 'DELIVERY_COMPLETED';
 
@@ -33,6 +38,7 @@ export type CompletionActor =
 
 type LockedDispatch = {
   status: DispatchStatus;
+  deliveryRequestId: string;
   claimedByProviderId: string | null;
   claimedByIndependentDriverId: string | null;
   deliveredAt: Date | null;
@@ -40,7 +46,12 @@ type LockedDispatch = {
 };
 
 export type CompletionOutcome =
-  | { kind: 'completed'; assignmentId: string; deliveredAt: Date }
+  | {
+      kind: 'completed';
+      assignmentId: string;
+      deliveredAt: Date;
+      event: B2bEvent;
+    }
   | { kind: 'already'; deliveredAt: Date; deliveredByUserId: string };
 
 const notOwner = (actor: CompletionActor) =>
@@ -77,10 +88,14 @@ const owns = (dispatch: LockedDispatch, actor: CompletionActor) =>
  * is written and no SERVICE_REFUND is owed (`dispatch_award_refund_required` returns early for
  * DELIVERED). Nothing is recalculated either: no pricing, no routing, no policy, no snapshot.
  *
+ * V1.12-B adds the third inseparable write: the `delivery.completed` B2B event. It is recorded in
+ * this same transaction, so a delivered service and its event commit together or not at all, and a
+ * deferred constraint refuses at COMMIT any new DELIVERED that has no event.
+ *
  * Repeating the completion is the answer the legitimate actor already got: a DELIVERED dispatch
- * still held by the same actor returns `already` without writing, matching how a winner repeating
- * its own claim gets 200 and no change. Any other actor cannot even see it as delivered — it is
- * simply not the owner.
+ * still held by the same actor returns `already` without writing — and therefore without a second
+ * event — matching how a winner repeating its own claim gets 200 and no change. Any other actor
+ * cannot even see it as delivered: it is simply not the owner.
  */
 export async function completeDelivery(
   tx: Prisma.TransactionClient,
@@ -90,7 +105,7 @@ export async function completeDelivery(
 ): Promise<CompletionOutcome> {
   const [dispatch] = await tx.$queryRaw<
     LockedDispatch[]
-  >`SELECT d.status, d."claimedByProviderId", d."claimedByIndependentDriverId", d."deliveredAt", d."deliveredByUserId" FROM "Dispatch" d WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
+  >`SELECT d.status, d."deliveryRequestId", d."claimedByProviderId", d."claimedByIndependentDriverId", d."deliveredAt", d."deliveredByUserId" FROM "Dispatch" d WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
   if (!dispatch) throw new NotFoundException('Dispatch not found');
   if (!owns(dispatch, actor)) throw notOwner(actor);
   if (dispatch.status === 'DELIVERED')
@@ -128,7 +143,17 @@ export async function completeDelivery(
       deliveredByUserId: actorUserId,
     },
   });
-  return { kind: 'completed', assignmentId: active.id, deliveredAt };
+  // V1.12-B: the B2B fact, written here and not after the transaction, so a delivered service and
+  // its event are the same commit. `deliveredAt` is handed over rather than read again, which is
+  // what makes the event's clock the delivery's own. If this insert fails, the delivery does not
+  // happen: the dispatch stays CLAIMED, the assignment stays ACTIVE and nothing is announced.
+  const event = await recordDeliveryCompleted(
+    tx,
+    dispatchId,
+    dispatch.deliveryRequestId,
+    deliveredAt,
+  );
+  return { kind: 'completed', assignmentId: active.id, deliveredAt, event };
 }
 
 /**

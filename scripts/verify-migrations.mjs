@@ -1113,8 +1113,57 @@ try {
       '1',
     );
   }
+  // V1.12-B: the durable B2B event outbox. The migration only creates the table and its
+  // guarantees: it records nothing about deliveries that already happened, which is what keeps
+  // pre-outbox history legitimate instead of inventing events with fabricated timestamps.
+  for (const db of [cleanDb, upgradeDb, v19Db, v110aDb]) {
+    assert.equal(sql(db, ['-c', `SELECT count(*) FROM "B2bOutboxEvent"`]), '0');
+    // At most one delivery.completed per dispatch, as a partial unique index so future event
+    // types that legitimately repeat need no redesign.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_indexes WHERE indexname = 'B2bOutboxEvent_delivery_completed_key' AND indexdef LIKE '%WHERE%DELIVERY_COMPLETED%'`,
+      ]),
+      '1',
+    );
+    // Ownership and subject are verified by PostgreSQL through composite foreign keys, not
+    // trusted from the service layer.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_constraint WHERE conrelid = '"B2bOutboxEvent"'::regclass AND contype = 'f' AND cardinality(conkey) = 2`,
+      ]),
+      '2',
+    );
+    // Immutable and undeletable, like the ledger and the credit snapshots.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_trigger WHERE tgrelid = '"B2bOutboxEvent"'::regclass AND tgname IN ('B2bOutboxEvent_guard', 'B2bOutboxEvent_no_truncate')`,
+      ]),
+      '2',
+    );
+    // The enforcement boundary is the transition itself: a deferred constraint trigger that
+    // only ever fires for deliveries completed from now on, with no flag added to Dispatch.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_trigger WHERE tgname = 'Dispatch_b2b_delivery_completed_required' AND tgdeferrable AND tginitdeferred`,
+      ]),
+      '1',
+    );
+    // The payload is the public contract and says the delivery happened.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_constraint WHERE conname = 'B2bOutboxEvent_values_check' AND pg_get_constraintdef(oid) LIKE '%b2b_delivery_completed_payload_ok%'`,
+      ]),
+      '1',
+    );
+  }
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D -> V1.10-E -> V1.11-A (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; no refund created by migration; no dispatch delivered nor assignment completed by migration; V1.4-V1.11 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D -> V1.10-E -> V1.11-A -> V1.12-B (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; no refund created by migration; no dispatch delivered nor assignment completed by migration; no B2B outbox event created by migration, with its partial unique index, composite ownership keys, immutability triggers and deferred enforcement present; V1.4-V1.12 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

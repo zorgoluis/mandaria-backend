@@ -17,9 +17,13 @@ const DRIVER = 'a3f1c0de-0000-4000-8000-000000000002';
 const USER = 'a3f1c0de-0000-4000-8000-000000000003';
 const DISPATCH = 'a3f1c0de-0000-4000-8000-000000000004';
 const ASSIGNMENT = 'a3f1c0de-0000-4000-8000-000000000005';
+const REQUEST = 'a3f1c0de-0000-4000-8000-000000000006';
+const CLIENT = 'a3f1c0de-0000-4000-8000-000000000007';
+const EVENT = 'a3f1c0de-0000-4000-8000-000000000008';
 
 const claimed = (extra: object = {}) => ({
   status: 'CLAIMED',
+  deliveryRequestId: REQUEST,
   claimedByProviderId: PROVIDER,
   claimedByIndependentDriverId: null,
   deliveredAt: null,
@@ -30,6 +34,10 @@ const claimed = (extra: object = {}) => ({
 /**
  * Transaction double: every `FOR UPDATE` raw query answers with the next queued batch of rows, in
  * the order completeDelivery takes its locks (dispatch first, then the active assignment).
+ *
+ * V1.12-B: the same transaction now also reads the DeliveryRequest and writes the B2B event, so the
+ * double knows about both — that third write is part of the completion, not something that happens
+ * beside it.
  */
 type UpdateCall = { where: { id: string }; data: Record<string, unknown> };
 function txDouble(rawRows: unknown[][]) {
@@ -42,12 +50,43 @@ function txDouble(rawRows: unknown[][]) {
   const dispatchUpdate = vi.fn<(call: UpdateCall) => Promise<{ id: string }>>(
     async () => ({ id: DISPATCH }),
   );
+  const eventCreate = vi.fn<(call: unknown) => Promise<{ id: string }>>(
+    async () => ({ id: EVENT }),
+  );
+  const requestRead = vi.fn(async () => ({
+    id: REQUEST,
+    integrationClientId: CLIENT,
+    publicId: 'MDR-000123',
+    externalReference: 'ORDER-4711',
+    status: 'CREATED',
+    requestedAt: new Date('2026-09-24T09:00:00.000Z'),
+    cancelledAt: null,
+    dispatches: [
+      {
+        status: 'DELIVERED',
+        expiresAt: new Date('2026-09-24T09:10:00.000Z'),
+        claimedByProviderId: PROVIDER,
+        claimedByIndependentDriverId: null,
+        deliveredAt: new Date('2026-09-24T09:47:12.345Z'),
+        cancelledAt: null,
+      },
+    ],
+  }));
   const tx = {
     $queryRaw: queryRaw,
     deliveryAssignment: { update: assignmentUpdate },
     dispatch: { update: dispatchUpdate },
+    deliveryRequest: { findUniqueOrThrow: requestRead },
+    b2bOutboxEvent: { create: eventCreate },
   } as unknown as Prisma.TransactionClient;
-  return { tx, queryRaw, assignmentUpdate, dispatchUpdate };
+  return {
+    tx,
+    queryRaw,
+    assignmentUpdate,
+    dispatchUpdate,
+    eventCreate,
+    requestRead,
+  };
 }
 
 const code = (error: unknown) =>
@@ -204,6 +243,34 @@ describe('V1.11-A provider completion', () => {
     });
     expect(t.assignmentUpdate).not.toHaveBeenCalled();
     expect(t.dispatchUpdate).not.toHaveBeenCalled();
+    // V1.12-B: and no second event either. Repeating a delivery cannot announce it twice.
+    expect(t.eventCreate).not.toHaveBeenCalled();
+  });
+
+  it('records the B2B event in the same transaction, on the delivery own clock', async () => {
+    const t = txDouble([[claimed()], [{ id: ASSIGNMENT }]]);
+    const outcome = await completeDelivery(
+      t.tx,
+      DISPATCH,
+      { mode: 'FLEET', providerId: PROVIDER },
+      USER,
+    );
+    expect(t.eventCreate).toHaveBeenCalledTimes(1);
+    const call = t.eventCreate.mock.calls[0][0] as {
+      data: Record<string, unknown>;
+    };
+    const stamped = (
+      t.dispatchUpdate.mock.calls[0][0].data as { deliveredAt: Date }
+    ).deliveredAt;
+    expect(call.data).toMatchObject({
+      type: 'DELIVERY_COMPLETED',
+      integrationClientId: CLIENT,
+      deliveryRequestId: REQUEST,
+      dispatchId: DISPATCH,
+      occurredAt: stamped,
+    });
+    // The same Date the dispatch was stamped with: one clock, read once.
+    expect(outcome).toMatchObject({ kind: 'completed', deliveredAt: stamped });
   });
 });
 
@@ -279,6 +346,8 @@ describe('V1.11-A completion writes nothing economic', () => {
     expect(t.assignmentUpdate).toHaveBeenCalledTimes(1);
     expect(t.dispatchUpdate).toHaveBeenCalledTimes(1);
     expect(t.queryRaw).toHaveBeenCalledTimes(2);
+    // V1.12-B adds exactly one more write, and it is the event: still nothing economic.
+    expect(t.eventCreate).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -349,6 +418,7 @@ describe('V1.11-A the independent completion does not re-run the approval gate',
       [
         {
           status: 'CLAIMED',
+          deliveryRequestId: REQUEST,
           claimedByProviderId: null,
           claimedByIndependentDriverId: DRIVER,
           deliveredAt: null,
@@ -361,6 +431,28 @@ describe('V1.11-A the independent completion does not re-run the approval gate',
       $queryRaw: vi.fn(async () => rows.shift() ?? []),
       driver: { findUnique: vi.fn(async () => ({ id: DRIVER })) },
       deliveryAssignment: { update: vi.fn(async () => ({ id: ASSIGNMENT })) },
+      deliveryRequest: {
+        findUniqueOrThrow: vi.fn(async () => ({
+          id: REQUEST,
+          integrationClientId: CLIENT,
+          publicId: 'MDR-000123',
+          externalReference: null,
+          status: 'CREATED',
+          requestedAt: new Date('2026-09-24T09:00:00.000Z'),
+          cancelledAt: null,
+          dispatches: [
+            {
+              status: 'DELIVERED',
+              expiresAt: new Date('2026-09-24T09:10:00.000Z'),
+              claimedByProviderId: null,
+              claimedByIndependentDriverId: DRIVER,
+              deliveredAt: new Date('2026-09-24T09:47:12.345Z'),
+              cancelledAt: null,
+            },
+          ],
+        })),
+      },
+      b2bOutboxEvent: { create: vi.fn(async () => ({ id: EVENT })) },
       dispatch: {
         update: dispatchUpdate,
         // viewFor runs after the transaction has committed; returning nothing only affects the

@@ -67,6 +67,7 @@ model IntegrationClient {
   credentials IntegrationCredential[]
   deliveryRequests DeliveryRequest[]
   idempotencyRecords ApiIdempotencyRecord[]
+  outboxEvents B2bOutboxEvent[]
 }
 model IntegrationCredential {
   id String @id @default(uuid()) @db.Uuid
@@ -307,6 +308,10 @@ model DeliveryRequest {
   financialContext DeliveryFinancialContext?
   quotes DeliveryQuote[]
   dispatches Dispatch[]
+  outboxEvents B2bOutboxEvent[]
+  /// V1.12-B: lets an outbox event reference (request, owner) as one unit, so PostgreSQL
+  /// refuses an event attributed to an IntegrationClient that does not own the request.
+  @@unique([id, integrationClientId])
   @@index([integrationClientId, requestedAt, id])
   @@index([externalReference])
   @@index([status, requestedAt])
@@ -613,6 +618,10 @@ model Dispatch {
   @@index([status, expiresAt])
   @@index([claimedByProviderId, status])
   @@index([claimedByIndependentDriverId, status])
+  outboxEvents B2bOutboxEvent[]
+  /// V1.12-B: lets an outbox event reference (dispatch, request) as one unit, so an event can
+  /// never point at a Dispatch belonging to a different DeliveryRequest.
+  @@unique([id, deliveryRequestId])
   @@index([status, deliveredAt])
   @@index([createdAt, id])
 }
@@ -901,4 +910,45 @@ model DispatchCreditSnapshot {
   appliedRange CreditPolicyRange? @relation(fields: [appliedRangeId], references: [id], onDelete: Restrict)
   @@unique([dispatchId, actorType])
   @@index([creditPolicyId])
+}
+
+/// V1.12-B: the B2B events Mandaria has durably recorded. V1.12-B only records them; delivering
+/// them over HTTP is a later version, so there is no transport state here (no SENT, no retries,
+/// no attempts): the row existing *is* the fact that the event happened.
+enum B2bEventType {
+  /// Wire name `delivery.completed`. The wire spelling lives in code, in one place, so the
+  /// database keeps a controlled type and the public catalogue keeps its own vocabulary.
+  DELIVERY_COMPLETED
+}
+
+/// One recorded B2B event, owned by the IntegrationClient that created the DeliveryRequest.
+///
+/// `payload` is a frozen snapshot of the V1.12-A public model as it was when the event happened,
+/// never a dump of Prisma rows and never recomputed later: a webhook sent tomorrow must carry
+/// what was true today. The envelope (id, type, occurredAt) lives in columns instead of being
+/// repeated inside the payload, so there is exactly one representation of each.
+///
+/// Immutable and undeletable by `b2b_outbox_event_guard`, like the credit ledger and the dispatch
+/// credit snapshots.
+model B2bOutboxEvent {
+  /// The event id a consumer will deduplicate on. Never the DeliveryRequest id: a request can
+  /// produce several events over its life, and they are different things.
+  id String @id @default(uuid()) @db.Uuid
+  type B2bEventType
+  integrationClientId String @db.Uuid
+  deliveryRequestId String @db.Uuid
+  /// The Dispatch the event is about. Required for DELIVERY_COMPLETED (CHECK in the migration)
+  /// and left open for future event types that happen before a service is published.
+  dispatchId String? @db.Uuid
+  /// When the fact happened, not when the row was written. For DELIVERY_COMPLETED it is the very
+  /// `Dispatch.deliveredAt` of the same transaction, not a second reading of the clock.
+  occurredAt DateTime
+  payload Json
+  recordedAt DateTime @default(now())
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  dispatch Dispatch? @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict)
+  @@index([integrationClientId, occurredAt, id])
+  @@index([type, occurredAt])
+  @@index([deliveryRequestId])
 }

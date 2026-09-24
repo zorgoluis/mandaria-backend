@@ -25,6 +25,7 @@ import {
   refundLogFields,
   refundRejectionCode,
 } from '../credits/service-refund.js';
+import { recordedEventLog } from '../b2b-events/b2b-outbox.js';
 import {
   DELIVERY_COMPLETED_EVENT,
   completeDelivery,
@@ -373,7 +374,7 @@ export class DispatchService {
         );
       }),
     );
-    if (outcome.kind === 'completed')
+    if (outcome.kind === 'completed') {
       this.logger.log({
         event: DELIVERY_COMPLETED_EVENT,
         dispatchId,
@@ -383,6 +384,8 @@ export class DispatchService {
         actorUserId,
         deliveredAt: outcome.deliveredAt.toISOString(),
       });
+      this.logger.log(recordedEventLog(outcome.event));
+    }
     return this.getForProvider(dispatchId, providerId);
   }
 

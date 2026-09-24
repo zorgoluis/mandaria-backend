@@ -1,3 +1,101 @@
+# Verificación V1.12-B — Durable B2B Event Outbox (2026-09-24)
+
+Rama `v1.11-mvp-delivery-completion` sobre `24da626`, paquete **1.12.0** (sin cambio de versión: V1.12-A y V1.12-B comparten minor, como V1.10-A a V1.10-E). Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260924000100_b2b_event_outbox` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; **0 filas existentes modificadas** y **0 eventos retroactivos**. `mandaria_db` antes y después, idéntico: 180 Dispatches (**22 DELIVERED**), 66 asignaciones (22 COMPLETED), 256 solicitudes, 13 cuentas, 253 asientos, saldo 527, 272 snapshots, 12 políticas |
+| `prisma validate`; `migrate status` y drift (`migrate diff` esquema ↔ base) en **ambas** bases | Válido / al día (20 migraciones) / **sin diferencias** |
+| `verify-migrations` (4 bases desechables), ampliado con V1.12-B | PASS: cadena V1.0 → V1.11-A → **V1.12-B**; en las cuatro: 0 eventos creados por migración, índice único parcial presente, las 2 claves foráneas compuestas, los 2 triggers de inmutabilidad y el constraint trigger diferido de enforcement |
+| `tsc -p tsconfig.json`, build, Oxlint, ESLint, `docs:check` | PASS; **0 errores de `tsc`** (el housekeeping previo los dejó en 0 y no hay regresión) |
+| Unitarias | **226/226 en 21 archivos**; 9 nuevas en `test/b2b-outbox.spec.ts` y 1 nueva en `test/delivery-completion.spec.ts`. Línea base: 216 en 20 archivos |
+| E2E por archivo | **348/348 en 22 archivos**, ninguno en rojo; 17 nuevas en `test/b2b-outbox.e2e-spec.ts`. Línea base: 331 en 21 archivos |
+| CHECK adversarial V1.12-B | **17/17** contra la aplicación Nest real y PostgreSQL real (`.tmp/check-v112b/`), sin modificar el producto |
+| OpenAPI | **No regenerado**: V1.12-B no agrega API pública y ninguna respuesta cambió. `docs/openapi.json` y `docs/API_ACCESS.md` sin diferencias |
+
+## Atomicidad: la entrega y su evento son el mismo commit
+
+| Escenario | Resultado |
+|---|---|
+| Fallo inyectado en el INSERT del Outbox (trigger real en PostgreSQL, no un mock) | PASS; todo revierte: Dispatch sigue `CLAIMED`, asignación sigue `ACTIVE`, 0 eventos, cuentas/ledger/snapshots/políticas idénticos. Retirado el fallo, la misma entrega se completa y registra su evento |
+| Transición a `DELIVERED` escrita a mano **sin** evento | PASS; rechazada al COMMIT con `B2B_EVENT_REQUIRED`; el Dispatch sigue `CLAIMED` |
+| La misma transición **con** el evento en la misma transacción | PASS; commitea, y quedan 1 `DELIVERED` y 1 evento |
+| Evento registrado **antes** de que el Dispatch esté entregado | PASS; `B2B_EVENT_INVALID`: anunciar una entrega que no ha ocurrido no es registrar |
+
+## Ciclo real por HTTP (E2E)
+
+| Escenario | Resultado |
+|---|---|
+| Proveedor: CLAIM → ASSIGN → DELIVER | PASS; Dispatch `DELIVERED`, asignación `COMPLETED`, **exactamente 1** evento, dueño = el IntegrationClient de la solicitud, `publicId` y `externalReference` correctos, `execution.mode` PROVIDER, `occurredAt` **idéntico** a `Dispatch.deliveredAt`, `eventId` distinto del id de la solicitud |
+| Independiente: TAKE → DELIVER | PASS; mismas garantías con `execution.mode` INDEPENDENT; el cobro fue del TAKE, la entrega no movió nada más |
+| Instantánea vs. endpoint de V1.12-A | PASS; `payload` **igual** al cuerpo de `GET /delivery-requests/{publicId}/status` en ese instante: dos representaciones que no pueden contradecirse |
+| Fuga en el payload | PASS; las 7 claves públicas exactas; ni el id del Dispatch, de la solicitud o del cliente, ni proveedor, repartidor, vehículo, `deliveredByUserId`, créditos, ledger, `goodsValue`, `Bearer`, `secret`, `token`, `password` o `postgres` |
+| Reinicio de la aplicación | PASS; el evento persiste byte a byte y el estado público sigue coincidiendo |
+| Congelación de la instantánea | PASS; cancelar la DeliveryRequest después de la entrega cambia la fila (`CANCELLED`, `cancelledAt`) y el payload **no se mueve**: sigue diciendo `DELIVERED` con `cancelledAt: null` |
+| Repetir `/deliver` tres veces | PASS; 1 evento, payload idéntico al primero |
+| 10 entregas simultáneas de proveedor | PASS; 1 transición, 1 asignación COMPLETED, **1 evento**; el resto 200/409 |
+| 10 entregas simultáneas de independiente | PASS; 1 transición, **1 evento** |
+
+## Inmutabilidad e integridad en SQL
+
+| Intento | Rechazado por |
+|---|---|
+| `UPDATE` de `id`, `type`, dueño, sujeto, `occurredAt` o `payload` | `B2B_EVENT_IMMUTABLE` (6 de 6) |
+| `DELETE` del evento | `B2B_EVENT_IMMUTABLE` |
+| `TRUNCATE` de la tabla | `B2B_EVENT_IMMUTABLE` |
+| Segundo `delivery.completed`, desde fuera de la entrega | `B2B_EVENT_INVALID` (el guard responde primero) |
+| Segundo `delivery.completed`, **dentro** de la transacción que entrega | `B2bOutboxEvent_delivery_completed_key` (índice único parcial, SQLSTATE 23505) |
+| Evento atribuido a otro IntegrationClient, entregando de verdad | `B2bOutboxEvent_deliveryRequestId_integrationClientId_fkey` |
+| Evento con dueño inexistente | `B2bOutboxEvent_integrationClientId_fkey` |
+| Evento apuntando a otra solicitud, o a una inexistente | `B2bOutboxEvent_dispatchId_deliveryRequestId_fkey` / `B2bOutboxEvent_deliveryRequestId_integrationClientId_fkey` |
+| Evento apuntando a un Dispatch que no es el que se entrega | `B2B_EVENT_INVALID` |
+| Payload que miente: `status` distinto de `DELIVERED`, reloj desviado, id interno añadido, `publicId` ausente, campo extra o no-objeto | `B2bOutboxEvent_values_check` (6 de 6) |
+| `delivery.completed` sin Dispatch | `B2B_EVENT_INVALID` |
+
+Orden de las capas, comprobado explícitamente: el guard `BEFORE INSERT` se evalúa **antes** que los CHECK y las claves foráneas, así que toda falsificación desde fuera de una entrega recibe el rechazo más temprano. Para ejercitar las capas inferiores, el CHECK forja dentro de una transacción que sí entrega.
+
+## Escaneo de integridad de la base (0 violaciones)
+
+`duplicated`, `wrong_owner`, `without_request`, `wrong_dispatch`, `snapshot_not_delivered`, `clock_drift`, `payload_without_public_id`, `payload_internal_ids`, `payload_secrets` → **0 en todos**.
+
+## Entregas anteriores a la frontera
+
+| Escenario | Resultado |
+|---|---|
+| `DELIVERED` sin evento | PASS; aceptado, no es corrupción. `GET /delivery-requests/{publicId}/status` sigue respondiendo `DELIVERED` con su `deliveredAt` |
+| Las 22 entregas históricas de `mandaria_db` | PASS; intactas, 0 eventos creados, 0 `occurredAt` fabricados |
+| Mecanismo de la frontera | Constraint trigger diferido sobre la **transición** a `DELIVERED`; las filas ya resueltas nunca transicionan (`dispatch_guard`), así que quedan fuera por construcción. **Ninguna columna nueva en `Dispatch`** |
+
+## Preservación económica y de routing
+
+| Verificación | Resultado |
+|---|---|
+| Cuentas, saldos, `updatedAt`, ledger completo, `SERVICE_AWARD`, `SERVICE_REFUND`, snapshots y políticas antes/después de entregar | **Idénticos** |
+| Llamadas al proveedor de routing durante la entrega | **0** |
+| Contexto de pago | Sin tocar |
+
+Medido tomando la línea base **después** del CLAIM/TAKE, que es lo que cobra créditos (V1.10-D), y antes del DELIVER.
+
+## Regresión
+
+| Suite | Resultado |
+|---|---|
+| V1.8 asignaciones (`delivery-assignments`) | 13/13 |
+| V1.9 independientes (`independent-drivers`) | 23/23 |
+| V1.10 créditos y devoluciones (`credit-consumption`, `credit-refunds`, `credits`, `credit-policies`, `dispatch-credit-snapshots`) | 36/36, 22/22, 24/24, 19/19, 14/14 |
+| V1.11 cierre de entrega (`delivery-completion`) | 29/29, sin cambios de contrato |
+| V1.12-A estado B2B (`b2b-delivery-status`) | 14/14, sin cambios de contrato |
+
+## Defecto encontrado durante esta tarea (propio, corregido antes de cerrar)
+
+La primera versión de la migración incluía `CHECK ("occurredAt" <= "recordedAt")`. El CHECK adversarial la hizo fallar con un `INSERT` por SQL crudo: `recordedAt` toma el `DEFAULT CURRENT_TIMESTAMP` que Prisma genera para todo `@default(now())`, y en este servidor (`TimeZone = America/Mexico_City`) eso escribe hora **local**, seis horas por detrás de los UTC que Prisma envía. Se retiró la cláusula —ninguna garantía de V1.12-B depende de `recordedAt`— y se documentó el motivo en la migración. La migración, que aún no se había publicado, se deshizo en ambas bases (sólo objetos creados por ella; **no** un reset) y se reaplicó corregida: `mandaria_db` quedó con los mismos conteos de partida.
+
+## Nota
+
+`vitest.config.e2e.ts` excluye `.tmp/**` desde el housekeeping, así que el CHECK de V1.12-B trae su propia configuración, igual que hace `scripts/verify-award-boundary.mjs`. Eso confirmó de paso que la exclusión funciona: la suite oficial siguió recolectando 22 archivos y ninguno del CHECK.
+
+---
+
 # Housekeeping técnico pre-V1.12-B (2026-09-23)
 
 Rama `v1.11-mvp-delivery-completion` sobre `a767e7c`, paquete **1.12.0** (sin cambio de versión). **No es una versión funcional:** no se tocaron reglas de negocio, dominio, migraciones ni contratos. **Sin commit ni push.** Dos problemas de higiene de pruebas, detectados repetidamente durante los CHECKs, quedan cerrados.

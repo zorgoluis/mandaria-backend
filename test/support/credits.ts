@@ -263,6 +263,11 @@ export async function purgeFixtureDispatches(
     prisma.dispatchPreEnforcementAward.deleteMany({
       where: { dispatchId: { in: ids } },
     }),
+    // V1.12-B: a recorded B2B event holds its dispatch and its request with RESTRICT foreign keys
+    // and refuses normal deletion, so fixture teardown removes it under the same *_test switch.
+    prisma.b2bOutboxEvent.deleteMany({
+      where: { integrationClientId: { in: clientIds } },
+    }),
     prisma.deliveryAssignment.deleteMany({
       where: { dispatchId: { in: ids } },
     }),
