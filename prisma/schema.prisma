@@ -45,6 +45,8 @@ model User {
   independentProfilesApproved IndependentDriverProfile[] @relation("IndependentProfileApprover")
   independentProfilesSuspended IndependentDriverProfile[] @relation("IndependentProfileSuspender")
   independentProfilesRejected IndependentDriverProfile[] @relation("IndependentProfileRejecter")
+  webhookEndpointsCreated B2bWebhookEndpoint[] @relation("WebhookEndpointCreatedBy")
+  webhookEndpointsUpdated B2bWebhookEndpoint[] @relation("WebhookEndpointUpdatedBy")
 }
 model RefreshToken {
   id String @id @default(uuid()) @db.Uuid
@@ -68,6 +70,8 @@ model IntegrationClient {
   deliveryRequests DeliveryRequest[]
   idempotencyRecords ApiIdempotencyRecord[]
   outboxEvents B2bOutboxEvent[]
+  webhookEndpoint B2bWebhookEndpoint?
+  webhookAttempts B2bWebhookDeliveryAttempt[]
 }
 model IntegrationCredential {
   id String @id @default(uuid()) @db.Uuid
@@ -948,7 +952,83 @@ model B2bOutboxEvent {
   integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
   deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
   dispatch Dispatch? @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict)
+  attempts B2bWebhookDeliveryAttempt[]
+  /// V1.12-C: lets a delivery attempt reference (event, owner) as one unit, so PostgreSQL
+  /// refuses an attempt that pairs an event with a client that does not own it.
+  @@unique([id, integrationClientId])
   @@index([integrationClientId, occurredAt, id])
   @@index([type, occurredAt])
   @@index([deliveryRequestId])
+}
+
+/// V1.12-C: where a B2B client wants to be notified. One endpoint per IntegrationClient in this
+/// version, which is why integrationClientId is unique: subscriptions per event type, several
+/// endpoints or per-endpoint policies would be a later decision, not an empty column today.
+///
+/// Only SUPER_ADMIN configures it. The URL is validated as an SSRF surface when it is written
+/// *and* again when it is used, because DNS can change in between.
+model B2bWebhookEndpoint {
+  id String @id @default(uuid()) @db.Uuid
+  integrationClientId String @unique @db.Uuid
+  url String
+  enabled Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdByUserId String @db.Uuid
+  updatedByUserId String @db.Uuid
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  createdBy User @relation("WebhookEndpointCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  updatedBy User @relation("WebhookEndpointUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict)
+  attempts B2bWebhookDeliveryAttempt[]
+  /// Lets an attempt reference (endpoint, owner) as one unit: an event of one client can never
+  /// be recorded as delivered to the endpoint of another.
+  @@unique([id, integrationClientId])
+}
+
+/// Was the event handed over, or not.
+enum B2bWebhookAttemptResult {
+  SUCCEEDED
+  FAILED
+}
+
+/// Why a handover failed, classified and bounded. Never the remote body, never headers.
+enum B2bWebhookFailureKind {
+  /// The endpoint answered, but not with 2xx (including a redirect, which is never followed).
+  HTTP_STATUS
+  TIMEOUT
+  NETWORK
+  /// The configured URL stopped being an acceptable target between configuration and use,
+  /// typically because its hostname now resolves to a private address.
+  INVALID_ENDPOINT
+}
+
+/// V1.12-C: one attempt to hand a recorded event to a client, kept as history.
+///
+/// Separate from B2bOutboxEvent on purpose: the event is the fact and stays immutable, while a
+/// transport attempt is a different kind of thing that can happen more than once. There is no
+/// retry machinery yet, so there is no scheduling state here either; V1.12-D will build on these
+/// rows rather than on a mutable queue.
+model B2bWebhookDeliveryAttempt {
+  id String @id @default(uuid()) @db.Uuid
+  eventId String @db.Uuid
+  integrationClientId String @db.Uuid
+  endpointId String @db.Uuid
+  /// The exact URL this attempt went to. The endpoint row can be edited afterwards; what was
+  /// tried at the time cannot.
+  endpointUrl String
+  attemptedAt DateTime
+  durationMs Int
+  result B2bWebhookAttemptResult
+  /// Present only when the endpoint actually answered.
+  httpStatus Int?
+  failureKind B2bWebhookFailureKind?
+  /// A short, sanitized classification. Never a response body, headers or credentials.
+  failureDetail String?
+  recordedAt DateTime @default(now())
+  event B2bOutboxEvent @relation(fields: [eventId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  endpoint B2bWebhookEndpoint @relation(fields: [endpointId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  @@index([eventId, attemptedAt])
+  @@index([integrationClientId, attemptedAt, id])
+  @@index([result, attemptedAt])
 }

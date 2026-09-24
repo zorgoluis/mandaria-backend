@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module.js';
+import { B2bWebhooksModule } from '../b2b-webhooks/b2b-webhooks.module.js';
 import { IndependentDriversService } from './independent-drivers.service.js';
 import { IndependentDispatchesService } from './independent-dispatches.service.js';
 import { AdminIndependentDriversController } from './admin-independent-drivers.controller.js';
@@ -11,7 +12,7 @@ import { DriverDispatchesController } from './driver-dispatches.controller.js';
  * fleet model uses. No DeliveryProvider is involved at any point.
  */
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, B2bWebhooksModule],
   controllers: [AdminIndependentDriversController, DriverDispatchesController],
   providers: [IndependentDriversService, IndependentDispatchesService],
   exports: [IndependentDispatchesService],

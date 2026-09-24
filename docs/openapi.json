@@ -35051,6 +35051,154 @@
         ]
       }
     },
+    "/api/v1/admin/integrations/{id}/webhook": {
+      "get": {
+        "operationId": "AdminB2bWebhooksController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar el endpoint de webhook de un IntegrationClient",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      },
+      "put": {
+        "description": "Un endpoint por IntegrationClient en esta versión. La URL se valida como superficie SSRF al escribirla y otra vez al usarla, porque el DNS puede cambiar en medio. No existen todavía política de reintentos, cabeceras propias ni suscripción por tipo de evento: sólo existe delivery.completed.",
+        "operationId": "AdminB2bWebhooksController_upsert",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertWebhookEndpointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Configurar el endpoint de webhook de un IntegrationClient",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/b2b-events/{eventId}/deliver": {
+      "post": {
+        "description": "Realiza **un** intento y registra su resultado. No hay reintentos automáticos en V1.12-C: un fallo queda como intento FAILED y se detiene ahí. No modifica el evento, que es inmutable, ni el Dispatch, ni los créditos.",
+        "operationId": "AdminB2bWebhooksController_deliver",
+        "parameters": [
+          {
+            "name": "eventId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookAttemptResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No aplica."
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Intentar entregar un evento B2B registrado",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
     "/api/v1/provider/dispatches/{dispatchId}/assignment": {
       "post": {
         "description": "Sólo el proveedor que tiene el claim. El proveedor se deriva de la membership y del Dispatch, nunca del payload. Comprueba bajo bloqueos (Dispatch → proveedor → Driver → Vehicle) que el Dispatch siga CLAIMED por mí y que Driver y Vehicle sean míos, operacionales, libres y coherentes con el emparejamiento V1.4. Máximo una asignación ACTIVE por Dispatch, Driver y Vehicle (índices únicos parciales). Devuelve el contexto de pago: si goodsPaymentMode es COURIER_ADVANCE, driverAdvanceAmount indica cuánto debe adelantar el repartidor al comercio. No cambia el estado del Dispatch ni asigna disponibilidad del Driver. Requiere JWT humano, rol global PROVIDER_ADMIN (RolesGuard) y membership vigente (ProviderMembershipGuard); son comprobaciones independientes. providerId es opcional sólo con una membership; un proveedor sin membership responde 403.",
@@ -54234,6 +54382,111 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "WebhookEndpointResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "integrationClientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://coita-eats.example.com/hooks/mandaria"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "integrationClientId",
+          "url",
+          "enabled",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpsertWebhookEndpointDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://coita-eats.example.com/hooks/mandaria",
+            "maxLength": 2048,
+            "description": "Destino HTTPS al que Mandaria entregará los eventos de este IntegrationClient. Se valida como superficie SSRF: sin credenciales embebidas, sin fragmento, y nunca hacia loopback, direcciones privadas, link-local (incluido el endpoint de metadatos) ni nombres internos. En LOCAL/TEST, con B2B_WEBHOOK_ALLOW_INSECURE_TARGETS=true, se admite http y localhost; en producción el arranque falla si ese interruptor está activo."
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Deshabilitar conserva la configuración y detiene las entregas: los eventos se siguen registrando y no se intenta ningún envío."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "WebhookAttemptResponse": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "attempted",
+              "skipped"
+            ],
+            "description": "skipped significa que no hubo petición HTTP porque el cliente no tiene endpoint o lo tiene deshabilitado; no es un fallo y no deja intento."
+          },
+          "attemptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "SUCCEEDED",
+              "FAILED"
+            ]
+          },
+          "httpStatus": {
+            "type": "number",
+            "description": "Presente sólo cuando el endpoint respondió."
+          },
+          "failureKind": {
+            "type": "string",
+            "enum": [
+              "HTTP_STATUS",
+              "TIMEOUT",
+              "NETWORK",
+              "INVALID_ENDPOINT"
+            ]
+          },
+          "durationMs": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "NO_ENDPOINT",
+              "ENDPOINT_DISABLED"
+            ]
+          }
+        },
+        "required": [
+          "kind"
         ]
       },
       "CreateDeliveryAssignmentDto": {

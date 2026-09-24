@@ -1,3 +1,108 @@
+# Verificación V1.12-C — B2B Webhook Delivery (2026-09-24)
+
+Rama `v1.12-B2B_webhook_delivery` sobre `ab16681` (merge de V1.12-B, PR #16), paquete **1.12.0** (sin cambio de versión: los subentregables de V1.12 comparten minor). Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.
+
+| Verificación | Resultado |
+|---|---|
+| Migración `20260925000100_b2b_webhook_delivery` en `mandaria_db` y `mandaria_test` (sin reset) | PASS; **0 filas existentes modificadas**, **0 endpoints y 0 intentos creados**, **0 eventos entregados retroactivamente** y **ninguna petición HTTP durante la migración**. `mandaria_db` antes y después, idéntico: 11 IntegrationClients, 180 Dispatches (22 DELIVERED), 66 asignaciones, 253 asientos, saldo 527, 272 snapshots |
+| `prisma validate`; `migrate status` y drift en **ambas** bases | Válido / al día (21 migraciones) / **sin diferencias** |
+| `verify-migrations` (4 bases desechables), ampliado con V1.12-C | PASS: cadena V1.0 → V1.12-B → **V1.12-C**; en las cuatro: 0 endpoints y 0 intentos creados por migración, índice único por IntegrationClient, las 2 claves foráneas compuestas del intento, los 3 triggers (append-only del intento, no-truncate, inmutabilidad de identidad del endpoint) y el CHECK de resultado |
+| `tsc -p tsconfig.json`, build, Oxlint, ESLint, `docs:check` | PASS; **0 errores de `tsc`** |
+| Unitarias | **245/245 en 22 archivos**; 19 nuevas en `test/b2b-webhooks.spec.ts`. Línea base: 226 en 21 archivos |
+| E2E por archivo | **367/367 en 23 archivos**, ninguno en rojo; 19 nuevas en `test/b2b-webhooks.e2e-spec.ts`. Línea base: 348 en 22 archivos |
+| CHECK adversarial V1.12-C | **17/17** contra Nest real, PostgreSQL real y un receptor HTTP local (`.tmp/check-v112c/`), sin modificar el producto durante el CHECK |
+| OpenAPI y matriz de acceso | Regenerados, porque la API administrativa **sí** cambió: 3 rutas nuevas (`GET`/`PUT /api/v1/admin/integrations/{id}/webhook` y `POST /api/v1/admin/b2b-events/{eventId}/deliver`), todas SUPER_ADMIN. El contrato B2B de V1.12-A no cambió |
+
+## La entrega logística no depende de internet
+
+| Escenario | Resultado |
+|---|---|
+| Receptor responde 400, 401, 404, 409, 429, 500 o 503 | PASS en los siete: intento `FAILED` con `HTTP_STATUS` y su código; el Dispatch sigue `DELIVERED`, la asignación `COMPLETED`, la economía idéntica y el evento del Outbox **byte a byte igual** |
+| Receptor que nunca responde | PASS; cortado por el timeout, intento `FAILED`/`TIMEOUT`, `durationMs` por debajo del límite; la entrega siguiente funciona con normalidad |
+| Destino permitido sin nadie escuchando | PASS; `FAILED`/`NETWORK`; una API ajena (`GET …/status`) sigue respondiendo 200 |
+| La llamada HTTP dentro de la transacción | No existe: el primer intento se dispara después de responder la petición de completion, como trabajo en segundo plano drenado en el apagado |
+
+## El ciclo real (E2E, con receptor HTTP local)
+
+| Escenario | Resultado |
+|---|---|
+| Proveedor: CLAIM → ASSIGN → DELIVER | PASS; un POST a `/hooks/mandaria` con `Content-Type: application/json`, `x-mandaria-event-id` y `x-mandaria-event-type: delivery.completed`; cuerpo **idéntico** a `{eventId, type, occurredAt, data}` con `data` = la instantánea del Outbox; intento `SUCCEEDED`/200 |
+| Independiente: TAKE → DELIVER | PASS; mismo cuerpo con `execution.mode: INDEPENDENT` |
+| Nombre interno del enum | PASS; `DELIVERY_COMPLETED` no aparece en el cuerpo |
+| Fuga en el cuerpo | PASS; ni el id del Dispatch, del cliente, del proveedor, del repartidor, del vehículo o del usuario, ni `deliveredByUserId`, `creditCost`, `Authorization`, `secret` o `password` |
+| 200, 201, 202, 204 | PASS; los cuatro `SUCCEEDED` |
+| Redirect 302 hacia `169.254.169.254` | PASS; **no se sigue**: `FAILED`/`HTTP_STATUS` 302 y exactamente una petición salió de Mandaria |
+| Endpoint deshabilitado / ausente | PASS; `DELIVERED`, evento registrado, **0 peticiones y 0 intentos**; la ruta manual responde `skipped` con `ENDPOINT_DISABLED` / `NO_ENDPOINT` |
+| Dos clientes, dos receptores | PASS; cada receptor vio **sólo** su evento; ninguna referencia externa del uno aparece en el otro; los intentos llevan el `integrationClientId` correcto |
+| Entrega manual repetida | PASS; dos intentos con identidad propia, dos peticiones con el **mismo** `eventId`, un solo evento sin cambios (at-least-once en el cable, exactly-once en el Outbox) |
+| Reinicio | PASS; evento e intentos idénticos después de reiniciar la aplicación |
+
+## Autorización
+
+| Actor | Configurar endpoint | Entrega manual |
+|---|---|---|
+| SUPER_ADMIN | 200 | 200 |
+| PROVIDER_ADMIN | 403 | 403 |
+| DRIVER | 403 | 403 |
+| Token B2B | 401 | 401 |
+| Sin token | 401 | 401 |
+
+No se expuso ninguna ruta B2B para leer o configurar nada de esto (`/webhooks`, `/b2b-events`, `/outbox` → 401/404).
+
+## Política SSRF (unitarias + CHECK, contra los ajustes de producción)
+
+| Destino | Rechazo |
+|---|---|
+| `http://…` | `SCHEME` |
+| `file://`, `ftp://`, `gopher://`, `data:`, texto que no es URL | rechazado |
+| `https://user:pass@example.com` | `CREDENTIALS` |
+| `127.0.0.1`, `127.13.9.2`, `localhost`, `api.localhost`, `[::1]`, `[::]` | `HOST` / `PRIVATE_HOST` |
+| `169.254.169.254` y `[::ffff:169.254.169.254]` | `PRIVATE_HOST` |
+| `10/8`, `172.16/12`, `192.168/16`, `100.64/10`, `0.0.0.0`, `255.255.255.255` | `PRIVATE_HOST` |
+| `[fd00::1]`, `[fe80::1]`, `[ff02::1]`, `[::ffff:127.0.0.1]`, `[0:0:0:0:0:ffff:0a00:0001]` | `PRIVATE_HOST` |
+| `printer.local`, `vault.internal` | `HOST` |
+| Nombre público que resuelve a `10.0.0.7` o a `169.254.169.254` | `PRIVATE_HOST`, **sin ninguna petición** |
+| Destinos públicos legítimos (`https://coita-eats.example.com/…`, `:8443`, IPv4 e IPv6 públicas) | aceptados |
+| `B2B_WEBHOOK_ALLOW_INSECURE_TARGETS=true` con `NODE_ENV=production` | la aplicación **no arranca** |
+
+Los redirects nunca se siguen (`redirect: 'manual'`, comprobado en el cable y en la unidad).
+
+## Inmutabilidad e integridad en SQL
+
+| Intento | Rechazado por |
+|---|---|
+| `UPDATE` de `result`, `httpStatus`, `eventId` o `endpointUrl` de un intento | `B2B_WEBHOOK_ATTEMPT_IMMUTABLE` (4 de 4) |
+| `DELETE` y `TRUNCATE` de intentos | `B2B_WEBHOOK_ATTEMPT_IMMUTABLE` |
+| Cambiar el dueño de un endpoint | `B2B_WEBHOOK_ENDPOINT_IMMUTABLE` |
+| Endpoint de un IntegrationClient inexistente | clave foránea |
+| Intento que empareja el evento de un cliente con otro cliente | clave foránea compuesta |
+| `SUCCEEDED` sin `httpStatus` | `B2bWebhookDeliveryAttempt_values_check` |
+| `UPDATE` del payload del Outbox | `B2B_EVENT_IMMUTABLE` (V1.12-B, intacto) |
+
+Escaneo de integridad: `wrong_event_owner`, `wrong_endpoint_owner`, `success_without_2xx`, `failure_without_reason`, `unbounded_detail`, `leaky_detail`, `orphan_endpoint` → **0 en todos**.
+
+## Defectos encontrados durante esta tarea (propios, corregidos antes de cerrar)
+
+1. **Bypass SSRF con IPv4 disfrazada de IPv6.** `https://[::ffff:127.0.0.1]/h` se aceptaba: el parser de URL reescribe la dirección como `::ffff:7f00:1` y la política, basada en expresiones regulares sobre el texto, no la reconocía. Lo encontró una prueba unitaria. Corregido expandiendo la dirección a sus ocho grupos y decidiendo sobre la forma expandida; se añadieron cinco casos más para fijarlo.
+2. **CHECK que evaluaba a NULL.** La primera versión de `B2bWebhookDeliveryAttempt_values_check` aceptaba un intento `SUCCEEDED` **sin** `httpStatus`: `NULL BETWEEN 200 AND 299` es NULL, y PostgreSQL acepta un CHECK que evalúa a NULL en lugar de rechazarlo. **Lo encontró el CHECK adversarial**, que además lo vio aparecer en el escaneo de integridad. Corregido exigiendo `IS NOT NULL` en la rama de éxito. La migración, aún no publicada, se deshizo en ambas bases (sólo los objetos que ella creó, **no** un reset) y se reaplicó corregida; `mandaria_db` quedó con los mismos conteos de partida.
+
+## Hallazgo transversal no corregido aquí (por instrucción)
+
+El `DEFAULT CURRENT_TIMESTAMP` que Prisma genera para todo `@default(now())` escribe hora local del servidor. Las tablas nuevas de V1.12-C lo heredan en `createdAt`/`recordedAt`, y por eso **ninguna garantía de esta versión depende de ellos**: los CHECK y los triggers usan `attemptedAt`, que la aplicación envía en UTC. No se hizo ninguna refactorización global de timestamps.
+
+## Regresión
+
+| Suite | Resultado |
+|---|---|
+| V1.8 asignaciones | 13/13 |
+| V1.9 independientes | 23/23 |
+| V1.10 créditos, políticas, snapshots y devoluciones | 36/36, 19/19, 14/14, 22/22, 24/24 |
+| V1.11 cierre de entrega | 29/29, sin cambios de contrato |
+| V1.12-A estado B2B | 14/14, sin cambios de contrato |
+| V1.12-B Outbox durable | 17/17, sin cambios de contrato |
+
+---
+
 # Verificación V1.12-B — Durable B2B Event Outbox (2026-09-24)
 
 Rama `v1.11-mvp-delivery-completion` sobre `24da626`, paquete **1.12.0** (sin cambio de versión: V1.12-A y V1.12-B comparten minor, como V1.10-A a V1.10-E). Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.

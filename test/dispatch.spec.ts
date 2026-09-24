@@ -17,6 +17,7 @@ import {
 import { DispatchService } from '../dist/dispatch/dispatch.service.js';
 import { validateEnvironment } from '../src/config/environment.js';
 import type { PrismaService } from '../dist/prisma/prisma.service.js';
+import type { B2bWebhooksService } from '../dist/b2b-webhooks/b2b-webhooks.service.js';
 
 const opened = new Date('2026-09-17T10:00:00Z');
 const expiresAt = dispatchExpiry(opened, 10);
@@ -419,6 +420,9 @@ describe('DispatchService authorization inside the transaction', () => {
       service: new DispatchService(
         prisma as unknown as PrismaService,
         new ConfigService({ LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES: 5 }),
+        {
+          scheduleFirstAttempt: () => undefined,
+        } as unknown as B2bWebhooksService,
       ),
     };
   };

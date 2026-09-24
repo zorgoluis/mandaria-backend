@@ -11,6 +11,7 @@ import { claimRejection } from '../dist/dispatch/dispatch-policy.js';
 import { takeRejection } from '../dist/independent-drivers/independent-driver-policy.js';
 import { IndependentDispatchesService } from '../dist/independent-drivers/independent-dispatches.service.js';
 import type { PrismaService } from '../dist/prisma/prisma.service.js';
+import type { B2bWebhooksService } from '../dist/b2b-webhooks/b2b-webhooks.service.js';
 
 const PROVIDER = 'a3f1c0de-0000-4000-8000-000000000001';
 const DRIVER = 'a3f1c0de-0000-4000-8000-000000000002';
@@ -91,7 +92,8 @@ function txDouble(rawRows: unknown[][]) {
 
 const code = (error: unknown) =>
   (error as { getResponse(): { code: string } }).getResponse().code;
-const status = (error: unknown) => (error as { getStatus(): number }).getStatus();
+const status = (error: unknown) =>
+  (error as { getStatus(): number }).getStatus();
 
 describe('V1.11-A completion contract', () => {
   it('answers every refusal with 409: a completion is never an internal failure', () => {
@@ -118,7 +120,10 @@ describe('V1.11-A provider completion', () => {
       { mode: 'FLEET', providerId: PROVIDER },
       USER,
     );
-    expect(outcome).toMatchObject({ kind: 'completed', assignmentId: ASSIGNMENT });
+    expect(outcome).toMatchObject({
+      kind: 'completed',
+      assignmentId: ASSIGNMENT,
+    });
     const deliveredAt = (outcome as { deliveredAt: Date }).deliveredAt;
     // The timestamp is the server's, not the client's, and both writes share it exactly.
     expect(deliveredAt.getTime()).toBeGreaterThanOrEqual(before);
@@ -159,9 +164,9 @@ describe('V1.11-A provider completion', () => {
       { mode: 'FLEET', providerId: PROVIDER },
       USER,
     );
-    expect(
-      t.assignmentUpdate.mock.invocationCallOrder[0],
-    ).toBeLessThan(t.dispatchUpdate.mock.invocationCallOrder[0]);
+    expect(t.assignmentUpdate.mock.invocationCallOrder[0]).toBeLessThan(
+      t.dispatchUpdate.mock.invocationCallOrder[0],
+    );
   });
   it('locks the dispatch row and the active assignment row', async () => {
     const t = txDouble([[claimed()], [{ id: ASSIGNMENT }]]);
@@ -289,7 +294,10 @@ describe('V1.11-A independent completion', () => {
       { mode: 'INDEPENDENT', driverId: DRIVER },
       USER,
     );
-    expect(outcome).toMatchObject({ kind: 'completed', assignmentId: ASSIGNMENT });
+    expect(outcome).toMatchObject({
+      kind: 'completed',
+      assignmentId: ASSIGNMENT,
+    });
     expect(t.assignmentUpdate.mock.calls[0][0].data).toMatchObject({
       status: 'COMPLETED',
       endedByUserId: USER,
@@ -392,9 +400,9 @@ describe('V1.11-A DELIVERED is terminal for both execution models', () => {
       claimRejection(dispatch, { status: 'OFFERED' }, 'another', now),
     ).toBe('DISPATCH_DELIVERED');
     // Not ALREADY_OWNER: repeating a claim is only meaningful while the service is still CLAIMED.
-    expect(
-      claimRejection(dispatch, { status: 'CLAIMED' }, PROVIDER, now),
-    ).toBe('DISPATCH_DELIVERED');
+    expect(claimRejection(dispatch, { status: 'CLAIMED' }, PROVIDER, now)).toBe(
+      'DISPATCH_DELIVERED',
+    );
   });
   it('stops an independent driver from taking a delivered service', () => {
     expect(
@@ -469,7 +477,9 @@ describe('V1.11-A the independent completion does not re-run the approval gate',
       ...client,
       $transaction: (fn: (t: typeof client) => unknown) => fn(client),
     } as unknown as PrismaService;
-    const service = new IndependentDispatchesService(prisma);
+    const service = new IndependentDispatchesService(prisma, {
+      scheduleFirstAttempt: () => undefined,
+    } as unknown as B2bWebhooksService);
     // A suspension landing mid-service must never strand a finished delivery, so the only thing
     // checked is that this driver holds the claim.
     await expect(service.complete(USER, DISPATCH)).rejects.toMatchObject({

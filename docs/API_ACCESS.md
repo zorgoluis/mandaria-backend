@@ -6,6 +6,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 
 | Método | Ruta | Autenticación | Roles globales | Scopes | Operación |
 |---|---|---|---|---|---|
+| POST | /api/v1/admin/b2b-events/{eventId}/deliver | bearer | SUPER_ADMIN | — | Intentar entregar un evento B2B registrado |
 | GET | /api/v1/admin/credit-policies | bearer | SUPER_ADMIN | — | Listar políticas de créditos (historial) |
 | POST | /api/v1/admin/credit-policies | bearer | SUPER_ADMIN | — | Crear la primera política de una combinación |
 | GET | /api/v1/admin/credit-policies/{id} | bearer | SUPER_ADMIN | — | Consultar una versión de política de créditos |
@@ -41,6 +42,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | DELETE | /api/v1/admin/integrations/{id}/credentials/{credentialId} | bearer | SUPER_ADMIN | — | Compatibility alias for credential revocation |
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/revoke | bearer | SUPER_ADMIN | — | AdminIntegrationsController_revoke[0] |
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/rotate | bearer | SUPER_ADMIN | — | Create replacement with the same scopes/expiry; revoke old credential explicitly after transition |
+| GET | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Consultar el endpoint de webhook de un IntegrationClient |
+| PUT | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Configurar el endpoint de webhook de un IntegrationClient |
 | GET | /api/v1/admin/providers | bearer | SUPER_ADMIN | — | Listar proveedores con filtros y paginación |
 | POST | /api/v1/admin/providers | bearer | SUPER_ADMIN | — | Crear proveedor FLEET o INDEPENDENT |
 | GET | /api/v1/admin/providers/{id} | bearer | SUPER_ADMIN | — | Consultar proveedor por ID |

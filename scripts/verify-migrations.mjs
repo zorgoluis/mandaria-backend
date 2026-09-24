@@ -1162,8 +1162,53 @@ try {
       '1',
     );
   }
+  // V1.12-C: webhook transport. The migration only creates the configuration and the attempt
+  // history: no endpoint is invented, no event is delivered retroactively, and no HTTP request
+  // is made while migrating.
+  for (const db of [cleanDb, upgradeDb, v19Db, v110aDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT (SELECT count(*) FROM "B2bWebhookEndpoint") + (SELECT count(*) FROM "B2bWebhookDeliveryAttempt")`,
+      ]),
+      '0',
+    );
+    // One endpoint per IntegrationClient in this version.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_indexes WHERE indexname = 'B2bWebhookEndpoint_integrationClientId_key'`,
+      ]),
+      '1',
+    );
+    // Ownership of an attempt is verified by PostgreSQL: its event and its endpoint must both
+    // belong to the same client, through composite foreign keys.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_constraint WHERE conrelid = '"B2bWebhookDeliveryAttempt"'::regclass AND contype = 'f' AND cardinality(conkey) = 2`,
+      ]),
+      '2',
+    );
+    // Attempts are append-only and an endpoint can never change owner.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_trigger WHERE tgname IN ('B2bWebhookDeliveryAttempt_guard', 'B2bWebhookDeliveryAttempt_no_truncate', 'B2bWebhookEndpoint_guard')`,
+      ]),
+      '3',
+    );
+    // A SUCCEEDED attempt is exactly "the endpoint answered 2xx"; a FAILED one always says why.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_constraint WHERE conname = 'B2bWebhookDeliveryAttempt_values_check' AND pg_get_constraintdef(oid) LIKE '%failureKind%'`,
+      ]),
+      '1',
+    );
+  }
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D -> V1.10-E -> V1.11-A -> V1.12-B (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; no refund created by migration; no dispatch delivered nor assignment completed by migration; no B2B outbox event created by migration, with its partial unique index, composite ownership keys, immutability triggers and deferred enforcement present; V1.4-V1.12 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D -> V1.10-E -> V1.11-A -> V1.12-B -> V1.12-C (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; no refund created by migration; no dispatch delivered nor assignment completed by migration; no B2B outbox event created by migration, with its partial unique index, composite ownership keys, immutability triggers and deferred enforcement present; no webhook endpoint or delivery attempt created by migration, with their ownership keys and append-only triggers present; V1.4-V1.12 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(

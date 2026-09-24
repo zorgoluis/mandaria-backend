@@ -124,6 +124,18 @@ const schema = z.object({
     .min(1)
     .max(100)
     .default(3),
+  // V1.12-C webhook delivery. The insecure-targets switch is LOCAL/TEST ONLY (it allows http and
+  // loopback so the suites can run a real receiver) and is rejected in production.
+  B2B_WEBHOOK_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(500)
+    .max(30000)
+    .default(5000),
+  B2B_WEBHOOK_ALLOW_INSECURE_TARGETS: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
 });
 export function validateEnvironment(input: Record<string, unknown>) {
   const result = schema.safeParse(input);
@@ -151,6 +163,10 @@ export function validateEnvironment(input: Record<string, unknown>) {
       throw new Error('MAIL_PROVIDER=smtp is required in production');
     if (!env.MANDARIA_WEB_URL?.startsWith('https://'))
       throw new Error('MANDARIA_WEB_URL must be an https URL in production');
+    if (env.B2B_WEBHOOK_ALLOW_INSECURE_TARGETS)
+      throw new Error(
+        'B2B_WEBHOOK_ALLOW_INSECURE_TARGETS=true is not allowed in production',
+      );
   }
   // Development and test default to the local outbox so no real email is ever sent by accident.
   const mailProvider = env.MAIL_PROVIDER ?? 'local_outbox';
