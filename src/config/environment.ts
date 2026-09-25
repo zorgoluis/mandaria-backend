@@ -124,6 +124,32 @@ const schema = z.object({
     .min(1)
     .max(100)
     .default(3),
+  // V1.12-C webhook delivery. The insecure-targets switch is LOCAL/TEST ONLY (it allows http and
+  // loopback so the suites can run a real receiver) and is rejected in production.
+  B2B_WEBHOOK_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(500)
+    .max(30000)
+    .default(5000),
+  B2B_WEBHOOK_ALLOW_INSECURE_TARGETS: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  // V1.12-D reliable delivery. The master key encrypts the per-endpoint HMAC secrets (32 bytes as
+  // hex or base64) and is required in production; losing it means reissuing every secret.
+  B2B_WEBHOOK_SECRET_KEY: optional(z.string().min(32).max(200)),
+  // How often a backend looks for work. 0 disables the loop, which is how the suites drive the
+  // worker deterministically; production keeps a moderate, unhurried cadence.
+  B2B_WEBHOOK_POLL_SECONDS: z.coerce.number().int().min(0).max(3600).default(15),
+  // How long a worker owns a handover before another may take it over. It has to outlast a request
+  // (timeout plus margin) and still be short enough that a dead worker does not block for long.
+  B2B_WEBHOOK_LEASE_SECONDS: z.coerce
+    .number()
+    .int()
+    .min(5)
+    .max(600)
+    .default(60),
 });
 export function validateEnvironment(input: Record<string, unknown>) {
   const result = schema.safeParse(input);
@@ -151,6 +177,12 @@ export function validateEnvironment(input: Record<string, unknown>) {
       throw new Error('MAIL_PROVIDER=smtp is required in production');
     if (!env.MANDARIA_WEB_URL?.startsWith('https://'))
       throw new Error('MANDARIA_WEB_URL must be an https URL in production');
+    if (env.B2B_WEBHOOK_ALLOW_INSECURE_TARGETS)
+      throw new Error(
+        'B2B_WEBHOOK_ALLOW_INSECURE_TARGETS=true is not allowed in production',
+      );
+    if (!env.B2B_WEBHOOK_SECRET_KEY)
+      throw new Error('B2B_WEBHOOK_SECRET_KEY is required in production');
   }
   // Development and test default to the local outbox so no real email is ever sent by accident.
   const mailProvider = env.MAIL_PROVIDER ?? 'local_outbox';

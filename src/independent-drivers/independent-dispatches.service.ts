@@ -25,6 +25,7 @@ import {
   refundRejectionCode,
 } from '../credits/service-refund.js';
 import { recordedEventLog } from '../b2b-events/b2b-outbox.js';
+import { B2bWebhooksService } from '../b2b-webhooks/b2b-webhooks.service.js';
 import {
   DELIVERY_COMPLETED_EVENT,
   completeDelivery,
@@ -62,7 +63,10 @@ type ApprovedDriver = { driverId: string; profileId: string };
 @Injectable()
 export class IndependentDispatchesService {
   private readonly logger = new Logger(IndependentDispatchesService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly webhooks: B2bWebhooksService,
+  ) {}
 
   /** The driver's own capability, as returned inside GET /driver/me. */
   async profileForUser(userId: string) {
@@ -443,6 +447,10 @@ export class IndependentDispatchesService {
         deliveredAt: outcome.deliveredAt.toISOString(),
       });
       this.logger.log(recordedEventLog(outcome.event));
+      // V1.12-D: the transaction has already committed and the event is durable, so this is
+      // only a nudge for latency. If the process dies right here the worker rediscovers the
+      // event from the outbox; transport never decides whether a delivery happened.
+      this.webhooks.nudge();
     }
     return this.viewFor(driver.id, dispatchId);
   }

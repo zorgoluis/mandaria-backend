@@ -35051,6 +35051,558 @@
         ]
       }
     },
+    "/api/v1/admin/integrations/{id}/webhook": {
+      "get": {
+        "description": "Devuelve la configuración y **si** hay secreto, nunca el secreto. El valor sólo se muestra una vez, al generarlo o rotarlo.",
+        "operationId": "AdminB2bWebhooksController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar el endpoint de webhook de un IntegrationClient",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      },
+      "put": {
+        "description": "Un endpoint por IntegrationClient. La URL se valida como superficie SSRF al escribirla y otra vez al usarla, porque el DNS puede cambiar en medio. Al crearlo, `deliverFrom` queda en este instante: sólo los eventos posteriores entran en la entrega automática, de modo que configurar un webhook hoy no dispara el historial. Deshabilitarlo detiene los envíos sin perder el estado; volver a habilitarlo los reanuda desde donde iban.",
+        "operationId": "AdminB2bWebhooksController_upsert",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertWebhookEndpointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Configurar el endpoint de webhook de un IntegrationClient",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/integrations/{id}/webhook/secret": {
+      "post": {
+        "description": "El secreto se genera con CSPRNG, se guarda cifrado (AES-256-GCM bajo `B2B_WEBHOOK_SECRET_KEY`) y **se devuelve una sola vez**: después sólo es visible que existe. Rotar no recrea el IntegrationClient ni toca el historial: cada intento firma con el secreto activo en ese momento, así que un reintento posterior a la rotación ya viaja con el nuevo y las firmas antiguas no se regeneran.",
+        "operationId": "AdminB2bWebhooksController_issueSecret",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSecretResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generar o rotar el secreto de firma del webhook",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/integrations/{id}/webhook/deliveries": {
+      "get": {
+        "description": "Hasta 100 entregas, las más recientes primero: estado, intentos hechos, próximo intento y el resultado del último. No expone el secreto ni el cuerpo del evento.",
+        "operationId": "AdminB2bWebhooksController_deliveries",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookDeliveryResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Estado de entrega de los eventos de un IntegrationClient",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/b2b-events/{eventId}/deliver": {
+      "post": {
+        "description": "Realiza **un** intento y registra su resultado. Toma el lease antes, así que nunca corre en paralelo con el worker: si éste lo tiene en ese momento, responde 409. Un evento PENDING avanza su calendario normalmente; uno EXHAUSTED puede pasar a DELIVERED si ahora responde; uno ya DELIVERED se reenvía a propósito y queda auditado sin cambiar de estado; uno anterior a la frontera se envía como en V1.12-C, sin crear estado ni entrar al ciclo de reintentos. No modifica el evento, que es inmutable, ni el Dispatch, ni los créditos.",
+        "operationId": "AdminB2bWebhooksController_deliver",
+        "parameters": [
+          {
+            "name": "eventId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookAttemptResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Intentar entregar un evento B2B registrado",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/b2b-events": {
+      "get": {
+        "description": "Tres conceptos distintos conviven aquí: el **evento** es un hecho inmutable y no tiene estado; el **transporte** sí lo tiene (PENDING, DELIVERED, EXHAUSTED, y el derivado NO_DELIVERY); y los **intentos** son historia. Orden por `occurredAt` descendente con el id como desempate estable. Filtros por cliente, tipo, estado de transporte, `publicId`, referencia externa y rango de fechas.",
+        "operationId": "AdminB2bWebhooksController_events",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "integrationClientId",
+            "required": false,
+            "in": "query",
+            "description": "Eventos de este IntegrationClient.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Tipo interno del evento; hoy sólo existe DELIVERY_COMPLETED.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DELIVERY_COMPLETED"
+              ]
+            }
+          },
+          {
+            "name": "transportState",
+            "required": false,
+            "in": "query",
+            "description": "Estado del **transporte**, no del evento. NO_DELIVERY es derivado: el evento existe y es legítimo, pero está fuera de la entrega fiable (sin endpoint, anterior a la frontera, o todavía sin recoger).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "DELIVERED",
+                "EXHAUSTED",
+                "NO_DELIVERY"
+              ]
+            }
+          },
+          {
+            "name": "deliveryRequestPublicId",
+            "required": false,
+            "in": "query",
+            "description": "La DeliveryRequest del evento, por su identificador público.",
+            "schema": {
+              "example": "MDR-000123",
+              "type": "string"
+            }
+          },
+          {
+            "name": "externalReference",
+            "required": false,
+            "in": "query",
+            "description": "Referencia externa exacta del cliente: por dónde empieza «mi pedido X no recibió actualización».",
+            "schema": {
+              "example": "ORDER-4711",
+              "type": "string"
+            }
+          },
+          {
+            "name": "occurredFrom",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "occurredTo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminEventPageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar eventos B2B y su estado de transporte",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/b2b-events/{eventId}": {
+      "get": {
+        "description": "Reúne en una respuesta el sobre, la instantánea pública congelada que el cliente debía recibir, su dueño, el destino configurado, el estado del transporte y el historial de intentos. Nunca incluye el secreto, ni cifrado ni descifrado.",
+        "operationId": "AdminB2bWebhooksController_event",
+        "parameters": [
+          {
+            "name": "eventId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminEventDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Diagnóstico completo de un evento B2B",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/b2b-events/{eventId}/rescue": {
+      "post": {
+        "description": "EXHAUSTED → PENDING, con el próximo intento ahora. **No intenta nada aquí**: programa trabajo y el worker lo recoge, así que la respuesta dice `RESCHEDULED` y nunca «entregado». No borra intentos, no reinicia el contador y no toca el evento; como el contador sigue donde estaba, un rescate compra un intento más y, si vuelve a fallar, regresa a EXHAUSTED y puede rescatarse otra vez. Dos rescates simultáneos no se duplican: el segundo encuentra la entrega ya pendiente y lo dice. Para intentarlo en el momento, usar `POST /admin/b2b-events/{eventId}/deliver`.",
+        "operationId": "AdminB2bWebhooksController_rescue",
+        "parameters": [
+          {
+            "name": "eventId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookRescueResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Devolver a la cola un evento con los reintentos agotados",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/webhooks/health": {
+      "get": {
+        "description": "Los conteos son persistidos y compartidos por todos los backends. `thisInstance` es configuración y memoria **de la instancia que responde**: con varios backends corriendo el mismo bucle, ninguno sabe lo que hacen los demás, así que esto no es salud global y no se presenta como tal.",
+        "operationId": "AdminB2bWebhooksController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookHealthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cuánto trabajo de webhooks queda, y qué hace esta instancia",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/integrations/{id}/webhook/summary": {
+      "get": {
+        "operationId": "AdminB2bWebhooksController_summary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookClientSummaryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resumen de entregas de un IntegrationClient",
+        "tags": [
+          "Admin B2B Webhooks"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
     "/api/v1/provider/dispatches/{dispatchId}/assignment": {
       "post": {
         "description": "Sólo el proveedor que tiene el claim. El proveedor se deriva de la membership y del Dispatch, nunca del payload. Comprueba bajo bloqueos (Dispatch → proveedor → Driver → Vehicle) que el Dispatch siga CLAIMED por mí y que Driver y Vehicle sean míos, operacionales, libres y coherentes con el emparejamiento V1.4. Máximo una asignación ACTIVE por Dispatch, Driver y Vehicle (índices únicos parciales). Devuelve el contexto de pago: si goodsPaymentMode es COURIER_ADVANCE, driverAdvanceAmount indica cuánto debe adelantar el repartidor al comercio. No cambia el estado del Dispatch ni asigna disponibilidad del Driver. Requiere JWT humano, rol global PROVIDER_ADMIN (RolesGuard) y membership vigente (ProviderMembershipGuard); son comprobaciones independientes. providerId es opcional sólo con una membership; un proveedor sin membership responde 403.",
@@ -54234,6 +54786,651 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "WebhookEndpointResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "integrationClientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://coita-eats.example.com/hooks/mandaria"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "secretConfigured": {
+            "type": "boolean",
+            "description": "Si hay secreto de firma configurado. El secreto en sí no se devuelve nunca."
+          },
+          "secretSetAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliverFrom": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Frontera de la entrega automática: sólo los eventos ocurridos a partir de este instante entran al worker. Los anteriores siguen siendo entregables a mano."
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "integrationClientId",
+          "url",
+          "enabled",
+          "secretConfigured",
+          "deliverFrom",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpsertWebhookEndpointDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "https://coita-eats.example.com/hooks/mandaria",
+            "maxLength": 2048,
+            "description": "Destino HTTPS al que Mandaria entregará los eventos de este IntegrationClient. Se valida como superficie SSRF: sin credenciales embebidas, sin fragmento, y nunca hacia loopback, direcciones privadas, link-local (incluido el endpoint de metadatos) ni nombres internos. En LOCAL/TEST, con B2B_WEBHOOK_ALLOW_INSECURE_TARGETS=true, se admite http y localhost; en producción el arranque falla si ese interruptor está activo."
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Deshabilitar conserva la configuración y detiene las entregas: los eventos se siguen registrando, el estado de entrega se conserva y el worker no los toca hasta volver a habilitarlo."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "WebhookSecretResponse": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "El secreto en claro. **Se muestra una sola vez**; después sólo es visible que existe."
+          },
+          "secretSetAt": {
+            "type": "object",
+            "format": "date-time"
+          },
+          "algorithm": {
+            "type": "string",
+            "example": "HMAC-SHA256"
+          },
+          "signatureHeader": {
+            "type": "string",
+            "example": "X-Mandaria-Signature"
+          },
+          "signedMessage": {
+            "type": "string",
+            "example": "{timestamp}.{rawBody}",
+            "description": "Mensaje firmado: el valor de X-Mandaria-Timestamp, un punto, y los bytes exactos del cuerpo recibido. La firma viaja como `v1=<hex>`."
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "secret",
+          "secretSetAt",
+          "algorithm",
+          "signatureHeader",
+          "signedMessage",
+          "note"
+        ]
+      },
+      "WebhookDeliveryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "DELIVERED",
+              "EXHAUSTED"
+            ]
+          },
+          "attemptCount": {
+            "type": "number"
+          },
+          "nextAttemptAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastAttemptAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "exhaustedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "leaseExpiresAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Hasta cuándo un worker tiene tomada esta entrega."
+          },
+          "lastResult": {
+            "type": "string",
+            "enum": [
+              "SUCCEEDED",
+              "FAILED"
+            ],
+            "nullable": true
+          },
+          "lastHttpStatus": {
+            "type": "object",
+            "nullable": true
+          },
+          "lastFailureKind": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "state",
+          "attemptCount"
+        ]
+      },
+      "WebhookAttemptResponse": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "attempted",
+              "skipped"
+            ],
+            "description": "skipped significa que no hubo petición HTTP porque el cliente no tiene endpoint, lo tiene deshabilitado o aún no tiene secreto; no es un fallo y no deja intento."
+          },
+          "attemptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attemptNumber": {
+            "type": "number",
+            "description": "Ordinal del intento dentro de la entrega fiable. Ausente para un evento anterior a la frontera, que se entrega sin estado."
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "SUCCEEDED",
+              "FAILED"
+            ]
+          },
+          "httpStatus": {
+            "type": "number",
+            "description": "Presente sólo cuando el endpoint respondió."
+          },
+          "failureKind": {
+            "type": "string",
+            "enum": [
+              "HTTP_STATUS",
+              "TIMEOUT",
+              "NETWORK",
+              "INVALID_ENDPOINT"
+            ]
+          },
+          "durationMs": {
+            "type": "number"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "DELIVERED",
+              "EXHAUSTED",
+              "UNTRACKED"
+            ],
+            "description": "UNTRACKED: el evento es anterior a la frontera y se entregó sin crear estado ni entrar al ciclo de reintentos."
+          },
+          "nextAttemptAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "NO_ENDPOINT",
+              "ENDPOINT_DISABLED",
+              "NO_SECRET"
+            ]
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "DELIVERED",
+              "FAILED",
+              "RESCHEDULED",
+              "EXHAUSTED",
+              "SKIPPED"
+            ],
+            "description": "Qué ocurrió, en términos operativos: DELIVERED (el receptor aceptó), RESCHEDULED (falló y hay otro intento programado), EXHAUSTED (falló y ya no habrá más), FAILED o SKIPPED (no se intentó nada). Una pantalla no debe leer el 200 de esta ruta como «enviado»."
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "AdminEventSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "example": "delivery.completed"
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recordedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "integrationClientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "integrationClientName": {
+            "type": "string"
+          },
+          "integrationClientCode": {
+            "type": "string"
+          },
+          "deliveryRequestPublicId": {
+            "type": "string",
+            "example": "MDR-000123"
+          },
+          "externalReference": {
+            "type": "object",
+            "nullable": true,
+            "example": "ORDER-4711"
+          },
+          "transportState": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "DELIVERED",
+              "EXHAUSTED",
+              "NO_DELIVERY"
+            ],
+            "description": "Estado del transporte. El evento en sí no tiene estado: ocurrió."
+          },
+          "noDeliveryReason": {
+            "type": "string",
+            "enum": [
+              "NO_ENDPOINT",
+              "BEFORE_BOUNDARY",
+              "NOT_YET_PICKED_UP"
+            ],
+            "nullable": true,
+            "description": "Por qué está fuera de la entrega fiable. Ninguno es un fallo."
+          },
+          "attemptCount": {
+            "type": "number"
+          },
+          "lastAttemptAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "nextAttemptAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "exhaustedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "inFlight": {
+            "type": "boolean",
+            "description": "Un worker lo tiene tomado en este momento."
+          }
+        },
+        "required": [
+          "eventId",
+          "type",
+          "occurredAt",
+          "recordedAt",
+          "integrationClientId",
+          "integrationClientName",
+          "integrationClientCode",
+          "deliveryRequestPublicId",
+          "transportState",
+          "attemptCount",
+          "inFlight"
+        ]
+      },
+      "AdminEventPageResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminEventSummaryResponse"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          },
+          "totalPages": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize",
+          "totalPages"
+        ]
+      },
+      "AdminAttemptResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attemptNumber": {
+            "type": "object",
+            "nullable": true,
+            "description": "Nulo en los intentos de V1.12-C."
+          },
+          "attemptedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "number"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "SUCCEEDED",
+              "FAILED"
+            ]
+          },
+          "httpStatus": {
+            "type": "object",
+            "nullable": true
+          },
+          "failureKind": {
+            "type": "string",
+            "enum": [
+              "HTTP_STATUS",
+              "TIMEOUT",
+              "NETWORK",
+              "INVALID_ENDPOINT"
+            ],
+            "nullable": true
+          },
+          "failureDetail": {
+            "type": "object",
+            "nullable": true,
+            "description": "Clasificación saneada y acotada. Nunca el cuerpo remoto ni una traza interna."
+          },
+          "endpointUrl": {
+            "type": "string",
+            "description": "La URL exacta a la que fue este intento."
+          }
+        },
+        "required": [
+          "id",
+          "attemptedAt",
+          "durationMs",
+          "result",
+          "endpointUrl"
+        ]
+      },
+      "AdminEventDetailResponse": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "example": "delivery.completed"
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recordedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "integrationClientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "integrationClientName": {
+            "type": "string"
+          },
+          "integrationClientCode": {
+            "type": "string"
+          },
+          "deliveryRequestPublicId": {
+            "type": "string",
+            "example": "MDR-000123"
+          },
+          "externalReference": {
+            "type": "object",
+            "nullable": true,
+            "example": "ORDER-4711"
+          },
+          "transportState": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "DELIVERED",
+              "EXHAUSTED",
+              "NO_DELIVERY"
+            ],
+            "description": "Estado del transporte. El evento en sí no tiene estado: ocurrió."
+          },
+          "noDeliveryReason": {
+            "type": "string",
+            "enum": [
+              "NO_ENDPOINT",
+              "BEFORE_BOUNDARY",
+              "NOT_YET_PICKED_UP"
+            ],
+            "nullable": true,
+            "description": "Por qué está fuera de la entrega fiable. Ninguno es un fallo."
+          },
+          "attemptCount": {
+            "type": "number"
+          },
+          "lastAttemptAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "nextAttemptAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "exhaustedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "inFlight": {
+            "type": "boolean",
+            "description": "Un worker lo tiene tomado en este momento."
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "La instantánea pública congelada de V1.12-B: exactamente lo que el cliente debía recibir. No se reconstruye."
+          },
+          "endpoint": {
+            "type": "object",
+            "nullable": true,
+            "description": "Configuración del destino. Nunca incluye el secreto ni su cifrado."
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAttemptResponse"
+            }
+          }
+        },
+        "required": [
+          "eventId",
+          "type",
+          "occurredAt",
+          "recordedAt",
+          "integrationClientId",
+          "integrationClientName",
+          "integrationClientCode",
+          "deliveryRequestPublicId",
+          "transportState",
+          "attemptCount",
+          "inFlight",
+          "payload",
+          "attempts"
+        ]
+      },
+      "WebhookRescueResponse": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "RESCHEDULED",
+              "ALREADY_PENDING"
+            ],
+            "description": "RESCHEDULED: volvió a la cola y el worker lo tomará. ALREADY_PENDING: ya estaba pendiente y no se hizo nada. **No** significa entregado: aquí no se intenta nada."
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "outcome",
+          "eventId"
+        ]
+      },
+      "WebhookHealthResponse": {
+        "type": "object",
+        "properties": {
+          "pending": {
+            "type": "number",
+            "description": "Entregas pendientes en toda la base."
+          },
+          "exhausted": {
+            "type": "number"
+          },
+          "delivered": {
+            "type": "number"
+          },
+          "leased": {
+            "type": "number",
+            "description": "Tomadas por algún worker ahora mismo."
+          },
+          "oldestPendingDueAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "thisInstance": {
+            "type": "object",
+            "description": "Configuración y memoria de **esta** instancia. Con varios backends, ninguno conoce el estado de los demás: no es salud global."
+          }
+        },
+        "required": [
+          "pending",
+          "exhausted",
+          "delivered",
+          "leased",
+          "thisInstance"
+        ]
+      },
+      "WebhookClientSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "number"
+          },
+          "pending": {
+            "type": "number"
+          },
+          "delivered": {
+            "type": "number"
+          },
+          "exhausted": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "events",
+          "pending",
+          "delivered",
+          "exhausted"
         ]
       },
       "CreateDeliveryAssignmentDto": {

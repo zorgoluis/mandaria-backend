@@ -26,6 +26,7 @@ import {
   refundRejectionCode,
 } from '../credits/service-refund.js';
 import { recordedEventLog } from '../b2b-events/b2b-outbox.js';
+import { B2bWebhooksService } from '../b2b-webhooks/b2b-webhooks.service.js';
 import {
   DELIVERY_COMPLETED_EVENT,
   completeDelivery,
@@ -91,6 +92,7 @@ export class DispatchService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly webhooks: B2bWebhooksService,
   ) {}
 
   /** Assignment deadline (claimedAt + ServiceType TTL) and whether the owner is overdue. */
@@ -385,6 +387,10 @@ export class DispatchService {
         deliveredAt: outcome.deliveredAt.toISOString(),
       });
       this.logger.log(recordedEventLog(outcome.event));
+      // V1.12-D: the transaction has already committed and the event is durable, so this is
+      // only a nudge for latency. If the process dies right here the worker rediscovers the
+      // event from the outbox; transport never decides whether a delivery happened.
+      this.webhooks.nudge();
     }
     return this.getForProvider(dispatchId, providerId);
   }

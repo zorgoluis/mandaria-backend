@@ -16,6 +16,7 @@ import { IndependentDispatchesService } from '../dist/independent-drivers/indepe
 import { assignmentDeadline } from '../dist/delivery-assignments/assignment-policy.js';
 import { validateEnvironment } from '../src/config/environment.js';
 import type { PrismaService } from '../dist/prisma/prisma.service.js';
+import type { B2bWebhooksService } from '../dist/b2b-webhooks/b2b-webhooks.service.js';
 
 /** Minimal transaction double: raw row-lock queries return the queued rows in order. */
 function prismaDouble(rawRows: unknown[][], tx: Record<string, unknown> = {}) {
@@ -327,7 +328,9 @@ describe('V1.9 vehicle limit', () => {
 
 describe('V1.9 driver identity is never taken from the payload', () => {
   const service = (tx: Record<string, unknown>) =>
-    new IndependentDispatchesService(prismaDouble([], tx).prisma);
+    new IndependentDispatchesService(prismaDouble([], tx).prisma, {
+      nudge: () => undefined,
+    } as unknown as B2bWebhooksService);
   it('rejects a DRIVER without an independent profile', async () => {
     const svc = service({
       driver: {
@@ -439,7 +442,9 @@ describe('V1.9 take serializes against suspension', () => {
 
   it('locks the profile row together with the driver row', async () => {
     const { prisma, queryRaw } = takeDouble(() => ({ id: 'a' }));
-    await new IndependentDispatchesService(prisma)
+    await new IndependentDispatchesService(prisma, {
+      nudge: () => undefined,
+    } as unknown as B2bWebhooksService)
       .take('u', 'disp', 'v')
       .catch(() => undefined);
     const statements = queryRaw.mock.calls.map((call) =>
@@ -466,7 +471,9 @@ describe('V1.9 take serializes against suspension', () => {
       throw guardError;
     });
     await expect(
-      new IndependentDispatchesService(prisma).take('u', 'disp', 'v'),
+      new IndependentDispatchesService(prisma, {
+        nudge: () => undefined,
+      } as unknown as B2bWebhooksService).take('u', 'disp', 'v'),
     ).rejects.toMatchObject({
       status: 409,
       response: { code: 'TAKE_CONFLICT' },

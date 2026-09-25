@@ -1,4 +1,4 @@
-# Mandaria — V1.12-B Durable B2B Event Outbox
+# Mandaria — V1.12-E Webhook Operations & Observability
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
@@ -14,7 +14,7 @@ Contrato: [API-CONTRACT](docs/API-CONTRACT.md). Resultados: [corrección del CHE
 
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). V1.10-A agrega la base contable de los créditos Mandaria: una cuenta por proveedor y por repartidor independiente, con un ledger inmutable, recargas y ajustes manuales de SUPER_ADMIN; **todavía no se cobra ningún crédito al adjudicar servicios** (ver [Credit Accounts & Immutable Ledger](#credit-accounts--immutable-ledger-v110-a)). V1.10-B agrega el motor de políticas de créditos: cuánto cuesta adjudicarse un servicio según serviceType, quién paga y la distancia canónica, con versiones inmutables; **sólo calcula, no cobra** (ver [Credit Policy Engine](#credit-policy-engine-v110-b)). V1.10-C congela el costo en créditos de cada Dispatch al abrirlo, V1.10-D lo cobra en el mismo acto de adjudicarlo y V1.10-E lo devuelve completo cuando esa adjudicación se deshace. V1.11-A agrega el **cierre operativo de la entrega**: el proveedor dueño del claim, o el repartidor independiente que tomó el servicio, confirma que se entregó; el Dispatch queda `DELIVERED` de forma terminal e irreversible, la asignación queda `COMPLETED` y el repartidor y el vehículo vuelven a estar libres. Cuesta 0 créditos y no devuelve ninguno (ver [MVP Delivery Completion](#mvp-delivery-completion-v111-a)). V1.12-A abre esa entrega al cliente que la pidió: el IntegrationClient dueño de la DeliveryRequest consulta su **estado logístico público** —`REQUESTED`, `OPEN`, `ASSIGNED`, `DELIVERED`, `CANCELLED` o `EXPIRED`— sin ver el modelo interno de Dispatch. Es sólo lectura, sin efectos y sin migración: Mandaria sigue siendo la única autoridad logística (ver [B2B Delivery Status](#b2b-delivery-status-v112-a)). V1.12-B agrega el **primer Outbox durable**: cuando una entrega llega a `DELIVERED`, un evento `delivery.completed` se registra en la misma transacción que la completa —o ninguno de los dos ocurre—, con una instantánea congelada del contrato público de V1.12-A. Registra, no envía: no hay webhook, worker, reintentos ni firma (ver [Durable B2B Event Outbox](#durable-b2b-event-outbox-v112-b)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). V1.10-A agrega la base contable de los créditos Mandaria: una cuenta por proveedor y por repartidor independiente, con un ledger inmutable, recargas y ajustes manuales de SUPER_ADMIN; **todavía no se cobra ningún crédito al adjudicar servicios** (ver [Credit Accounts & Immutable Ledger](#credit-accounts--immutable-ledger-v110-a)). V1.10-B agrega el motor de políticas de créditos: cuánto cuesta adjudicarse un servicio según serviceType, quién paga y la distancia canónica, con versiones inmutables; **sólo calcula, no cobra** (ver [Credit Policy Engine](#credit-policy-engine-v110-b)). V1.10-C congela el costo en créditos de cada Dispatch al abrirlo, V1.10-D lo cobra en el mismo acto de adjudicarlo y V1.10-E lo devuelve completo cuando esa adjudicación se deshace. V1.11-A agrega el **cierre operativo de la entrega**: el proveedor dueño del claim, o el repartidor independiente que tomó el servicio, confirma que se entregó; el Dispatch queda `DELIVERED` de forma terminal e irreversible, la asignación queda `COMPLETED` y el repartidor y el vehículo vuelven a estar libres. Cuesta 0 créditos y no devuelve ninguno (ver [MVP Delivery Completion](#mvp-delivery-completion-v111-a)). V1.12-A abre esa entrega al cliente que la pidió: el IntegrationClient dueño de la DeliveryRequest consulta su **estado logístico público** —`REQUESTED`, `OPEN`, `ASSIGNED`, `DELIVERED`, `CANCELLED` o `EXPIRED`— sin ver el modelo interno de Dispatch. Es sólo lectura, sin efectos y sin migración: Mandaria sigue siendo la única autoridad logística (ver [B2B Delivery Status](#b2b-delivery-status-v112-a)). V1.12-B agrega el **primer Outbox durable**: cuando una entrega llega a `DELIVERED`, un evento `delivery.completed` se registra en la misma transacción que la completa —o ninguno de los dos ocurre—, con una instantánea congelada del contrato público de V1.12-A. Registra, no envía (ver [Durable B2B Event Outbox](#durable-b2b-event-outbox-v112-b)). V1.12-C sí lo entrega: hace **un** POST del evento ya registrado al endpoint HTTPS que un administrador configuró para ese cliente, siempre **fuera** de la transacción de completion y tratando la URL como superficie SSRF; un fallo quedaba como intento FAILED y se detenía ahí (ver [B2B Webhook Delivery](#b2b-webhook-delivery-v112-c)). V1.12-D lo vuelve **durable, recuperable y firmado**: el trabajo se descubre desde el Outbox tras cualquier reinicio, se toma con un lease para que varios backends no lo dupliquen, se reintenta con una curva fija hasta agotarse y viaja firmado con HMAC-SHA256 bajo un secreto propio de cada cliente, cifrado en reposo. La entrega es **at-least-once**: el consumidor debe deduplicar por `eventId` (ver [Reliable & Secure Webhook Delivery](#reliable--secure-webhook-delivery-v112-d)). V1.12-E no añade maquinaria de entrega: la hace **respondible**. Un SUPER_ADMIN puede ver qué se le debe a cada cliente B2B, buscar un evento por la referencia externa que el propio cliente tiene en la mano, leer la instantánea congelada y el historial de intentos, saber por qué algo está fuera de la entrega fiable —`NO_DELIVERY`, derivado y nunca guardado— y devolver a la cola un envío con los reintentos agotados, que programa trabajo y nunca dice «entregado» (ver [Webhook Operations & Observability](#webhook-operations--observability-v112-e)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -30,6 +30,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `independent-drivers/`: V1.9 perfil independiente, vehículos propios y las operaciones `take`/`release` del repartidor.
 - `deliveries/`: V1.11 cierre operativo de la entrega, compartido por el flujo de proveedor y el independiente; V1.12 traducción del estado interno al estado logístico público del cliente B2B.
 - `b2b-events/`: V1.12-B registro durable de eventos B2B; construye `delivery.completed` desde el modelo público y lo escribe dentro de la transacción que entrega.
+- `b2b-webhooks/`: V1.12-C/D/E transporte del evento: configuración del destino, política SSRF de la URL, el intento HTTP con timeout y su historial append-only, V1.12-D el worker con lease, la política de reintentos y la firma HMAC con su secreto cifrado, y V1.12-E la vista operativa —estado de transporte derivado, listado, detalle, salud y rescate— que lee y programa, pero no entrega.
 - `credits/`: V1.10-A cuentas de créditos, ledger inmutable, recargas, ajustes y cobro atómico CLAIM/TAKE; sin refunds todavía.
 - `credit-policies/`: V1.10-B políticas de créditos versionadas y cálculo puro del costo de un servicio; no debita cuentas.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
@@ -1965,6 +1966,138 @@ Repetir `/deliver` devuelve 200 sin escribir y por tanto sin un segundo evento; 
 
 Detalle completo en [V1.12-B Durable B2B Event Outbox](docs/V1.12-B-DURABLE-B2B-EVENT-OUTBOX.md). Pruebas: `test/b2b-outbox.spec.ts` (construcción canónica del evento, reutilización del contrato público, ambos modos, referencia externa, relojes, ausencia de ids internos y log sin payload) y `test/b2b-outbox.e2e-spec.ts` (ciclo real de proveedor e independiente, instantánea idéntica a la respuesta HTTP, congelación del payload, persistencia tras reinicio, repetición e idempotencia, diez entregas simultáneas por modelo, inyección de fallo con rollback completo, transición manual rechazada al COMMIT, mutaciones y borrados rechazados en SQL, duplicado imposible, entrega histórica sin evento y escaneo de integridad en 0).
 
+
+## B2B Webhook Delivery (V1.12-C)
+
+Responde: **¿cómo se entera el cliente sin preguntar?** V1.12-B dejó `delivery.completed` registrado de forma durable; V1.12-C lo entrega al endpoint HTTPS que un administrador configuró para ese IntegrationClient.
+
+```text
+V1.12-B  el evento durable           V1.12-C  el primer intento de entrega           V1.12-D  reintentos, idempotencia y firma
+```
+
+```text
+DELIVER ──▶ transacción PostgreSQL: assignment COMPLETED + Dispatch DELIVERED + evento ──▶ COMMIT
+                                                                                            │
+            después del commit, fuera de la transacción: endpoint del dueño ──▶ política SSRF ──▶ POST con timeout ──▶ intento registrado
+```
+
+**La llamada HTTP nunca está dentro de la transacción.** Un servicio se entrega aunque el cliente esté caído, aunque no haya internet y aunque el endpoint responda 500; un 500 del receptor no revierte una entrega que ya ocurrió. El primer intento se dispara justo después de responder la petición de completion, como trabajo en segundo plano que se drena en el apagado ordenado.
+
+### Configuración
+
+```
+GET /api/v1/admin/integrations/{id}/webhook     (SUPER_ADMIN)
+PUT /api/v1/admin/integrations/{id}/webhook     (SUPER_ADMIN)  { url, enabled? }
+POST /api/v1/admin/b2b-events/{eventId}/deliver (SUPER_ADMIN)  un intento, operacional
+```
+
+`B2bWebhookEndpoint` es una entidad aparte, no columnas en `IntegrationClient`: el estado operativo del transporte va a crecer y no debe ir llenando la entidad de identidad. Un endpoint por cliente, con `url` y `enabled` y nada más — no hay política de reintentos, cabeceras propias ni suscripción por tipo, porque sólo existe `delivery.completed`. Un cliente B2B **no** configura su propio destino: la URL decide a dónde se conecta Mandaria desde dentro de su red, así que es un acto administrativo.
+
+Sin endpoint, o con el endpoint deshabilitado: la entrega ocurre igual, el evento se registra igual y **no hay petición ni intento**. No ocurrió ningún intento, así que no se inventa uno.
+
+### La URL es superficie SSRF, no un campo de texto
+
+Se valida **dos veces**: al escribirla y otra vez justo antes de cada petición, incluyendo las direcciones a las que su nombre resuelve. Validar sólo al configurar sería teatro, porque un nombre público puede empezar a resolver a una dirección privada en cualquier momento.
+
+Se rechazan los esquemas distintos de `https`, las credenciales embebidas, el fragmento, `localhost` y los TLD reservados, y toda dirección que no sea unicast global: loopback, privadas, CGNAT, link-local `169.254.0.0/16` —donde vive `169.254.169.254`—, multicast y reservadas, con sus equivalentes IPv6. Las direcciones IPv4 disfrazadas de IPv6 se deciden sobre la forma **expandida** y no sobre cómo se escribieron: el parser reescribe `[::ffff:127.0.0.1]` como `::ffff:7f00:1`, y una política basada en texto lo dejaría pasar.
+
+**Los redirects nunca se siguen**: un 3xx es un fallo de transporte. Seguirlos es la forma más fácil de convertir una URL pública aprobada en una interna.
+
+`B2B_WEBHOOK_ALLOW_INSECURE_TARGETS=true` admite http y loopback para que las suites usen un receptor real en 127.0.0.1; **la aplicación se niega a arrancar con ese interruptor en producción**, igual que con `local_fake` y `local_outbox`.
+
+### Lo que viaja
+
+```json
+{ "eventId": "5f2c…", "type": "delivery.completed", "occurredAt": "…",
+  "data": { "publicId": "MDR-000123", "externalReference": "ORDER-4711", "status": "DELIVERED",
+            "execution": { "mode": "PROVIDER" }, "requestedAt": "…", "deliveredAt": "…", "cancelledAt": null } }
+```
+
+Construido desde `B2bOutboxEvent` —las columnas y la instantánea congelada— y nunca desde `DeliveryRequest` y `Dispatch` como están ahora. El nombre interno `DELIVERY_COMPLETED` no viaja. Las cabeceras `x-mandaria-event-id` y `x-mandaria-event-type` son contrato: la primera es la clave natural de deduplicación del consumidor.
+
+**Éxito es cualquier 2xx**, porque los consumidores responden legítimamente 200, 201, 202 o 204. Todo lo demás se clasifica como `HTTP_STATUS`, `TIMEOUT`, `NETWORK` o `INVALID_ENDPOINT`. El cuerpo de la respuesta remota se lee y se descarta: guardarlo significaría conservar HTML, trazas o datos personales que un sistema externo decidió devolver.
+
+### El intento es historia, el evento no se toca
+
+`B2bWebhookDeliveryAttempt` es una tabla aparte, append-only: un FAILED no puede volverse SUCCEEDED ni un 500 un 200, no se borra ni se trunca, y dos claves foráneas **compuestas** —`(eventId, integrationClientId)` y `(endpointId, integrationClientId)`— hacen físicamente imposible que el evento de un cliente figure entregado al receptor de otro. El endpoint tampoco puede cambiar de dueño. El contrato es **at-least-once**: no se promete exactly-once sobre HTTP.
+
+Detalle completo en [V1.12-C B2B Webhook Delivery](docs/V1.12-C-B2B-WEBHOOK-DELIVERY.md). Pruebas: `test/b2b-webhooks.spec.ts` (política de URL y de direcciones resueltas, excepción LOCAL/TEST, construcción del cuerpo, 2xx, no-2xx, redirect, timeout, fallo de red, saneado del error y descarte del cuerpo remoto) y `test/b2b-webhooks.e2e-spec.ts`, que levanta un receptor HTTP real fuera del producto (ciclo de proveedor e independiente, cuerpo exacto contra la instantánea, 200/201/202/204, 400/401/404/409/429/500/503, timeout, conexión rechazada, redirect no seguido, endpoint deshabilitado y ausente, aislamiento entre dos clientes con dos receptores, autorización, entrega manual, persistencia tras reinicio y manipulación SQL rechazada).
+
+
+## Reliable & Secure Webhook Delivery (V1.12-D)
+
+Responde: **¿qué pasa cuando el primer intento falla, o cuando el proceso muere antes de intentarlo?** V1.12-C hacía un intento desde la petición que completaba la entrega. V1.12-D convierte eso en transporte durable: el trabajo se descubre desde el Outbox después de cualquier reinicio, se toma con un lease para que varios backends no lo hagan dos veces, se reintenta con una curva fija y se firma para que el receptor pueda comprobar que la petición es realmente de Mandaria.
+
+```text
+V1.12-B el evento durable   ·   V1.12-C el primer intento   ·   V1.12-D reintentos, lease y firma
+```
+
+### Para quien reciba los webhooks
+
+**La entrega es at-least-once. El consumidor DEBE deduplicar por `eventId`.** No se promete exactly-once y no puede prometerse: si el receptor responde y Mandaria muere antes de registrar ese resultado, el evento se reintenta y el mismo `eventId` llega dos veces. Esa ventana está probada a propósito.
+
+```text
+X-Mandaria-Event-Id · X-Mandaria-Event-Type · X-Mandaria-Timestamp · X-Mandaria-Signature
+
+mensaje = X-Mandaria-Timestamp + "." + cuerpo_crudo
+firma   = "v1=" + HMAC-SHA256(secreto, mensaje) en hexadecimal minúsculas
+```
+
+`cuerpo_crudo` son los **bytes exactos recibidos**, no una re-serialización del JSON parseado: dos serializaciones del mismo objeto no son los mismos bytes. El timestamp es el del intento, no `occurredAt`, para permitir rechazar reenvíos viejos por antigüedad; no sustituye a `eventId`, que es lo que deduplica. El cuerpo de un reintento es **idéntico** al del primer envío: sólo cambian el timestamp y la firma.
+
+### Tres piezas, deliberadamente separadas
+
+```text
+B2bOutboxEvent  hecho inmutable   ·   B2bWebhookDeliveryAttempt  historia inmutable   ·   B2bWebhookDelivery  estado mutable
+```
+
+Convertir el Outbox en una cola habría hecho editable el hecho, que es justo lo que V1.12-B existe para impedir. El estado guarda sólo qué se debe y cuándo reintentarlo, con tres valores —`PENDING`, `DELIVERED`, `EXHAUSTED`— y el lease como columnas. No hay `PAUSED`: un endpoint deshabilitado deja de ser elegible y su trabajo sigue `PENDING` hasta que se rehabilite, sin perder nada.
+
+**El estado no nace con el evento:** el worker lo materializa al recogerlo por primera vez, descubriendo el trabajo desde el Outbox. Eso cierra la ventana de caída de V1.12-C —un proceso que muere entre el commit y la primera petición no pierde nada— y preserva los eventos cuyo cliente todavía no tenía webhook.
+
+### La frontera: `deliverFrom`
+
+Sólo entran en la entrega automática los eventos con `occurredAt >= deliverFrom` del endpoint. La migración la fijó en su propio instante para los endpoints existentes, así que **nada registrado bajo V1.12-B o V1.12-C se envía solo**; y un endpoint nuevo la recibe en «ahora», así que configurar un webhook meses después no desata una avalancha histórica. Los eventos anteriores siguen siendo entregables a mano, y hacerlo **no** los inscribe en el ciclo de reintentos.
+
+### El worker
+
+```text
+descubrir → tomar lease (transacción corta) → COMMIT → HTTP → registrar intento y mover estado (transacción corta) → COMMIT
+```
+
+Nunca hay una transacción abierta durante la llamada HTTP. El lease usa `FOR UPDATE SKIP LOCKED` más una expiración durable: varios backends corren el mismo bucle sin duplicar trabajo, y un worker que muere deja un lease que caduca y otro lo recupera. Las comparaciones de tiempo se hacen contra `now() AT TIME ZONE 'UTC'` del lado de la base y nunca contra una `Date` enlazada, porque un parámetro `Date` llega como `timestamptz` y PostgreSQL reinterpretaría las columnas `timestamp` en la zona del servidor.
+
+### Reintentos y clasificación
+
+```text
+inmediato → +1 min → +5 min → +15 min → +60 min → EXHAUSTED        (5 intentos, 81 minutos)
+```
+
+Centralizada en código, no repartida en cinco variables de entorno. Éxito es cualquier 2xx. Reintentable: 408, 425, 429, 5xx, timeout y error de red. Terminal: 400, 401, 403, 404, 405, **409**, 410, 422, 451, cualquier otro 4xx, un 3xx y un destino que dejó de ser válido.
+
+**409 es terminal por decisión:** el contrato de deduplicación le dice al consumidor que rechace un `eventId` que ya procesó, y un conflicto es la forma natural de decirlo; reintentar castigaría justamente a quien siguió el contrato. Quien quiera decir «ocupado, vuelve luego» tiene 429 y 503.
+
+### El secreto
+
+Generado con CSPRNG, **devuelto una sola vez**, guardado cifrado con AES-256-GCM bajo `B2B_WEBHOOK_SECRET_KEY` (32 bytes, obligatoria en producción). Un CHECK rechaza cualquier valor que no tenga la forma `v1:<iv>:<tag>:<ciphertext>`, así que un secreto en claro no se cuela en la columna. No se reutiliza ningún otro secreto del sistema; las credenciales B2B se guardan hasheadas y por tanto no sirven para firmar. Rotar reemplaza el secreto sin recrear el IntegrationClient: cada intento firma con el activo en ese momento y las firmas históricas no se regeneran. Un endpoint sin secreto no se entrega, y nada se pierde: en cuanto hay secreto, el trabajo se vuelve a encontrar.
+
+### SSRF, dicho sin adornos
+
+Se conservan todas las garantías de V1.12-C y se aplican **en cada intento**. Pero entre la validación del DNS y el socket queda una ventana de rebinding: cerrarla exige fijar la conexión a la dirección ya validada, y Node no expone su cliente HTTP como módulo público, de modo que hacerlo obligaría a añadir una dependencia y sustituir `fetch`. Es una decisión de una versión posterior. **La protección SSRF de Mandaria es buena, no perfecta.**
+
+### Administración
+
+```
+GET  /api/v1/admin/integrations/{id}/webhook              configuración y si hay secreto
+POST /api/v1/admin/integrations/{id}/webhook/secret       generar o rotar (lo muestra una vez)
+GET  /api/v1/admin/integrations/{id}/webhook/deliveries   estado, intentos, próximo intento, último resultado
+POST /api/v1/admin/b2b-events/{eventId}/deliver           un intento manual, con lease
+```
+
+Todo SUPER_ADMIN. El cliente B2B no ve nada de esto: su fuente sigue siendo `GET /delivery-requests/{publicId}/status`.
+
+Detalle completo en [V1.12-D Reliable & Secure Webhook Delivery](docs/V1.12-D-RELIABLE-SECURE-WEBHOOK-DELIVERY.md). Pruebas: `test/b2b-webhook-reliability.spec.ts` (curva completa sin esperar una hora, clasificación HTTP, cifrado y rotación del secreto, contrato de firma y estabilidad del cuerpo) y `test/b2b-webhooks.e2e-spec.ts` con receptor HTTP real que **verifica la firma** (proveedor e independiente, reintento que triunfa, agotamiento, rescate manual, recuperación tras reinicio, lease abandonado, dos workers contra la misma base, rotación, endpoint deshabilitado y reactivado, cambio de endpoint y frontera de elegibilidad).
+
 ## Riesgos y deuda técnica
 
 - Limitador en memoria para una instancia; antes de escalar usar almacenamiento compartido y configurar proxies confiables.
@@ -2025,6 +2158,23 @@ Detalle completo en [V1.12-B Durable B2B Event Outbox](docs/V1.12-B-DURABLE-B2B-
 - V1.12-B: las entregas anteriores a la frontera no tienen evento y no lo tendrán. Fabricar un `occurredAt` para un hecho antiguo sería inventar historia; siguen observándose por V1.12-A.
 - V1.12-B: el contrato del payload está clavado en SQL, así que añadir un campo público al evento exige una migración. Es deliberado —es una promesa versionada a sistemas externos— pero hay que contarlo al ampliarlo.
 - V1.12-B: `recordedAt` toma el `DEFAULT CURRENT_TIMESTAMP` del proyecto, que escribe la hora **local** del servidor mientras el resto de la columna es UTC. Hoy no hay discrepancia porque Prisma suministra el valor; un `INSERT` por SQL crudo que lo omita guardará una hora desplazada. Ninguna garantía de V1.12-B depende de `recordedAt`, precisamente por eso. El mismo patrón existe en todas las columnas `@default(now())` del proyecto.
+- V1.12-C: un solo intento. Un fallo queda registrado y se detiene ahí hasta V1.12-D o hasta una entrega manual por SUPER_ADMIN; nadie reintenta y nadie avisa.
+- V1.12-C: la política SSRF valida el destino y las direcciones que resuelve justo antes de conectar, pero entre esa comprobación y el socket un resolutor podría responder distinto (DNS rebinding). Cerrarlo exige un dispatcher propio fijado a la dirección validada, que es un cambio mayor; queda escrito y no implícito.
+- V1.12-C: sin firma. Un receptor todavía no puede verificar que la petición viene de Mandaria, así que debe tratar el webhook como una señal para consultar `GET /delivery-requests/{publicId}/status`, que sigue siendo la fuente autenticada. La firma HMAC de V1.12-D se agrega como cabeceras adicionales sobre el mismo cuerpo, sin romper el contrato.
+- V1.12-C: el contrato es at-least-once. Dos procesos podrían entregar el mismo evento a la vez; cada intento tiene identidad propia y ambos quedan auditados, pero no se construyó un lease distribuido.
+- V1.12-C: los intentos se acumulan como historial, sin retención ni purga, igual que el Outbox.
+- V1.12-C: desplegar esta versión no entrega los eventos ya registrados. El primer intento sólo ocurre en el camino de completion, y la migración no hace ninguna petición HTTP; los anteriores esperan a una política explícita o a una entrega manual.
+- V1.12-D: la entrega es **at-least-once y nunca exactly-once**. Si el receptor responde y Mandaria muere antes de registrarlo, el mismo `eventId` llega dos veces; la suite lo demuestra a propósito. Deduplicar es obligación del consumidor y así está documentado.
+- V1.12-D: la ventana de DNS rebinding entre la validación y el socket **sigue abierta**. Cerrarla exige fijar la conexión a la dirección ya validada, lo que obliga a añadir el cliente HTTP de Node como dependencia explícita y sustituir `fetch`. La protección SSRF es buena, no perfecta, y conviene no describirla de otro modo.
+- V1.12-D: no hay dead-letter ni retención. Un `EXHAUSTED` se queda ahí hasta que un administrador lo empuje a mano, y los intentos se acumulan como historial.
+- V1.12-D: la política de reintentos es global, sin curva por cliente, y vive en código. Cambiarla exige desplegar.
+- V1.12-D: el bucle del worker es por proceso. Con varios backends todos consultan la base cada `B2B_WEBHOOK_POLL_SECONDS`; el lease evita el trabajo duplicado, pero no hay coordinación previa que reparta la carga.
+- V1.12-D: perder `B2B_WEBHOOK_SECRET_KEY` deja ilegibles los secretos guardados y obliga a reemitirlos todos. Es el precio deliberado de no guardar la clave junto a los datos; la rotación de la clave maestra no está automatizada.
+- V1.12-E: `/webhooks/health` **no es salud de la flota**. Los conteos son compartidos, pero `thisInstance` es sólo el backend que responde: no hay registro de workers, así que con varios procesos nadie sabe si otro dejó de hacer su bucle.
+- V1.12-E: el rescate es de uno en uno. No hay rescate masivo ni por cliente; con cien agotados hay que llamar cien veces.
+- V1.12-E: el rescate y el reenvío quedan en el log de la aplicación con el id del actor, **no en una tabla consultable**. Quién rescató qué hace un mes no se responde con una consulta.
+- V1.12-E: la vista es administrativa. No hay API para que un IntegrationClient consulte sus propios eventos; su fuente sigue siendo `GET /delivery-requests/{publicId}/status`.
+- V1.12-E: `NOT_YET_PICKED_UP` no distingue «recién ocurrido» de «el worker está caído». Ambos casos se ven igual hasta que el evento entra en la entrega fiable, y sólo `oldestPendingDueAt` delata el atasco.
 - V1.10-E: un Dispatch monetizado cuyo cargo desaparezca queda inrevertible (409 `CREDIT_REFUND_INTEGRITY_ERROR`) hasta que un administrador corrija los datos: es deliberado, para no regalar créditos.
 - V1.10-D: un proveedor sin saldo deja de poder reclamar, así que un servicio puede quedarse sin quien lo tome por falta de créditos, no por falta de capacidad. Operativamente hay que vigilar los saldos (no hay recarga automática ni alertas).
 - V1.10-D: el costo se congela al abrir y se cobra al adjudicar; entre ambos momentos puede pasar tiempo y el precio ya no se puede corregir salvo cancelando el Dispatch.
@@ -2038,8 +2188,58 @@ Detalle completo en [V1.12-B Durable B2B Event Outbox](docs/V1.12-B-DURABLE-B2B-
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.12-B / V1.12-C+
+## Fuera de V1.12-E / V1.12-F+
 
-No se implementaron webhooks, entrega HTTP de eventos, worker, scheduler, reintentos, backoff, intentos de entrega, firma HMAC, secreto de webhook, estados de transporte (`SENT`, `FAILED`, `PROCESSING`), dead-letter queue, configuración de URL de notificación, API de lectura ni administración del Outbox, catálogo de eventos más allá de `delivery.completed`, histórico de transiciones de estado, estados intermedios de ejecución (recogido, en camino, intento fallido), prueba de entrega (foto, firma, OTP), entrega parcial o fallida, devolución al origen, calificación del servicio, liquidaciones ni facturación por entrega, cierre de entregas por SUPER_ADMIN o por el cliente B2B, cierre automático por tiempo, devoluciones parciales, penalizaciones ni caducidad de créditos, devolución automática, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron dead-letter queue, retención o purga de intentos, política de reintentos por cliente, coordinación entre workers más allá del lease, registro de workers ni salud de flota, rescate masivo, auditoría persistente de acciones administrativas, rotación automatizada de la clave maestra, cierre de la ventana de DNS rebinding, API B2B de lectura de eventos ni administración completa del Outbox, catálogo de eventos más allá de `delivery.completed`, histórico de transiciones de estado, estados intermedios de ejecución (recogido, en camino, intento fallido), prueba de entrega (foto, firma, OTP), entrega parcial o fallida, devolución al origen, calificación del servicio, liquidaciones ni facturación por entrega, cierre de entregas por SUPER_ADMIN o por el cliente B2B, cierre automático por tiempo, devoluciones parciales, penalizaciones ni caducidad de créditos, devolución automática, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
 Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API y auditoría persistente siguen pendientes.
+
+## Webhook Operations & Observability (V1.12-E)
+
+Responde: **¿por qué este cliente dice que no recibió su evento?** V1.12-D dejó el transporte funcionando; V1.12-E lo hace respondible sin abrir una consola SQL. No añade maquinaria de entrega: ni tipos de evento nuevos, ni política de reintentos, ni cambios en la firma, el secreto o la política SSRF.
+
+```text
+V1.12-B el hecho durable · V1.12-C el primer intento · V1.12-D reintentos, lease y firma · V1.12-E poder responder
+```
+
+### Tres cosas distintas, que no deben mezclarse
+
+```text
+evento  hecho inmutable, sin estado propio   ·   transporte  lo único que cambia   ·   intentos  historia inmutable
+```
+
+Una pantalla que las mezcle dirá «el evento falló», que no es algo que pueda ocurrir: el evento ocurrió, lo que falló fue un intento. Por eso la columna se llama `transportState` y no `status`, y el detalle devuelve los tres bloques por separado.
+
+### `NO_DELIVERY`: derivado, nunca guardado
+
+El enum persistido sigue teniendo tres valores. El cuarto que ve un operador se deriva en la lectura —un evento sin fila de transporte— y la respuesta dice por qué: `NO_ENDPOINT` (sin webhook, o sin secreto con el que firmar), `BEFORE_BOUNDARY` (anterior al `deliverFrom` del endpoint) o `NOT_YET_PICKED_UP` (elegible, son segundos). **Ninguno es un fallo.** Inventar un estado persistido habría significado escribir filas para historia que nunca las pidió: los eventos de la época V1.12-B/C existen legítimamente sin transporte.
+
+### El rescate programa; no entrega
+
+```
+POST /api/v1/admin/b2b-events/{eventId}/rescue   →   { "outcome": "RESCHEDULED" }
+```
+
+`EXHAUSTED → PENDING`, con el próximo intento ahora. **No intenta nada ahí**, y por eso la respuesta nunca dice «entregado». No borra intentos ni reinicia el contador, así que **un rescate compra exactamente un intento más**; si vuelve a fallar regresa a `EXHAUSTED` y puede rescatarse otra vez. Dos rescates simultáneos no duplican trabajo: el segundo encuentra la entrega ya pendiente y lo dice.
+
+El guard de PostgreSQL se **estrecha**, no se relaja: la transición se permite sólo hacia una fila `PENDING` bien formada. Identidad, propiedad, un `attemptCount` que sólo crece y una entrega `DELIVERED` que nunca reabre siguen protegidos.
+
+### El reenvío manual, ahora clasificado
+
+`DELIVERED` · `RESCHEDULED` · `EXHAUSTED` · `FAILED` · `SKIPPED`. Una pantalla no debe leer un 200 de `POST .../deliver` como «enviado»: el campo `outcome` dice qué ocurrió de verdad.
+
+### La superficie
+
+```
+GET  /api/v1/admin/b2b-events                          listado con filtros y paginación
+GET  /api/v1/admin/b2b-events/{eventId}                evento, payload congelado, destino e intentos
+POST /api/v1/admin/b2b-events/{eventId}/rescue         EXHAUSTED → PENDING
+GET  /api/v1/admin/webhooks/health                     cuánto trabajo queda, y qué hace esta instancia
+GET  /api/v1/admin/integrations/{id}/webhook/summary   totales por cliente
+```
+
+Todo SUPER_ADMIN; un token B2B ni siquiera es una sesión aquí (401, no 403). Nunca aparece el secreto, ni en claro ni cifrado: sólo si existe y desde cuándo. **Ni siquiera SUPER_ADMIN necesita leer un secreto existente**; si se perdió, se rota.
+
+`/webhooks/health` separa dos bloques a propósito: los conteos son persistidos y compartidos por todos los backends, mientras que `thisInstance` es configuración y memoria **de la instancia que responde**. Con varios backends nadie sabe lo que hacen los demás, así que esto no es salud global y no se presenta como tal.
+
+Detalle completo en [V1.12-E Webhook Operations & Observability](docs/V1.12-E-WEBHOOK-OPERATIONS.md). Pruebas: `test/b2b-webhook-operations.spec.ts` (derivación del estado de transporte, las tres razones de `NO_DELIVERY`, lease en curso frente a caducado, nombre público del evento y clasificación del reenvío) y 17 casos en `test/b2b-webhooks.e2e-spec.ts` sobre Nest y PostgreSQL reales (búsqueda por referencia externa, detalle con payload congelado, evento fuera de la frontera, filtros y paginación coherentes, rescate y rescate repetido, carreras de rescate y de reenvío, salud, enmascaramiento del secreto, aislamiento por rol e inmutabilidad del Outbox bajo SQL).

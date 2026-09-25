@@ -1162,8 +1162,131 @@ try {
       '1',
     );
   }
+  // V1.12-C: webhook transport. The migration only creates the configuration and the attempt
+  // history: no endpoint is invented, no event is delivered retroactively, and no HTTP request
+  // is made while migrating.
+  for (const db of [cleanDb, upgradeDb, v19Db, v110aDb]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT (SELECT count(*) FROM "B2bWebhookEndpoint") + (SELECT count(*) FROM "B2bWebhookDeliveryAttempt")`,
+      ]),
+      '0',
+    );
+    // One endpoint per IntegrationClient in this version.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_indexes WHERE indexname = 'B2bWebhookEndpoint_integrationClientId_key'`,
+      ]),
+      '1',
+    );
+    // Ownership of an attempt is verified by PostgreSQL: its event and its endpoint must both
+    // belong to the same client, through composite foreign keys.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_constraint WHERE conrelid = '"B2bWebhookDeliveryAttempt"'::regclass AND contype = 'f' AND cardinality(conkey) = 2`,
+      ]),
+      '2',
+    );
+    // Attempts are append-only and an endpoint can never change owner.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_trigger WHERE tgname IN ('B2bWebhookDeliveryAttempt_guard', 'B2bWebhookDeliveryAttempt_no_truncate', 'B2bWebhookEndpoint_guard')`,
+      ]),
+      '3',
+    );
+    // A SUCCEEDED attempt is exactly "the endpoint answered 2xx"; a FAILED one always says why.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_constraint WHERE conname = 'B2bWebhookDeliveryAttempt_values_check' AND pg_get_constraintdef(oid) LIKE '%failureKind%'`,
+      ]),
+      '1',
+    );
+  }
+  // V1.12-D: reliable delivery. The migration only adds the transport state and the signing
+  // columns; it delivers nothing, schedules nothing retroactively and rewrites no attempt.
+  for (const db of [cleanDb, upgradeDb, v19Db, v110aDb]) {
+    assert.equal(
+      sql(db, ['-c', `SELECT count(*) FROM "B2bWebhookDelivery"`]),
+      '0',
+    );
+    // The enforcement boundary of automatic delivery: a column on the endpoint, set to the
+    // moment of the migration, so nothing recorded before it is ever sent on its own.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM information_schema.columns WHERE table_name = 'B2bWebhookEndpoint' AND column_name IN ('deliverFrom', 'secretCiphertext', 'secretSetAt')`,
+      ]),
+      '3',
+    );
+    // One transport state per event, and both of its owners verified by composite keys.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_indexes WHERE indexname = 'B2bWebhookDelivery_eventId_key'`,
+      ]),
+      '1',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_constraint WHERE conrelid = '"B2bWebhookDelivery"'::regclass AND contype = 'f' AND cardinality(conkey) = 2`,
+      ]),
+      '2',
+    );
+    // The attempt ordinal is unique per event, and partial because V1.12-C attempts have none.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_indexes WHERE indexname = 'B2bWebhookDeliveryAttempt_ordinal_key' AND indexdef LIKE '%WHERE%attemptNumber%'`,
+      ]),
+      '1',
+    );
+    // A secret is stored encrypted or not at all, and the state machine cannot hold an
+    // impossible combination.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_constraint WHERE conname IN ('B2bWebhookEndpoint_secret_check', 'B2bWebhookDelivery_values_check')`,
+      ]),
+      '2',
+    );
+    // A delivery state cannot change what it is about, be reopened after delivery or be deleted.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_trigger WHERE tgname IN ('B2bWebhookDelivery_guard', 'B2bWebhookDelivery_no_truncate')`,
+      ]),
+      '2',
+    );
+
+    // V1.12-E: the listing walks every client's events newest first, with a stable tiebreak.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_indexes WHERE indexname = 'B2bOutboxEvent_occurredAt_id_idx'`,
+      ]),
+      '1',
+    );
+    // V1.12-E narrowed the guard: an exhausted handover may be put back in the queue by an
+    // administrator, while a delivered one still never reopens and the count still never falls.
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_proc WHERE proname = 'b2b_webhook_delivery_guard'
+            AND prosrc LIKE '%a delivered handover cannot be reopened%'
+            AND prosrc LIKE '%the attempt count cannot go backwards%'
+            AND prosrc NOT LIKE '%an exhausted handover is not rescheduled%'`,
+      ]),
+      '1',
+    );
+  }
   console.log(
-    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D -> V1.10-E -> V1.11-A -> V1.12-B (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; no refund created by migration; no dispatch delivered nor assignment completed by migration; no B2B outbox event created by migration, with its partial unique index, composite ownership keys, immutability triggers and deferred enforcement present; V1.4-V1.12 constraints, triggers, indexes and sequences present. Verification databases retained.`,
+    `PASS: clean migrations (${cleanDb}) and V1.0 -> V1.1 -> V1.2 -> V1.4 -> V1.5 -> V1.6 -> V1.6.1 -> V1.7 -> V1.8 -> V1.9 -> V1.10 upgrade (${upgradeDb}), V1.9 data -> V1.10 (${v19Db}) and V1.10-A ledger -> V1.10-B -> V1.10-C -> V1.10-D -> V1.10-E -> V1.11-A -> V1.12-B -> V1.12-C -> V1.12-D -> V1.12-E (${v110aDb}); IDs, hashes, users, sessions, revocations, providers, memberships, drivers, vehicles, assignments, delivery requests, service zones, rate plans/bands, quotes and inactive accounts (as DISABLED) preserved; legacy ACCEPTED quotes backfilled with an EXPIRED dispatch; one empty credit account per provider and per ever-approved independent profile, with no ledger entry; V1.10-A accounts, balances and ledger unchanged by V1.10-B and no credit policy created by migration; no credit snapshot backfilled for pre-V1.10-C dispatches; every pre-V1.10-D dispatch marked LEGACY with no award charged; no refund created by migration; no dispatch delivered nor assignment completed by migration; no B2B outbox event created by migration, with its partial unique index, composite ownership keys, immutability triggers and deferred enforcement present; no webhook endpoint or delivery attempt created by migration, with their ownership keys and append-only triggers present; no webhook delivery state created by migration, with the delivery boundary, the encrypted-secret check, the attempt ordinal and the delivery guards present; no operational state created by migration, with the listing index present and the delivery guard narrowed so an administrator can put an exhausted handover back in the queue while a delivered one still never reopens; V1.4-V1.12 constraints, triggers, indexes and sequences present. Verification databases retained.`,
   );
 } catch (error) {
   console.error(
