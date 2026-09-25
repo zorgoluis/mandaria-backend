@@ -1,0 +1,508 @@
+{
+  "check": "CHECK FINAL V1.12 — B2B Integration Infrastructure",
+  "generatedAt": "2026-09-24T19:27:33.563Z",
+  "branch": "v1.12-B2B_webhook_delivery",
+  "commit": "3ed3d8962fc3f5bf6f2c44274809ca97a01b026f",
+  "database": "mandaria_test",
+  "note": "La evidencia no contiene secretos: sólo identificadores de barrera y observaciones.",
+  "barriers": [
+    {
+      "id": "§6",
+      "title": "flujo E2E completo del modelo proveedor con webhook firmado",
+      "result": "PASS",
+      "notes": [
+        "OPEN → ASSIGNED → DELIVERED observado por /status del propio cliente",
+        "un único intento, entrega DELIVERED y firma verificada por el receptor"
+      ]
+    },
+    {
+      "id": "§7",
+      "title": "flujo E2E completo del modelo independiente",
+      "result": "PASS",
+      "notes": [
+        "TAKE y DELIVER del repartidor producen el mismo evento y webhook firmado",
+        "execution.mode = INDEPENDENT en /status"
+      ]
+    },
+    {
+      "id": "§8",
+      "title": "contrato del evento idéntico en ambos modelos",
+      "result": "PASS",
+      "notes": [
+        "sobre {eventId, type, occurredAt, data}; data con [\"cancelledAt\",\"deliveredAt\",\"execution\",\"externalReference\",\"publicId\",\"requestedAt\",\"status\"]",
+        "data comparado contra la fila del Outbox, no reconstruido desde el estado actual",
+        "sin dispatchId, deliveryRequestId, cliente, driver, vehículo ni proveedor"
+      ]
+    },
+    {
+      "id": "§9",
+      "title": "1 completion lógica = 1 evento del Outbox",
+      "result": "PASS",
+      "notes": [
+        "repetir /deliver es idempotente (200, «already») y no crea un segundo evento ni otro intento",
+        "dos /deliver simultáneos: ambos responden 200 (el segundo es el «already» idempotente) y sólo uno escribe: un evento, una asignación y un único deliveredAt",
+        "lo mismo en el modelo independiente"
+      ]
+    },
+    {
+      "id": "§10",
+      "title": "atomicidad: sin evento no hay entrega",
+      "result": "PASS",
+      "notes": [
+        "fallo inyectado en el INSERT del Outbox mediante un trigger de prueba reversible",
+        "Dispatch sigue CLAIMED, asignación sigue ACTIVE, 0 eventos y economía byte a byte idéntica",
+        "la petición no tuvo éxito (el error del trigger se propaga como error de dominio)",
+        "ninguna petición HTTP salió; retirada la inyección, la entrega se completa"
+      ]
+    },
+    {
+      "id": "§11",
+      "title": "observabilidad pública del estado",
+      "result": "PASS",
+      "notes": [
+        "transiciones observadas: OPEN → ASSIGNED → ASSIGNED → DELIVERED",
+        "CLAIMED permanece oculto por decisión del contrato V1.12-A"
+      ]
+    },
+    {
+      "id": "§12",
+      "title": "una solicitud ajena responde como una inexistente",
+      "result": "PASS",
+      "notes": [
+        "los dos 404 son iguales campo a campo salvo el path que el llamante pidió",
+        "no se filtra publicId, externalReference, status, execution ni payload"
+      ]
+    },
+    {
+      "id": "§13",
+      "title": "el token B2B no muta logística ni administra webhooks",
+      "result": "PASS",
+      "notes": [
+        "claim=401, assign=401, deliver (provider)=401, take=401, deliver (driver)=401, release=401, rescue webhook=401, redelivery=401, rotate secret=401, configure webhook=401, admin event detail=401",
+        "el Dispatch sigue CLAIMED y no se creó ningún evento"
+      ]
+    },
+    {
+      "id": "§14",
+      "title": "el Outbox es inmutable en PostgreSQL",
+      "result": "PASS",
+      "notes": [
+        "payload → B2B_EVENT_IMMUTABLE; occurredAt → B2B_EVENT_IMMUTABLE; type → B2B_EVENT_IMMUTABLE; dueño → B2B_EVENT_IMMUTABLE; sujeto → B2B_EVENT_IMMUTABLE; DELETE → B2B_EVENT_IMMUTABLE; TRUNCATE → B2B_EVENT_IMMUTABLE; forjar evento → REJECTED: \nInvalid `prisma.$executeRawUnsafe()` invocation:\n\n\nRaw query failed. Code: `P0001`. Message: `ERROR: B2B_EVENT_INVALID:"
+      ]
+    },
+    {
+      "id": "§15",
+      "title": "los intentos son append-only",
+      "result": "PASS",
+      "notes": [
+        "resultado → B2B_WEBHOOK_ATTEMPT_IMMUTABLE; código HTTP → B2B_WEBHOOK_ATTEMPT_IMMUTABLE; ordinal → B2B_WEBHOOK_ATTEMPT_IMMUTABLE; evento → B2B_WEBHOOK_ATTEMPT_IMMUTABLE; endpoint → B2B_WEBHOOK_ATTEMPT_IMMUTABLE; DELETE → B2B_WEBHOOK_ATTEMPT_IMMUTABLE; TRUNCATE → B2B_WEBHOOK_ATTEMPT_IMMUTABLE; éxito sin 2xx → B2bWebhookDeliveryAttempt_values_check; éxito sin código → B2bWebhookDeliveryAttempt_values_check"
+      ]
+    },
+    {
+      "id": "§16",
+      "title": "la instantánea está congelada",
+      "result": "PASS",
+      "notes": [
+        "renombrar el IntegrationClient → HTTP 400; cambiar externalReference por SQL → ACCEPTED",
+        "cambiar la URL del endpoint no reescribe nada del evento",
+        "el cuerpo del reenvío es byte a byte el del primer envío"
+      ]
+    },
+    {
+      "id": "§17",
+      "title": "2xx es éxito al primer intento y sin reintento",
+      "result": "PASS",
+      "notes": [
+        "200/201/202/204 → DELIVERED con 1 intento"
+      ]
+    },
+    {
+      "id": "§18",
+      "title": "clasificación reintentable / terminal",
+      "result": "PASS",
+      "notes": [
+        "reintentables 408/425/429/500/503 → PENDING",
+        "terminales 400/401/403/404/405/409/410/422/451 → EXHAUSTED al primer intento",
+        "las 18 respuestas dejan intactos el evento, la logística y la economía"
+      ]
+    },
+    {
+      "id": "§18",
+      "title": "timeout, red y redirect",
+      "result": "PASS",
+      "notes": [
+        "timeout → TIMEOUT y PENDING; puerto cerrado → NETWORK y PENDING",
+        "302 → FAILED terminal, una sola petición salió y el destino no se siguió"
+      ]
+    },
+    {
+      "id": "§34",
+      "title": "el redirect hacia un destino privado no se sigue",
+      "result": "PASS",
+      "notes": [
+        "302 con Location a 127.0.0.1:1 registrado como fallo terminal, sin segunda petición"
+      ]
+    },
+    {
+      "id": "§19",
+      "title": "la curva de reintentos es exactamente la publicada",
+      "result": "PASS",
+      "notes": [
+        "intervalos medidos en minutos: 1, 5, 15, 60",
+        "medido sobre el calendario de la fila, sin esperar tiempo real"
+      ]
+    },
+    {
+      "id": "§20",
+      "title": "agotamiento sin pérdida",
+      "result": "PASS",
+      "notes": [
+        "PENDING → 5 intentos → EXHAUSTED; evento, eventId, payload y los 5 intentos intactos",
+        "el worker no vuelve a recogerlo"
+      ]
+    },
+    {
+      "id": "§21",
+      "title": "rescate EXHAUSTED → PENDING",
+      "result": "PASS",
+      "notes": [
+        "responde RESCHEDULED y no envía nada por sí mismo",
+        "mismo eventId, mismos intentos, contador en 5 y luego 6: compra exactamente un intento"
+      ]
+    },
+    {
+      "id": "§22",
+      "title": "concurrencia de rescates",
+      "result": "PASS",
+      "notes": [
+        "cuatro simultáneos: exactamente uno RESCHEDULED y tres ALREADY_PENDING",
+        "contador en 5, cinco intentos, ningún estado imposible"
+      ]
+    },
+    {
+      "id": "§23",
+      "title": "reenvío manual de un evento ya entregado",
+      "result": "PASS",
+      "notes": [
+        "mismo eventId, mismo type, mismo occurredAt y mismo cuerpo byte a byte",
+        "timestamp y firma nuevos, ambos verificables; deliveredAt no se vuelve a sellar",
+        "el segundo intento queda auditado sin reabrir el estado"
+      ]
+    },
+    {
+      "id": "§24",
+      "title": "entrega at-least-once demostrada a propósito",
+      "result": "PASS",
+      "notes": [
+        "el mismo eventId llegó 2 veces con cuerpo idéntico",
+        "es el contrato publicado, no un defecto: deduplicar por eventId es obligación del consumidor"
+      ]
+    },
+    {
+      "id": "§25",
+      "title": "la firma se verifica de verdad en el receptor",
+      "result": "PASS",
+      "notes": [
+        "X-Mandaria-Event-Id / Event-Type / Timestamp / Signature presentes y bien formadas",
+        "HMAC-SHA256 sobre timestamp + \".\" + bytes crudos del cuerpo, prefijo v1="
+      ]
+    },
+    {
+      "id": "§26",
+      "title": "toda manipulación invalida la firma",
+      "result": "PASS",
+      "notes": [
+        "cuerpo alterado, timestamp alterado, firma alterada y secreto equivocado: los cuatro fallan"
+      ]
+    },
+    {
+      "id": "§27",
+      "title": "reintento: mismo hecho, prueba nueva",
+      "result": "PASS",
+      "notes": [
+        "eventId, type, occurredAt y cuerpo idénticos entre el fallo y el reintento que triunfa",
+        "timestamp y firma propios de cada intento, ambos verificables",
+        "el timestamp va en segundos: dos intentos del mismo segundo firmarían igual, y es correcto"
+      ]
+    },
+    {
+      "id": "§28",
+      "title": "el secreto se guarda cifrado, nunca en claro",
+      "result": "PASS",
+      "notes": [
+        "formato v1:<iv>:<tag>:<ciphertext>, descifra con la clave maestra y falla con otra",
+        "texto plano en la columna → B2bWebhookEndpoint_secret_check; estructura inválida → B2bWebhookEndpoint_secret_check"
+      ]
+    },
+    {
+      "id": "§29",
+      "title": "barrido de fugas del secreto",
+      "result": "PASS",
+      "notes": [
+        "10 superficies revisadas más logs de la aplicación y docs/openapi.json",
+        "0 fugas; sólo se publica secretConfigured y secretSetAt",
+        "ningún esquema de OpenAPI declara una propiedad de ciphertext o de clave maestra",
+        "OpenAPI menciona el NOMBRE de la variable que guarda la clave maestra, nunca su valor"
+      ]
+    },
+    {
+      "id": "§30",
+      "title": "rotación del secreto",
+      "result": "PASS",
+      "notes": [
+        "el valor se muestra sólo al emitirlo; una lectura posterior sólo dice que existe",
+        "el intento siguiente firma con el secreto nuevo y falla con el anterior",
+        "los intentos históricos y el Outbox no cambian"
+      ]
+    },
+    {
+      "id": "§31",
+      "title": "endpoint deshabilitado",
+      "result": "PASS",
+      "notes": [
+        "ninguna petición, ningún intento inventado y el evento intacto",
+        "la vista administrativa lo muestra como NO_DELIVERY, no como un fallo",
+        "al rehabilitarlo el worker lo recoge y lo entrega"
+      ]
+    },
+    {
+      "id": "§32",
+      "title": "cambio de endpoint",
+      "result": "PASS",
+      "notes": [
+        "el intento anterior conserva su endpointUrl y su resultado",
+        "el reintento sale al destino nuevo, firmado y verificable; el Outbox no cambia"
+      ]
+    },
+    {
+      "id": "§33",
+      "title": "regresión completa de la política SSRF",
+      "result": "PASS",
+      "notes": [
+        "28 destinos hostiles rechazados bajo ajustes de producción; un destino público legítimo aceptado",
+        "direcciones resueltas comprobadas en el momento de usarlas, incluida la IPv4 disfrazada de IPv6",
+        "producción rechaza el interruptor de destinos inseguros, la falta de clave maestra y los proveedores locales"
+      ]
+    },
+    {
+      "id": "§35",
+      "title": "riesgo aceptado: ventana de DNS rebinding",
+      "result": "PASS",
+      "notes": [
+        "documentado en README, docs/V1.12-D y la bitácora como «protección buena, no perfecta»",
+        "no se exige cerrarlo en este CHECK y no se convierte en FAIL"
+      ]
+    },
+    {
+      "id": "§36",
+      "title": "lease",
+      "result": "PASS",
+      "notes": [
+        "mientras el lease de un worker muerto sigue vigente nadie toca el trabajo",
+        "al caducar, otro worker lo recupera y lo entrega: el evento no se pierde"
+      ]
+    },
+    {
+      "id": "§37",
+      "title": "seguridad multi-instancia",
+      "result": "PASS",
+      "notes": [
+        "dos backends drenando a la vez: cada evento con exactamente un intento y un estado",
+        "FOR UPDATE SKIP LOCKED más lease durable, sin procesamiento simultáneo del mismo envío"
+      ]
+    },
+    {
+      "id": "§38",
+      "title": "recuperación tras reinicio",
+      "result": "PASS",
+      "notes": [
+        "un evento comprometido mientras nada podía enviarlo se descubre desde el Outbox tras rearrancar",
+        "sin intervención manual y firmado correctamente"
+      ]
+    },
+    {
+      "id": "§39",
+      "title": "salud del worker",
+      "result": "PASS",
+      "notes": [
+        "pending/exhausted/delivered/leased coinciden con SQL directo",
+        "thisInstance queda separado y declara la configuración real de esta instancia",
+        "en la suite el bucle está apagado y la respuesta lo dice en vez de afirmar un bucle que no corre"
+      ]
+    },
+    {
+      "id": "§40",
+      "title": "listado administrativo",
+      "result": "PASS",
+      "notes": [
+        "orden estable y paginación de 4 páginas reconstruyendo la misma lista sin repetir ni saltar",
+        "filtros por cliente, tipo, estado de transporte, publicId, referencia externa y rango de fechas"
+      ]
+    },
+    {
+      "id": "§41",
+      "title": "detalle administrativo",
+      "result": "PASS",
+      "notes": [
+        "sobre, instantánea congelada, cliente, DeliveryRequest, endpoint, transporte e historial de intentos",
+        "sin secreto en ninguna forma"
+      ]
+    },
+    {
+      "id": "§42",
+      "title": "NO_DELIVERY derivado",
+      "result": "PASS",
+      "notes": [
+        "las tres razones reproducidas con casos reales del dominio: NOT_YET_PICKED_UP, BEFORE_BOUNDARY y NO_ENDPOINT",
+        "el enum de PostgreSQL sigue con PENDING/DELIVERED/EXHAUSTED y ninguna fila lo guarda"
+      ]
+    },
+    {
+      "id": "§43",
+      "title": "resumen por cliente",
+      "result": "PASS",
+      "notes": [
+        "events/pending/delivered/exhausted idénticos a SQL directo: {\"events\":40,\"pending\":3,\"delivered\":32,\"exhausted\":4}"
+      ]
+    },
+    {
+      "id": "§44",
+      "title": "aislamiento por rol sobre las 8 rutas administrativas",
+      "result": "PASS",
+      "notes": [
+        "PROVIDER_ADMIN 403, DRIVER 403, token B2B 401, anónimo 401, SUPER_ADMIN admitido"
+      ]
+    },
+    {
+      "id": "§45",
+      "title": "preservación económica",
+      "result": "PASS",
+      "notes": [
+        "cuentas, saldos, ledger, SERVICE_AWARD, SERVICE_REFUND, snapshots y políticas idénticos",
+        "medidos antes y después de agotar, rescatar, reintentar, reenviar y observar"
+      ]
+    },
+    {
+      "id": "§46",
+      "title": "preservación logística",
+      "result": "PASS",
+      "notes": [
+        "Dispatch, DeliveryAssignment y DeliveryRequest byte a byte iguales; DELIVERED sigue siendo terminal"
+      ]
+    },
+    {
+      "id": "§47",
+      "title": "preservación de routing",
+      "result": "PASS",
+      "notes": [
+        "0 llamadas de routing durante todo el procesamiento de webhooks (contador en 42)"
+      ]
+    },
+    {
+      "id": "§48",
+      "title": "contexto de pago intacto",
+      "result": "PASS",
+      "notes": [
+        "DeliveryFinancialContext idéntico antes y después del transporte",
+        "el payload público del evento no publica importes, moneda ni modo de pago"
+      ]
+    },
+    {
+      "id": "§49",
+      "title": "barrido adversarial en SQL sobre el transporte",
+      "result": "PASS",
+      "notes": [
+        "17 escrituras forjadas, ninguna aceptada",
+        "estado a otro evento → B2B_WEBHOOK_DELIVERY_IMMUTABLE; estado a otro cliente → B2B_WEBHOOK_DELIVERY_IMMUTABLE; estado a otro endpoint → B2B_WEBHOOK_DELIVERY_IMMUTABLE; bajar el contador → B2B_WEBHOOK_DELIVERY_INVALID; forjar DELIVERED sin sello → B2bWebhookDelivery_values_check; forjar EXHAUSTED sin sello → B2bWebhookDelivery_values_check; PENDING sin calendario → B2bWebhookDelivery_values_check; medio lease → B2bWebhookDelivery_values_check; borrar el estado → B2B_WEBHOOK_DELIVERY_IMMUTABLE; truncar estados → B2B_WEBHOOK_DELIVERY_IMMUTABLE; segundo estado del mismo evento → REJECTED: \nInvalid `prisma.$executeRawUnsafe()` invocation:\n\n\nRaw query failed. Code: `23502`. Message: `La fila que falla contien; endpoint de otro cliente para este estado → B2B_WEBHOOK_DELIVERY_IMMUTABLE; mover el endpoint a otro cliente → B2B_WEBHOOK_ENDPOINT_IMMUTABLE; segundo endpoint del mismo cliente → REJECTED: \nInvalid `prisma.$executeRawUnsafe()` invocation:\n\n\nRaw query failed. Code: `23502`. Message: `La fila que falla contien; secreto en claro → B2bWebhookEndpoint_secret_check; secreto mal formado → B2bWebhookEndpoint_secret_check; intento de otro evento → B2B_WEBHOOK_ATTEMPT_IMMUTABLE"
+      ]
+    },
+    {
+      "id": "§50",
+      "title": "escaneo de integridad de la base",
+      "result": "PASS",
+      "notes": [
+        "22 consultas acumuladas de V1.12-B/C/D/E, todas en 0",
+        "eventos_duplicados_por_dispatch, evento_de_cliente_ajeno, evento_de_dispatch_ajeno, evento_de_dispatch_no_entregado, entrega_sin_evento, payload_invalido, occurredAt_distinto_del_payload, estados_duplicados, estado_de_cliente_ajeno, estado_con_endpoint_ajeno, estado_terminal_invalido, entregado_sin_intento_exitoso, agotado_sin_intentos, lease_invalido, lease_sobre_terminal, exito_sin_2xx, fallo_sin_clasificacion, intento_de_evento_ajeno, intento_con_endpoint_ajeno, ordinal_duplicado, secreto_en_claro, endpoint_duplicado"
+      ]
+    },
+    {
+      "id": "§51",
+      "title": "compatibilidad histórica",
+      "result": "PASS",
+      "notes": [
+        "eventos de las tres épocas (B sin endpoint, C con intentos y sin estado, D/E completo) se leen sin error",
+        "el listado los devuelve juntos; los antiguos aparecen como NO_DELIVERY y conservan su historia"
+      ]
+    },
+    {
+      "id": "§52",
+      "title": "frontera de aplicación",
+      "result": "PASS",
+      "notes": [
+        "tras rearrancar el worker, tres pasadas no recogen ningún evento anterior a deliverFrom"
+      ]
+    },
+    {
+      "id": "§53",
+      "title": "sin entrega retroactiva",
+      "result": "PASS",
+      "notes": [
+        "HTTP calls = 0 para los no elegibles; la entrega manual sigue siendo posible y no crea estado"
+      ]
+    },
+    {
+      "id": "§59",
+      "title": "coste razonable, sin N+1 evidente",
+      "result": "PASS",
+      "notes": [
+        "46 eventos en la base",
+        "pageSize 1: 57 ms · pageSize 100: 12 ms · filtrado: 10 ms · detalle: 12 ms · pasada del worker: 3 ms",
+        "una página de 100 no cuesta como cien páginas de una: no hay consulta por fila"
+      ]
+    },
+    {
+      "id": "§60",
+      "title": "barrido de los registros del CHECK",
+      "result": "PASS",
+      "notes": [
+        "5180 líneas de log revisadas",
+        "0 secretos, 0 JWT, 0 clave maestra, 0 secreto de webhook, 0 ciphertext",
+        "los errores HTTP deliberados del receptor no son defectos del producto"
+      ]
+    }
+  ],
+  "totals": {
+    "recorded": 51,
+    "passed": 51
+  },
+  "regression": {
+    "unit": "270/270 en 24 archivos",
+    "e2eFullRun": "402/402 en 23 archivos (corrida completa de las 13:29)",
+    "e2ePerFileCleanDb": "22 de 23 archivos completos y en verde; b2b-webhooks intermitente bajo el pool de forks y 54/54 con --pool=threads",
+    "legacy": "136/136 en 6 archivos (V1.7 CLAIM, V1.8 asignaciones, V1.9 TAKE, V1.10 créditos, V1.11 cierre)"
+  },
+  "findings": {
+    "productDefects": 0,
+    "checkDefects": 10,
+    "environment": [
+      "B2B_WEBHOOK_SECRET_KEY ausente del .env del propietario (obligatoria en producción)",
+      "caída nativa de workers de Vitest en Windows bajo el pool de forks, sin aserciones fallidas atribuibles al backend"
+    ],
+    "knownAcceptedRisks": [
+      "DNS rebinding",
+      "at-least-once con duplicados",
+      "sin dead-letter ni retención",
+      "política de reintentos global",
+      "eventos anteriores a la frontera",
+      "NO_DELIVERY legítimo",
+      "salud limitada a la instancia",
+      "rescate de uno en uno sin auditoría persistente"
+    ]
+  },
+  "freeze": {
+    "files": 193,
+    "combinedSha256Identical": true,
+    "filesChanged": 0
+  },
+  "verdict": "COMPLETADA Y VALIDADA END-TO-END"
+}

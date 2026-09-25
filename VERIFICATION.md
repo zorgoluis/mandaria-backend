@@ -1,3 +1,77 @@
+# CHECK FINAL V1.12 — B2B Integration Infrastructure (2026-09-24)
+
+Rama `v1.12-B2B_webhook_delivery` sobre `3ed3d89`, paquete **1.12.0**. Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push, sin tocar `.env` y sin modificar producto.** Informe completo en [docs/CHECK_FINAL_V1_12.md](docs/CHECK_FINAL_V1_12.md); evidencia en [docs/checks/v1.12-final-evidence.json](docs/checks/v1.12-final-evidence.json).
+
+**Veredicto: COMPLETADA Y VALIDADA END-TO-END. Ningún defecto de producto.**
+
+| Verificación | Resultado |
+|---|---|
+| Congelación del producto (`src/**`, `prisma/**`, `package.json`, `package-lock.json`) | **193 archivos, SHA-256 combinado idéntico antes y después, 0 archivos con diferencia** |
+| `prisma validate`; `migrate status` y drift en **ambas** bases | válido / al día (23 migraciones) / **sin diferencias** |
+| `verify-migrations` (4 bases desechables) | PASS; cadena limpia V1.0 → V1.12-E y ledger V1.10-A → V1.12-E |
+| Suite del CHECK contra Nest y PostgreSQL reales | **39/39 casos, 51 barreras registradas, 51 en verde** |
+| Unitarias | **270/270 en 24 archivos** (línea base de V1.12-E: 270/270 en 24) |
+| E2E completa, una sola corrida | **402/402 en 23 archivos** (línea base de V1.12-E: 402/402 en 23) |
+| E2E archivo por archivo sobre base limpia, al cierre del CHECK | **22 de 23 archivos completos y en verde**; `b2b-webhooks` se completa de forma intermitente por la caída nativa del *pool* de *forks* de Vitest, y pasa **54/54 con `--pool=threads`** |
+| Regresión legacy (V1.7 CLAIM, V1.8 asignaciones, V1.9 TAKE, V1.10 créditos, V1.11 cierre) | **136/136 en 6 archivos** |
+| `docs:check`, OpenAPI y matriz de acceso | al día; 10 de 10 rutas de V1.12 publicadas, **0 de 186 esquemas con propiedad de secreto**, 10 de 10 rutas administrativas sólo SUPER_ADMIN |
+
+## Lo que se probó de las cinco subversiones juntas
+
+| Bloque | Resultado |
+|---|---|
+| Flujo completo proveedor e independiente, con receptor que **verifica la firma** | PASS; `/status` recorre OPEN → ASSIGNED → DELIVERED y `execution.mode` distingue los dos modelos |
+| Contrato del evento | PASS; sobre de 4 claves y `data` de 7, comparado contra la fila del Outbox y **no reconstruido**; sin ningún identificador interno |
+| Identidad | PASS; repetir `/deliver` y dos `/deliver` simultáneos dejan un evento, una asignación y un único `deliveredAt` |
+| Atomicidad | PASS; con un fallo inyectado en el `INSERT` del Outbox, el Dispatch sigue `CLAIMED`, la asignación `ACTIVE`, 0 eventos y la economía idéntica |
+| Inmutabilidad | PASS; 8 escrituras forjadas sobre el Outbox, 9 sobre los intentos y **17 sobre el transporte**, ninguna aceptada |
+| Clasificación HTTP completa | PASS; 4 códigos de éxito, 5 reintentables y 9 terminales, más timeout, red y 302 sin seguir |
+| Calendario y agotamiento | PASS; intervalos medidos **1/5/15/60 minutos** y `EXHAUSTED` al quinto sin perder nada |
+| Rescate y concurrencia | PASS; `RESCHEDULED` que no envía, compra un intento exacto, y cuatro rescates simultáneos dan un `RESCHEDULED` y tres `ALREADY_PENDING` |
+| At-least-once | PASS; el mismo `eventId` llega dos veces con cuerpo idéntico: es el contrato publicado |
+| Firma y secreto | PASS; las cuatro cabeceras, manipulación rechazada en los cuatro casos, cifrado `v1:<iv>:<tag>:<ct>`, rotación sin reescribir historia y **0 fugas en 10 superficies, logs y OpenAPI** |
+| Destino | PASS; **28 destinos hostiles rechazados** bajo ajustes de producción y un destino público legítimo aceptado |
+| Lease, multi-instancia y reinicio | PASS; lease vigente respetado, caducado recuperado, dos backends sin trabajo duplicado y descubrimiento desde el Outbox tras rearrancar |
+| Superficie operativa | PASS; salud coherente con SQL, paginación estable, las tres razones de `NO_DELIVERY`, resumen exacto y 8 rutas sólo para SUPER_ADMIN |
+| Preservación | PASS; créditos, logística y contexto de pago intactos y **0 llamadas de routing** |
+| Frontera histórica | PASS; tres épocas legibles sin error y **HTTP calls = 0** para lo no elegible tras rearrancar |
+| Integridad de la base | PASS; **22 consultas acumuladas de V1.12-B/C/D/E, todas en 0** |
+| Coste y registros | PASS; una página de 100 cuesta menos que una de 1 (no hay consulta por fila) y **5 180 líneas de log sin un solo secreto** |
+
+## Hallazgos
+
+**PRODUCT DEFECT: ninguno.**
+
+**CHECK DEFECT (10, corregidos en los scripts del CHECK sin tocar producto).** Los más útiles de
+recordar: repetir `/deliver` es idempotente por diseño de V1.11-A y responde 200 con «already»;
+`CLAIMED` se publica como `ASSIGNED` por el mapa de V1.12-A; el timestamp de la firma va en
+segundos, así que dos intentos del mismo segundo firman idéntico; y dejar un evento sin estado de
+transporte **dentro** de la frontera hace que el worker lo reinscriba y choque con su propio
+`(eventId, attemptNumber)`, abortando la pasada —situación que sólo producen las fixtures, porque
+el producto nunca borra una fila de transporte—.
+
+**ENVIRONMENT (2).** `B2B_WEBHOOK_SECRET_KEY` no está en el `.env` del propietario: es opcional
+en desarrollo y **obligatoria en producción**, así que hay que resolverlo antes de desplegar; su
+valor no se imprimió en ninguna parte. Y la caída nativa de workers de Vitest en Windows. De ella se
+encontró y corrigió una causa concreta —el receptor HTTP de las suites sin manejador de errores de
+socket, ya resuelto en V1.12-E y arrastrado por el andamio del CHECK—, con lo que la suite del CHECK
+pasa 39/39 de forma repetible. Queda una inestabilidad del *pool* de *forks*: el proceso hijo muere
+**sin salida de error y en puntos distintos cada vez**, sin que falle ninguna aserción. En
+aislamiento y con base limpia pasan **22 de los 23 archivos**; el de webhooks —el único que levanta
+aplicaciones Nest adicionales y servidores HTTP— se completa de forma intermitente y pasa **54/54
+con `--pool=threads`**, lo que señala al *pool* y no al backend. Los fallos de aserción posteriores
+son contaminación dejada por un worker muerto: purgando la base, `independent-drivers` vuelve a
+pasar 23/23. Descartados conexiones de PostgreSQL, memoria y agotamiento de puertos efímeros. La
+recomendación —evaluar `pool: 'threads'`— **no se aplicó**, porque un CHECK no cambia
+configuración.
+
+**KNOWN ACCEPTED RISK.** Ventana de DNS rebinding, at-least-once con duplicados, ausencia de
+dead-letter y de retención, política de reintentos global, eventos anteriores a la frontera,
+`NO_DELIVERY` legítimo, salud limitada a la instancia y rescate de uno en uno sin auditoría
+persistente. Todos ya documentados; ninguno convierte V1.12 en FAILED.
+
+---
+
 # Verificación V1.12-E — Webhook Operations & Observability (2026-09-24)
 
 Rama `v1.12-B2B_webhook_delivery` sobre `81b118b`, paquete **1.12.0** (sin cambio de versión: los subentregables de V1.12 comparten minor). Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push.** Todo lo de estas tablas se ejecutó en esta tarea; las cifras de versiones anteriores se conservan más abajo como históricas.
