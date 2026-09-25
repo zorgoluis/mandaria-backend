@@ -4,6 +4,50 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Correo Resend HTTPS implementado (2026-09-25):** todos los envíos actuales de invitaciones y reenvíos usan el adaptador Resend por 443. SMTP/Nodemailer retirados, sin fallback; producción requiere MAIL_PROVIDER=resend, RESEND_API_KEY y MAIL_FROM. Outbox sólo local/test. Build, lint, TypeScript, documentación, 285 unitarias y 24 E2E de invitaciones pasan; luego 19 pruebas del adaptador/módulo pasan incluyendo tres nuevas de wiring. Pendiente desplegar y verificar un envío real; sin Docker ni acceso a Coita Eats ni cambios en .env.
+
+- **SMTP (2026-09-25):** propietario aporta fallo USER_INVITATION_EMAIL_FAILED con ETIMEDOUT. Dominio Resend verificado según propietario; timeout no demuestra fallo de credenciales. Posible bloqueo saliente del puerto 587 (documentado por DigitalOcean); se propone Resend 2465 con TLS directo. Conectividad y envío remoto pendientes de comprobar.
+
+- **DNS Resend en Neubox (2026-09-25):** captura muestra CNAME send/rsend y TXT DKIM agregados en formulario. Consulta actual desde el resolvedor local devuelve nombre inexistente para los tres; pendiente guardar/propagar y verificar en Resend. Valor completo DKIM no comprobable desde captura truncada.
+
+- **Correo DNS (2026-09-25):** captura de Resend muestra verificación aún no iniciada; pendientes TXT DKIM y dos CNAME indicados en panel, verificación de dominio, remitente y prueba SMTP. Sin cambios externos ejecutados.
+
+- **HTTPS y renovación automática configurados en VM, evidencia del propietario (2026-09-25):** servicio de renovación finalizó correctamente (certificado aún vigente, no renovado en esta ejecución), validó y recargó Nginx. Timer habilitado con próxima ejecución mostrada para 2026-09-25 12:43:54 UTC. Health HTTPS posterior devuelve estado ok y base disponible. Simulación webroot exitosa en paso anterior; pendiente únicamente comprobar login para validar uso funcional de la interfaz, fuera de la verificación TLS.
+
+- **Renovación webroot probada por el propietario (2026-09-25):** redirección HTTP 308, ruta ACME accesible y health HTTPS 200; Certbot `reconfigure` simuló renovación y guardó webroot correctamente. Pendiente instalar y comprobar temporizador de renovación en la VM y recarga de Nginx. No hay renovación automática acreditada aún.
+
+- **HTTPS operativo según evidencia remota aportada (2026-09-25):** raíz y `/health` devuelven HTTP 200 sobre HTTPS; health informa base disponible y los cuatro contenedores están healthy. Frontend publica 80 y 443. Pendientes redirección HTTP, renovación automática y validación de login; no se confunde esta evidencia con pruebas ejecutadas localmente.
+
+- **Certificado emitido según salida del propietario (2026-09-24):** Certbot confirmó certificado para `mandaria.com.mx` con vencimiento 2026-12-24 y frontend reiniciado. Pendiente conectar certificados al contenedor, publicar 443 y verificar HTTPS; emisión no implica TLS activo ni renovación automática configurada.
+
+- **Preparación TLS (2026-09-24):** configuración remota aportada confirma Nginx dentro del frontend con proxy de `/api/`, `/docs` y `/health` al backend. Siguiente paso guiado: emitir certificado con Certbot standalone y almacenamiento persistente en la VM, deteniendo temporalmente sólo frontend. Pendientes configuración 443, renovación y comprobaciones HTTPS; no ejecutado desde esta sesión.
+
+- **Arranque remoto confirmado por salida del propietario (2026-09-24):** backend y frontend healthy, Nest iniciado y `/health` 200; PostgreSQL y Redis healthy. Frontend publica puerto 80 y existe `frontend/nginx.conf`. Pendiente leer configuración Nginx para integrar TLS; no se ejecutaron comandos en la VM desde esta sesión.
+
+- **Dominio (2026-09-24):** propietario adquirió `mandaria.com.mx`; consulta DNS actual devuelve A `134.209.49.157`. `www.mandaria.com.mx` devuelve nombre inexistente desde este resolvedor. Pendiente identificar Nginx de host/contenedor y configurar TLS; no se modificó la VM.
+
+- **Decisión vigente (2026-09-24):** el propietario comprará un dominio para habilitar HTTPS. Retirada la excepción HTTP por IP desarrollada en esta conversación; código, pruebas, README y Compose restaurados a su estado previo. El propietario informa que agregó la clave de webhooks; no verificada en la VM. Pendiente dominio, DNS y TLS en Nginx.
+
+- **Seguimiento Ubuntu (2026-09-24):** configuración remota aportada confirma que Compose transmite `MANDARIA_WEB_URL`, pero la URL configurada usa HTTP. Además no declara `B2B_WEBHOOK_SECRET_KEY` en el entorno del backend. Pendiente habilitar HTTPS real y suministrar la clave requerida. Diagnóstico por lectura; sin acceso ni cambios en la VM.
+
+### Seguimiento 2026-09-24 — Configuración remota aportada
+
+- **Solicitud:** revisar Compose y configuración del despliegue para resolver el arranque.
+- **Cambios:** documentación del diagnóstico; no se copian valores sensibles ni contenido de archivos de entorno.
+- **Verificaciones actuales:** contraste de los nombres de variables y protocolo aportados con el validador ya revisado. No se ejecutaron Docker, pruebas ni comandos remotos.
+- **Resultado:** HTTP confirmado como causa inmediata; falta también la clave maestra de webhooks en el entorno declarado del backend. Se requiere HTTPS funcional para los enlaces de activación.
+- **Pendientes:** confirmar dominio y terminación TLS, suministrar clave de webhooks, recrear backend y verificar arranque. Se advierte al propietario sobre credenciales expuestas en su mensaje sin reproducirlas.
+
+- **Diagnóstico de arranque Ubuntu (2026-09-24):** el registro aportado muestra rechazo de `MANDARIA_WEB_URL` por no ser HTTPS en producción (ausente, vacía o HTTP). Migraciones y bootstrap finalizan según ese registro. Pendiente confirmar dominio y configuración remota; no se accedió al servidor ni se ejecutó Docker.
+
+### Seguimiento 2026-09-24 — Diagnóstico mediante registro aportado
+
+- **Solicitud:** identificar el fallo de arranque en Ubuntu.
+- **Cambios:** sólo esta anotación; sin cambios de producto o configuración.
+- **Verificaciones actuales:** lectura del registro y del validador adjuntos, contraste con `src/config/environment.ts`, README y Compose locales. El Compose local no declara `MANDARIA_WEB_URL`; no se conoce el Compose remoto. No se ejecutaron pruebas ni Docker.
+- **Resultado:** causa inmediata identificada: la URL web efectiva no satisface HTTPS obligatorio en producción. El registro no permite distinguir entre variable ausente, vacía o HTTP.
+- **Pendientes:** confirmar URL de Mandaria Web, pasarla al contenedor y verificar un nuevo arranque. Las pruebas históricas documentadas no verifican este despliegue.
+
 - **Entrega Git (2026-09-24):** evidencia del CHECK FINAL V1.12 publicada en `origin/v1.12-B2B_webhook_delivery`, commit `cd3882c`; SHA local y remoto verificados iguales. 4 archivos, 2 de ellos nuevos (`docs/CHECK_FINAL_V1_12.md` y `docs/checks/v1.12-final-evidence.json`). **Sólo documentación y evidencia: el producto quedó congelado y comprobado intacto durante el CHECK.** Whitespace sin errores y barrido de secretos sin coincidencias reales. `.env` se excluyó del commit y sigue con su cambio local previo.
 
 - **CHECK FINAL V1.12 (2026-09-24): COMPLETADA Y VALIDADA END-TO-END.** 39 casos y 51 barreras contra Nest y PostgreSQL reales con receptor que verifica la firma: **51 en verde y ningún defecto de producto**. Producto congelado y comprobado intacto (193 archivos, SHA-256 combinado idéntico antes y después). 270 unitarias, 402 E2E en una sola corrida, 22 de 23 archivos E2E completos en aislamiento al cierre, 136 de regresión legacy, `verify-migrations` en cuatro bases, 22 consultas de integridad en 0, 17 escrituras forjadas rechazadas sobre el transporte y 28 destinos hostiles rechazados. Dos hallazgos de **entorno**: `B2B_WEBHOOK_SECRET_KEY` falta en el `.env` del propietario (obligatoria en producción) y la caída nativa de workers de Vitest en Windows, aislada al *pool* de *forks* (el archivo de webhooks pasa 54/54 con `--pool=threads`) y sin una sola aserción fallida atribuible al backend. Sin commit, sin push y sin tocar `.env`. Ver `docs/CHECK_FINAL_V1_12.md` y `docs/checks/v1.12-final-evidence.json`.
@@ -805,3 +849,108 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificaciones de esta tarea:** `git fetch` con rama, remoto y divergencia revisados (local y remoto en `3ed3d89`, sin divergencia); preparación selectiva que deja `.env` fuera del índice; `git diff --cached --check` sin errores de whitespace; barrido del diff preparado contra las **27 claves** de `.env` y contra ocho patrones —JWT, API key de Google, clave privada PEM, URL de PostgreSQL con contraseña, clave maestra literal, secreto cifrado `v1:iv:tag:ct`, clave de acceso AWS y hexadecimal de 64 caracteres—: **los ocho en 0 y 0 fugas de valores sensibles**. Las 11 coincidencias fueron subcadenas de variables no secretas (`development`, `3000`, `mandaria`, `mandaria_db`, `5432`, `google`, `5000`, `DRIVE`, `smtp`, `false`, `resend`), ya presentes en la documentación del repositorio. SHA local y remoto comparados con `git ls-remote` tras el push. Las pruebas funcionales corresponden al CHECK de la tarea anterior (39/39 del CHECK, 270 unitarias, 402 E2E, 136 de regresión legacy); **no se repitieron para esta operación Git**.
 - **Resultado:** commit `cd3882c5e71e188502b2a11127be6537efc7eda4` publicado en `origin/v1.12-B2B_webhook_delivery`; `git ls-remote` devolvió el mismo SHA. El árbol de trabajo quedó limpio salvo el cambio local preexistente de `.env`.
 - **Pendientes:** configurar `B2B_WEBHOOK_SECRET_KEY` antes de desplegar (obligatoria en producción; hoy ausente del `.env` local) y decidir sobre la recomendación de evaluar `pool: 'threads'` en `vitest.config.e2e.ts`, que el CHECK dejó escrita y deliberadamente sin aplicar. V1.12-F no iniciado, Mandaria Web no tocada, Coita Eats no tocada y sin tipos de evento nuevos.
+
+### 2026-09-24 — Retiro de excepción HTTP por decisión del propietario
+
+- **Solicitud:** abandonar el acceso temporal por HTTP y comprar un dominio.
+- **Cambios:** retirados únicamente los cambios propios de la excepción HTTP en environment.ts, sus pruebas, README y Compose. Conservadas las anotaciones anteriores de diagnóstico.
+- **Verificaciones:** revisión de diferencias antes de restaurar. La implementación provisional había pasado build, lint y 15 pruebas antes de ser retirada; esos resultados no representan un despliegue. No se ejecutó Docker ni se accedió a la VM.
+- **Resultado:** producción conserva su requisito original de HTTPS. Sin commit ni push.
+- **Pendientes:** configurar DNS, certificado y Nginx cuando el propietario indique el dominio; actualizar URLs y comprobar arranque remoto.
+
+### 2026-09-24 — Dominio y preparación de HTTPS
+
+- **Solicitud:** continuar despliegue tras adquirir mandaria.com.mx y configurar DNS.
+- **Cambios:** sólo bitácora; sin cambios de producto o VM.
+- **Verificaciones actuales:** consulta DNS de mandaria.com.mx devuelve A 134.209.49.157; www devuelve nombre inexistente. Consulta de instrucciones oficiales de Certbot para Nginx. No se verificó TLS ni se ejecutó Docker.
+- **Resultado:** dominio raíz resuelve a la IP informada del servidor.
+- **Pendientes:** conocer dónde corre Nginx y quién publica 80/443, configurar certificado y proxy, actualizar URLs y verificar arranque.
+
+### 2026-09-24 — Arranque remoto y ubicación de Nginx
+
+- **Solicitud:** continuar HTTPS a partir de la salida adjunta de la VM.
+- **Cambios:** sólo continuidad documental.
+- **Verificaciones actuales:** lectura de salida aportada: cuatro contenedores healthy, Nest iniciado, health HTTP 200 y frontend/nginx.conf presente. No son pruebas ejecutadas localmente ni validación HTTPS.
+- **Resultado:** resuelto el bloqueo de arranque observado previamente; frontend publica HTTP en puerto 80.
+- **Pendientes:** leer nginx.conf y Dockerfile del frontend para preparar certificado y rutas HTTPS sin perder el proxy actual.
+
+### 2026-09-24 — Preparación del certificado para Nginx del frontend
+
+- **Solicitud:** continuar HTTPS con nginx.conf y Dockerfile aportados.
+- **Cambios:** sólo bitácora; se prepara instrucción remota de emisión, sin alterar producto.
+- **Verificaciones actuales:** lectura de configuración aportada (Nginx de contenedor en puerto 80 y proxy al backend) y documentación oficial de Certbot sobre Docker/standalone. No se ejecutó Docker ni se emitió certificado en esta sesión.
+- **Resultado:** definido paso de emisión persistente con breve parada de frontend y restauración al salir del comando.
+- **Pendientes:** evidencia de emisión, montar certificados, publicar 443, mantener healthcheck, corregir URL de API compilada según contrato del frontend, configurar renovación y verificar HTTPS.
+
+### 2026-09-24 — Certificado emitido; preparación de activación TLS
+
+- **Solicitud:** continuar tras emisión exitosa de Certbot y reinicio del frontend.
+- **Cambios:** sólo documentación de continuidad e instrucciones para montar certificados de sólo lectura y habilitar 443 conservando rutas existentes.
+- **Verificaciones actuales:** lectura de salida aportada y consulta de documentación oficial Nginx/Certbot. No se ejecutaron cambios remotos ni pruebas HTTPS.
+- **Resultado:** emisión confirmada por propietario; TLS del servicio aún pendiente de validación.
+- **Pendientes:** activar 443, actualizar URL API compilada, comprobar frontend y health por HTTPS; después redirección HTTP y renovación automática sin parada.
+
+### 2026-09-25 — HTTPS y salud remota confirmados por el propietario
+
+- **Solicitud:** continuar tras verificar HTTPS y estado de los contenedores.
+- **Cambios:** sólo bitácora; se preparan instrucciones para redirección, healthcheck independiente y webroot de ACME.
+- **Verificaciones actuales:** lectura de respuesta HTTPS 200 de /health con database up y cuatro contenedores healthy; consulta de documentación oficial Certbot. Sin ejecución remota desde esta sesión.
+- **Resultado:** frontend, proxy HTTPS y conectividad del backend a PostgreSQL confirmados por salidas aportadas.
+- **Pendientes:** aplicar redirección sin romper healthcheck, validar webroot, cambiar renovación desde standalone y programarla; comprobar login real.
+
+### 2026-09-25 — Webroot validado; programación de renovación pendiente
+
+- **Solicitud:** continuar tras health HTTPS 200 y reconfigure exitoso.
+- **Cambios:** sólo bitácora y preparación de instrucciones para servicio y temporizador systemd en Ubuntu.
+- **Verificaciones actuales:** lectura de resultados aportados: Certbot simuló renovación y guardó configuración webroot; health confirma base disponible. Consulta de documentación systemd. Sin comandos remotos ejecutados por el agente.
+- **Resultado:** renovación sin parada validada por Certbot según evidencia aportada; falta ejecución periódica.
+- **Pendientes:** instalar servicio/timer, ejecutar prueba manual, comprobar próxima ejecución y salud; login funcional no confirmado.
+
+### 2026-09-25 — Cierre de configuración HTTPS y renovación automática
+
+- **Solicitud:** revisar resultados del servicio y temporizador de renovación y health posterior.
+- **Cambios:** sólo bitácora; sin cambios de código, secretos o VM desde el agente.
+- **Verificaciones actuales:** lectura de journal aportado: certificado no requiere renovación, nginx -t pasa, recarga termina y servicio finaliza correctamente. Timer habilitado y próxima ejecución 2026-09-25 12:43:54 UTC. Health HTTPS posterior informa status ok y database up. Simulación de renovación webroot corresponde al paso anterior, no a esta ejecución.
+- **Resultado:** HTTPS, redirección y programación de revisión de certificados configurados según evidencia aportada. No se afirma una renovación real anticipada ni una ejecución periódica ya ocurrida.
+- **Pendientes:** comprobación de login en interfaz; mantener puerto 80 accesible para ACME y revisar eventuales fallos del servicio. Sin commit ni push.
+
+### 2026-09-25 — DNS de correo Resend
+
+- **Solicitud:** interpretar captura de registros DNS para habilitar correo del dominio.
+- **Cambios:** sólo anotación; sin cambios DNS ni configuración remota.
+- **Verificaciones actuales:** lectura de captura: TXT DKIM resend._domainkey con valor truncado y CNAME rsend/send; estados Not Started. Consulta de referencias oficiales Resend.
+- **Resultado:** se indican los tres registros de la captura; el valor DKIM completo debe copiarse del panel, no reconstruirse.
+- **Pendientes:** alta de registros en proveedor DNS, verificación Resend, actualización del remitente y prueba de envío.
+
+### 2026-09-25 — Revisión de registros Resend en Neubox
+
+- **Solicitud:** revisar captura del administrador DNS.
+- **Cambios:** sólo bitácora; sin modificaciones externas.
+- **Verificaciones actuales:** captura muestra dos destinos CNAME esperados y TXT DKIM visible parcialmente. Consultas DNS para send, rsend y resend._domainkey devuelven nombre inexistente desde el resolvedor disponible.
+- **Resultado:** registros presentes en formulario, publicación aún no confirmada; no se afirma fallo global de propagación ni valor DKIM completo correcto.
+- **Pendientes:** guardar cambios, comprobar nombre y valor DKIM completos, verificar dominio en Resend y probar envío.
+
+### 2026-09-25 — Diagnóstico de timeout SMTP
+
+- **Solicitud:** revisar error de invitación por SMTP ETIMEDOUT.
+- **Cambios:** sólo documentación; sin cambios de código o entorno remoto.
+- **Verificaciones actuales:** registro aportado y tiempos de espera del proveedor SMTP local (conexión/saludo 10 segundos, socket 20 segundos). Documentación oficial DigitalOcean confirma bloqueo de 25/465/587; Resend admite TLS directo en 2465. No se probó conectividad desde la VM.
+- **Resultado:** probable problema de conexión SMTP; no se acredita causa definitiva. Se indica alternativa 2465 con SMTP_SECURE=true.
+- **Pendientes:** aplicar configuración remota, recrear backend y reenviar invitación para confirmar entrega real.
+
+### 2026-09-25 — Sustitución completa de SMTP por Resend HTTPS
+
+- **Solicitud:** implementar Resend por API en todos los envíos del sistema, sin SMTP como alternativa.
+- **Cambios:** nuevo ResendMailProvider sobre fetch HTTPS a endpoint fijo, timeout total 20 s, rechazo de redirects, aceptación sólo con respuesta exitosa e id, sin reintentos automáticos. Errores por códigos sanitizados sin cuerpo remoto ni credenciales. MailModule selecciona Resend o outbox explícito sólo fuera de producción; smtp se rechaza. Eliminados adaptador SMTP, Nodemailer y variables SMTP del esquema y plantilla. Dependencias y lock sincronizados, sin cambio de versión. README y Compose actualizados; configuración y fixtures migrados.
+- **Alcance comprobado:** único punto de envío actual en InvitationsService, utilizado por invitación y reenvío de PROVIDER_ADMIN/DRIVER. Se preservan plantillas, contratos y manejo FAILED tras commit; no se añadieron flujos ajenos ni se leyó código o base de Coita Eats. .env del propietario permanece intacto.
+- **Verificaciones actuales:** build Nest, Oxlint, tsc --noEmit y docs:check pasan. Suite unitaria completa 285/285 en 25 archivos; tras añadir tres casos de enlace del módulo, suite específica Resend 19/19. Primer intento de esa prueba de módulo falló porque el fixture no hacía global ConfigModule; corregido para representar el arranque real y comprobado rechazo específico de proveedores. E2E de invitaciones 24/24 en PostgreSQL local con pool threads y FakeMailProvider. Transporte Resend probado con fetch simulado (éxito, HTTP 302/400/401/403/422/429/500/503, JSON inválido, error de red y timeout leyendo cuerpo). No se enviaron correos reales ni se ejecutó Docker. Instalación de lock reportó 0 vulnerabilidades y avisos de peers opcionales preexistentes.
+- **Resultado:** implementación local lista para despliegue, sin fallback SMTP; aceptación de Resend no equivale a entrega a bandeja. Sin migración de datos, commit ni push.
+- **Pendientes:** llevar código a VM, pasar RESEND_API_KEY/MAIL_FROM/MAIL_PROVIDER=resend en Compose remoto, retirar entradas SMTP y reconstruir backend; probar invitación real y activación. Pruebas remotas de SMTP históricas no validan este adaptador.
+
+### 2026-09-25 — Entrega Git de Resend HTTPS en QA
+
+- **Solicitud:** commitear la sustitución de SMTP y publicar en QA.
+- **Cambios:** implementación Resend, eliminación SMTP/Nodemailer, pruebas, configuración de ejemplo/Compose y documentación de continuidad. .env y archivo ajeno nul excluidos.
+- **Verificaciones de esta tarea:** fetch remoto; confirmado QA local antecesor de origin/QA y archivos base de main idénticos a origin/QA. Actualización fast-forward y recuperación de cambios sin conflictos. La revisión automática rechazó actualizar directamente la referencia local; resuelto preservando cambios con stash y merge --ff-only. Pruebas funcionales corresponden a la tarea anterior (285 unitarias, 19 específicas al cierre, 24 E2E); no repetidas para la entrega Git.
+- **Resultado:** cambios preparados en QA para commit y push normal, sin force-push. Verificación del SHA remoto se realiza tras publicar y se informa al propietario.
+- **Pendientes:** despliegue en VM y correo real con RESEND_API_KEY; no efectuados por esta entrega.

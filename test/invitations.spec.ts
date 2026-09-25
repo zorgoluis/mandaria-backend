@@ -19,12 +19,7 @@ import {
   buildActivationUrl,
   renderUserInvitation,
 } from '../dist/mail/mail-templates.js';
-import {
-  SmtpMailProvider,
-  smtpFailureReason,
-} from '../dist/mail/smtp-mail.provider.js';
 import { LocalOutboxMailProvider } from '../dist/mail/local-outbox-mail.provider.js';
-import { MailDeliveryError } from '../dist/mail/mail.types.js';
 import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
@@ -269,40 +264,6 @@ describe('invitation email', () => {
     ).toContain('Rol: Administrador de proveedor');
     expect(`${message.text}${message.html}`).not.toMatch(/contraseña:/i);
   });
-  it('sends through SMTP with the configured sender and hides transport error details', async () => {
-    const sendMail = vi.fn().mockResolvedValue({});
-    const provider = new SmtpMailProvider(
-      {
-        host: 'smtp.example.com',
-        port: 587,
-        secure: false,
-        requireTls: true,
-        from: 'Mandaria <no-reply@example.com>',
-      },
-      { sendMail } as never,
-    );
-    await provider.sendUserInvitation(mail);
-    expect(sendMail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        from: 'Mandaria <no-reply@example.com>',
-        to: mail.to,
-        subject: 'Has sido invitado a Mandaria',
-      }),
-    );
-    sendMail.mockRejectedValueOnce(
-      Object.assign(new Error('535 auth failed for secret-user'), {
-        code: 'EAUTH',
-      }),
-    );
-    const error = await provider.sendUserInvitation(mail).catch((e) => e);
-    expect(error).toBeInstanceOf(MailDeliveryError);
-    expect(error.reason).toBe('EAUTH');
-    expect(error.message).not.toContain('secret-user');
-    expect(smtpFailureReason(new Error('boom'))).toBe('UNEXPECTED');
-    expect(smtpFailureReason({ code: 'bad code with spaces' })).toBe(
-      'UNEXPECTED',
-    );
-  });
   it('local outbox writes one private JSON file per message', async () => {
     const dir = join(await mkdtemp(join(tmpdir(), 'mandaria-outbox-')), 'box');
     try {
@@ -335,8 +296,8 @@ describe('V1.6.1 configuration', () => {
     ...base,
     NODE_ENV: 'production',
     GOOGLE_ROUTES_API_KEY: 'k'.repeat(30),
-    MAIL_PROVIDER: 'smtp',
-    SMTP_HOST: 'smtp.example.com',
+    MAIL_PROVIDER: 'resend',
+    RESEND_API_KEY: 'test-resend-key',
     MAIL_FROM: 'Mandaria <no-reply@example.com>',
     MANDARIA_WEB_URL: 'https://app.example.com/',
     B2B_WEBHOOK_SECRET_KEY: 'k'.repeat(64),
@@ -346,8 +307,6 @@ describe('V1.6.1 configuration', () => {
       USER_INVITATION_TTL_HOURS: 24,
       USER_INVITATION_RESEND_COOLDOWN_SECONDS: 60,
       MAIL_PROVIDER: 'local_outbox',
-      SMTP_PORT: 587,
-      SMTP_SECURE: false,
     });
     expect(
       validateEnvironment({ ...base, MANDARIA_WEB_URL: '' }).MANDARIA_WEB_URL,
@@ -355,20 +314,20 @@ describe('V1.6.1 configuration', () => {
   });
   it('accepts a complete production mail setup and normalizes the web URL', () => {
     expect(validateEnvironment(production)).toMatchObject({
-      MAIL_PROVIDER: 'smtp',
+      MAIL_PROVIDER: 'resend',
       MANDARIA_WEB_URL: 'https://app.example.com',
     });
   });
-  it('forbids the local outbox, missing SMTP settings and non-https links in production', () => {
+  it('forbids the local outbox, missing Resend settings and non-https links in production', () => {
     const fails = (overrides: Record<string, unknown>, message: RegExp) =>
       expect(() =>
         validateEnvironment({ ...production, ...overrides }),
       ).toThrow(message);
-    fails({ MAIL_PROVIDER: 'local_outbox' }, /MAIL_PROVIDER=smtp/);
-    fails({ MAIL_PROVIDER: undefined }, /MAIL_PROVIDER=smtp/);
-    fails({ SMTP_HOST: '' }, /SMTP_HOST/);
+    fails({ MAIL_PROVIDER: 'local_outbox' }, /MAIL_PROVIDER=resend/);
+    fails({ MAIL_PROVIDER: undefined }, /MAIL_PROVIDER=resend/);
+    fails({ RESEND_API_KEY: '' }, /RESEND_API_KEY/);
+    fails({ MAIL_PROVIDER: 'smtp' }, /Invalid environment/);
     fails({ MAIL_FROM: undefined }, /MAIL_FROM/);
-    fails({ SMTP_USER: 'user' }, /SMTP_USER and SMTP_PASSWORD/);
     fails({ MANDARIA_WEB_URL: 'http://app.example.com' }, /https/);
     fails({ MANDARIA_WEB_URL: undefined }, /https/);
   });

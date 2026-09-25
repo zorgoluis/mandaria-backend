@@ -1947,3 +1947,7 @@ Los comandos reproducibles, endpoints y alcance futuro están en README.md.
 - start:prod con node dist/main: PASS, health HTTP 200.
 - npm install de Oxlint: 0 vulnerabilidades reportadas; revisión de secretos locales en archivos publicables sin coincidencias.
 - No ejecutados: Docker, resets, migrate dev interactivo, Studio, watch/debug ni instalación limpia completa. Format configurado con globs src/test/prisma; se formatearon sólo archivos modificados para evitar cambios ajenos a la solicitud.
+
+## 2026-09-25 — Correo por API HTTPS de Resend
+
+Cambio posterior al CHECK FINAL histórico: SMTP y Nodemailer sustituidos por Resend sin fallback. Todos los envíos existentes pasan por MailModule. Build, lint, TypeScript y docs:check pasan; 285/285 unitarias completas y después 19/19 del adaptador/módulo (tres casos nuevos de wiring). E2E de invitaciones 24/24 con PostgreSQL local y transporte falso, pool threads. Error inicial del fixture de wiring corregido haciendo ConfigModule global como en producción. Pruebas cubren solicitud HTTPS, aceptación con id, rechazo HTTP y JSON inválido, timeout y sanitización; no acreditan entrega real en Resend. No Docker, envío real, migraciones, cambios de .env ni acceso a otros proyectos. Despliegue y prueba real pendientes.
