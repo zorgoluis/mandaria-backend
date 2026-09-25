@@ -19,19 +19,24 @@ export class DeliveryStopResponse {
   @ApiProperty({ example: -93.115983 }) longitude!: number;
   @ApiProperty({ example: 'Restaurante Centro' }) contactName!: string;
   @ApiProperty({ example: '+52 961 123 4567' }) contactPhone!: string;
-  @ApiPropertyOptional({ nullable: true }) instructions!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) instructions!:
+    string | null;
 }
 export class DeliveryPackageResponse {
   @ApiProperty({ enum: PackageCategory }) category!: PackageCategory;
   @ApiProperty({ example: 'Pedido preparado' }) description!: string;
   @ApiProperty({ example: 2 }) quantity!: number;
-  @ApiPropertyOptional({ nullable: true, example: 1.5 }) weightKg!:
-    number | null;
-  @ApiPropertyOptional({ nullable: true }) lengthCm!: number | null;
-  @ApiPropertyOptional({ nullable: true }) widthCm!: number | null;
-  @ApiPropertyOptional({ nullable: true }) heightCm!: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, example: 1.5 })
+  weightKg!: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true })
+  lengthCm!: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true })
+  widthCm!: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true })
+  heightCm!: number | null;
   @ApiProperty({ example: false }) isFragile!: boolean;
-  @ApiPropertyOptional({ nullable: true }) handlingInstructions!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) handlingInstructions!:
+    string | null;
 }
 export class DeliveryFinancialContextResponse {
   @ApiPropertyOptional({
@@ -50,7 +55,7 @@ class DeliveryRequestBase {
     description: 'Identificador operacional global.',
   })
   publicId!: string;
-  @ApiPropertyOptional({ nullable: true, example: 'ORDER-1842' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'ORDER-1842' })
   externalReference!: string | null;
   @ApiProperty({ enum: ServiceType, example: 'LOCAL_DELIVERY' })
   serviceType!: ServiceType;
@@ -61,13 +66,13 @@ class DeliveryRequestBase {
     description: 'Momento en que Mandaria aceptó la solicitud.',
   })
   requestedAt!: Date;
-  @ApiPropertyOptional({ ...dateTime, nullable: true })
+  @ApiPropertyOptional({ type: String, ...dateTime, nullable: true })
   cancelledAt!: Date | null;
   @ApiProperty(dateTime) createdAt!: Date;
   @ApiProperty(dateTime) updatedAt!: Date;
 }
 class DeliveryRequestContent extends DeliveryRequestBase {
-  @ApiPropertyOptional({ nullable: true, example: null })
+  @ApiPropertyOptional({ type: String, nullable: true, example: null })
   cancellationReason!: string | null;
   @ApiProperty({ type: DeliveryStopResponse, isArray: true })
   stops!: DeliveryStopResponse[];

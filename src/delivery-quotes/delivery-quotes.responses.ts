@@ -39,11 +39,12 @@ export class DeliveryQuoteResponse {
       'Fin de la vigencia del precio. No indica cuándo se realiza el servicio.',
   })
   expiresAt!: Date;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   acceptedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
   @ApiPropertyOptional({
+    type: String,
     nullable: true,
     example: 'DELIVERY_REQUEST_CANCELLED',
   })
@@ -94,17 +95,19 @@ export class AdminDeliveryQuoteResponse {
   @ApiProperty({ format: 'date-time' }) routeCalculatedAt!: Date;
   @ApiProperty({ enum: DeliveryQuoteStatus }) status!: DeliveryQuoteStatus;
   @ApiProperty({ format: 'date-time' }) expiresAt!: Date;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   acceptedAt!: Date | null;
   @ApiPropertyOptional({
+    type: String,
     format: 'date-time',
     nullable: true,
     description: 'Momento en que se persistió EXPIRED.',
   })
   expiredAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   cancelledAt!: Date | null;
-  @ApiPropertyOptional({ nullable: true }) cancellationReason!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) cancellationReason!:
+    string | null;
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
   @ApiProperty({ format: 'date-time' }) updatedAt!: Date;
 }

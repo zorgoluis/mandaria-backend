@@ -1,10 +1,20 @@
-# Mandaria — V1.6.1 User Provisioning, Invitations y Account Activation
+# Mandaria — V1.12-E Webhook Operations & Observability
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
+## Integridad económica y frontera histórica — V1.10-D correctiva
+
+Toda adjudicación **ENFORCED V1.10-D+** requiere exactamente un SERVICE_AWARD válido, por el monto del snapshot y desde la cuenta del ganador, dentro de la misma transacción. PostgreSQL lo comprueba al COMMIT mediante constraints diferidos y también impide débitos sin historial operacional correspondiente.
+
+No todos los Dispatches MONETIZED históricos fueron cobrados: los premios existentes con snapshot pero sin débito se conservan como **PRE_ENFORCEMENT_AWARD**, en un registro inmutable, sin cobro retroactivo. LEGACY conserva su frontera pre-C. Un servicio OPEN con snapshot exige créditos en su siguiente adjudicación; liberar una adjudicación histórica no regala la siguiente. La API expone `creditEnforcementMode` (LEGACY / PRE_ENFORCEMENT_AWARD / ENFORCED), que expresa una regla, no un recibo.
+
+La migración `20260923000200_award_integrity_boundary` es incremental: no modifica la anterior, saldos, ledger ni snapshots. No usar reset. V1.10-D aún no devuelve créditos por release o cancelación; V1.10-E no está implementada.
+
+Contrato: [API-CONTRACT](docs/API-CONTRACT.md). Resultados: [corrección del CHECK](docs/CHECK_V1_10_D_FIXES.md). Reproducción local: `node scripts/verify-award-boundary.mjs`; reconciliación de sólo lectura: `node scripts/scan-award-integrity.mjs`.
+
 ## Estado y arquitectura
 
-V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). No reconstruye Auth humano ni despacha entregas. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
+V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integraciones B2B V1.1. V1.4-A agregó Drivers, Vehicles y asignaciones con historial, límites efectivos y autoservicio de disponibilidad del Driver. V1.5-A agregó DeliveryRequest B2B (qué transportar). V1.6-A agrega ServiceType, zonas de servicio con GeoJSON, routing reemplazable (Google Routes), tarifas versionadas por bandas de distancia y DeliveryQuotes con vigencia y aceptación. V1.6.1-A agrega el aprovisionamiento real de cuentas PROVIDER_ADMIN y DRIVER por invitación con activación de cuenta (ver [Production User Provisioning](#production-user-provisioning-v161-a)). V1.7-A agregó el motor de despacho: al aceptar la Quote se abre un Dispatch para los proveedores elegibles y exactamente uno lo reclama (ver [Dispatch Engine](#dispatch-engine-v17-a)). V1.8-A agregó la asignación interna del proveedor: qué Driver y qué Vehicle de su flotilla ejecutan el servicio reclamado, con historial de reasignaciones (ver [Provider Driver & Vehicle Assignment](#provider-driver--vehicle-assignment-v18-a)). V1.9-A agrega el **segundo modelo de ejecución**: un repartidor habilitado por Mandaria toma un servicio por su cuenta, con sus propios vehículos y sin proveedor de por medio; ambos modelos compiten por el mismo Dispatch y exactamente uno gana (ver [Independent Drivers](#independent-drivers-v19-a)). V1.10-A agrega la base contable de los créditos Mandaria: una cuenta por proveedor y por repartidor independiente, con un ledger inmutable, recargas y ajustes manuales de SUPER_ADMIN; **todavía no se cobra ningún crédito al adjudicar servicios** (ver [Credit Accounts & Immutable Ledger](#credit-accounts--immutable-ledger-v110-a)). V1.10-B agrega el motor de políticas de créditos: cuánto cuesta adjudicarse un servicio según serviceType, quién paga y la distancia canónica, con versiones inmutables; **sólo calcula, no cobra** (ver [Credit Policy Engine](#credit-policy-engine-v110-b)). V1.10-C congela el costo en créditos de cada Dispatch al abrirlo, V1.10-D lo cobra en el mismo acto de adjudicarlo y V1.10-E lo devuelve completo cuando esa adjudicación se deshace. V1.11-A agrega el **cierre operativo de la entrega**: el proveedor dueño del claim, o el repartidor independiente que tomó el servicio, confirma que se entregó; el Dispatch queda `DELIVERED` de forma terminal e irreversible, la asignación queda `COMPLETED` y el repartidor y el vehículo vuelven a estar libres. Cuesta 0 créditos y no devuelve ninguno (ver [MVP Delivery Completion](#mvp-delivery-completion-v111-a)). V1.12-A abre esa entrega al cliente que la pidió: el IntegrationClient dueño de la DeliveryRequest consulta su **estado logístico público** —`REQUESTED`, `OPEN`, `ASSIGNED`, `DELIVERED`, `CANCELLED` o `EXPIRED`— sin ver el modelo interno de Dispatch. Es sólo lectura, sin efectos y sin migración: Mandaria sigue siendo la única autoridad logística (ver [B2B Delivery Status](#b2b-delivery-status-v112-a)). V1.12-B agrega el **primer Outbox durable**: cuando una entrega llega a `DELIVERED`, un evento `delivery.completed` se registra en la misma transacción que la completa —o ninguno de los dos ocurre—, con una instantánea congelada del contrato público de V1.12-A. Registra, no envía (ver [Durable B2B Event Outbox](#durable-b2b-event-outbox-v112-b)). V1.12-C sí lo entrega: hace **un** POST del evento ya registrado al endpoint HTTPS que un administrador configuró para ese cliente, siempre **fuera** de la transacción de completion y tratando la URL como superficie SSRF; un fallo quedaba como intento FAILED y se detenía ahí (ver [B2B Webhook Delivery](#b2b-webhook-delivery-v112-c)). V1.12-D lo vuelve **durable, recuperable y firmado**: el trabajo se descubre desde el Outbox tras cualquier reinicio, se toma con un lease para que varios backends no lo dupliquen, se reintenta con una curva fija hasta agotarse y viaja firmado con HMAC-SHA256 bajo un secreto propio de cada cliente, cifrado en reposo. La entrega es **at-least-once**: el consumidor debe deduplicar por `eventId` (ver [Reliable & Secure Webhook Delivery](#reliable--secure-webhook-delivery-v112-d)). V1.12-E no añade maquinaria de entrega: la hace **respondible**. Un SUPER_ADMIN puede ver qué se le debe a cada cliente B2B, buscar un evento por la referencia externa que el propio cliente tiene en la mano, leer la instantánea congelada y el historial de intentos, saber por qué algo está fuera de la entrega fiable —`NO_DELIVERY`, derivado y nunca guardado— y devolver a la cola un envío con los reintentos agotados, que programa trabajo y nunca dice «entregado» (ver [Webhook Operations & Observability](#webhook-operations--observability-v112-e)). No hay Driver App, GPS ni tracking. Los resultados de verificación están en [VERIFICATION.md](VERIFICATION.md); el contexto entre agentes, en [BITACORA.md](BITACORA.md).
 
 - Node.js 24, TypeScript estricto, NestJS 11, Prisma 6, PostgreSQL 17/18.
 - `auth/`: User, contraseña Argon2id, access JWT y refresh revocable.
@@ -15,6 +25,14 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `delivery-requests/`: demanda B2B V1.5 y administración; `idempotency/`: registro reutilizable de Idempotency-Key.
 - `geo/`, `service-zones/`, `routing/`, `rate-plans/`, `delivery-quotes/`: cotización V1.6 (geometría interna, zonas, RoutingProvider, tarifas y Quotes).
 - `invitations/`, `mail/`: aprovisionamiento V1.6.1 (invitaciones, activación de cuenta y MailProvider).
+- `dispatch/`: V1.7 Dispatch, candidatos, coberturas de proveedor, claim y liberación.
+- `delivery-assignments/`: V1.8 asignación de Driver y Vehicle al Dispatch reclamado, con historial, reasignación y plazo.
+- `independent-drivers/`: V1.9 perfil independiente, vehículos propios y las operaciones `take`/`release` del repartidor.
+- `deliveries/`: V1.11 cierre operativo de la entrega, compartido por el flujo de proveedor y el independiente; V1.12 traducción del estado interno al estado logístico público del cliente B2B.
+- `b2b-events/`: V1.12-B registro durable de eventos B2B; construye `delivery.completed` desde el modelo público y lo escribe dentro de la transacción que entrega.
+- `b2b-webhooks/`: V1.12-C/D/E transporte del evento: configuración del destino, política SSRF de la URL, el intento HTTP con timeout y su historial append-only, V1.12-D el worker con lease, la política de reintentos y la firma HMAC con su secreto cifrado, y V1.12-E la vista operativa —estado de transporte derivado, listado, detalle, salud y rescate— que lee y programa, pero no entrega.
+- `credits/`: V1.10-A cuentas de créditos, ledger inmutable, recargas, ajustes y cobro atómico CLAIM/TAKE; sin refunds todavía.
+- `credit-policies/`: V1.10-B políticas de créditos versionadas y cálculo puro del costo de un servicio; no debita cuentas.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.
 - `test/`: servicios, HTTP y E2E; `scripts/`: bootstrap, pruebas y herramientas locales.
@@ -43,6 +61,7 @@ Los comandos de desarrollo solicitados están disponibles en `package.json`:
 | `db:seed:local-driver-users`, `verify:drivers-vehicles` | **LOCAL/TEST ONLY**: Users DRIVER locales y validación HTTP real del escenario V1.4 |
 | `verify:delivery-requests` | **LOCAL/TEST ONLY**: validación HTTP real del escenario V1.5 con IntegrationClients locales A/B |
 | `db:seed:local-pricing`, `verify:delivery-quotes` | **LOCAL/TEST ONLY**: zonas/tarifa placeholder y validación HTTP real de cotización V1.6 |
+| `db:seed:local-credit-policies` | **LOCAL/TEST ONLY**: políticas de créditos v1 `LOCAL_DELIVERY` PER_KM (1 crédito/km, mínimo 3) para PROVIDER e INDEPENDENT_DRIVER; idempotente, nunca edita una existente |
 | `verify:user-invitations` | **LOCAL/TEST ONLY**: invitación → correo en outbox local → activación → login real de PROVIDER_ADMIN y DRIVER (V1.6.1) |
 | `routing:check-google` | Comprobación manual explícita de Google Routes (1 llamada facturable; requiere GOOGLE_ROUTES_API_KEY) |
 | `db:test:deploy` | Aplicar migraciones a la base de pruebas |
@@ -162,6 +181,9 @@ La migración `20260915000200_b2b_credentials`:
 | USER_INVITATION_TTL_HOURS, USER_INVITATION_RESEND_COOLDOWN_SECONDS | Vigencia de invitaciones (1–168, 24) y espera mínima entre reenvíos (0–3600, 60) |
 | MAIL_PROVIDER | `smtp` (obligatorio en producción) o `local_outbox` (LOCAL/TEST ONLY; default fuera de producción; rechazado en producción) |
 | MAIL_FROM, SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD | Remitente y relay SMTP; host y remitente obligatorios con smtp; usuario y contraseña juntos; nunca versionar |
+| DISPATCH_TTL_MINUTES | Minutos que un servicio aceptado es reclamable (1–1440, default 10); independiente de la vigencia de la Quote |
+| LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES | Minutos que el proveedor tiene para asignar Driver y Vehicle tras reclamar un LOCAL_DELIVERY (1–1440, default 5); sólo señal `assignmentOverdue`, sin liberación automática |
+| INDEPENDENT_DRIVER_MAX_VEHICLES | Vehículos propios que SUPER_ADMIN puede dar de alta a un repartidor independiente (1–100, default 3); cuentan todos, sea cual sea su estado |
 | LOCAL_MAIL_OUTBOX_DIR | **LOCAL/TEST ONLY**; carpeta del outbox local (default `<temp>/mandaria-mail-outbox`) |
 
 Los tres secretos JWT deben ser distintos. La aplicación falla al iniciar ante valores inválidos, sin imprimirlos. CORS vacío deshabilita acceso cross-origin del navegador; no se acepta `*`. CORS no sustituye autenticación server-to-server.
@@ -269,6 +291,11 @@ Prefijo `/api/v1` salvo health/docs:
 | POST | /auth/activate-account | Pública; token de invitación |
 | POST, GET | /admin/providers/:providerId/invitations, /admin/user-invitations[/:id[/resend\|/revoke]] | SUPER_ADMIN (ver V1.6.1) |
 | POST, GET | /provider/driver-invitations[/:id[/resend\|/revoke]] | PROVIDER_ADMIN + membership |
+| GET | /provider/dispatches, /provider/dispatches/:id, /provider/service-coverages | PROVIDER_ADMIN + membership |
+| POST | /provider/dispatches/:id/claim, /provider/dispatches/:id/release | PROVIDER_ADMIN + membership (ver V1.7) |
+| POST, GET | /provider/dispatches/:id/assignment[/reassign\|/cancel], /provider/dispatches/:id/assignments, /provider/dispatches/:id/available-drivers\|available-vehicles | PROVIDER_ADMIN + membership (ver V1.8) |
+| GET | /admin/dispatches/:id/assignments | SUPER_ADMIN |
+| GET, POST, PATCH | /admin/dispatches[/:id], /admin/providers/:providerId/service-coverages[/:id] | SUPER_ADMIN |
 | POST | /integrations/token | Client Credentials en body |
 | GET | /integrations/me | Bearer B2B |
 | GET | /integrations/scope-check | Bearer B2B + deliveries:read |
@@ -298,7 +325,7 @@ Swagger distingue **User Bearer Authentication** (`bearer`) de **Integration Bea
 
 Helmet, DTOs con whitelist/forbidNonWhitelisted/transform, body 16 KiB, respuestas no-store y errores HTTP uniformes. Contraseñas humanas con Argon2id; secretos aleatorios/tokens con SHA-256.
 
-Límites por IP: global 100/min, login 5/min, refresh 20/min, token B2B 10/min, activación de cuenta 10/min, creación de invitaciones 20/min y reenvío 10/min. Health está exento. Los fallos B2B por ID desconocido, secreto incorrecto, revocación o suspensión usan el mismo 401 genérico. Un DTO mal formado recibe 400; el límite recibe 429.
+Límites por IP: global 100/min, login 5/min, refresh 20/min, token B2B 10/min, activación de cuenta 10/min, creación de invitaciones 20/min, reenvío 10/min, claim de Dispatch 60/min y liberación 20/min. Health está exento. Los fallos B2B por ID desconocido, secreto incorrecto, revocación o suspensión usan el mismo 401 genérico. Un DTO mal formado recibe 400; el límite recibe 429.
 
 Logging JSON, sin bodies, query strings, headers de autorización, secretos ni tokens. Eventos:
 INTEGRATION_CREATED, INTEGRATION_SUSPENDED, INTEGRATION_ACTIVATED, INTEGRATION_REVOKED, CREDENTIAL_CREATED, CREDENTIAL_ROTATED, CREDENTIAL_REVOKED, INTEGRATION_AUTH_SUCCESS, INTEGRATION_AUTH_FAILED. Los eventos administrativos incluyen actorId y los IDs afectados.
@@ -854,7 +881,7 @@ Ejemplo real de la validación local: `MDR-000037 → ruta 4509 m → banda 4000
 - **Idempotencia natural:** 20 cotizaciones simultáneas producen una Quote y una llamada de routing (las demás esperan el bloqueo y reutilizan). No se añadió un segundo sistema de idempotencia: la unicidad es por DeliveryRequest y `Idempotency-Key` sigue siendo la infraestructura V1.5 para crear solicitudes. La transacción tiene un presupuesto igual al peor caso de routing más margen.
 - **Un fallo nunca crea Quote ni cancela la solicitud:** sigue CREATED y puede reintentarse. Nunca se usa `amount = 0` como error.
 - **Aceptar** (`POST /delivery-quotes/:publicId/accept`): OFFERED vigente → ACCEPTED, serializado sobre la solicitud. Repetir es idempotente (200). Si venció: `409 QUOTE_EXPIRED` (queda EXPIRED); cancelada o solicitud cancelada: `409 QUOTE_NOT_ACCEPTABLE`. El precio aceptado queda congelado; los nuevos planes sólo afectan Quotes nuevas. SUPER_ADMIN no acepta en V1.6.
-- **Cancelar la DeliveryRequest** (B2B o admin, misma transacción y bloqueo): las OFFERED vigentes pasan a CANCELLED (`DELIVERY_REQUEST_CANCELLED`) y las vencidas a EXPIRED. Una ACCEPTED **se conserva como historial** y la solicitud queda CANCELLED; en V1.7 Dispatch definirá la política con servicio en curso.
+- **Cancelar la DeliveryRequest** (B2B o admin, misma transacción y bloqueo): las OFFERED vigentes pasan a CANCELLED (`DELIVERY_REQUEST_CANCELLED`) y las vencidas a EXPIRED. Una ACCEPTED **se conserva como historial** y la solicitud queda CANCELLED; desde V1.8 la cancelación cierra además la asignación de Driver y Vehicle ACTIVE con `DELIVERY_CANCELLED`.
 - **Precio de entrega vs mercancía:** el costo logístico es `acceptedQuote.amount`; no se duplica `deliveryFee` en DeliveryRequest. `goodsValue`/`goodsPaymentMode` (V1.5) siguen independientes: con 450 COURIER_ADVANCE y Quote de 50, la Quote es 50, nunca 500. No hay créditos, wallet ni costo de plataforma al proveedor.
 
 ### Endpoints V1.6
@@ -1048,11 +1075,1028 @@ El script usa login real (5 logins), lee el token del outbox local como lo harí
 
 Pruebas: `test/invitations.spec.ts` (token/hash, expiración, errores, matriz de roles, política de contraseña, validaciones previas a la base, plantilla, SMTP con transporte simulado, outbox local y configuración) y `test/user-invitations.e2e-spec.ts` (flujos PROVIDER_ADMIN y DRIVER completos con login/refresh/logout, aislamiento A/B en ambos sentidos, matriz de roles, IntegrationClient, expirado, reutilizado, revocado, duplicados, ACTIVE/DISABLED, validaciones, fallo de correo, reserva de lugares, concurrencia de invitación/reenvío/activación, rate limits, invariantes SQL y auditoría sin secretos). `node scripts/verify-migrations.mjs` cubre V1.6 → V1.6.1 con datos.
 
+## Dispatch Engine (V1.7-A)
+
+Responde: una vez aceptada la cotización, ¿qué proveedores pueden realizar el servicio y cuál lo toma?
+
+```text
+IntegrationClient → POST /delivery-quotes/:publicId/accept
+      ↓  (misma transacción)
+DeliveryQuote ACCEPTED + Dispatch OPEN + candidatos (snapshot)
+      ↓
+PROVIDER_ADMIN → GET /provider/dispatches?view=AVAILABLE
+      ↓
+POST /provider/dispatches/:dispatchId/claim  → exactamente 1 gana
+      ↓
+Dispatch CLAIMED (claimedByProviderId)
+```
+
+El IntegrationClient no llama ningún endpoint de dispatch: aceptar la Quote basta. V1.7 no asigna Driver ni Vehicle, no usa disponibilidad/GPS de repartidores ni envía notificaciones.
+
+### Elegibilidad
+
+Un proveedor es candidato cuando, al abrirse el Dispatch:
+
+1. `DeliveryProvider.status = ACTIVE`;
+2. tiene una `ProviderServiceCoverage` **ACTIVE** para la **ServiceZone** de la Quote aceptada (calculada geográficamente en V1.6, nunca por texto de dirección);
+3. y para su **ServiceType** (`LOCAL_DELIVERY` hoy; el motor no está atado a ese valor).
+
+`ProviderServiceCoverage` es el modelo mínimo nuevo (antes no existía relación proveedor–zona–servicio) y representa la habilitación operacional. La administra SUPER_ADMIN:
+
+| Método | Ruta | Uso |
+|---|---|---|
+| POST | /admin/providers/:providerId/service-coverages | `{serviceZoneId, serviceType}` → ACTIVE; 409 `SERVICE_COVERAGE_EXISTS` |
+| GET | /admin/providers/:providerId/service-coverages | Lista |
+| PATCH | /admin/providers/:providerId/service-coverages/:coverageId | `{status: ACTIVE\|INACTIVE}` |
+| GET | /provider/service-coverages | PROVIDER_ADMIN: coberturas propias (lectura) |
+
+Los candidatos se guardan como **snapshot** (`DispatchCandidate`) y no se recalculan: el historial responde a quién se ofreció. La elegibilidad se vuelve a comprobar al reclamar (proveedor suspendido o cobertura desactivada → 409 `PROVIDER_NOT_ELIGIBLE`).
+
+**Sin candidatos:** la aceptación nunca falla por falta de proveedores. El Dispatch se crea OPEN sin candidatos y queda así hasta vencer. No se añadió un estado `NO_PROVIDER_FOUND`: la vista de administración expone la señal derivada `noProviderAvailable` (OPEN sin candidaturas OFFERED; también tras liberaciones que agotan candidatos) y el evento `DISPATCH_OPENED` registra `candidateCount`.
+
+### Estados y transiciones
+
+| Dispatch | Significado |
+|---|---|
+| OPEN | Reclamable hasta `expiresAt` |
+| CLAIMED | Tomado por `claimedByProviderId`; el claim no caduca con `expiresAt` |
+| EXPIRED | Ventana cerrada sin claim (persistencia perezosa: un OPEN vencido se informa EXPIRED y se guarda al intentar reclamar) |
+| CANCELLED | La DeliveryRequest fue cancelada |
+
+| DispatchCandidate | Significado |
+|---|---|
+| OFFERED | Puede reclamar mientras el Dispatch esté OPEN |
+| CLAIMED | Tiene (o tenía al cancelarse) el claim |
+| RELEASED | Liberó el claim; no puede reclamar de nuevo ese Dispatch |
+
+No se añadió `EXCLUDED`: cuando otro proveedor gana, los demás siguen OFFERED como historial y vuelven a poder reclamar si el ganador libera. Transiciones permitidas (trigger SQL): OPEN → CLAIMED/EXPIRED/CANCELLED; CLAIMED → OPEN (liberación en ventana)/EXPIRED (liberación tras la ventana)/CANCELLED. EXPIRED y CANCELLED son terminales.
+
+### Configuración y expiración
+
+`DISPATCH_TTL_MINUTES` (1–1440, default **10**): `openedAt = acceptedAt`, `expiresAt = openedAt + TTL`, independiente de `DeliveryQuote.expiresAt`. No hay cron ni cola: la expiración es perezosa y `now >= expiresAt` impide reclamar.
+
+### Claim, liberación y cancelación
+
+- **Claim** (`POST /provider/dispatches/:dispatchId/claim`, sin body): el proveedor sale de la membership (`?providerId=` sólo elige entre las propias; con varias memberships es obligatorio). Requiere Dispatch OPEN y vigente, candidatura OFFERED y proveedor elegible. Repetir el claim del ganador devuelve 200 sin cambios.
+- **Concurrencia:** la transacción bloquea la fila del Dispatch (`SELECT … FOR UPDATE`); los claims simultáneos se serializan y todos salvo el primero ven CLAIMED → 409 `DISPATCH_ALREADY_CLAIMED` sin escribir. Respaldo en PostgreSQL: índice único parcial de un candidato CLAIMED por Dispatch y trigger que exige que el dueño sea un candidato CLAIMED.
+- **Liberación** (`POST /provider/dispatches/:dispatchId/release`, `{reason}` 3–500): sólo el dueño actual. Su candidatura pasa a RELEASED; en ventana el Dispatch vuelve a OPEN para los demás; tras `expiresAt` pasa a EXPIRED. Liberaciones simultáneas: una aplica, el resto 409.
+- **Cancelación:** integrada en la cancelación oficial de V1.5 (`POST /delivery-requests/:publicId/cancel` y `/admin/delivery-requests/:publicId/cancel`), en la misma transacción. OPEN/CLAIMED → CANCELLED (`DELIVERY_REQUEST_CANCELLED`); un CLAIMED cancelado **conserva `claimedByProviderId`** como historial. Un OPEN ya vencido se cierra como EXPIRED. Nunca quedan DeliveryRequest CANCELLED y Dispatch operativo.
+- **Quién no reclama:** SUPER_ADMIN (403: administra, no actúa como flotilla), DRIVER (403; V1.9) e IntegrationClient (401).
+
+### Consultas de proveedor y exposición de datos
+
+`GET /provider/dispatches` (`view=AVAILABLE|CLAIMED|ALL`, `status` efectivo, paginación) y `GET /provider/dispatches/:dispatchId` sólo muestran Dispatches donde el proveedor fue candidato; uno ajeno responde 404. El detalle depende de `access`:
+
+| access | Cuándo | Incluye |
+|---|---|---|
+| OFFER | OPEN, vigente, candidatura OFFERED | Zona, servicio, tarifa (`deliveryFee`), ruta, direcciones y coordenadas, paquetes sin texto libre, mercancía (`goodsValue`, `goodsPaymentMode`, `driverAdvancesGoods` para COURIER_ADVANCE) |
+| OWNER | Mi proveedor tiene (o tenía al cancelarse) el claim | Lo anterior + contactos, instrucciones, descripción de paquetes, `deliveryRequestPublicId`, `externalReference` |
+| SUMMARY | Cualquier otro caso | Estado y fechas; `service = null` |
+
+Nunca se exponen a proveedores el IntegrationClient, otros candidatos ni secretos. SUPER_ADMIN consulta `GET /admin/dispatches` (filtros status, providerId, deliveryRequestPublicId) y `GET /admin/dispatches/:dispatchId` con candidatos y motivos.
+
+### Errores de dominio
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| DISPATCH_ALREADY_CLAIMED | 409 | Otro proveedor tiene el claim (incluye el perdedor de una carrera) |
+| DISPATCH_EXPIRED | 409 | `now >= expiresAt` sin claim |
+| DISPATCH_CANCELLED | 409 | Servicio cancelado |
+| DISPATCH_RECLAIM_NOT_ALLOWED | 409 | Mi proveedor liberó ese Dispatch |
+| DISPATCH_NOT_CLAIMED_BY_PROVIDER | 409 | Liberar sin tener el claim |
+| PROVIDER_NOT_ELIGIBLE | 409 | Proveedor no ACTIVE o cobertura INACTIVE al reclamar |
+| SERVICE_COVERAGE_EXISTS | 409 | Cobertura duplicada |
+
+### Base de datos y auditoría
+
+- Migración `20260917000800_dispatch_engine`: tablas `ProviderServiceCoverage`, `Dispatch`, `DispatchCandidate`; únicos `Dispatch.deliveryQuoteId`, `DispatchCandidate(dispatchId, providerId)`, `ProviderServiceCoverage(providerId, serviceZoneId, serviceType)`; índice parcial de un candidato CLAIMED por Dispatch; CHECK de coherencia de estados; triggers `Dispatch_guard` (sólo nace OPEN para una Quote ACCEPTED de su solicitud, identidad y ventana inmutables, transiciones válidas) y `DispatchCandidate_guard`.
+- Índices: `Dispatch(status, expiresAt)`, `Dispatch(claimedByProviderId, status)`, `Dispatch(deliveryRequestId)`, `Dispatch(createdAt, id)`, `DispatchCandidate(providerId, status, dispatchId)` y `ProviderServiceCoverage(serviceZoneId, serviceType, status)`; el único `(dispatchId, providerId)` cubre las búsquedas por Dispatch.
+- **Backfill:** las Quotes ACCEPTED anteriores a V1.7 reciben un Dispatch EXPIRED sin candidatos (o CANCELLED si su solicitud ya estaba cancelada), de modo que «ACCEPTED ⇒ Dispatch» se cumple para todos los datos. Nunca se ofrecen.
+- **Invariante ACCEPTED ⇒ Dispatch:** la Quote pasa a ACCEPTED y el Dispatch se inserta en la misma transacción (probado con un fallo forzado: la Quote sigue OFFERED). El único por `deliveryQuoteId` impide un segundo Dispatch en aceptaciones repetidas o simultáneas.
+- Eventos: `DISPATCH_OPENED` (candidateCount, noProviderAvailable), `DISPATCH_CLAIMED`, `DISPATCH_RELEASED` (reason), `DISPATCH_EXPIRED` (reason), `DISPATCH_CANCELLED`, `PROVIDER_COVERAGE_CREATED/UPDATED`, con `dispatchId`, `providerId`, `actorUserId`/`actorId` y marca de tiempo; sin tokens, contactos ni direcciones.
+
+Pruebas: `test/dispatch.spec.ts` (TTL, expiración, reglas de claim, apertura con y sin candidatos, cancelación, exposición por access, autorización del servicio) y `test/dispatch.e2e-spec.ts` (creación automática, candidatos A/B vs C otra zona, D suspendido y F cobertura inactiva, sin candidatos, aceptación repetida y concurrente, atomicidad, claim con login real, aislamiento y roles, múltiples memberships, liberación y no reclamo, liberaciones concurrentes, 3 rondas de 15 claims simultáneos de 5 proveedores, expiración, cancelación OPEN/CLAIMED, invariantes SQL y auditoría).
+
+## Provider Driver & Vehicle Assignment (V1.8-A)
+
+Responde: el proveedor ya reclamó el servicio, ¿**qué Driver y qué Vehicle** de su flotilla lo ejecutan?
+
+```text
+Dispatch CLAIMED (V1.7)
+      ↓
+PROVIDER_ADMIN → GET /provider/dispatches/:id/available-drivers | available-vehicles
+      ↓
+POST /provider/dispatches/:id/assignment  {driverId, vehicleId}
+      ↓
+DeliveryAssignment ACTIVE  (1 por Dispatch, 1 por Driver, 1 por Vehicle)
+      ↓  reassign (motivo)                ↓  cancel (motivo)
+nueva ACTIVE + anterior REASSIGNED    anterior CANCELLED, sin reemplazo
+```
+
+La asignación **no cambia el estado del Dispatch** (sigue CLAIMED) ni crea estados de ejecución. El Driver no acepta ni rechaza: el proveedor decide (V1.8 no tiene Driver App). Nada de GPS, tracking, sockets, push, wallet ni saldos de repartidor.
+
+### Historial, nunca sobrescritura
+
+`DeliveryAssignment` es una tabla de historial: reasignar **no** edita la fila, cierra la anterior e inserta una nueva. `Dispatch` no guarda `driverId`/`vehicleId`.
+
+| status | Significado |
+|---|---|
+| ACTIVE | Ejecuta el servicio ahora (máximo 1 por Dispatch) |
+| REASSIGNED | Reemplazada por otra asignación (`endedAt`, `endReason`, quién) |
+| CANCELLED | Liberada sin reemplazo, o cerrada por la cancelación del servicio |
+
+Las filas cerradas son inmutables y la identidad (`dispatchId`, `providerId`, `driverId`, `vehicleId`, `assignedAt`, `assignedByUserId`) nunca cambia: lo garantizan CHECKs y el trigger `DeliveryAssignment_guard`, no sólo el servicio.
+
+### Elegibilidad del Driver y del Vehicle
+
+Asignables sólo los recursos **del proveedor dueño del claim**: `Driver.status = ACTIVE` con `User.active = true`, `Vehicle.status = ACTIVE`, proveedor ACTIVE, ninguno con otra asignación ACTIVE y respetando el emparejamiento V1.4 (`DriverVehicleAssignment` vigente). Un recurso de otro proveedor responde **404** (no existe para quien pregunta), nunca 403 con detalles. Orden de comprobación: existencia → elegibilidad → ocupación → emparejamiento.
+
+`GET /provider/dispatches/:dispatchId/available-drivers` y `available-vehicles` (paginados) devuelven exactamente esos candidatos, con el vehículo/driver emparejado cuando existe.
+
+### Endpoints
+
+| Método | Ruta | Uso |
+|---|---|---|
+| POST | /provider/dispatches/:dispatchId/assignment | `{driverId, vehicleId}` → 201 ACTIVE |
+| POST | /provider/dispatches/:dispatchId/assignment/reassign | `{driverId, vehicleId, reason, reasonDetail?}` → 200 nueva ACTIVE |
+| POST | /provider/dispatches/:dispatchId/assignment/cancel | `{reason, reasonDetail?}` → 200 CANCELLED |
+| GET | /provider/dispatches/:dispatchId/assignments | Historial del Dispatch (sólo el dueño del claim) |
+| GET | /provider/dispatches/:dispatchId/available-drivers | Drivers asignables |
+| GET | /provider/dispatches/:dispatchId/available-vehicles | Vehicles asignables |
+| GET | /admin/dispatches/:dispatchId/assignments | SUPER_ADMIN: historial completo (auditoría) |
+
+Sólo **PROVIDER_ADMIN con membership** asigna; el proveedor sale de la membership (`?providerId=` sólo elige entre las propias). SUPER_ADMIN y DRIVER reciben 403 (el admin no opera flotillas ajenas; el Driver es V1.9) y el IntegrationClient 401: el cliente B2B no elige repartidor. `reason` ∈ `DRIVER_UNAVAILABLE | VEHICLE_ISSUE | OPERATIONAL_CHANGE | OTHER` (`OTHER` exige `reasonDetail` de 3–500); `DELIVERY_CANCELLED` está reservado a la cancelación oficial y es 400 si lo envía un proveedor.
+
+### Plazo de asignación
+
+`LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES` (1–1440, default **5**), por ServiceType (cada tipo nuevo añade su variable). `assignmentDeadline = claimedAt + TTL` y la señal derivada `assignmentOverdue` (CLAIMED sin asignación ACTIVE y `now > deadline`) aparecen en el detalle del Dispatch. **No** libera ni reasigna automáticamente: es visibilidad operativa, sin cron.
+
+### Contexto de pago del servicio
+
+La asignación devuelve `paymentContext` con datos V1.5/V1.6, sin mezclar dinero logístico y mercancía: `deliveryFee` (lo que cobra el proveedor), `goodsValue`, `goodsPaymentMode`, `driverAdvancesGoods` y `driverAdvanceAmount`. Con `COURIER_ADVANCE` el repartidor adelanta la mercancía al comercio y la recupera al entregar; **Mandaria no mueve ese dinero ni valida si el repartidor tiene efectivo** — es responsabilidad del proveedor. V1.8 no crea wallet, saldo ni crédito.
+
+### Protección del servicio en curso
+
+- **Liberar el Dispatch** (`/release`) con asignación ACTIVE → 409 `DISPATCH_HAS_ACTIVE_ASSIGNMENT`; hay que cancelar la asignación primero (queda auditado quién y por qué). Respaldo en `dispatch_guard`: la fila no puede salir de CLAIMED con una asignación ACTIVE.
+- **Cancelar la DeliveryRequest** (B2B o admin) cierra en la misma transacción la asignación ACTIVE con `endReason = DELIVERY_CANCELLED`, conservando el historial.
+- **Emparejamiento V1.4:** asignar o desasignar el vehículo de un Driver que está ejecutando una entrega → 409; primero se cierra la asignación de entrega.
+
+### Errores de dominio
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| DISPATCH_NOT_CLAIMED_BY_PROVIDER | 409 | El Dispatch no está CLAIMED por mi proveedor |
+| DISPATCH_ALREADY_ASSIGNED | 409 | Ya hay una asignación ACTIVE (usar reassign) |
+| NO_ACTIVE_ASSIGNMENT | 409 | Reasignar o cancelar sin asignación ACTIVE |
+| ASSIGNMENT_UNCHANGED | 409 | Reasignar al mismo Driver y Vehicle |
+| PROVIDER_NOT_ACTIVE | 409 | Proveedor suspendido |
+| DRIVER_NOT_ELIGIBLE / VEHICLE_NOT_ELIGIBLE | 409 | Recurso no ACTIVE (o cuenta del Driver inactiva) |
+| DRIVER_BUSY / VEHICLE_BUSY | 409 | Ya ejecuta otra entrega |
+| DRIVER_VEHICLE_MISMATCH | 409 | Contradice el emparejamiento V1.4 |
+| DISPATCH_HAS_ACTIVE_ASSIGNMENT | 409 | Liberar el claim con asignación ACTIVE |
+| ASSIGNMENT_CONFLICT | 409 | Carrera resuelta por PostgreSQL (perdedor de un empate) |
+
+### Base de datos y auditoría
+
+- Migración `20260917000900_delivery_assignments`: tabla `DeliveryAssignment` (crea 0 filas para datos existentes), FKs compuestas `(driverId, providerId)` y `(vehicleId, providerId)` que hacen imposible mezclar flotillas, **tres índices únicos parciales** `WHERE status = 'ACTIVE'` (por Dispatch, por Driver y por Vehicle), CHECKs de coherencia (`ACTIVE` sin datos de cierre; cerradas con `endedAt >= assignedAt` y motivo; `OTHER` con detalle), trigger `DeliveryAssignment_guard` (nace ACTIVE para un Dispatch CLAIMED del mismo proveedor; identidad inmutable; filas cerradas congeladas) y `dispatch_guard` ampliado con `DISPATCH_HAS_ACTIVE_ASSIGNMENT`.
+- Concurrencia: la transacción bloquea el Dispatch, el proveedor (SHARE), el Driver y el Vehicle en orden fijo; 10 asignaciones simultáneas sobre un Dispatch dejan exactamente 1 ACTIVE y 9 → 409, y el mismo Driver o Vehicle no puede quedar en dos Dispatches. Dos **reasignaciones** simultáneas no compiten: se serializan y la segunda parte de la nueva ACTIVE, de modo que el historial encadena los cambios (ambas responden 200) y sigue existiendo exactamente 1 ACTIVE.
+- Eventos: `DELIVERY_ASSIGNMENT_CREATED`, `DELIVERY_ASSIGNMENT_REASSIGNED` (recursos anteriores y nuevos, motivo) y `DELIVERY_ASSIGNMENT_CANCELLED`, con `assignmentId`, `dispatchId`, `providerId`, `driverId`, `vehicleId` y `actorUserId`; sin tokens, contraseñas, contactos del cliente ni montos de mercancía.
+
+Pruebas: `test/delivery-assignments.spec.ts` (plazo, TTL por ServiceType, contexto de pago, emparejamiento, guardas del servicio, cierre por cancelación) y `test/delivery-assignments.e2e-spec.ts` (recursos asignables y asignación con contexto de pago, aislamiento por proveedor y por dueño del claim, roles, emparejamiento V1.4 en ambos sentidos, recursos ocupados, reasignación con historial, protección de `/release`, cancelación del servicio, `assignmentOverdue`, 10 asignaciones simultáneas, carreras por Driver y por Vehicle, invariantes e inmutabilidad en PostgreSQL y auditoría sin secretos).
+
+## Independent Drivers (V1.9-A)
+
+Hasta V1.8 todo servicio se ejecutaba a través de un proveedor: el Dispatch se abre, un proveedor lo **reclama** y su administrador asigna Driver y Vehicle de su flotilla. V1.9 agrega un segundo modelo que **convive** con el anterior sin modificarlo: un repartidor habilitado por Mandaria **toma** el servicio por su cuenta, con un vehículo propio. Los dos caminos terminan en la misma `DeliveryAssignment`, no en motores paralelos.
+
+```text
+                    Dispatch OPEN
+                          │
+          ┌───────────────┴───────────────┐
+      Provider                      Independent Driver
+       CLAIM                              TAKE
+          │                                 │
+  (después) asignar Driver+Vehicle   claim + assignment atómicos
+          └───────────────┬───────────────┘
+                   EXACTAMENTE UNO
+                          ↓
+                 DeliveryAssignment ACTIVE
+```
+
+### El independiente no es un proveedor ficticio
+
+No se crea un `DeliveryProvider` de una persona, ni un ProviderMembership de sí mismo. La capacidad es explícita: `IndependentDriverProfile`, una extensión 1:1 del `Driver` existente que **no duplica** nada que ya viva en él (nombre, estado, disponibilidad, proveedor). Estados: `PENDING`, `APPROVED`, `SUSPENDED`, `REJECTED`. V1.9 no tiene alta pública, así que SUPER_ADMIN crea el perfil directamente en `APPROVED`; `PENDING` queda reservado para el onboarding futuro, que podrá usarse sin migrar datos.
+
+`ProviderType.INDEPENDENT` (V1.2) es otra cosa y no cambia: describe a un proveedor pequeño de una sola persona, con su flotilla y sus administradores. El repartidor independiente de V1.9 no tiene proveedor en su contexto de ejecución.
+
+### Los dos contextos de una misma persona
+
+Un `Driver` pertenece siempre a un proveedor (V1.4) y el aprovisionamiento de cuentas sigue siendo V1.6.1: V1.9 **no crea** Users ni Drivers, sólo habilita a uno existente. Por eso la misma persona puede operar en dos contextos, y **el contexto lo decide la ruta, nunca el payload**:
+
+| Contexto | Quién actúa | Ruta | Recursos que puede usar |
+|---|---|---|---|
+| Flotilla | PROVIDER_ADMIN del proveedor con el claim | `POST /provider/dispatches/:id/assignment` | Driver y Vehicle **de ese proveedor** |
+| Independiente | el propio repartidor (rol DRIVER) | `POST /driver/dispatches/:id/take` | sólo **sus** vehículos |
+
+No hay ambigüedad posible ni fuga entre contextos: un vehículo pertenece a un proveedor **XOR** a un perfil independiente (`Vehicle_owner_check`), la pertenencia se relee en la base de datos en cada operación y el trigger `delivery_assignment_guard` la comprueba por modo. Usar un vehículo de la flotilla en un `take` responde 404, y asignar un vehículo independiente desde una ruta de proveedor también. Un repartidor suspendido como independiente conserva intacto su perfil de flotilla, y al revés.
+
+### Vehículos propios
+
+SUPER_ADMIN da de alta los vehículos del repartidor siguiendo el patrón de los vehículos de proveedor. Quedan con `providerId` nulo e `independentDriverProfileId` del repartidor; el identificador es único dentro del repartidor (índice único parcial), el límite lo fija `INDEPENDENT_DRIVER_MAX_VEHICLES` y cuentan todos los vehículos, sea cual sea su estado. Así:
+
+```text
+Carlos — Independent Driver
+  MOTO-CARLOS-01  MOTORCYCLE  ACTIVE
+  AUTO-CARLOS-01  CAR         ACTIVE
+```
+
+V1.9 no implementa verificación documental del vehículo ni del repartidor.
+
+### Qué servicios admiten independientes
+
+No se asume que todo servicio pueda tomarlo un independiente. `SERVICE_EXECUTION_MODES` (en `independent-driver-policy.ts`) declara el modo por `ServiceType` y es **exhaustivo por construcción**: agregar un ServiceType no compila hasta decidir su modo, de forma que ningún servicio futuro queda disponible para independientes por omisión.
+
+| ServiceType | Modo | Motivo |
+|---|---|---|
+| `LOCAL_DELIVERY` | `BOTH` | Un paquete dentro de una zona es exactamente lo que hace un repartidor por cuenta propia, y V1.6 lo tarifa igual sin importar quién lo lleve. |
+
+Un servicio declarado `FLEET` no aparecería en el listado del repartidor y su `take` respondería 409 `DISPATCH_NOT_OPEN_TO_INDEPENDENT`. Freight y los demás tipos siguen fuera de alcance.
+
+### Elegibilidad para tomar un servicio
+
+Perfil independiente `APPROVED` + User activo + Driver `ACTIVE` + **ninguna** asignación ACTIVE (de cualquier modelo) + vehículo propio `ACTIVE` y libre + Dispatch `OPEN` dentro de su ventana + ServiceType que admita independientes + no haberlo liberado antes. V1.9 **no** introduce presencia en tiempo real: no existen ONLINE/OFFLINE ni heartbeat, porque no hay Driver App.
+
+### Endpoints
+
+| Método | Ruta | Rol | Qué hace |
+|---|---|---|---|
+| GET | `/admin/independent-drivers` | SUPER_ADMIN | Lista perfiles con su Driver y número de vehículos |
+| GET/POST | `/admin/drivers/:driverId/independent` | SUPER_ADMIN | Consulta / habilita (idempotente; reaprobar rehabilita) |
+| POST | `/admin/drivers/:driverId/independent/suspend` y `/reject` | SUPER_ADMIN | Retira la habilitación con motivo obligatorio |
+| GET/POST | `/admin/drivers/:driverId/independent/vehicles` | SUPER_ADMIN | Lista / da de alta vehículos propios |
+| PATCH | `/admin/drivers/:driverId/independent/vehicles/:vehicleId` | SUPER_ADMIN | Edita detalles o estado |
+| GET | `/driver/me` | DRIVER | Agrega `independent` y `activeDeliveryAssignment` |
+| GET | `/driver/vehicles` | DRIVER | Mis vehículos propios |
+| GET | `/driver/dispatches/available` | DRIVER | Servicios que puedo tomar (paginado) |
+| GET | `/driver/dispatches/:dispatchId` | DRIVER | Detalle de uno ofrecido o tomado por mí |
+| POST | `/driver/dispatches/:dispatchId/take` | DRIVER | Tomar el servicio (`vehicleId`) |
+| POST | `/driver/dispatches/:dispatchId/release` | DRIVER | Liberarlo con motivo obligatorio |
+
+Sólo SUPER_ADMIN habilita o suspende: PROVIDER_ADMIN no puede, un DRIVER no puede autoaprobarse y un token B2B no sirve en ninguna de estas rutas (401). SUPER_ADMIN tiene visibilidad y auditoría, pero **no** puede tomar ni liberar un servicio haciéndose pasar por el repartidor (403).
+
+### Privacidad del repartidor
+
+Dos niveles, equivalentes a los del proveedor en V1.7:
+
+- **OFFER** (puedo tomarlo): ruta, direcciones con coordenadas, paquetes sin texto libre y contexto de pago. Sin contactos, sin instrucciones, sin referencia del comercio.
+- **OWNER** (lo tomé): se agregan contactos, instrucciones, descripciones de paquete y el `publicId` del pedido.
+
+Las consultas del repartidor usan un `select` propio que ni siquiera lee `DispatchCandidate`, `claimedByProviderId` ni el IntegrationClient, de modo que la relación comercial de un proveedor no puede filtrarse por descuido.
+
+### Serialización con la suspensión
+
+`take` bloquea la fila del perfil independiente junto con la del `Driver` (`FOR UPDATE OF d, p`), que es la misma fila que bloquea la suspensión. Orden de bloqueo: Dispatch → perfil + Driver → Vehicle; la suspensión sólo toma el bloqueo del perfil, así que no hay ciclo posible. Con eso las dos operaciones son mutuamente excluyentes: si la suspensión llega primero, el `take` lee `SUSPENDED` bajo bloqueo y responde 409 sin escribir nada; si el `take` llega primero, la suspensión espera y encuentra la asignación ACTIVE (409 `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT`). El CHECK V1.9-A demostró que sin ese bloqueo quedaba un repartidor suspendido ejecutando un servicio (ver [VERIFICATION.md](VERIFICATION.md)).
+
+Por la misma razón, `take` y `release` construyen su respuesta sin repetir la comprobación de habilitación: su trabajo ya está confirmado, y una suspensión posterior no debe convertir una operación exitosa en un error. Y cualquier `RAISE EXCEPTION` de los triggers se traduce a 409 `TAKE_CONFLICT`: perder una carrera es un conflicto, nunca un 5xx.
+
+### Take = claim + assignment, atómico
+
+`take` es **una sola transacción**. Bloquea `FOR UPDATE` la misma fila de Dispatch que bloquea el claim de proveedor, valida repartidor, vehículo, Dispatch y elegibilidad, pone el Dispatch en `CLAIMED` a nombre del repartidor y crea la `DeliveryAssignment` ACTIVE en modo `INDEPENDENT`. Si algo falla, no queda nada:
+
+- nunca un **claim independiente sin asignación ACTIVE** (misma transacción);
+- nunca una **asignación independiente sin claim**: `delivery_assignment_guard` reexamina en SQL que el Dispatch esté CLAIMED por ese mismo repartidor.
+
+`release` es igual de atómico en sentido inverso: la asignación ACTIVE pasa a `CANCELLED` con motivo y **después** el Dispatch vuelve a `OPEN` (o `EXPIRED` si la ventana ya cerró) con el claim limpio. El orden importa y `dispatch_guard` rechaza el contrario con `DISPATCH_HAS_ACTIVE_ASSIGNMENT`.
+
+### Dueño del claim: exactamente uno
+
+`Dispatch` no sobrecarga `claimedByProviderId` con un id de Driver. V1.9 agrega `claimedByIndependentDriverId` con su propia FK, y `Dispatch_values_check` exige que un Dispatch CLAIMED tenga **exactamente un** dueño (`num_nonnulls(...) = 1`), nunca los dos. Lo mismo en la asignación: `mode` decide qué columna de dueño se llena (`DeliveryAssignment_mode_check`), así que un ejecutor independiente **no** arrastra un `providerId` falso.
+
+### Sin reasignación para el repartidor
+
+Un repartidor no puede pasarle el servicio a otro: no existe endpoint de reasignación para el rol DRIVER y las rutas de proveedor de V1.8 le responden 403. Debe liberar; después podrá tomarlo otro actor. Quien libera no puede volver a tomar ese mismo Dispatch (paridad con `DISPATCH_RECLAIM_NOT_ALLOWED` de V1.7). Un PROVIDER_ADMIN tampoco puede apropiarse ni reasignar un servicio tomado por un independiente: recibe 409 `DISPATCH_NOT_CLAIMED_BY_PROVIDER`.
+
+### Una entrega a la vez, en los dos modelos
+
+Los tres índices únicos parciales de V1.8 (`WHERE status = 'ACTIVE'`, por Dispatch, por Driver y por Vehicle) son **globales**: no distinguen modo. Por eso, sin añadir reglas nuevas, un repartidor ocupado en un servicio de proveedor no puede tomar uno propio y al revés, y un vehículo ejecuta una entrega a la vez. `GET /driver/me` lo resume en `independent.canTakeServices`.
+
+### Contexto de pago
+
+`take` y el listado devuelven el mismo `paymentContext` de V1.8: `deliveryFee`, `goodsValue`, `goodsPaymentMode`, `driverAdvancesGoods` y `driverAdvanceAmount`. Con `COURIER_ADVANCE` el repartidor sabe **antes** de tomar el servicio cuánto tendrá que adelantar al comercio:
+
+```text
+Mercancía: $800.00   ->  driverAdvanceAmount 800.00
+Envío:     $60.00    ->  deliveryFee          60.00
+```
+
+Mandaria no mueve ese dinero ni comprueba si el repartidor dispone de él: **no hay wallet, saldo ni crédito** en V1.9.
+
+### Plazo de asignación
+
+`assignmentDeadline` / `assignmentOverdue` es un concepto de flotilla: mide el hueco entre reclamar y asignar. Un `take` cierra ese hueco dentro de la misma transacción, así que un claim independiente informa siempre `null` / `false` en vez de inventar una obligación que no puede incumplirse.
+
+### Servicio en curso: no se rompe en silencio
+
+Suspender o rechazar a un repartidor con una asignación ACTIVE responde **409 `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT`** y no cambia nada; desactivar su vehículo, **409 `VEHICLE_HAS_ACTIVE_ASSIGNMENT`**. V1.9 prefiere rechazar la operación administrativa antes que cancelar por detrás una entrega en curso: primero se termina el servicio (lo libera el repartidor, o se cancela la DeliveryRequest) y después se suspende. Ambas reglas están además forzadas en PostgreSQL por `independent_driver_profile_guard`.
+
+### Errores de dominio (`code`)
+
+`INDEPENDENT_NOT_APPROVED`, `DRIVER_NOT_ELIGIBLE`, `INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT`, `DISPATCH_ALREADY_CLAIMED`, `DISPATCH_EXPIRED`, `DISPATCH_CANCELLED`, `DISPATCH_NOT_OPEN_TO_INDEPENDENT`, `DISPATCH_RETAKE_NOT_ALLOWED`, `DISPATCH_NOT_CLAIMED_BY_DRIVER`, `DRIVER_BUSY`, `VEHICLE_BUSY`, `VEHICLE_NOT_ELIGIBLE`, `VEHICLE_HAS_ACTIVE_ASSIGNMENT`, `VEHICLE_LIMIT_REACHED` y `TAKE_CONFLICT`. Todos 409; los recursos ajenos o inexistentes son 404 y nunca revelan que existen.
+
+### Base de datos y auditoría
+
+- Migración `20260918001000_independent_drivers`, incremental desde V1.8 y **sin reset**: no reescribe ninguna fila. Toda `DeliveryAssignment` existente queda `mode = 'FLEET'` con su `providerId` por el DEFAULT, y todo `Vehicle` conserva su proveedor.
+- Objetos nuevos: tabla `IndependentDriverProfile` con sus CHECKs de coherencia; `Vehicle_owner_check` (dueño excluyente) e índice único parcial `Vehicle_independent_identifier_key`; `DeliveryAssignment_mode_check`; `Dispatch_values_check` ampliado con el XOR del dueño del claim; triggers `Driver_owner_guard`, `Vehicle_owner_guard` e `IndependentDriverProfile_guard`; `delivery_assignment_guard` y `dispatch_guard` ampliados a los dos modelos.
+- **Cambio sobre V1.8:** las FKs compuestas `DeliveryAssignment_(driverId|vehicleId)_providerId_fkey` se retiran, porque con `providerId` nulo PostgreSQL las omitiría en silencio (MATCH SIMPLE) y dejarían de garantizar nada. Las sustituyen FKs simples a `Driver` y `Vehicle`, la comprobación de pertenencia por modo dentro de `delivery_assignment_guard` y la **inmutabilidad del dueño** de Drivers y Vehicles. El conjunto es más estricto que antes: la pertenencia se prueba en cada escritura y, además, un Driver ya no puede cambiar de proveedor ni un Vehicle de dueño.
+- Concurrencia: `take` y `claim` compiten por el mismo bloqueo de fila, de modo que un CLAIM de proveedor y un TAKE independiente simultáneos dejan exactamente un dueño; varios independientes sobre un Dispatch dejan uno; el mismo repartidor o el mismo vehículo sobre dos Dispatches quedan ACTIVE en uno solo.
+- Eventos: `INDEPENDENT_DRIVER_ENABLED`, `INDEPENDENT_DRIVER_SUSPENDED`, `INDEPENDENT_DRIVER_REJECTED`, `INDEPENDENT_DISPATCH_TAKEN`, `INDEPENDENT_DISPATCH_RELEASED`, `INDEPENDENT_VEHICLE_CREATED`, `INDEPENDENT_VEHICLE_UPDATED` e `INDEPENDENT_VEHICLE_STATUS_CHANGED`, con `profileId`, `driverId`, `dispatchId`, `vehicleId`, `assignmentId` y `actorUserId` según corresponda; sin tokens, contraseñas ni contactos del cliente.
+
+Pruebas: `test/independent-drivers.spec.ts` (política de ejecución por ServiceType, orden de rechazo del `take`, motivos de liberación, plazo que no aplica, habilitación idempotente, suspensión con servicio activo, límite de vehículos, identidad tomada del JWT) y `test/independent-drivers.e2e-spec.ts` (habilitación y permisos negativos, vehículos propios, privacidad del listado, take con contexto de pago, vehículo ajeno en ambos sentidos, repartidor suspendido, release y retake, ausencia de reasignación, carrera flotilla vs independiente, varios independientes, mismo repartidor y mismo vehículo en paralelo, ocupado en un modelo frente al otro, suspensión y desactivación con servicio en curso, invariantes en PostgreSQL y auditoría sin secretos).
+
+## Credit Accounts & Immutable Ledger (V1.10-A)
+
+V1.10-A crea la base contable de los créditos Mandaria: cuentas y un historial inmutable de movimientos. **Todavía no cobra nada:** CLAIM de proveedor y TAKE independiente siguen funcionando exactamente igual, con o sin créditos, y no escriben en el ledger. El consumo por servicio llega en V1.10-D; la política de costo (V1.10-B) tampoco existe aún.
+
+### Créditos no son dinero
+
+Un crédito es el **derecho comercial a adjudicarse servicios** dentro de Mandaria. No es la tarifa del envío (`deliveryFee`), ni el valor de la mercancía (`goodsValue`), ni efectivo del repartidor, ni un wallet. Por eso son **enteros**, no llevan moneda y ningún campo de créditos usa decimales o `MXN`:
+
+```text
+ORDER / DELIVERY MONEY   ≠   MANDARIA CREDITS
+deliveryFee 60.00 MXN        balance 500
+goodsValue 800.00 MXN        amount -7
+```
+
+### Quién tiene cuenta
+
+| Dueño | Cuándo se crea | Notas |
+|---|---|---|
+| **Proveedor** | Al crearse el proveedor, por cualquier vía (API, seed, SQL) | Una por proveedor. La usan todos sus Drivers de flotilla, que **no** tienen cuenta propia. |
+| **Repartidor independiente** | La primera vez que su perfil llega a `APPROVED` | Pertenece a la capacidad independiente, no al User. Se conserva si después queda `SUSPENDED` o `REJECTED`. |
+
+La creación la hacen triggers de PostgreSQL (`DeliveryProvider_credit_account`, `IndependentDriverProfile_credit_account`) con `ON CONFLICT DO NOTHING`, así que es atómica con el dueño e idempotente: reaprobar a un repartidor nunca crea una segunda cuenta. Una cuenta **nace con saldo 0** (un trigger rechaza cualquier otro valor).
+
+**Datos existentes:** la migración creó una cuenta con saldo 0 para cada proveedor existente y para cada perfil independiente que **haya sido aprobado alguna vez** (`approvedAt` no nulo; la misma regla que aplica el trigger en adelante). **No** escribió ningún movimiento: una cuenta vacía no tiene historia económica, e inventar una `RECHARGE` registraría un pago que nadie hizo.
+
+### Sin estado propio de la cuenta (decisión)
+
+No se añadió `ACTIVE`/`SUSPENDED` a la cuenta. En V1.10-A sería redundante: el dueño ya tiene estado operativo (`DeliveryProvider.status`, `IndependentDriverProfile.status`), no existe todavía ningún débito automático que bloquear, y las recargas y ajustes son decisiones explícitas de SUPER_ADMIN. Un estado de cuenta sin nadie que lo consulte sería superficie sin uso. Si V1.10-D necesita congelar créditos de forma distinta a la suspensión operativa, se añadirá entonces con un consumidor concreto.
+
+Consecuencia documentada: **suspender a un proveedor o a un repartidor no borra ni congela su saldo ni su historial**, y SUPER_ADMIN puede seguir recargando o ajustando esa cuenta.
+
+### Límites
+
+| Límite | Valor | Dónde |
+|---|---|---|
+| Créditos por movimiento | 1 – 1 000 000 | DTO + CHECK `CreditLedgerEntry_amount_check` |
+| Saldo máximo | 1 000 000 000 | servicio + CHECK `CreditAccount_balance_check` |
+| Saldo mínimo | 0 | servicio + CHECK (nunca negativo) |
+
+Con ambos límites, `balanceBefore + amount` siempre cabe en un `INTEGER` de 32 bits: ninguna operación puede desbordarse. Los límites son constantes (`src/credits/credit-policy.ts`), no variables de entorno; V1.10-A no añade ninguna variable a `.env.example`.
+
+### Ledger
+
+Cada movimiento es una fila `CreditLedgerEntry` con `amount`, `balanceBefore`, `balanceAfter`, tipo, actor y motivo. Convención de signo única, forzada por CHECK:
+
+| Tipo | Signo | Uso en V1.10-A |
+|---|---|---|
+| `RECHARGE` | siempre `+` | Sí: recarga manual |
+| `ADMIN_ADJUSTMENT` | `+` o `−`, nunca 0 | Sí: corrección con motivo |
+| `SERVICE_AWARD` | siempre `−` | Reservado (cobro al adjudicar) |
+| `SERVICE_REFUND` | siempre `+` | Reservado (devolución) |
+
+`RECHARGE -500` o cualquier movimiento de 0 los rechaza la base. No hay columna `metadata` libre: lo que habría ido ahí son columnas tipadas (`rechargeMethod`, `externalReference`, `reason`, `referenceType`/`referenceId`), para no guardar datos arbitrarios y que OpenAPI publique cada campo con su tipo.
+
+**Inmutable en PostgreSQL, no sólo en la API.** `UPDATE` sobre el ledger se rechaza siempre; `DELETE` y `TRUNCATE` también. La única excepción es para bases de prueba desechables: en una base cuyo nombre termina en `_test`, una transacción que ejecuta `SET LOCAL mandaria.ledger_purge = 'test-fixtures'` puede **borrar** (nunca editar) entradas, para que las suites automáticas limpien lo que crearon. En cualquier otra base (desarrollo, producción) el interruptor no tiene efecto y el `DELETE` se rechaza siempre (migración `20260921001200_credit_ledger_purge_test_only`, corrección del CHECK V1.10-A). La aplicación nunca lo usa ni puede usarlo. Una cuenta con historia no se puede borrar (FK `RESTRICT`); una cuenta sin movimientos sigue a su dueño.
+
+**El saldo sólo se mueve a través del ledger.** `CreditAccount.balance` está materializado para lecturas rápidas y para el cobro futuro, pero insertar una entrada **es** el movimiento: el trigger `CreditLedgerEntry_apply` actualiza el saldo en la misma sentencia, sólo si la cuenta todavía tiene exactamente `balanceBefore`. Un `UPDATE "CreditAccount" SET balance = ...` directo desde cualquier cliente lo rechaza `CreditAccount_guard` (`CREDIT_BALANCE_WITHOUT_LEDGER`). Así, el ledger ordenado por `sequence` es una cadena sin huecos: `balanceBefore + amount = balanceAfter` en cada fila, cada `balanceAfter` es el `balanceBefore` de la siguiente, y la última coincide con el saldo.
+
+### Movimiento atómico y concurrencia
+
+```text
+BEGIN
+  SELECT balance FROM "CreditAccount" WHERE id = … FOR UPDATE   -- bloquea la cuenta
+  ¿Idempotency-Key ya usada?  → devolver el original
+  balanceAfter = balanceBefore + amount   -- < 0 → 409 INSUFFICIENT_CREDITS
+  INSERT CreditLedgerEntry                -- el trigger mueve el saldo
+COMMIT                                    -- cualquier fallo: ROLLBACK completo
+```
+
+El bloqueo de fila serializa todos los movimientos de una cuenta: con saldo 10, dos débitos simultáneos de 8 terminan en **uno aplicado, uno rechazado y saldo 2**, nunca −6. Aunque otro escritor se saltara el bloqueo, el trigger rechaza una entrada construida sobre un saldo ya obsoleto (`CREDIT_LEDGER_STALE`), y los CHECK impiden un saldo negativo.
+
+### Idempotencia
+
+Recargas y ajustes exigen la cabecera `Idempotency-Key` (8–255 caracteres ASCII visibles), con el mismo contrato que la creación B2B de DeliveryRequest:
+
+| Situación | Respuesta |
+|---|---|
+| Key nueva | `201`, `Idempotent-Replayed: false`, movimiento aplicado |
+| Misma key + mismo cuerpo | `200`, `Idempotent-Replayed: true`, **el movimiento original**, nada se aplica otra vez |
+| Misma key + cuerpo distinto (o recarga vs. ajuste) | `409 CREDIT_IDEMPOTENCY_CONFLICT` |
+| Sin key o mal formada | `400` |
+
+La key es **única por cuenta** y vive en el propio ledger (índice único `CreditLedgerEntry_creditAccountId_idempotencyKey_key`), no en `ApiIdempotencyRecord`, porque el actor es un SUPER_ADMIN humano y no un IntegrationClient. Se guarda sólo una huella SHA-256 del cuerpo. Un doble clic, un reintento del navegador o de red nunca recarga dos veces: la key se revisa antes, se revisa otra vez bajo el bloqueo, y el índice único resuelve el caso de dos copias que corren en paralelo. Mandaria Web debe generar una key nueva por cada operación intencional. CORS expone `Idempotent-Replayed` para que el navegador pueda leerla.
+
+### Endpoints
+
+| Método | Ruta | Rol |
+|---|---|---|
+| GET | `/admin/providers/:providerId/credits` | SUPER_ADMIN |
+| GET | `/admin/providers/:providerId/credits/ledger` | SUPER_ADMIN |
+| POST | `/admin/providers/:providerId/credits/recharge` | SUPER_ADMIN |
+| POST | `/admin/providers/:providerId/credits/adjustment` | SUPER_ADMIN |
+| GET | `/admin/drivers/:driverId/independent/credits` | SUPER_ADMIN |
+| GET | `/admin/drivers/:driverId/independent/credits/ledger` | SUPER_ADMIN |
+| POST | `/admin/drivers/:driverId/independent/credits/recharge` | SUPER_ADMIN |
+| POST | `/admin/drivers/:driverId/independent/credits/adjustment` | SUPER_ADMIN |
+| GET | `/provider/credits`, `/provider/credits/ledger` | PROVIDER_ADMIN (sólo su proveedor) |
+| GET | `/driver/credits`, `/driver/credits/ledger` | DRIVER independiente (sólo su cuenta) |
+
+- **Recarga:** `{ credits, method: TRANSFER|CASH|OTHER, externalReference?, reason? }`. `credits` entero de 1 a 1 000 000. `method` registra cómo se pagó **fuera** de Mandaria: no es una pasarela y Mandaria no verifica el pago; SUPER_ADMIN declara que se confirmó. `OTHER` exige `reason`.
+- **Ajuste:** `{ amount, reason }`. Entero con signo, nunca 0, motivo obligatorio. Es una operación separada de la recarga. Si dejaría el saldo negativo responde `409 INSUFFICIENT_CREDITS` y no aplica nada.
+- **Historial:** paginado (máx. 100 por página), del más reciente al más antiguo por `sequence`. SUPER_ADMIN ve además quién registró cada movimiento y con qué Idempotency-Key; el dueño de la cuenta ve importes, saldos y motivos, pero no esos datos internos. La huella del cuerpo no se expone a nadie.
+
+La cuenta siempre se resuelve desde el dueño que nombra la ruta (y que los guards autorizan) o desde el JWT: el cuerpo **no** acepta `ownerType`, `providerId`, `balance` ni ids de cuenta (400 por campo desconocido). PROVIDER_ADMIN y DRIVER no tienen rutas de mutación. Un proveedor nunca ve la cuenta de otro (403). Un Driver de flotilla no tiene cuenta propia (`404 CREDIT_ACCOUNT_NOT_FOUND`). Un token B2B no sirve en ninguna ruta de créditos (401): los IntegrationClients no conocen los créditos en esta versión. SUPER_ADMIN administra, pero no usa las rutas propias de proveedor o repartidor (403).
+
+Un repartidor independiente puede **consultar** su cuenta aunque su perfil esté `SUSPENDED` o `REJECTED` (el prompt pedía `APPROVED`): su saldo y su historia se conservan, y ocultárselos contradiría esa conservación. Si podrá **operar** con esos créditos se decide cuando exista el cobro (V1.10-D).
+
+### Errores (`code`)
+
+`INSUFFICIENT_CREDITS`, `CREDIT_BALANCE_LIMIT`, `CREDIT_IDEMPOTENCY_CONFLICT` y `CREDIT_MOVEMENT_CONFLICT` (una guarda de PostgreSQL se disparó; reintentar con la misma key) son 409 y nunca aplican nada. `CREDIT_ACCOUNT_NOT_FOUND` es 404. Motivos y referencias rechazan caracteres de control (Unicode `Cc`), para que nunca puedan falsificar una línea de log.
+
+### Auditoría
+
+`CREDIT_RECHARGED` y `CREDIT_ADJUSTED` registran `actorUserId`, `creditAccountId`, `ownerType`, `ownerId`, `entryId`, `sequence`, `amount`, `balanceBefore`, `balanceAfter`, `rechargeMethod` y `externalReference`. También `CREDIT_MOVEMENT_REPLAYED`, `CREDIT_IDEMPOTENCY_CONFLICT` y `CREDIT_MOVEMENT_REJECTED`. Nunca tokens, contraseñas, secretos B2B ni credenciales SMTP.
+
+### Base de datos
+
+Migración `20260921001100_credit_accounts_ledger`, incremental desde V1.9 y **sin reset**: sólo añade tablas; ninguna fila existente cambia. Objetos: CHECK `CreditAccount_owner_check` (dueño coherente con `ownerType`, exactamente uno), `CreditAccount_balance_check`, `CreditLedgerEntry_amount_check` (aritmética, límites, nunca 0), `CreditLedgerEntry_type_check` (signo y campos obligatorios por tipo), `CreditLedgerEntry_text_check`; índices únicos por proveedor, por perfil independiente y por (cuenta, Idempotency-Key); triggers `CreditAccount_guard`, `CreditLedgerEntry_apply`, `CreditLedgerEntry_guard`, `CreditLedgerEntry_no_truncate` y los dos de creación de cuenta.
+
+Pruebas: `test/credits.spec.ts` (convención de signo, límites y desbordamiento, validación estricta de enteros, motivo con OTHER, caracteres de control, campos de dueño forjados, Idempotency-Key, vistas sin huella ni datos internos, saldo insuficiente bajo bloqueo, replay y conflicto de key, guarda de PostgreSQL traducida a 409) y `test/credits.e2e-spec.ts` (creación de cuentas por cualquier vía, cuenta independiente al aprobar y conservada, Driver de flotilla sin cuenta, recarga, replay y conflicto, ajustes, rechazo de cero/decimales/texto/cantidades absurdas/campos forjados, aislamiento por rol y por proveedor, paginación, inmutabilidad por SQL, 16 ataques directos a la base, concurrencia de recargas, doble débito, movimientos mixtos y una misma key en paralelo, CLAIM y TAKE con saldo 0 sin tocar el ledger, suspensión que conserva el saldo, y auditoría sin secretos).
+
+## Credit Policy Engine (V1.10-B)
+
+Responde: **¿cuántos créditos cuesta adjudicarse un servicio?** V1.10-B define políticas versionadas y **sólo calcula**: CLAIM y TAKE todavía **no** consumen créditos, no se escribe ningún SERVICE_AWARD y ninguna cuenta cambia de saldo (el cobro empieza en V1.10-D; el snapshot del costo en el Dispatch es V1.10-C).
+
+```text
+serviceType + actorType ──► política ACTIVE (única) ──┐
+distancia canónica (metros enteros, ya calculada) ────┴──► calculateCreditCost ──► credits (entero)
+```
+
+### Actor y tipos de cálculo
+
+`actorType` es **quién paga**, con el mismo enum de las cuentas V1.10-A: `PROVIDER` (el proveedor, también cuando ejecuta un Driver de su flotilla) o `INDEPENDENT_DRIVER`. Nunca un `DRIVER` genérico. `serviceType` usa el enum real (hoy sólo `LOCAL_DELIVERY`); el motor no asume ningún tipo de cálculo por servicio.
+
+| calculationType | Campos (sólo éstos; cualquier otro → 400) | Costo |
+|---|---|---|
+| `PER_KM` | `creditsPerKm` 1–1 000 000, `minimumCredits` 0–1 000 000 | `max(ceil(distanceMeters / 1000) × creditsPerKm, minimumCredits)` |
+| `FLAT` | `flatCredits` 1–1 000 000 | `flatCredits`, cualquiera sea la distancia |
+| `DISTANCE_RANGE` | `ranges` (1–50) | `credits` del único rango que contiene la distancia |
+
+Ejemplo `PER_KM` 1 crédito/km, mínimo 3: 0 m → 3; 800 m → ceil(0,8) = 1 → max(1, 3) = **3**; 1001 m → 2 km → **3**; 6240 m → 6,24 km → 7 km facturables → **7**.
+
+**Rangos `[min, max)`** (mínimo inclusivo, máximo exclusivo, metros enteros; igual que las bandas de tarifa V1.6): el primero empieza en 0, cada uno empieza donde termina el anterior y **sólo el último es abierto** (`maxDistanceMeters: null`, «en adelante»). Así cualquier distancia ≥ 0 cae en exactamente un rango. Ejemplo `[0,3000)→3`, `[3000,5000)→5`, `[5000,10000)→8`, `[10000,∞)→15`: 2999 m → 3, **3000 m → 5**, 4999 m → 5, **5000 m → 8**, 10000 m → 15. Huecos, solapes, un primer rango que no empieza en 0 o un último cerrado se rechazan (400 en la API y trigger en PostgreSQL).
+
+**Enteros y límites.** Todo es aritmética entera (`ceil` se calcula con resto entero, sin coma flotante). La distancia debe ser un entero de 0 a 2 147 483 647 m (`CREDIT_DISTANCE_INVALID` si no: negativa, decimal, NaN, Infinity, texto, cadena vacía o parámetro repetido → 400 en la API). Un costo mayor que 1 000 000 créditos —el límite de un movimiento del ledger V1.10-A— es 422 `CREDIT_COST_OUT_OF_RANGE`, nunca se trunca. Con `minimumCredits: 0` y 0 m el costo es 0: V1.10-D deberá decidir cómo registrar un servicio de costo 0 (el ledger no admite movimientos de 0).
+
+**Distancia canónica.** El cálculo recibe los metros que Mandaria ya obtuvo para el servicio; nunca vuelve a llamar a Google Routes, `local_fake` ni otro proveedor de routing. Es **determinista**: misma versión + misma distancia → mismo resultado; no depende del reloj, del saldo, del proveedor ni del repartidor.
+
+**Sin política no hay servicio gratis.** Si no hay política ACTIVE para la combinación, `CREDIT_POLICY_UNAVAILABLE` (409). Nunca se asume 0 créditos.
+
+### Versionado, vigencia e inmutabilidad
+
+- **Una política ACTIVE como máximo** por `serviceType + actorType`, garantizado por un índice único parcial en PostgreSQL.
+- **Versiones monótonas** (1, 2, 3…) por combinación, siempre `máximo + 1` calculado por el servidor y comprobado por trigger: el cliente nunca envía `version`, `status`, fechas ni autor (400).
+- **Nunca se edita una versión.** Cambiar la economía crea una versión nueva: en una transacción, bajo un bloqueo por combinación, la ACTIVE pasa a INACTIVE con `effectiveUntil = ahora` y la nueva nace ACTIVE con `effectiveFrom = ahora`. Nunca coexisten dos ACTIVE ni queda un estado a medias. Las INACTIVE son historial permanente: no se reactivan (para volver a condiciones anteriores se crea otra versión con ellas).
+- **Vigencia sin programación.** `effectiveFrom`/`effectiveUntil` los fija el servidor al activar y al reemplazar, así que responden de forma exacta qué versión regía en cada instante. No hay activación futura ni scheduler (fuera de alcance, por simplicidad y determinismo).
+- **Concurrencia.** Una versión nueva se basa en la ACTIVE (`/:id/versions` con su id). Si otra solicitud la reemplazó antes, `CREDIT_POLICY_VERSION_CONFLICT` (409) y no se escribe nada: 10 solicitudes simultáneas → 1 versión nueva y 9 conflictos. Dos creaciones iniciales simultáneas → una v1 y `CREDIT_POLICY_EXISTS`. Sin DELETE, PATCH ni PUT.
+
+### Endpoints (sólo SUPER_ADMIN)
+
+| Método | Ruta | Uso |
+|---|---|---|
+| GET | `/admin/credit-policies` | Historial completo (ACTIVE e INACTIVE); filtros `serviceType`, `actorType`, `status`; paginado |
+| GET | `/admin/credit-policies/:id` | Configuración completa, rangos incluidos |
+| POST | `/admin/credit-policies` | Versión 1 de una combinación sin políticas (409 `CREDIT_POLICY_EXISTS` si ya tiene) |
+| POST | `/admin/credit-policies/:id/versions` | Nueva versión desde la ACTIVE `:id` (conserva `serviceType` y `actorType`) |
+| GET | `/admin/credit-policies/calculation?serviceType=&actorType=&distanceMeters=` | Resuelve la ACTIVE y calcula; sólo lectura |
+
+PROVIDER_ADMIN y DRIVER reciben 403 y el IntegrationClient 401: no leen las reglas comerciales; en versiones posteriores recibirán sólo el `creditCost` del servicio. Internamente, `CreditPoliciesService.resolveActivePolicy()` y la función pura `calculateCreditCost({ policy, distanceMeters })` son la interfaz que usarán V1.10-C/D.
+
+### Base de datos, seed y auditoría
+
+- Migración `20260922001300_credit_policies`: tablas `CreditPolicy` y `CreditPolicyRange`; únicos `(serviceType, actorType, version)`, `(creditPolicyId, position)` y `(creditPolicyId, minDistanceMeters)`; índice parcial `CreditPolicy_active_key`; CHECKs de versión > 0, coherencia estado/vigencia y **exactamente los campos del tipo de cálculo** (con `IS NOT NULL` explícitos: un CHECK que evalúa a NULL pasaría); triggers de versión `máximo + 1`, nacimiento ACTIVE, inmutabilidad (sólo ACTIVE → INACTIVE con `effectiveUntil`), prohibición de DELETE/TRUNCATE y un trigger **diferido** que al COMMIT exige rangos completos y contiguos (y sin rangos en PER_KM/FLAT), lo que también impide añadir rangos a una política existente. La migración **no crea políticas** ni toca cuentas o ledger.
+- Borrado sólo en bases `*_test` con el mismo interruptor que el ledger (`mandaria.ledger_purge = 'test-fixtures'`), para que las suites limpien sus fixtures.
+- **Política inicial:** configuración, no migración. En local, `npm run db:seed:local-credit-policies` (LOCAL/TEST ONLY, idempotente, nunca edita una política existente) crea v1 `LOCAL_DELIVERY` `PER_KM` 1 crédito/km, mínimo 3, para `PROVIDER` y para `INDEPENDENT_DRIVER`, atribuidas al SUPER_ADMIN de bootstrap. En producción las crea explícitamente un SUPER_ADMIN con `POST /admin/credit-policies`; hasta entonces el cálculo responde `CREDIT_POLICY_UNAVAILABLE`.
+- Eventos `CREDIT_POLICY_CREATED` y `CREDIT_POLICY_VERSIONED` (versión anterior y nueva) con la configuración completa, `effectiveFrom` y `actorUserId`; cada fila guarda `createdByUserId`. Con eso se reconstruye quién, cuándo, qué versión y qué configuración.
+
+Pruebas: `test/credit-policies.spec.ts` (PER_KM 0/1/999/1000/1001/6240 m con mínimo, casos donde el mínimo ya no domina, FLAT, fronteras de rangos, validación de campos por tipo, huecos/solapes, distancia inválida, desbordamiento, determinismo con reloj falso, fallo cerrado y pureza respecto a cuentas) y `test/credit-policies.e2e-spec.ts` (autorización, fallo cerrado, creación y campos falsificados, cálculo por HTTP, versionado v1→v4 con historial intacto, conflicto al versionar desde una INACTIVE, fronteras por HTTP, 10 versiones simultáneas, cadenas concurrentes, creaciones iniciales simultáneas, 28 ataques SQL rechazados y ledger/saldos intactos tras los cálculos).
+
+## Dispatch Credit Snapshot (V1.10-C)
+
+Responde: **¿cuántos créditos costaba este servicio, para cada actor, en el momento en que se abrió?** Al abrirse un Dispatch se congela el costo por actor con la política ACTIVE de ese instante. **V1.10-C no cobra:** CLAIM y TAKE no consumen créditos, no se escribe SERVICE_AWARD ni SERVICE_REFUND y ningún saldo cambia (el cobro es V1.10-D y usará este snapshot, nunca la política vigente).
+
+```text
+aceptar cotización ─► (misma transacción) Dispatch OPEN ─► por cada actor permitido:
+    política ACTIVE (serviceType, actor) + DeliveryQuote.distanceMeters ─► calculateCreditCost ─► DispatchCreditSnapshot
+```
+
+### Actores y distancia canónica
+
+- **Actores del snapshot** = quién puede adjudicarse el servicio según el modo de ejecución del ServiceType (`SERVICE_EXECUTION_MODES`): `FLEET` → `PROVIDER`; `INDEPENDENT` → `INDEPENDENT_DRIVER`; `BOTH` → ambos. Hoy `LOCAL_DELIVERY` es `BOTH`, así que cada Dispatch nuevo tiene exactamente dos snapshots. La función SQL `credit_required_actors("ServiceType")` replica esa tabla para las garantías de la base (cambiar un modo exige migración).
+- **Distancia canónica:** `DeliveryQuote.distanceMeters` de la cotización aceptada (el Dispatch la referencia con `deliveryQuoteId`). No se vuelve a llamar a Google Routes ni a `local_fake`; la base comprueba que el snapshot copie exactamente esa distancia y el `serviceType` de la cotización.
+
+### Cuándo y cómo se crea
+
+- Dentro de `openDispatch()`, en la **misma transacción** que acepta la cotización y crea el Dispatch y sus candidaturas: o se crean Dispatch + todos los snapshots, o nada.
+- Por actor: bloqueo consultivo **compartido** `(71_600_020, serviceType:actor)` —el mismo espacio que toma en exclusiva el versionado V1.10-B—, resolución de la ACTIVE y cálculo puro. Así una versión nueva nunca se cruza con una apertura: el snapshot queda con la versión anterior o con la nueva, nunca con una mezcla.
+- **Evidencia congelada:** `creditPolicyId`, `policyVersion`, `calculationType`, `distanceMeters`, `credits` y, según el tipo, `billableKm`/`creditsPerKm`/`minimumCredits`/`calculatedCredits` (PER_KM), `flatCredits` (FLAT) o `appliedRangeId`/`appliedRangePosition`/`appliedRangeMin/MaxDistanceMeters` (DISTANCE_RANGE). Con eso se reconstruye el costo sin consultar la política.
+- **Costo 0 no se congela:** `credits` va de 1 a 1 000 000. Una política que diera 0 (p. ej. PER_KM con `minimumCredits: 0` y 0 m) hace fallar la apertura con 422 `CREDIT_COST_OUT_OF_RANGE`, igual que un costo > 1 000 000. Nunca se abre un servicio «gratis» por omisión.
+
+### Fallo cerrado
+
+Si falta la ACTIVE de **cualquier** actor requerido, la aceptación B2B (`POST /delivery-quotes/:publicId/accept`) responde **409 `CREDIT_POLICY_UNAVAILABLE`**: la transacción se revierte, la cotización sigue OFFERED, no queda Dispatch ni snapshot huérfano y el cliente puede reintentar cuando exista la política. **Orden de despliegue:** antes de aceptar cotizaciones en un entorno nuevo, un SUPER_ADMIN debe crear la política de `PROVIDER` y la de `INDEPENDENT_DRIVER` para `LOCAL_DELIVERY` (en local: `npm run db:seed:local-credit-policies`); si no, toda aceptación falla con 409.
+
+### Inmutabilidad y dispatches anteriores
+
+- Un snapshot no se edita nunca (`CREDIT_SNAPSHOT_IMMUTABLE`). Crear una versión nueva de la política **no altera** los snapshots existentes: un Dispatch abierto con v1 (7 créditos) sigue costando 7 aunque v2 cobre 21; los Dispatches nuevos usan v2.
+- Sólo se borra en cascada al borrarse su Dispatch, o con el interruptor de purga de bases `_test`. La FK a la política y al rango es RESTRICT.
+- **Dispatches anteriores a V1.10-C** (legacy) no reciben un costo inventado ni retroactivo: la migración no rellena nada. En la API se ven con `creditCost: null` (proveedor/repartidor) y `creditSnapshots: []` + `legacyWithoutCreditSnapshots: true` (admin). Siguen operando igual (CLAIM/TAKE/asignación).
+
+### Exposición en la API
+
+| Vista | Campo |
+|---|---|
+| Proveedor (`/provider/dispatches…`) | `creditCost`: créditos del actor `PROVIDER` (entero) o `null` en legacy |
+| Repartidor independiente (`/driver/dispatches…`) | `creditCost`: créditos del actor `INDEPENDENT_DRIVER` o `null` |
+| SUPER_ADMIN (`/admin/dispatches…`) | `creditSnapshots` (todos, con su evidencia, ordenados por actor) y `legacyWithoutCreditSnapshots` |
+| IntegrationClient (B2B) | Nada: los créditos son un asunto entre Mandaria y quien ejecuta, no del cliente |
+
+Ni el proveedor ni el repartidor ven el costo del otro actor ni la política. El log `DISPATCH_OPENED` añade `creditCosts` (actor, créditos, versión, tipo).
+
+### Base de datos
+
+Migración `20260922001400_dispatch_credit_snapshots`: tabla `DispatchCreditSnapshot` con único `(dispatchId, actorType)`; CHECK de valores (créditos 1–1 000 000, distancia ≥ 0, versión > 0 y exactamente la evidencia de cada tipo, con `IS NOT NULL` explícitos); trigger guardián que, al insertar, exige un Dispatch OPEN recién creado en la misma transacción (sin claim ni asignación), actor permitido, la política ACTIVE correcta y **recalcula el costo en SQL** (`CREDIT_SNAPSHOT_INVALID` / `CREDIT_SNAPSHOT_MISMATCH`), y rechaza UPDATE, DELETE fuera de cascada/purga y TRUNCATE; y un trigger de restricción **diferido** en `Dispatch` que al COMMIT exige los snapshots de todos los actores requeridos (`CREDIT_SNAPSHOT_MISSING`). No toca datos existentes.
+
+Pruebas: `test/dispatch-credit-snapshots.spec.ts` (actores por modo, evidencia PER_KM/FLAT/RANGE, costo 0 rechazado, bloqueo compartido, sin acceso a cuentas ni ledger) y `test/dispatch-credit-snapshots.e2e-spec.ts` (vistas por actor, cambio de política, 10 aceptaciones simultáneas, carrera con el versionado, fallo cerrado y reintento, 20 ataques SQL, cascada, legacy, CLAIM/TAKE con saldo 0 sin movimientos, logs). Desde V1.10-C las suites E2E corren un archivo a la vez (`fileParallelism: false`) porque la política de créditos es configuración global compartida; las que aceptan cotizaciones aseguran una política base con `test/support/credit-policies.ts`.
+
+## Atomic CLAIM / TAKE Credit Consumption (V1.10-D)
+
+Responde: **¿quién paga el servicio y cuándo?** Desde V1.10-D los créditos son una regla económica operativa: un proveedor sólo puede reclamar —y un repartidor independiente sólo puede tomar— un servicio monetizado si tiene créditos suficientes, y **la adjudicación y el débito son una sola operación**.
+
+```text
+CLAIM / TAKE ──► validaciones V1.7/V1.8/V1.9 ──► snapshot del actor (V1.10-C)
+                 ──► cuenta del actor FOR UPDATE ──► saldo >= costo
+                 ──► claim (+ asignación en TAKE) ──► SERVICE_AWARD ──► COMMIT
+```
+
+Todo o nada: nunca existe una adjudicación sin su débito ni un débito sin su adjudicación. Si falla cualquier paso, la transacción se revierte completa (Dispatch, candidatura, asignación, saldo y ledger).
+
+### Quién paga
+
+| Ejecuta | Paga | Cuenta |
+|---|---|---|
+| Proveedor (flotilla), aunque después asigne a cualquiera de sus Drivers | El proveedor | `CreditAccount` de `PROVIDER` |
+| Repartidor independiente | El repartidor | `CreditAccount` de `INDEPENDENT_DRIVER` |
+
+Un Driver de flotilla **nunca** paga: el costo económico del viaje es del proveedor. Reasignar, cancelar la asignación interna o cambiar de vehículo **no vuelve a cobrar**: Mandaria vendió el servicio una sola vez.
+
+### El costo es el congelado, no el vigente
+
+El cargo es exactamente `DispatchCreditSnapshot.credits` de V1.10-C. V1.10-D **no** resuelve la política ACTIVE, **no** recalcula PER_KM / FLAT / DISTANCE_RANGE y **no** llama a ningún proveedor de routing. Un Dispatch abierto con 7 créditos cuesta 7 aunque la política ya cobre 20; lo que el proveedor o el repartidor vio como `creditCost` es exactamente lo que se le cobra.
+
+### Saldo
+
+- **Suficiente:** 10 − 7 = 3. **Exacto:** 7 − 7 = **0**, que es un saldo válido. **Insuficiente:** 409 `INSUFFICIENT_CREDITS` y no cambia nada (ni claim, ni candidatura, ni asignación, ni ledger).
+- **Nunca negativo:** no depende sólo del `if` en TypeScript. La cuenta se bloquea `FOR UPDATE`, el trigger del ledger vuelve a comprobar `balanceBefore` y el CHECK de V1.10-A acota el saldo a 0..1 000 000 000. Con dos claims simultáneos sobre el mismo saldo, uno pasa y el otro recibe `INSUFFICIENT_CREDITS`.
+- **Orden de bloqueos:** Dispatch → (Driver, Vehicle) → cuenta de créditos, el mismo en CLAIM y en TAKE, así que no pueden interbloquearse entre sí.
+
+### Un solo cargo por adjudicación
+
+Cada adjudicación económica escribe **exactamente un** `SERVICE_AWARD` con `amount` negativo, `referenceType: 'DISPATCH'` y `referenceId` del Dispatch; con la cuenta (que identifica al actor) queda claro qué snapshot se cobró. Un índice único parcial `(creditAccountId, referenceId) WHERE type = 'SERVICE_AWARD'` impide un segundo cargo por reintento, doble clic o reintento de red. Repetir el CLAIM del propio dueño sigue respondiendo 200 sin cobrar de nuevo. Los awards no usan la `Idempotency-Key` humana: esa sigue siendo de recargas y ajustes.
+
+### Fallo cerrado y Dispatches legacy
+
+La frontera de monetización está **persistida en cada Dispatch** (`creditMode`), no deducida de «no tiene snapshot»:
+
+- `LEGACY`: los Dispatches que ya existían cuando se aplicó la migración V1.10-D. No se cobran nunca, no se les inventa costo ni snapshot retroactivo, y se registra `LEGACY_DISPATCH_CREDIT_SKIPPED`. No se escribe ningún movimiento de 0 créditos: el ledger no admite movimientos de 0 y la contabilidad no se ensucia.
+- `MONETIZED`: todo Dispatch abierto desde V1.10-C. Si le falta el snapshot de su actor, **falla cerrado** con 409 `CREDIT_SNAPSHOT_UNAVAILABLE`; jamás se convierte en un viaje gratis. Igual si no hay cuenta que cobrar: 409 `CREDIT_ACCOUNT_UNAVAILABLE`, y la cuenta se corrige administrativamente (nunca se crea sola durante una adjudicación).
+
+El modo nace `MONETIZED` y es inmutable (`DISPATCH_CREDIT_MODE_IMMUTABLE`); sólo las bases `*_test` pueden fabricar uno legacy con el interruptor de fixtures, para poder probar ese camino.
+
+### Errores (`code`)
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| `INSUFFICIENT_CREDITS` | 409 | El saldo no cubre el costo congelado |
+| `CREDIT_ACCOUNT_UNAVAILABLE` | 409 | El actor no tiene cuenta de créditos |
+| `CREDIT_SNAPSHOT_UNAVAILABLE` | 409 | Servicio monetizado sin costo congelado (corrupción) |
+| `CREDIT_MOVEMENT_CONFLICT` | 409 | La cuenta cambió durante el cobro, o el servicio ya estaba cobrado a esa cuenta |
+
+Ninguno es 500, y todos distinguen el motivo para que Mandaria Web pueda actuar (recargar créditos, avisar a un administrador o reintentar).
+
+### Dinero y créditos siguen separados
+
+`deliveryFee`, `goodsValue` y `driverAdvanceAmount` son pesos (MXN, cadenas con moneda); `creditCost` son créditos enteros sin moneda. Cobrar créditos no cambia ninguno de esos importes, y un `COURIER_ADVANCE` sigue siendo el repartidor adelantando mercancía al comercio, sin relación con lo que Mandaria cobra por adjudicar.
+
+### Sin devoluciones todavía
+
+V1.10-D **no** implementa refunds. Si un proveedor reclama (y paga) y después libera, o si la entrega se cancela, **los créditos siguen consumidos** hasta V1.10-E. Es deliberado y figura como riesgo conocido.
+
+### Base de datos
+
+Migración `20260923000100_dispatch_credit_consumption`: columna `Dispatch.creditMode` (enum `DispatchCreditMode`, los Dispatches existentes quedan LEGACY sin reescribir filas) con trigger de inmutabilidad; índice único parcial de un SERVICE_AWARD por cuenta y Dispatch; CHECK de forma del award (referencia obligatoria, autor obligatorio, sin clave de idempotencia humana); y `service_award_guard`, que **recalcula el cargo en SQL** desde el snapshot y rechaza un importe falsificado (`CREDIT_AWARD_MISMATCH`), un cargo a una cuenta que no ganó el servicio, un Dispatch legacy o no reclamado y un award sin Dispatch (`CREDIT_AWARD_INVALID`). No se cobró nada retroactivamente.
+
+Pruebas: `test/credit-consumption.spec.ts` (costo del snapshot, saldo exacto, insuficiente, cuenta correcta por actor, fallo cerrado sin snapshot, sin cuenta, legacy, duplicado y conflicto) y `test/credit-consumption.e2e-spec.ts` (cobro real en CLAIM y TAKE, cambio de política irrelevante, reasignación y release sin segundo cargo, 10 claims simultáneos, proveedor contra independiente, dos claims contra un mismo saldo, saldo compartido exacto, recarga y ajuste concurrentes, legacy, corrupción, 14 escrituras forjadas rechazadas en SQL, contexto de pago y logs). Los tests de éxito fondean con `test/support/credits.ts` exactamente lo que cuesta el servicio.
+
+## Refunds & Reversals (V1.10-E)
+
+Responde: **¿qué pasa con los créditos cuando la adjudicación que Mandaria cobró se deshace?** Vuelven completos, con un movimiento nuevo que compensa al cargo original. **El `SERVICE_AWARD` nunca se modifica, ni se borra, ni se pone en cero:** la devolución es un `SERVICE_REFUND` inmutable que lo referencia.
+
+```text
+SERVICE_AWARD   -7   (al adjudicar, V1.10-D)
+SERVICE_REFUND  +7   (al revertirse, V1.10-E)
+---------------------
+impacto neto     0   ← la historia muestra las dos operaciones
+```
+
+### Qué evento devuelve créditos
+
+Sólo eventos operacionales que el backend ya soporta y que realmente revierten la adjudicación:
+
+| Evento real | Motivo persistido | Quién recibe |
+|---|---|---|
+| `POST /provider/dispatches/:id/release` | `PROVIDER_RELEASE` | La cuenta del proveedor que pagó |
+| `POST /driver/dispatches/:id/release` | `INDEPENDENT_RELEASE` | La cuenta del repartidor que pagó |
+| Cancelar la DeliveryRequest (B2B o SUPER_ADMIN) | `DELIVERY_CANCELLED` | Quien tuviera el servicio adjudicado |
+
+**No devuelven créditos:** reasignar Driver/Vehicle ni cancelar sólo la asignación. El proveedor sigue siendo dueño del servicio: cambiar quién conduce no deshace la venta. Tampoco existe un endpoint para pedir créditos: una devolución es siempre consecuencia de una operación ya autorizada. Para correcciones excepcionales sigue estando `ADMIN_ADJUSTMENT`.
+
+### Cuánto se devuelve
+
+El importe sale del **cargo realmente hecho**, no de la política vigente ni de un recálculo: si el award fue −7, el refund es +7, aunque hoy el servicio cueste 20. V1.10-E implementa **sólo devoluciones completas**: no hay refunds parciales, ni porcentajes, ni penalizaciones, ni comisiones. Si el negocio necesita penalizar por etapa, hará falta un modelo de ejecución más rico (hoy no existen estados como «recogido» o «en camino»).
+
+### Una devolución como máximo por cargo
+
+Un `SERVICE_REFUND` apunta a su award con `reversesEntryId`, y un índice único parcial permite **un solo refund por award**. Repetir el release, cancelar dos veces o lanzar diez reversiones simultáneas devuelve los créditos **una sola vez**. Un release repetido responde 409 (el servicio ya no es suyo) y una cancelación repetida responde 200 sin mover nada.
+
+Como V1.7/V1.9 no permiten que quien liberó vuelva a tomar el mismo servicio, cada cuenta tiene a lo sumo un award por Dispatch; si otro proveedor lo reclama después, paga **su propio** award y, si también libera, recibe **su propia** devolución.
+
+### Frontera histórica
+
+- **LEGACY** (Dispatch anterior a V1.10-C): nunca pagó, así que liberar o cancelar devuelve **0** y se registra `SERVICE_REFUND_SKIPPED_LEGACY`. No se inventa un award ni se consulta la política para calcular cuánto «habría» pagado.
+- **PRE_ENFORCEMENT_AWARD** (adjudicación anterior al cobro de V1.10-D): tampoco tuvo débito; devuelve 0 con `SERVICE_REFUND_SKIPPED_PRE_ENFORCEMENT`.
+- **ENFORCED sin award**: es corrupción, no un servicio gratis. La reversión **falla cerrado** con 409 `CREDIT_REFUND_INTEGRITY_ERROR`, no cambia nada y deja `SERVICE_REFUND_INTEGRITY_FAILURE` en el log.
+
+### Atomicidad
+
+La reversión operacional y la devolución son **una sola transacción**: el release (o la cancelación con sus transiciones) y el `SERVICE_REFUND` se confirman juntos o no ocurre nada. Si falla el ledger, se revierte también el estado operacional; si falla la operación, no se acredita saldo. La cuenta se bloquea `FOR UPDATE`, así que una devolución concurrente con una recarga, un ajuste o un cobro nuevo se serializa sin perder ninguna actualización y el ledger siempre se puede reconstruir entrada por entrada.
+
+### Errores (`code`)
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| `CREDIT_REFUND_INTEGRITY_ERROR` | 409 | La reversión debía devolver créditos y el cargo no existe (corrupción) |
+| `CREDIT_MOVEMENT_CONFLICT` | 409 | La cuenta cambió durante la devolución, o ya se había devuelto |
+
+### Auditoría
+
+Con el award y su refund se responde sin tocar la historia: quién pagó (la cuenta), cuánto (`amount`), por qué Dispatch (`referenceId`), cuándo (`createdAt`), si se devolvió (existe el refund), cuánto (su `amount`, siempre el opuesto) y por qué (`refundReason`). Eventos: `SERVICE_REFUND_ISSUED`, `SERVICE_REFUND_ALREADY_APPLIED`, `SERVICE_REFUND_SKIPPED_LEGACY`, `SERVICE_REFUND_SKIPPED_PRE_ENFORCEMENT` y `SERVICE_REFUND_INTEGRITY_FAILURE`.
+
+### Dinero y créditos
+
+Devolver créditos no toca `deliveryFee`, `goodsValue`, `driverAdvanceAmount` ni el modo de pago: 7 créditos no son 7 pesos y nunca se convierten.
+
+### Base de datos
+
+Migración `20260923000300_service_refunds`: columnas `reversesEntryId` (FK al propio ledger, RESTRICT) y `refundReason` (enum `CreditRefundReason`); índice único parcial de un refund por award; CHECK de forma (sólo un refund lleva referencia y motivo, y siempre nombra su Dispatch); `service_refund_guard`, que **re-deriva la devolución en SQL** desde el award —misma cuenta, mismo Dispatch, importe exactamente opuesto, actor coherente y reversión operacional ya escrita— y rechaza lo demás (`CREDIT_REFUND_INVALID`, `CREDIT_REFUND_MISMATCH`); y un trigger de restricción **diferido** en `Dispatch` que al COMMIT impide revertir un servicio pagado sin su devolución (`CREDIT_REFUND_REQUIRED`). La migración **no crea ninguna devolución**: los awards históricos quedan tal cual.
+
+Pruebas: `test/credit-refunds.spec.ts` (importe desde el award, cuenta correcta, idempotencia, frontera histórica, fallo cerrado, conflicto) y `test/credit-refunds.e2e-spec.ts` (release de proveedor y de repartidor, cancelación de la entrega, cambio de política irrelevante, segundo proveedor, reasignación sin devolución, duplicados y 10 reversiones simultáneas, carrera release/cancelación, devolución contra recarga/ajuste/cobro nuevo, legacy, corrupción, 14 escrituras forjadas rechazadas en SQL, reversión por SQL sin devolución rechazada y escaneo de integridad).
+
+## MVP Delivery Completion (V1.11-A)
+
+Responde: **¿cómo se cierra operativamente un servicio que ya se entregó?** Hasta V1.10 un Dispatch adjudicado se quedaba `CLAIMED` para siempre: el repartidor y el vehículo seguían ocupados y la única salida era liberar o cancelar, es decir, declarar que el servicio **no** se hizo. V1.11-A agrega el final normal.
+
+```text
+Proveedor      CLAIM -> ASSIGN (Driver + Vehicle) -> POST .../deliver -> DELIVERED
+Independiente  TAKE  (claim + assignment en un paso) -> POST .../deliver -> DELIVERED
+```
+
+Es una extensión **mínima**: un estado terminal más en `DispatchStatus`, un estado final más en `DeliveryAssignmentStatus` y dos columnas de sello. **No** es una máquina de estados de entrega: no existen «recogido», «en camino» ni «intento fallido», y no hay GPS, tracking, sockets ni prueba de entrega (foto, firma, OTP).
+
+### Quién puede confirmar la entrega
+
+Exactamente el actor que tiene el servicio adjudicado, resuelto siempre desde el JWT:
+
+| Endpoint | Rol | Quién exactamente |
+|---|---|---|
+| `POST /api/v1/provider/dispatches/:dispatchId/deliver` | `PROVIDER_ADMIN` | El proveedor dueño del claim (membership vigente) |
+| `POST /api/v1/driver/dispatches/:dispatchId/deliver` | `DRIVER` | El repartidor independiente que tomó el servicio |
+
+**Nadie más.** SUPER_ADMIN no puede cerrar entregas ajenas (403: no tiene membership y no es un actor operativo), un cliente B2B tampoco (401: no es un token humano), otro proveedor candidato recibe 409 y un proveedor que nunca fue candidato recibe 404, igual que con un id inexistente. Un repartidor de flotilla **no** cierra el servicio de su proveedor: en V1.8 el Driver no tiene voz sobre el Dispatch, y V1.11-A no se la inventa.
+
+Ninguno de los dos endpoints lleva body: quién confirma sale del token y **la fecha la pone el servidor**. Cualquier campo enviado se rechaza con 400, así que un cliente no puede retrofechar una entrega ni atribuírsela a otro usuario.
+
+### Qué hace exactamente, en una sola transacción
+
+1. Bloquea la fila del Dispatch (`FOR UPDATE`, el mismo bloqueo que usan CLAIM, TAKE y RELEASE).
+2. Comprueba que el actor sigue teniendo el claim.
+3. Cierra la asignación **ACTIVE** como `COMPLETED`, con `endedAt` y `endedByUserId` y **sin `endReason`**: no falló nada.
+4. Pone el Dispatch en `DELIVERED` con `deliveredAt` y `deliveredByUserId`.
+
+O se confirman los cuatro pasos o no ocurre ninguno. El orden no es una preferencia: `dispatch_guard` **rechaza en SQL** que un Dispatch salga de `CLAIMED` con una asignación ACTIVE viva, y rechaza un Dispatch `DELIVERED` que no tenga su asignación `COMPLETED`. Un claim sin Driver ni Vehicle asignados no se puede entregar (409 `NO_ACTIVE_ASSIGNMENT`): un servicio lo entrega quien lo llevaba.
+
+### El repartidor y el vehículo quedan libres
+
+`COMPLETED` reutiliza el mecanismo de cierre de asignaciones de V1.8 en lugar de inventar un segundo. Como los índices únicos parciales sólo restringen filas `ACTIVE`, al completarse la asignación el Driver y el Vehicle quedan disponibles **de inmediato** para otro servicio —en cualquiera de los dos modelos de ejecución— mientras la fila permanece como historia con su `driverId`, su `vehicleId` y su `assignedAt` intactos.
+
+### DELIVERED es terminal e irreversible
+
+Un servicio entregado ya no se libera, ni se reasigna, ni se cancela, ni se vuelve a reclamar o tomar (409 `DISPATCH_DELIVERED`), y **una cancelación posterior de la DeliveryRequest no lo toca**: el cierre de Dispatches de una solicitud cancelada sólo alcanza a los que están `OPEN` o `CLAIMED`. El sello de entrega se escribe una vez y no se puede reescribir ni borrar; el dueño del claim se congela en esa misma transición. Todo esto está garantizado por PostgreSQL (`dispatch_guard`, `Dispatch_values_check`, `delivery_assignment_guard`), no sólo por el servicio: una escritura directa por SQL también es rechazada.
+
+Repetir la confirmación del actor legítimo devuelve **200 sin cambios** —la misma semántica que repetir el claim ganador—, así que un reintento por timeout de red es seguro.
+
+### Cuesta 0 créditos
+
+Entregar **no es un evento económico**. Los créditos ya se cobraron al adjudicar el servicio (V1.10-D) y entregarlo es exactamente lo que esos créditos pagaron: la confirmación no consume créditos, no escribe ninguna entrada en el ledger y **no genera ningún `SERVICE_REFUND`**. El trigger `dispatch_award_refund_required` retorna antes para `DELIVERED`, y como la entrega **conserva al dueño del claim**, `service_refund_guard` tampoco aceptaría una devolución contra un servicio entregado. Tampoco se recalcula nada: ni precio, ni ruta, ni política de créditos, ni el costo congelado del snapshot.
+
+### Errores (`code`)
+
+| Código | HTTP | Cuándo |
+|---|---|---|
+| `DISPATCH_NOT_CLAIMED_BY_PROVIDER` | 409 | El Dispatch no está `CLAIMED` por mi proveedor (liberado, de otro, cancelado o vencido) |
+| `DISPATCH_NOT_CLAIMED_BY_DRIVER` | 409 | El servicio no está tomado por este repartidor |
+| `NO_ACTIVE_ASSIGNMENT` | 409 | No hay Driver y Vehicle asignados: no hay nada que entregar |
+| `DELIVERY_CONFLICT` | 409 | El Dispatch o su asignación cambiaron durante la confirmación (carrera perdida, nunca un 500) |
+| `DISPATCH_DELIVERED` | 409 | Se intenta reclamar o tomar un servicio ya entregado |
+
+### Auditoría
+
+Mandaria no tiene tabla de eventos ni outbox, así que la señal de entrega son dos cosas duraderas y una legible: el propio Dispatch (`status`, `deliveredAt`, `deliveredByUserId`), la asignación `COMPLETED` con `endedAt`/`endedByUserId`, y el log estructurado `DELIVERY_COMPLETED` con el Dispatch, la asignación, el modo (`FLEET`/`INDEPENDENT`), el actor y el instante. Ni tokens, ni contraseñas, ni secretos B2B, ni datos de contacto. `deliveredAt` se expone al dueño del servicio en las vistas de proveedor y de repartidor, y a SUPER_ADMIN junto con `deliveredByUserId`.
+
+### La capacidad no se vuelve a pedir al cerrar
+
+La confirmación del repartidor independiente **no repite la puerta de aprobación**: el trabajo ya se hizo en la calle y una suspensión que llegara en medio no puede dejar un servicio terminado atascado en `CLAIMED` con el repartidor y el vehículo bloqueados. En la práctica V1.9 ya impide suspender a un repartidor con una asignación ACTIVE, así que esto es defensa en profundidad, no un hueco.
+
+### Base de datos
+
+Dos migraciones, porque PostgreSQL no permite usar un valor de enum en la misma transacción que lo agrega:
+
+- `20260923001500_delivery_completion_states`: `DispatchStatus.DELIVERED` y `DeliveryAssignmentStatus.COMPLETED`.
+- `20260923001600_delivery_completion_rules`: columnas `deliveredAt` y `deliveredByUserId` (FK a `User`, RESTRICT), índice `Dispatch_status_deliveredAt_idx`, `Dispatch_values_check` reescrito (DELIVERED exige dueño único, `claimedAt`, sello completo y ausencia de `expiredAt`/`cancelledAt`; cualquier otro estado no lleva sello), `DeliveryAssignment_values_check` reescrito (COMPLETED exige `endedAt`, `endedByUserId` y **sin** motivo), `dispatch_guard` extendido (`CLAIMED -> DELIVERED` como única entrada, terminalidad, sello inmutable, dueño congelado y asignación cerrada obligatoria) y `dispatch_award_refund_required` con retorno temprano para `DELIVERED`.
+
+**Ninguna migración entrega nada:** ningún Dispatch histórico pasa a `DELIVERED` ni ninguna asignación a `COMPLETED`, y las dos columnas nuevas son anulables sin default.
+
+Código: `src/deliveries/delivery-completion.ts` (transacción compartida por los dos modelos de ejecución), conectado a `DispatchService.complete` y a `IndependentDispatchesService.complete`. Pruebas: `test/delivery-completion.spec.ts` (contrato, orden de escrituras, bloqueos, idempotencia, cero escrituras económicas, mapeo de guardas, terminalidad en ambos modelos) y `test/delivery-completion.e2e-spec.ts` (flujo de proveedor y de independiente por HTTP real, liberación de recursos, autorización de los cinco principales, terminalidad frente a release/reassign/cancel/claim/take y cancelación tardía de la DeliveryRequest, saldo y ledger sin cambios, 0 devoluciones, sin recálculo de precio ni snapshot, once escrituras forjadas rechazadas en SQL y tres carreras de concurrencia).
+
 ## Docker: preparado, sin ejecución en esta etapa
 
 Por instrucción del propietario, continuar localmente. Dockerfile y Compose se conservan, con variables B2B añadidas, PostgreSQL persistente, healthchecks y migraciones con reintentos. No se verificó build/up de Docker en V1.1.
 
 Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si PostgreSQL local ocupa 5432, cambiar POSTGRES_PORT a otro puerto y ajustar DATABASE_URL del host. Compose usa internamente postgres:5432. No ejecutar down -v salvo eliminación deliberada de datos.
+
+
+## B2B Delivery Status (V1.12-A)
+
+Responde: **¿cómo sabe el cliente B2B que su entrega se completó?** Hasta V1.11-A el cierre operativo existía (`DELIVERED`) pero era invisible desde afuera: el sistema que creó la solicitud podía cotizarla, aceptarla y cancelarla, y nunca enterarse de que se entregó. V1.12-A abre esa lectura, y nada más.
+
+```
+GET /api/v1/delivery-requests/{publicId}/status     (scope deliveries:read)
+```
+
+```json
+{
+  "publicId": "MDR-000123",
+  "externalReference": "ORDER-4711",
+  "status": "DELIVERED",
+  "execution": { "mode": "PROVIDER" },
+  "requestedAt": "2026-09-23T18:04:11.000Z",
+  "deliveredAt": "2026-09-23T18:52:40.117Z",
+  "cancelledAt": null
+}
+```
+
+### Seis estados públicos, no el modelo interno
+
+`REQUESTED` (aún no se publica servicio), `OPEN` (publicado, esperando quien lo tome), `ASSIGNED` (alguien lo está ejecutando), `DELIVERED`, `CANCELLED` y `EXPIRED`. `execution.mode` vale `PROVIDER` o `INDEPENDENT`, o es `null` mientras nadie se adjudicó el servicio: es lo único que el cliente sabe de quién ejecuta. **No** se publican Dispatch, Driver, Vehicle, proveedor, créditos, políticas, snapshots ni identificadores internos.
+
+La traducción vive en un solo lugar, `src/deliveries/delivery-status.ts`, y reutiliza `effectiveDispatchStatus` de V1.7, de modo que la caducidad perezosa se lee igual que en el resto del sistema: un `OPEN` cuya ventana ya cerró se informa `EXPIRED` aunque la fila todavía diga `OPEN`.
+
+| Estado interno | Estado público |
+|---|---|
+| Sin Dispatch, DeliveryRequest `CREATED` / `CANCELLED` | `REQUESTED` / `CANCELLED` |
+| `Dispatch.OPEN` dentro / fuera de su ventana | `OPEN` / `EXPIRED` |
+| `Dispatch.CLAIMED` | `ASSIGNED` |
+| `Dispatch.DELIVERED`, `CANCELLED`, `EXPIRED` | `DELIVERED`, `CANCELLED`, `EXPIRED` |
+
+Tres decisiones que la tabla no dice sola: el **Dispatch manda sobre la DeliveryRequest** (un servicio entregado sigue leyéndose `DELIVERED` aunque después se cancele la solicitud, porque `DELIVERED` es irreversible); la **asignación interna no es un estado público** (que el proveedor elija o reasigne Driver y Vehicle no cambia nada afuera: sigue `ASSIGNED`); y **`execution` no es pegajoso** (si el proveedor libera el servicio, la lectura vuelve a `OPEN` con `execution: null`). No se inventó ningún estado operativo nuevo: se inspeccionó el dominio y `DispatchStatus` ya cubría todo lo observable.
+
+### Mandaria sigue siendo la única autoridad logística
+
+El cliente B2B **no** marca entregas, no reclama, no asigna y no libera. La ruta es `GET` y no existe otra forma de tocar el estado: `POST`, `PUT`, `PATCH` y `DELETE` sobre la misma ruta responden 404, y las rutas operativas de proveedor y repartidor rechazan un token B2B con 401.
+
+Leer no tiene consecuencias: no mueve saldos ni ledger, no toca el Dispatch ni la asignación, no llama al proveedor de routing, no recalcula políticas ni snapshots y no emite eventos de auditoría. Es apto para sondeo periódico.
+
+### Aislamiento entre clientes
+
+Una solicitud de otro IntegrationClient y una inexistente producen la **misma** respuesta 404 (`Delivery request not found`), idéntica salvo el `timestamp` y el `path` que el propio llamante envió. No se puede distinguir «existe pero no es tuyo» de «no existe», así que los identificadores no se pueden sondear.
+
+### Sin migración
+
+No se agregó ni modificó ninguna columna, tabla, índice, constraint o trigger: todo lo que la respuesta necesita ya existía. El `select` de Prisma trae exactamente esos campos y ninguno más.
+
+Detalle completo en [V1.12-A B2B Delivery Status](docs/V1.12-A-B2B-DELIVERY-STATUS.md). Pruebas: `test/delivery-status.spec.ts` (tabla de correspondencia completa, caducidad perezosa, precedencia de la entrega sobre la cancelación y llaves expuestas) y `test/b2b-delivery-status.e2e-spec.ts` (ciclo de proveedor y de independiente hasta `DELIVERED`, solicitud sin cotización aceptada, cancelación, caducidad, aislamiento entre clientes, tokens humanos y sin scope, ausencia de rutas de mutación, doce lecturas sin efecto sobre la economía, quince lecturas simultáneas y una lectura compitiendo con la entrega).
+
+
+## Durable B2B Event Outbox (V1.12-B)
+
+Responde: **¿cómo queda constancia de que la entrega ocurrió, para el sistema que la pidió?** V1.12-A permite *consultar* el estado; V1.12-B registra el hecho. Cuando una entrega llega a `DELIVERED`, Mandaria escribe un evento `delivery.completed` en la **misma transacción** que la completa. Esta versión sólo registra: **no envía nada por HTTP**.
+
+```text
+V1.12-A  el cliente B2B puede observar el estado de su entrega
+V1.12-B  delivery.completed queda registrado de forma durable
+V1.12-C  entrega del evento por webhook (futuro)
+```
+
+```text
+Proveedor / Independiente ── DELIVER ──▶ ┌──── una transacción PostgreSQL ────┐
+                                         │ DeliveryAssignment ACTIVE→COMPLETED│
+                                         │ Dispatch          CLAIMED→DELIVERED│
+                                         │ B2bOutboxEvent    delivery.completed│
+                                         └─────────── COMMIT ─────────────────┘
+```
+
+`DELIVERED` **y** evento, o ninguno de los dos. Si el registro del evento falla, la entrega no ocurre: el Dispatch sigue `CLAIMED`, la asignación sigue `ACTIVE` y no se anuncia nada.
+
+### El evento
+
+El sobre vive en columnas (`id`, `type`, `occurredAt`) y la instantánea en `payload`, de modo que cada parte tiene una sola representación:
+
+```json
+{
+  "eventId": "5f2c…", "type": "delivery.completed", "occurredAt": "2026-09-24T09:47:12.345Z",
+  "data": { "publicId": "MDR-000123", "externalReference": "ORDER-4711", "status": "DELIVERED",
+            "execution": { "mode": "PROVIDER" }, "requestedAt": "…", "deliveredAt": "…", "cancelledAt": null }
+}
+```
+
+`data` es **exactamente** lo que responde `GET /delivery-requests/{publicId}/status` en ese instante, construido con la misma y única función `deliveryStatusView`: no hay un segundo mapeo que pueda divergir. Se congela al ocurrir el hecho y no se recalcula después, porque un webhook enviado mañana debe llevar lo que era cierto hoy. Nunca contiene ids internos, proveedor, repartidor, vehículo, créditos, ledger, políticas, contexto de pago ni secretos, y **PostgreSQL lo exige**: la función `b2b_delivery_completed_payload_ok` obliga a las siete claves públicas exactas, prohíbe las internas y exige que la instantánea diga `DELIVERED`.
+
+`occurredAt` es el `deliveredAt` de la propia entrega —el reloj se lee una vez y se pasa, no se vuelve a consultar— y un CHECK vuelve a comprobar esa igualdad.
+
+### Garantías de PostgreSQL
+
+| Garantía | Cómo |
+|---|---|
+| Un `delivery.completed` por entrega | Índice único **parcial** sobre `dispatchId` donde `type = 'DELIVERY_COMPLETED'` |
+| El dueño es quien creó la solicitud | FK compuesta `(deliveryRequestId, integrationClientId)` |
+| El servicio pertenece a la solicitud | FK compuesta `(dispatchId, deliveryRequestId)` |
+| Sólo lo escribe quien entrega | `b2b_outbox_event_guard` compara el `xmin` del Dispatch con la transacción actual |
+| Inmutable e imborrable | Guard de UPDATE/DELETE y trigger de TRUNCATE, como el ledger y los snapshots |
+| Ninguna entrega nueva sin evento | Constraint trigger **diferido**, comprobado al COMMIT |
+
+La clave del índice es el **Dispatch** y no la DeliveryRequest: V1.12-A confirmó que hay como máximo un Dispatch por solicitud, así que «uno por Dispatch» es «uno por entrega lógica». Es parcial por tipo porque la mayoría de eventos futuros se repiten legítimamente —un servicio puede reclamarse y liberarse muchas veces—, de modo que añadir `delivery.released` no exigirá rediseñar nada.
+
+### La frontera, sin columna nueva
+
+El trigger de enforcement actúa sobre la **transición** a `DELIVERED`, así que sólo puede ver entregas completadas a partir de ahora. Las que ya estaban `DELIVERED` nunca vuelven a transicionar (`dispatch_guard` prohíbe modificar un dispatch resuelto), de modo que quedan fuera de la regla por construcción: sin bandera, sin backfill y sin la ambigüedad que la frontera V1.10-C/D necesitó resolver con una columna. Al aplicar la migración, las **22 entregas históricas** de `mandaria_db` siguieron sin evento, siguen siendo legítimas y siguen observándose por V1.12-A.
+
+### Idempotencia y ausencia de efectos
+
+Repetir `/deliver` devuelve 200 sin escribir y por tanto sin un segundo evento; diez entregas simultáneas producen una transición y un evento, en ambos modelos de ejecución. Registrar el evento no cobra ni devuelve créditos, no toca saldos, `SERVICE_AWARD`, `SERVICE_REFUND`, snapshots ni `CreditPolicy`, no recalcula rutas y no modifica el contexto de pago.
+
+Detalle completo en [V1.12-B Durable B2B Event Outbox](docs/V1.12-B-DURABLE-B2B-EVENT-OUTBOX.md). Pruebas: `test/b2b-outbox.spec.ts` (construcción canónica del evento, reutilización del contrato público, ambos modos, referencia externa, relojes, ausencia de ids internos y log sin payload) y `test/b2b-outbox.e2e-spec.ts` (ciclo real de proveedor e independiente, instantánea idéntica a la respuesta HTTP, congelación del payload, persistencia tras reinicio, repetición e idempotencia, diez entregas simultáneas por modelo, inyección de fallo con rollback completo, transición manual rechazada al COMMIT, mutaciones y borrados rechazados en SQL, duplicado imposible, entrega histórica sin evento y escaneo de integridad en 0).
+
+
+## B2B Webhook Delivery (V1.12-C)
+
+Responde: **¿cómo se entera el cliente sin preguntar?** V1.12-B dejó `delivery.completed` registrado de forma durable; V1.12-C lo entrega al endpoint HTTPS que un administrador configuró para ese IntegrationClient.
+
+```text
+V1.12-B  el evento durable           V1.12-C  el primer intento de entrega           V1.12-D  reintentos, idempotencia y firma
+```
+
+```text
+DELIVER ──▶ transacción PostgreSQL: assignment COMPLETED + Dispatch DELIVERED + evento ──▶ COMMIT
+                                                                                            │
+            después del commit, fuera de la transacción: endpoint del dueño ──▶ política SSRF ──▶ POST con timeout ──▶ intento registrado
+```
+
+**La llamada HTTP nunca está dentro de la transacción.** Un servicio se entrega aunque el cliente esté caído, aunque no haya internet y aunque el endpoint responda 500; un 500 del receptor no revierte una entrega que ya ocurrió. El primer intento se dispara justo después de responder la petición de completion, como trabajo en segundo plano que se drena en el apagado ordenado.
+
+### Configuración
+
+```
+GET /api/v1/admin/integrations/{id}/webhook     (SUPER_ADMIN)
+PUT /api/v1/admin/integrations/{id}/webhook     (SUPER_ADMIN)  { url, enabled? }
+POST /api/v1/admin/b2b-events/{eventId}/deliver (SUPER_ADMIN)  un intento, operacional
+```
+
+`B2bWebhookEndpoint` es una entidad aparte, no columnas en `IntegrationClient`: el estado operativo del transporte va a crecer y no debe ir llenando la entidad de identidad. Un endpoint por cliente, con `url` y `enabled` y nada más — no hay política de reintentos, cabeceras propias ni suscripción por tipo, porque sólo existe `delivery.completed`. Un cliente B2B **no** configura su propio destino: la URL decide a dónde se conecta Mandaria desde dentro de su red, así que es un acto administrativo.
+
+Sin endpoint, o con el endpoint deshabilitado: la entrega ocurre igual, el evento se registra igual y **no hay petición ni intento**. No ocurrió ningún intento, así que no se inventa uno.
+
+### La URL es superficie SSRF, no un campo de texto
+
+Se valida **dos veces**: al escribirla y otra vez justo antes de cada petición, incluyendo las direcciones a las que su nombre resuelve. Validar sólo al configurar sería teatro, porque un nombre público puede empezar a resolver a una dirección privada en cualquier momento.
+
+Se rechazan los esquemas distintos de `https`, las credenciales embebidas, el fragmento, `localhost` y los TLD reservados, y toda dirección que no sea unicast global: loopback, privadas, CGNAT, link-local `169.254.0.0/16` —donde vive `169.254.169.254`—, multicast y reservadas, con sus equivalentes IPv6. Las direcciones IPv4 disfrazadas de IPv6 se deciden sobre la forma **expandida** y no sobre cómo se escribieron: el parser reescribe `[::ffff:127.0.0.1]` como `::ffff:7f00:1`, y una política basada en texto lo dejaría pasar.
+
+**Los redirects nunca se siguen**: un 3xx es un fallo de transporte. Seguirlos es la forma más fácil de convertir una URL pública aprobada en una interna.
+
+`B2B_WEBHOOK_ALLOW_INSECURE_TARGETS=true` admite http y loopback para que las suites usen un receptor real en 127.0.0.1; **la aplicación se niega a arrancar con ese interruptor en producción**, igual que con `local_fake` y `local_outbox`.
+
+### Lo que viaja
+
+```json
+{ "eventId": "5f2c…", "type": "delivery.completed", "occurredAt": "…",
+  "data": { "publicId": "MDR-000123", "externalReference": "ORDER-4711", "status": "DELIVERED",
+            "execution": { "mode": "PROVIDER" }, "requestedAt": "…", "deliveredAt": "…", "cancelledAt": null } }
+```
+
+Construido desde `B2bOutboxEvent` —las columnas y la instantánea congelada— y nunca desde `DeliveryRequest` y `Dispatch` como están ahora. El nombre interno `DELIVERY_COMPLETED` no viaja. Las cabeceras `x-mandaria-event-id` y `x-mandaria-event-type` son contrato: la primera es la clave natural de deduplicación del consumidor.
+
+**Éxito es cualquier 2xx**, porque los consumidores responden legítimamente 200, 201, 202 o 204. Todo lo demás se clasifica como `HTTP_STATUS`, `TIMEOUT`, `NETWORK` o `INVALID_ENDPOINT`. El cuerpo de la respuesta remota se lee y se descarta: guardarlo significaría conservar HTML, trazas o datos personales que un sistema externo decidió devolver.
+
+### El intento es historia, el evento no se toca
+
+`B2bWebhookDeliveryAttempt` es una tabla aparte, append-only: un FAILED no puede volverse SUCCEEDED ni un 500 un 200, no se borra ni se trunca, y dos claves foráneas **compuestas** —`(eventId, integrationClientId)` y `(endpointId, integrationClientId)`— hacen físicamente imposible que el evento de un cliente figure entregado al receptor de otro. El endpoint tampoco puede cambiar de dueño. El contrato es **at-least-once**: no se promete exactly-once sobre HTTP.
+
+Detalle completo en [V1.12-C B2B Webhook Delivery](docs/V1.12-C-B2B-WEBHOOK-DELIVERY.md). Pruebas: `test/b2b-webhooks.spec.ts` (política de URL y de direcciones resueltas, excepción LOCAL/TEST, construcción del cuerpo, 2xx, no-2xx, redirect, timeout, fallo de red, saneado del error y descarte del cuerpo remoto) y `test/b2b-webhooks.e2e-spec.ts`, que levanta un receptor HTTP real fuera del producto (ciclo de proveedor e independiente, cuerpo exacto contra la instantánea, 200/201/202/204, 400/401/404/409/429/500/503, timeout, conexión rechazada, redirect no seguido, endpoint deshabilitado y ausente, aislamiento entre dos clientes con dos receptores, autorización, entrega manual, persistencia tras reinicio y manipulación SQL rechazada).
+
+
+## Reliable & Secure Webhook Delivery (V1.12-D)
+
+Responde: **¿qué pasa cuando el primer intento falla, o cuando el proceso muere antes de intentarlo?** V1.12-C hacía un intento desde la petición que completaba la entrega. V1.12-D convierte eso en transporte durable: el trabajo se descubre desde el Outbox después de cualquier reinicio, se toma con un lease para que varios backends no lo hagan dos veces, se reintenta con una curva fija y se firma para que el receptor pueda comprobar que la petición es realmente de Mandaria.
+
+```text
+V1.12-B el evento durable   ·   V1.12-C el primer intento   ·   V1.12-D reintentos, lease y firma
+```
+
+### Para quien reciba los webhooks
+
+**La entrega es at-least-once. El consumidor DEBE deduplicar por `eventId`.** No se promete exactly-once y no puede prometerse: si el receptor responde y Mandaria muere antes de registrar ese resultado, el evento se reintenta y el mismo `eventId` llega dos veces. Esa ventana está probada a propósito.
+
+```text
+X-Mandaria-Event-Id · X-Mandaria-Event-Type · X-Mandaria-Timestamp · X-Mandaria-Signature
+
+mensaje = X-Mandaria-Timestamp + "." + cuerpo_crudo
+firma   = "v1=" + HMAC-SHA256(secreto, mensaje) en hexadecimal minúsculas
+```
+
+`cuerpo_crudo` son los **bytes exactos recibidos**, no una re-serialización del JSON parseado: dos serializaciones del mismo objeto no son los mismos bytes. El timestamp es el del intento, no `occurredAt`, para permitir rechazar reenvíos viejos por antigüedad; no sustituye a `eventId`, que es lo que deduplica. El cuerpo de un reintento es **idéntico** al del primer envío: sólo cambian el timestamp y la firma.
+
+### Tres piezas, deliberadamente separadas
+
+```text
+B2bOutboxEvent  hecho inmutable   ·   B2bWebhookDeliveryAttempt  historia inmutable   ·   B2bWebhookDelivery  estado mutable
+```
+
+Convertir el Outbox en una cola habría hecho editable el hecho, que es justo lo que V1.12-B existe para impedir. El estado guarda sólo qué se debe y cuándo reintentarlo, con tres valores —`PENDING`, `DELIVERED`, `EXHAUSTED`— y el lease como columnas. No hay `PAUSED`: un endpoint deshabilitado deja de ser elegible y su trabajo sigue `PENDING` hasta que se rehabilite, sin perder nada.
+
+**El estado no nace con el evento:** el worker lo materializa al recogerlo por primera vez, descubriendo el trabajo desde el Outbox. Eso cierra la ventana de caída de V1.12-C —un proceso que muere entre el commit y la primera petición no pierde nada— y preserva los eventos cuyo cliente todavía no tenía webhook.
+
+### La frontera: `deliverFrom`
+
+Sólo entran en la entrega automática los eventos con `occurredAt >= deliverFrom` del endpoint. La migración la fijó en su propio instante para los endpoints existentes, así que **nada registrado bajo V1.12-B o V1.12-C se envía solo**; y un endpoint nuevo la recibe en «ahora», así que configurar un webhook meses después no desata una avalancha histórica. Los eventos anteriores siguen siendo entregables a mano, y hacerlo **no** los inscribe en el ciclo de reintentos.
+
+### El worker
+
+```text
+descubrir → tomar lease (transacción corta) → COMMIT → HTTP → registrar intento y mover estado (transacción corta) → COMMIT
+```
+
+Nunca hay una transacción abierta durante la llamada HTTP. El lease usa `FOR UPDATE SKIP LOCKED` más una expiración durable: varios backends corren el mismo bucle sin duplicar trabajo, y un worker que muere deja un lease que caduca y otro lo recupera. Las comparaciones de tiempo se hacen contra `now() AT TIME ZONE 'UTC'` del lado de la base y nunca contra una `Date` enlazada, porque un parámetro `Date` llega como `timestamptz` y PostgreSQL reinterpretaría las columnas `timestamp` en la zona del servidor.
+
+### Reintentos y clasificación
+
+```text
+inmediato → +1 min → +5 min → +15 min → +60 min → EXHAUSTED        (5 intentos, 81 minutos)
+```
+
+Centralizada en código, no repartida en cinco variables de entorno. Éxito es cualquier 2xx. Reintentable: 408, 425, 429, 5xx, timeout y error de red. Terminal: 400, 401, 403, 404, 405, **409**, 410, 422, 451, cualquier otro 4xx, un 3xx y un destino que dejó de ser válido.
+
+**409 es terminal por decisión:** el contrato de deduplicación le dice al consumidor que rechace un `eventId` que ya procesó, y un conflicto es la forma natural de decirlo; reintentar castigaría justamente a quien siguió el contrato. Quien quiera decir «ocupado, vuelve luego» tiene 429 y 503.
+
+### El secreto
+
+Generado con CSPRNG, **devuelto una sola vez**, guardado cifrado con AES-256-GCM bajo `B2B_WEBHOOK_SECRET_KEY` (32 bytes, obligatoria en producción). Un CHECK rechaza cualquier valor que no tenga la forma `v1:<iv>:<tag>:<ciphertext>`, así que un secreto en claro no se cuela en la columna. No se reutiliza ningún otro secreto del sistema; las credenciales B2B se guardan hasheadas y por tanto no sirven para firmar. Rotar reemplaza el secreto sin recrear el IntegrationClient: cada intento firma con el activo en ese momento y las firmas históricas no se regeneran. Un endpoint sin secreto no se entrega, y nada se pierde: en cuanto hay secreto, el trabajo se vuelve a encontrar.
+
+### SSRF, dicho sin adornos
+
+Se conservan todas las garantías de V1.12-C y se aplican **en cada intento**. Pero entre la validación del DNS y el socket queda una ventana de rebinding: cerrarla exige fijar la conexión a la dirección ya validada, y Node no expone su cliente HTTP como módulo público, de modo que hacerlo obligaría a añadir una dependencia y sustituir `fetch`. Es una decisión de una versión posterior. **La protección SSRF de Mandaria es buena, no perfecta.**
+
+### Administración
+
+```
+GET  /api/v1/admin/integrations/{id}/webhook              configuración y si hay secreto
+POST /api/v1/admin/integrations/{id}/webhook/secret       generar o rotar (lo muestra una vez)
+GET  /api/v1/admin/integrations/{id}/webhook/deliveries   estado, intentos, próximo intento, último resultado
+POST /api/v1/admin/b2b-events/{eventId}/deliver           un intento manual, con lease
+```
+
+Todo SUPER_ADMIN. El cliente B2B no ve nada de esto: su fuente sigue siendo `GET /delivery-requests/{publicId}/status`.
+
+Detalle completo en [V1.12-D Reliable & Secure Webhook Delivery](docs/V1.12-D-RELIABLE-SECURE-WEBHOOK-DELIVERY.md). Pruebas: `test/b2b-webhook-reliability.spec.ts` (curva completa sin esperar una hora, clasificación HTTP, cifrado y rotación del secreto, contrato de firma y estabilidad del cuerpo) y `test/b2b-webhooks.e2e-spec.ts` con receptor HTTP real que **verifica la firma** (proveedor e independiente, reintento que triunfa, agotamiento, rescate manual, recuperación tras reinicio, lease abandonado, dos workers contra la misma base, rotación, endpoint deshabilitado y reactivado, cambio de endpoint y frontera de elegibilidad).
 
 ## Riesgos y deuda técnica
 
@@ -1060,13 +2104,14 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - Auditoría actual en logs, sin almacén persistente empresarial.
 - Listados anteriores de Users/Integrations acotados a 100; Providers, memberships, Drivers, Vehicles e historiales ya tienen paginación.
 - V1.4: `POST …/drivers` sigue aceptando el UUID de un User DRIVER activo sin perfil; desde V1.6.1 la vía de alta soportada es la invitación, que crea el Driver al activar.
-- Cambiar un vehículo a INACTIVE/MAINTENANCE/SUSPENDED o suspender un Driver no cierra su asignación vigente; la política con entregas en curso se define en V1.5.
+- Cambiar un vehículo a INACTIVE/MAINTENANCE/SUSPENDED o suspender un Driver no cierra su asignación de entrega ACTIVE (V1.8): impide asignarlos de nuevo, pero el servicio en curso sigue con ellos hasta que el proveedor reasigne o cancele.
 - No existe eliminación ni transferencia de Drivers/Vehicles entre proveedores; por eso todos los registros cuentan para los límites.
 - ApiIdempotencyRecord no expira todavía; definir retención antes de volumen alto. El rate limit de creación B2B es por IP (clientes detrás de la misma IP comparten cupo).
 - `goodsValue` admite 2 decimales (NUMERIC(14,2)); monedas ISO con 0 o 3 decimales requerirán ajustar precisión/validación.
 - Los stops contienen datos personales operativos sin cifrado a nivel de columna ni política de retención; los logs no los incluyen.
 - El orden de packages en la respuesta es determinista pero no refleja el orden de envío.
 - V1.6: la cotización mantiene abierta una transacción (bloqueo de la DeliveryRequest) durante la llamada de routing, hasta unos 15 s en el peor caso con la configuración por defecto; con alto volumen conviene un mecanismo de single-flight sin conexión retenida.
+- Corregido el 2026-09-21: dentro de esa transacción, las búsquedas de zona y de tarifa usaban el cliente global de Prisma, que pide una segunda conexión del pool mientras la transacción retiene la suya y el bloqueo. Con tantas cotizaciones simultáneas como conexiones, todas esperaban el bloqueo y quien lo tenía esperaba al pool: interbloqueo hasta el timeout de 10 s y `500` en todas (P2024). Ahora toda consulta de la transacción usa `tx` (`resolveActive` y `findActive` aceptan el cliente de la transacción). Regla general: dentro de un `$transaction` interactivo nunca se consulta con `this.prisma` ni con servicios que lo usen.
 - V1.6: geometría planar en grados (adecuada a escala ciudad) sin PostGIS; zonas vecinas no pueden compartir borde; límites de Ocozocoautla/Tuxtla del seed son aproximados y los precios son placeholders.
 - V1.6: Google Routes verificado una vez contra la API real (`routing:check-google` y cotización HTTP con `ROUTING_PROVIDER=google`); las pruebas automatizadas siguen usando respuestas HTTP simuladas y no consumen cuota.
 - V1.6: sin DELETE de bandas por API; a nivel SQL una banda no usada de un plan ACTIVE podría borrarse manualmente (las usadas están protegidas por FK). La cotización detecta la anomalía como RATE_CONFIGURATION_INVALID.
@@ -1076,13 +2121,125 @@ Para uso futuro: configurar .env y ejecutar `docker compose up -d --build`. Si P
 - V1.6.1: el correo se envía tras el commit sin cola ni reintentos automáticos; un fallo se reporta como `emailDelivery: FAILED` y se resuelve con resend.
 - V1.6.1: los límites de invitación son por IP en memoria; administradores autenticados pueden saber si un email ya tiene cuenta (errores útiles de su alcance).
 - V1.6.1: el outbox local guarda enlaces con token en claro en la carpeta temporal; es sólo para desarrollo y se rechaza en producción.
+- V1.7: expiración de Dispatch perezosa (sin cron); un OPEN vencido figura EXPIRED en lecturas y se persiste al intentar reclamar o cancelar. Sin notificaciones: los proveedores consultan `view=AVAILABLE` (sockets pendientes, V1.9+).
+- V1.7: el claim bloquea la fila del Dispatch; con muy alto volumen conviene medir la contención. La elegibilidad no considera capacidad real (Drivers disponibles) ni cercanía.
+- V1.7: coberturas sólo por SUPER_ADMIN; desactivar una cobertura no retira candidaturas ya ofrecidas, pero sus claims fallan con PROVIDER_NOT_ELIGIBLE.
+- V1.8: `assignmentOverdue` es sólo una señal; no hay cron que libere, reasigne ni notifique el vencimiento del plazo, y no existe métrica agregada de incumplimiento.
+- V1.8: el Driver no acepta ni rechaza la asignación (no hay Driver App hasta V1.9) y no se comprueba su disponibilidad real, su cercanía ni su efectivo para `COURIER_ADVANCE`; el proveedor asume esa responsabilidad.
+- V1.8: la asignación no crea estados de ejecución (recogido/en camino/entregado); el Dispatch permanece CLAIMED hasta que el ciclo de vida de la entrega exista.
+- V1.8: un Driver o Vehicle sólo ejecuta una entrega a la vez (índices únicos parciales); entregas agrupadas o multi-stop operativo requerirán relajar esa regla deliberadamente.
+- V1.9: un repartidor independiente sigue teniendo un `Driver` ligado a un proveedor, porque V1.9 no crea cuentas (el alta es V1.6.1). Los contextos están separados y no hay fuga de recursos, pero el alta de un independiente **puro** (sin proveedor) exigirá una invitación sin `providerId` en una versión futura.
+- V1.9: la elegibilidad del independiente no considera zona de servicio. Un repartidor APPROVED ve todos los Dispatches OPEN cuyo ServiceType lo admita, sin equivalente a `ProviderServiceCoverage`; operar en varias ciudades exigirá una cobertura por repartidor.
+- V1.9: tampoco se considera cercanía, capacidad real ni efectivo disponible para `COURIER_ADVANCE`; no hay wallet, saldo ni crédito, y Mandaria no verifica que el repartidor pueda adelantar la mercancía.
+- V1.9: no hay verificación documental del repartidor ni del vehículo, ni alta pública. `PENDING` y `REJECTED` existen en el modelo para ese onboarding futuro, pero hoy sólo SUPER_ADMIN crea perfiles, ya en `APPROVED`.
+- V1.9: que un Dispatch aparezca en `/driver/dispatches/available` no garantiza poder tomarlo; la disponibilidad del repartidor y del vehículo se resuelve bajo bloqueos en el `take`, que puede responder 409.
+- V1.9: sin notificaciones. Un repartidor descubre trabajo consultando el listado, igual que un proveedor con `view=AVAILABLE`.
+- V1.9: `take` serializa con la suspensión y con la desactivación de vehículos mediante el bloqueo del perfil; si en el futuro se añaden más operaciones administrativas sobre el repartidor, deben tomar ese mismo bloqueo o volverá a abrirse la carrera que corrigió el CHECK V1.9-A.
+- V1.10-A: los créditos existen pero no se consumen. Hasta V1.10-D cualquier proveedor o repartidor sigue reclamando y tomando servicios aunque su saldo sea 0; un saldo alto hoy no confiere ninguna ventaja operativa.
+- V1.10-A: las recargas son una declaración de SUPER_ADMIN sobre un pago externo; Mandaria no lo verifica ni lo concilia. `externalReference` es texto libre sin validación contra un banco.
+- V1.10-A: el ledger sólo admite `DELETE` en bases cuyo nombre termina en `_test` y con `mandaria.ledger_purge = 'test-fixtures'`. Hasta el CHECK V1.10-A el interruptor funcionaba en cualquier base y para **cualquier rol con permiso DELETE** (fijar un GUC propio no requiere privilegios), así que usar un rol sin privilegios de dueño no lo cerraba. Sigue siendo cierto que el dueño de las tablas puede desactivar triggers: en producción la aplicación debe usar un rol que no sea dueño y el nombre de la base no debe terminar en `_test`.
+- V1.10-A: la Idempotency-Key es única por cuenta, no global; reutilizar la misma key en dos cuentas distintas registra dos movimientos independientes.
+- V1.10-A: los límites (1 000 000 por movimiento, 1 000 000 000 de saldo) son constantes de código y de CHECK; cambiarlos requiere migración.
+- OpenAPI: 130 campos anulables de versiones anteriores (V1.1–V1.9, incluidos varios de V1.9) se publican como `type: object` sin estructura, porque TypeScript refleja `X | null` como Object. Los esquemas de V1.10-A declaran su tipo explícitamente; el resto queda pendiente como tarea aparte.
+- V1.10-B: las políticas sólo se calculan; desde V1.10-C cada Dispatch nuevo congela su costo por actor y proveedor/repartidor ven su `creditCost`, pero nada lo cobra todavía (V1.10-D).
+- V1.10-C: sin políticas ACTIVE para todos los actores del ServiceType, **ninguna cotización puede aceptarse** (409 `CREDIT_POLICY_UNAVAILABLE`): crear las políticas es parte del despliegue. Una política que calcule 0 créditos también bloquea la apertura (422).
+- V1.10-C: los Dispatches anteriores a V1.10-C no tienen snapshot (`creditCost: null`); V1.10-D los marca `creditMode: LEGACY` y los adjudica sin cobro.
+- V1.10-E: liberar un servicio pagado o cancelar la entrega **sí** devuelve los créditos completos; cancelar sólo la asignación o reasignar **no**, porque el servicio sigue adjudicado. Un proveedor puede reclamar y liberar repetidamente sin costo neto: no hay penalización por reservar y soltar, y eso queda como decisión de negocio a revisar.
+- V1.10-E: sólo existen devoluciones completas. No hay refunds parciales ni penalización por etapa porque el modelo todavía no tiene estados de ejecución (recogido, en camino); introducirlos exigirá una versión posterior.
+- V1.11-A: la entrega se confirma **por declaración** del actor que ejecutó el servicio; Mandaria no la verifica (no hay foto, firma, OTP ni GPS). Un proveedor o repartidor puede declarar entregado algo que no entregó, y como `DELIVERED` es irreversible, corregirlo exigiría una operación administrativa que hoy no existe.
+- V1.11-A: no existe cierre por SUPER_ADMIN ni por el cliente B2B, ni cierre automático por tiempo. Un servicio cuyo actor nunca confirme se queda `CLAIMED` indefinidamente, ocupando su Driver y su Vehicle, hasta que lo libere o se cancele la DeliveryRequest.
+- V1.11-A: no hay entrega fallida ni parcial. Un intento infructuoso sólo se puede expresar liberando o cancelando, que económicamente devuelve los créditos como si el servicio nunca se hubiera adjudicado.
+- V1.12-A: el cliente B2B se entera **consultando**, no porque Mandaria le avise. Un sistema que no sondee no sabrá nunca que su entrega se completó; eso es justamente lo que resolvería V1.12-B con webhooks.
+- V1.12-A: se publica el estado actual, no la línea de tiempo. No hay histórico de transiciones ni marcas de cuándo pasó a `OPEN` o a `ASSIGNED`; sólo `requestedAt`, `deliveredAt` y `cancelledAt`.
+- V1.12-A: la caducidad es perezosa. Un `OPEN` vencido se informa `EXPIRED` aunque la fila siga diciendo `OPEN`, de modo que la lectura pública puede ir por delante del estado persistido.
+- V1.12-A: `DELIVERED` refleja lo que el actor **declaró** en V1.11-A; Mandaria no lo verifica, así que el cliente B2B recibe una afirmación del ejecutor, no una prueba de entrega.
+- V1.12-B: nadie lee el Outbox todavía. Los eventos se acumulan sin consumidor hasta V1.12-C, y no hay retención ni purga: una fila nunca se borra por el camino normal.
+- V1.12-B: sólo existe `delivery.completed`. El resto del catálogo (`delivery.requested`, `.claimed`, `.released`, `.cancelled`…) no se implementó deliberadamente, para no construir una plataforma genérica sobre eventos hipotéticos.
+- V1.12-B: las entregas anteriores a la frontera no tienen evento y no lo tendrán. Fabricar un `occurredAt` para un hecho antiguo sería inventar historia; siguen observándose por V1.12-A.
+- V1.12-B: el contrato del payload está clavado en SQL, así que añadir un campo público al evento exige una migración. Es deliberado —es una promesa versionada a sistemas externos— pero hay que contarlo al ampliarlo.
+- V1.12-B: `recordedAt` toma el `DEFAULT CURRENT_TIMESTAMP` del proyecto, que escribe la hora **local** del servidor mientras el resto de la columna es UTC. Hoy no hay discrepancia porque Prisma suministra el valor; un `INSERT` por SQL crudo que lo omita guardará una hora desplazada. Ninguna garantía de V1.12-B depende de `recordedAt`, precisamente por eso. El mismo patrón existe en todas las columnas `@default(now())` del proyecto.
+- V1.12-C: un solo intento. Un fallo queda registrado y se detiene ahí hasta V1.12-D o hasta una entrega manual por SUPER_ADMIN; nadie reintenta y nadie avisa.
+- V1.12-C: la política SSRF valida el destino y las direcciones que resuelve justo antes de conectar, pero entre esa comprobación y el socket un resolutor podría responder distinto (DNS rebinding). Cerrarlo exige un dispatcher propio fijado a la dirección validada, que es un cambio mayor; queda escrito y no implícito.
+- V1.12-C: sin firma. Un receptor todavía no puede verificar que la petición viene de Mandaria, así que debe tratar el webhook como una señal para consultar `GET /delivery-requests/{publicId}/status`, que sigue siendo la fuente autenticada. La firma HMAC de V1.12-D se agrega como cabeceras adicionales sobre el mismo cuerpo, sin romper el contrato.
+- V1.12-C: el contrato es at-least-once. Dos procesos podrían entregar el mismo evento a la vez; cada intento tiene identidad propia y ambos quedan auditados, pero no se construyó un lease distribuido.
+- V1.12-C: los intentos se acumulan como historial, sin retención ni purga, igual que el Outbox.
+- V1.12-C: desplegar esta versión no entrega los eventos ya registrados. El primer intento sólo ocurre en el camino de completion, y la migración no hace ninguna petición HTTP; los anteriores esperan a una política explícita o a una entrega manual.
+- V1.12-D: la entrega es **at-least-once y nunca exactly-once**. Si el receptor responde y Mandaria muere antes de registrarlo, el mismo `eventId` llega dos veces; la suite lo demuestra a propósito. Deduplicar es obligación del consumidor y así está documentado.
+- V1.12-D: la ventana de DNS rebinding entre la validación y el socket **sigue abierta**. Cerrarla exige fijar la conexión a la dirección ya validada, lo que obliga a añadir el cliente HTTP de Node como dependencia explícita y sustituir `fetch`. La protección SSRF es buena, no perfecta, y conviene no describirla de otro modo.
+- V1.12-D: no hay dead-letter ni retención. Un `EXHAUSTED` se queda ahí hasta que un administrador lo empuje a mano, y los intentos se acumulan como historial.
+- V1.12-D: la política de reintentos es global, sin curva por cliente, y vive en código. Cambiarla exige desplegar.
+- V1.12-D: el bucle del worker es por proceso. Con varios backends todos consultan la base cada `B2B_WEBHOOK_POLL_SECONDS`; el lease evita el trabajo duplicado, pero no hay coordinación previa que reparta la carga.
+- V1.12-D: perder `B2B_WEBHOOK_SECRET_KEY` deja ilegibles los secretos guardados y obliga a reemitirlos todos. Es el precio deliberado de no guardar la clave junto a los datos; la rotación de la clave maestra no está automatizada.
+- V1.12-E: `/webhooks/health` **no es salud de la flota**. Los conteos son compartidos, pero `thisInstance` es sólo el backend que responde: no hay registro de workers, así que con varios procesos nadie sabe si otro dejó de hacer su bucle.
+- V1.12-E: el rescate es de uno en uno. No hay rescate masivo ni por cliente; con cien agotados hay que llamar cien veces.
+- V1.12-E: el rescate y el reenvío quedan en el log de la aplicación con el id del actor, **no en una tabla consultable**. Quién rescató qué hace un mes no se responde con una consulta.
+- V1.12-E: la vista es administrativa. No hay API para que un IntegrationClient consulte sus propios eventos; su fuente sigue siendo `GET /delivery-requests/{publicId}/status`.
+- V1.12-E: `NOT_YET_PICKED_UP` no distingue «recién ocurrido» de «el worker está caído». Ambos casos se ven igual hasta que el evento entra en la entrega fiable, y sólo `oldestPendingDueAt` delata el atasco.
+- V1.10-E: un Dispatch monetizado cuyo cargo desaparezca queda inrevertible (409 `CREDIT_REFUND_INTEGRITY_ERROR`) hasta que un administrador corrija los datos: es deliberado, para no regalar créditos.
+- V1.10-D: un proveedor sin saldo deja de poder reclamar, así que un servicio puede quedarse sin quien lo tome por falta de créditos, no por falta de capacidad. Operativamente hay que vigilar los saldos (no hay recarga automática ni alertas).
+- V1.10-D: el costo se congela al abrir y se cobra al adjudicar; entre ambos momentos puede pasar tiempo y el precio ya no se puede corregir salvo cancelando el Dispatch.
+- V1.10-D: si un Dispatch monetizado pierde su snapshot (corrupción), nadie puede adjudicárselo (409 `CREDIT_SNAPSHOT_UNAVAILABLE`): es deliberado, pero exige intervención administrativa.
+- V1.10-C: los actores requeridos existen dos veces (`SERVICE_EXECUTION_MODES` en código y `credit_required_actors()` en SQL); cambiar el modo de un ServiceType exige migración para actualizar la función.
+- V1.10-C: las suites E2E corren en serie (`fileParallelism: false`) porque comparten la configuración global de políticas; la corrida completa es más lenta.
+- V1.10-B: sin activación futura ni scheduler; una versión rige desde que se crea. Deshabilitar el cobro de una combinación no tiene endpoint (y, cuando V1.10-D cobre, la falta de política bloqueará adjudicaciones: fallo cerrado).
+- V1.10-B: con `minimumCredits: 0` un servicio de 0 m cuesta 0 créditos; V1.10-D debe decidir cómo tratarlo porque el ledger no admite movimientos de 0.
 - JWT HS256 requiere distribución segura de claves si se separan servicios; rotación de claves de firma no automatizada.
 - Credenciales pueden no expirar si el administrador omite expiresAt; establecer política operativa de rotación.
 - Health 503 se prueba con fallo de consulta simulado, sin detener PostgreSQL compartido.
 - Overrides multer ^2.3.0 y deepmerge-ts ^8.0.0 corrigen avisos transitivos; mantenerlos bajo revisión. tsconfck está deprecado como dependencia de desarrollo.
 
-## Fuera de V1.6.1 / V1.7+
+## Fuera de V1.12-E / V1.12-F+
 
-No se implementaron Dispatch (asignación de proveedor, Driver o vehículo), hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
+No se implementaron dead-letter queue, retención o purga de intentos, política de reintentos por cliente, coordinación entre workers más allá del lease, registro de workers ni salud de flota, rescate masivo, auditoría persistente de acciones administrativas, rotación automatizada de la clave maestra, cierre de la ventana de DNS rebinding, API B2B de lectura de eventos ni administración completa del Outbox, catálogo de eventos más allá de `delivery.completed`, histórico de transiciones de estado, estados intermedios de ejecución (recogido, en camino, intento fallido), prueba de entrega (foto, firma, OTP), entrega parcial o fallida, devolución al origen, calificación del servicio, liquidaciones ni facturación por entrega, cierre de entregas por SUPER_ADMIN o por el cliente B2B, cierre automático por tiempo, devoluciones parciales, penalizaciones ni caducidad de créditos, devolución automática, pasarela de pago, Driver App, autorregistro del repartidor, verificación documental, aceptación/rechazo de una asignación de flotilla por el repartidor, sockets/notificaciones push, penalizaciones de proveedor, algoritmo de repartidor más cercano, hunting, elegibilidad o tarifa por vehículo, BASE_PLUS_DISTANCE, INTERCITY/FREIGHT/ERRAND, servicios programados (scheduledFor), PostGIS, polylines, Socket.IO, GPS/tracking, ciclo de vida completo de entrega, múltiples stops operativos, fletes, Wallet, créditos/recargas, pagos/payout, CUSTOMER, apps Repartidor/Cliente, KYC/documentos, planes comerciales ni facturación.
 
-Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API, Independent Driver (V1.9) y auditoría persistente siguen pendientes.
+Las futuras apps Cliente/Repartidor usarán User. Los sistemas externos usarán IntegrationClient. Los créditos futuros pertenecen al proveedor; los vehículos son recursos operativos. El correo transaccional existe desde V1.6.1 sólo para invitaciones; recuperación de contraseña, cambio de email, desactivación por API y auditoría persistente siguen pendientes.
+
+## Webhook Operations & Observability (V1.12-E)
+
+Responde: **¿por qué este cliente dice que no recibió su evento?** V1.12-D dejó el transporte funcionando; V1.12-E lo hace respondible sin abrir una consola SQL. No añade maquinaria de entrega: ni tipos de evento nuevos, ni política de reintentos, ni cambios en la firma, el secreto o la política SSRF.
+
+```text
+V1.12-B el hecho durable · V1.12-C el primer intento · V1.12-D reintentos, lease y firma · V1.12-E poder responder
+```
+
+### Tres cosas distintas, que no deben mezclarse
+
+```text
+evento  hecho inmutable, sin estado propio   ·   transporte  lo único que cambia   ·   intentos  historia inmutable
+```
+
+Una pantalla que las mezcle dirá «el evento falló», que no es algo que pueda ocurrir: el evento ocurrió, lo que falló fue un intento. Por eso la columna se llama `transportState` y no `status`, y el detalle devuelve los tres bloques por separado.
+
+### `NO_DELIVERY`: derivado, nunca guardado
+
+El enum persistido sigue teniendo tres valores. El cuarto que ve un operador se deriva en la lectura —un evento sin fila de transporte— y la respuesta dice por qué: `NO_ENDPOINT` (sin webhook, o sin secreto con el que firmar), `BEFORE_BOUNDARY` (anterior al `deliverFrom` del endpoint) o `NOT_YET_PICKED_UP` (elegible, son segundos). **Ninguno es un fallo.** Inventar un estado persistido habría significado escribir filas para historia que nunca las pidió: los eventos de la época V1.12-B/C existen legítimamente sin transporte.
+
+### El rescate programa; no entrega
+
+```
+POST /api/v1/admin/b2b-events/{eventId}/rescue   →   { "outcome": "RESCHEDULED" }
+```
+
+`EXHAUSTED → PENDING`, con el próximo intento ahora. **No intenta nada ahí**, y por eso la respuesta nunca dice «entregado». No borra intentos ni reinicia el contador, así que **un rescate compra exactamente un intento más**; si vuelve a fallar regresa a `EXHAUSTED` y puede rescatarse otra vez. Dos rescates simultáneos no duplican trabajo: el segundo encuentra la entrega ya pendiente y lo dice.
+
+El guard de PostgreSQL se **estrecha**, no se relaja: la transición se permite sólo hacia una fila `PENDING` bien formada. Identidad, propiedad, un `attemptCount` que sólo crece y una entrega `DELIVERED` que nunca reabre siguen protegidos.
+
+### El reenvío manual, ahora clasificado
+
+`DELIVERED` · `RESCHEDULED` · `EXHAUSTED` · `FAILED` · `SKIPPED`. Una pantalla no debe leer un 200 de `POST .../deliver` como «enviado»: el campo `outcome` dice qué ocurrió de verdad.
+
+### La superficie
+
+```
+GET  /api/v1/admin/b2b-events                          listado con filtros y paginación
+GET  /api/v1/admin/b2b-events/{eventId}                evento, payload congelado, destino e intentos
+POST /api/v1/admin/b2b-events/{eventId}/rescue         EXHAUSTED → PENDING
+GET  /api/v1/admin/webhooks/health                     cuánto trabajo queda, y qué hace esta instancia
+GET  /api/v1/admin/integrations/{id}/webhook/summary   totales por cliente
+```
+
+Todo SUPER_ADMIN; un token B2B ni siquiera es una sesión aquí (401, no 403). Nunca aparece el secreto, ni en claro ni cifrado: sólo si existe y desde cuándo. **Ni siquiera SUPER_ADMIN necesita leer un secreto existente**; si se perdió, se rota.
+
+`/webhooks/health` separa dos bloques a propósito: los conteos son persistidos y compartidos por todos los backends, mientras que `thisInstance` es configuración y memoria **de la instancia que responde**. Con varios backends nadie sabe lo que hacen los demás, así que esto no es salud global y no se presenta como tal.
+
+Detalle completo en [V1.12-E Webhook Operations & Observability](docs/V1.12-E-WEBHOOK-OPERATIONS.md). Pruebas: `test/b2b-webhook-operations.spec.ts` (derivación del estado de transporte, las tres razones de `NO_DELIVERY`, lease en curso frente a caducado, nombre público del evento y clasificación del reenvío) y 17 casos en `test/b2b-webhooks.e2e-spec.ts` sobre Nest y PostgreSQL reales (búsqueda por referencia externa, detalle con payload congelado, evento fuera de la frontera, filtros y paginación coherentes, rescate y rescate repetido, carreras de rescate y de reenvío, salud, enmascaramiento del secreto, aislamiento por rol e inmutabilidad del Outbox bajo SQL).

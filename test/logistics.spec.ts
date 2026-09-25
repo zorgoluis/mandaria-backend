@@ -122,9 +122,11 @@ describe('V1.4 service rules', () => {
             findUnique: vi
               .fn()
               .mockResolvedValueOnce({ id: 'd', providerId: 'p' })
-              .mockResolvedValue({ assignments: [] }),
+              .mockResolvedValue({ assignments: [], independentProfile: null }),
             update,
           },
+          // V1.9: self() also reports the delivery assignment the driver is executing, if any.
+          deliveryAssignment: { findFirst: vi.fn().mockResolvedValue(null) },
         },
       );
       const call = new DriversService(prisma).setOwnAvailability(

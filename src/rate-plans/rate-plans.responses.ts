@@ -42,9 +42,9 @@ export class RatePlanResponse {
   bands!: RateBandResponse[];
   @ApiProperty({ format: 'date-time' }) createdAt!: Date;
   @ApiProperty({ format: 'date-time' }) updatedAt!: Date;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   activatedAt!: Date | null;
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
   deactivatedAt!: Date | null;
 }
 export class RatePlanPageResponse extends PaginationResponse {

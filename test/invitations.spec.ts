@@ -339,6 +339,7 @@ describe('V1.6.1 configuration', () => {
     SMTP_HOST: 'smtp.example.com',
     MAIL_FROM: 'Mandaria <no-reply@example.com>',
     MANDARIA_WEB_URL: 'https://app.example.com/',
+    B2B_WEBHOOK_SECRET_KEY: 'k'.repeat(64),
   };
   it('defaults to 24 h TTL, 60 s resend cooldown and the local outbox outside production', () => {
     expect(validateEnvironment(base)).toMatchObject({

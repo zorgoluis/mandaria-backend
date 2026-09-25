@@ -35,8 +35,18 @@ model User {
   providerMemberships ProviderMembership[]
   driver Driver?
   invitations UserInvitation[] @relation("InvitationUser")
+  deliveryAssignmentsCreated DeliveryAssignment[] @relation("DeliveryAssignmentAssignedBy")
+  deliveryAssignmentsEnded DeliveryAssignment[] @relation("DeliveryAssignmentEndedBy")
   createdInvitations UserInvitation[] @relation("InvitationCreator")
   revokedInvitations UserInvitation[] @relation("InvitationRevoker")
+  creditLedgerEntries CreditLedgerEntry[]
+  dispatchesDelivered Dispatch[] @relation("DispatchDeliveredBy")
+  creditPolicies CreditPolicy[]
+  independentProfilesApproved IndependentDriverProfile[] @relation("IndependentProfileApprover")
+  independentProfilesSuspended IndependentDriverProfile[] @relation("IndependentProfileSuspender")
+  independentProfilesRejected IndependentDriverProfile[] @relation("IndependentProfileRejecter")
+  webhookEndpointsCreated B2bWebhookEndpoint[] @relation("WebhookEndpointCreatedBy")
+  webhookEndpointsUpdated B2bWebhookEndpoint[] @relation("WebhookEndpointUpdatedBy")
 }
 model RefreshToken {
   id String @id @default(uuid()) @db.Uuid
@@ -59,6 +69,10 @@ model IntegrationClient {
   credentials IntegrationCredential[]
   deliveryRequests DeliveryRequest[]
   idempotencyRecords ApiIdempotencyRecord[]
+  outboxEvents B2bOutboxEvent[]
+  webhookEndpoint B2bWebhookEndpoint?
+  webhookAttempts B2bWebhookDeliveryAttempt[]
+  webhookDeliveries B2bWebhookDelivery[]
 }
 model IntegrationCredential {
   id String @id @default(uuid()) @db.Uuid
@@ -102,6 +116,11 @@ model DeliveryProvider {
   drivers Driver[]
   vehicles Vehicle[]
   invitations UserInvitation[]
+  serviceCoverages ProviderServiceCoverage[]
+  dispatchCandidates DispatchCandidate[]
+  deliveryAssignments DeliveryAssignment[]
+  /// V1.10: exactly one per provider, created with it (trigger) and never deleted by the API.
+  creditAccount CreditAccount?
   @@index([type, status])
   @@index([createdAt, id])
 }
@@ -156,14 +175,23 @@ model Driver {
   provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
   user User @relation(fields: [userId], references: [id], onDelete: Restrict)
   assignments DriverVehicleAssignment[]
+  deliveryAssignments DeliveryAssignment[]
+  /// V1.9: explicit capability to operate for itself; never replaces providerId.
+  independentProfile IndependentDriverProfile?
+  claimedDispatches Dispatch[] @relation("DispatchIndependentClaim")
   @@unique([id, providerId])
   @@index([providerId, status, availability])
   @@index([providerId, createdAt, id])
 }
-/// Operational resource owned by the provider; drivers only use it through assignments.
+/// Operational resource. V1.9: owned by a provider (fleet) XOR by an IndependentDriverProfile;
+/// a CHECK in the migration forbids both and neither. Drivers only use a provider vehicle through
+/// V1.4 assignments; an independent driver uses its own vehicles directly. The composite keys are
+/// what stops a provider from assigning an independent vehicle (and the reverse) in SQL.
 model Vehicle {
   id String @id @default(uuid()) @db.Uuid
-  providerId String @db.Uuid
+  providerId String? @db.Uuid
+  /// V1.9: set exactly when providerId is null; the vehicle belongs to this independent driver.
+  independentDriverProfileId String? @db.Uuid
   identifier String
   type VehicleType
   status VehicleStatus @default(ACTIVE)
@@ -174,12 +202,16 @@ model Vehicle {
   plate String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  provider DeliveryProvider? @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  independentDriverProfile IndependentDriverProfile? @relation(fields: [independentDriverProfileId], references: [id], onDelete: Restrict)
   assignments DriverVehicleAssignment[]
+  deliveryAssignments DeliveryAssignment[]
   @@unique([providerId, identifier])
   @@unique([id, providerId])
+  @@unique([id, independentDriverProfileId])
   @@index([providerId, type, status])
   @@index([providerId, createdAt, id])
+  @@index([independentDriverProfileId, status])
 }
 /// Assignment history. unassignedAt = null marks the active assignment; partial unique
 /// indexes in the migration allow one active row per driver and per vehicle.
@@ -196,6 +228,46 @@ model DriverVehicleAssignment {
   vehicle Vehicle @relation(fields: [vehicleId, providerId], references: [id, providerId], onDelete: Restrict)
   @@index([driverId, assignedAt])
   @@index([vehicleId, assignedAt])
+}
+
+/// V1.9 lifecycle. PENDING exists for a future public onboarding: V1.9 has no self-registration,
+/// so SUPER_ADMIN moves a driver straight to APPROVED. REJECTED closes an application without
+/// deleting history; SUSPENDED withdraws an approval and can be reverted by approving again.
+enum IndependentDriverStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  REJECTED
+}
+/// V1.9: an existing Driver that may also take dispatches for itself, with its own vehicles. It is
+/// an explicit capability layered on the Driver, never a synthetic DeliveryProvider: the person
+/// keeps one identity (User → Driver) and gains a second execution context. Nothing that already
+/// belongs to Driver (name, status, availability, provider) is duplicated here.
+model IndependentDriverProfile {
+  id String @id @default(uuid()) @db.Uuid
+  driverId String @unique @db.Uuid
+  status IndependentDriverStatus @default(PENDING)
+  approvedAt DateTime?
+  approvedByUserId String? @db.Uuid
+  suspendedAt DateTime?
+  suspendedByUserId String? @db.Uuid
+  rejectedAt DateTime?
+  rejectedByUserId String? @db.Uuid
+  /// Free-text motive of the last status change; never personal data.
+  reason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  approvedBy User? @relation("IndependentProfileApprover", fields: [approvedByUserId], references: [id], onDelete: Restrict)
+  suspendedBy User? @relation("IndependentProfileSuspender", fields: [suspendedByUserId], references: [id], onDelete: Restrict)
+  rejectedBy User? @relation("IndependentProfileRejecter", fields: [rejectedByUserId], references: [id], onDelete: Restrict)
+  vehicles Vehicle[]
+  deliveryAssignments DeliveryAssignment[]
+  /// V1.10: created the first time the profile reaches APPROVED; kept through suspension.
+  creditAccount CreditAccount?
+  /// Lets DeliveryAssignment prove driver and profile match with a composite FK instead of a trigger.
+  @@unique([id, driverId])
+  @@index([status, createdAt])
 }
 
 enum DeliveryRequestStatus {
@@ -240,6 +312,11 @@ model DeliveryRequest {
   packages DeliveryPackage[]
   financialContext DeliveryFinancialContext?
   quotes DeliveryQuote[]
+  dispatches Dispatch[]
+  outboxEvents B2bOutboxEvent[]
+  /// V1.12-B: lets an outbox event reference (request, owner) as one unit, so PostgreSQL
+  /// refuses an event attributed to an IntegrationClient that does not own the request.
+  @@unique([id, integrationClientId])
   @@index([integrationClientId, requestedAt, id])
   @@index([externalReference])
   @@index([status, requestedAt])
@@ -344,6 +421,7 @@ model ServiceZone {
   updatedAt DateTime @updatedAt
   ratePlans RatePlan[]
   quotes DeliveryQuote[]
+  providerCoverages ProviderServiceCoverage[]
   @@index([status, minLatitude, maxLatitude, minLongitude, maxLongitude])
 }
 /// Versioned tariff for ServiceZone + ServiceType. Only DRAFT is editable; at most one ACTIVE.
@@ -410,6 +488,7 @@ model DeliveryQuote {
   serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
   ratePlan RatePlan @relation(fields: [ratePlanId, serviceZoneId], references: [id, serviceZoneId], onDelete: Restrict)
   rateBand RateBand @relation(fields: [rateBandId, ratePlanId], references: [id, ratePlanId], onDelete: Restrict)
+  dispatch Dispatch?
   @@index([deliveryRequestId, createdAt])
   @@index([status, expiresAt])
   @@index([createdAt, id])
@@ -456,4 +535,574 @@ model UserInvitation {
   @@index([providerId, role, status, createdAt])
   @@index([status, expiresAt])
   @@index([createdAt, id])
+}
+
+enum ProviderServiceCoverageStatus {
+  ACTIVE
+  INACTIVE
+}
+/// V1.7 operational enablement: a provider may take services of serviceType inside serviceZone
+/// only while this row is ACTIVE (and the provider itself is ACTIVE). Managed by SUPER_ADMIN.
+model ProviderServiceCoverage {
+  id String @id @default(uuid()) @db.Uuid
+  providerId String @db.Uuid
+  serviceZoneId String @db.Uuid
+  serviceType ServiceType
+  status ProviderServiceCoverageStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
+  @@unique([providerId, serviceZoneId, serviceType])
+  @@index([serviceZoneId, serviceType, status])
+}
+
+/// EXPIRED is persisted lazily: an OPEN dispatch past expiresAt is reported as EXPIRED and can
+/// never be claimed. There is no NO_PROVIDER status: a dispatch without OFFERED candidates stays
+/// OPEN until it expires and is flagged by the derived field noProviderAvailable.
+enum DispatchCreditMode {
+  LEGACY
+  MONETIZED
+}
+/// V1.11-A: DELIVERED closes a service that was physically delivered. It is terminal and keeps
+/// its claim owner, so the credits charged at CLAIM/TAKE stay consumed: the refund guards only
+/// return credits when the payer stops holding the service or the service is cancelled.
+enum DispatchStatus {
+  OPEN
+  CLAIMED
+  EXPIRED
+  CANCELLED
+  DELIVERED
+}
+enum DispatchCandidateStatus {
+  OFFERED
+  CLAIMED
+  RELEASED
+}
+/// V1.7: offer of an ACCEPTED quote to eligible providers. Created in the same transaction that
+/// accepts the quote (one per quote). The winner is claimedByProviderId; no Driver/Vehicle yet.
+model Dispatch {
+  /// V1.10-C: frozen credit cost per actor type; empty for Dispatches opened before V1.10-C.
+  creditSnapshots DispatchCreditSnapshot[]
+  preEnforcementAwards DispatchPreEnforcementAward[]
+  /// V1.10-D monetization boundary, decided when the Dispatch is created and never changed.
+  /// MONETIZED (every Dispatch opened from V1.10-C on) must carry its snapshots and is charged at
+  /// CLAIM/TAKE; LEGACY (backfilled for the Dispatches that already existed) is never charged and
+  /// never gets a retroactive snapshot. A monetized Dispatch without its snapshot fails closed
+  /// instead of being free, so future corruption can never turn into free services.
+  creditMode DispatchCreditMode @default(MONETIZED)
+  id String @id @default(uuid()) @db.Uuid
+  deliveryRequestId String @db.Uuid
+  deliveryQuoteId String @unique @db.Uuid
+  status DispatchStatus @default(OPEN)
+  openedAt DateTime
+  expiresAt DateTime
+  /// Current owner while CLAIMED; kept as history when a CLAIMED dispatch is CANCELLED.
+  /// V1.9: mutually exclusive with claimedByIndependentDriverId (XOR CHECK in the migration).
+  claimedByProviderId String? @db.Uuid
+  /// V1.9: Driver.id of the independent that took the dispatch. A Driver id never travels in
+  /// claimedByProviderId: each execution model has its own column and its own foreign key.
+  claimedByIndependentDriverId String? @db.Uuid
+  claimedAt DateTime?
+  /// V1.11-A: when the delivery was confirmed and by whom. Both are written by the server from the
+  /// authenticated principal, never from the request body, and never change afterwards.
+  deliveredAt DateTime?
+  deliveredByUserId String? @db.Uuid
+  expiredAt DateTime?
+  cancelledAt DateTime?
+  cancellationReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  deliveryQuote DeliveryQuote @relation(fields: [deliveryQuoteId], references: [id], onDelete: Cascade)
+  claimedByIndependentDriver Driver? @relation("DispatchIndependentClaim", fields: [claimedByIndependentDriverId], references: [id], onDelete: Restrict)
+  deliveredBy User? @relation("DispatchDeliveredBy", fields: [deliveredByUserId], references: [id], onDelete: Restrict)
+  candidates DispatchCandidate[]
+  deliveryAssignments DeliveryAssignment[]
+  @@index([deliveryRequestId])
+  @@index([status, expiresAt])
+  @@index([claimedByProviderId, status])
+  @@index([claimedByIndependentDriverId, status])
+  outboxEvents B2bOutboxEvent[]
+  /// V1.12-B: lets an outbox event reference (dispatch, request) as one unit, so an event can
+  /// never point at a Dispatch belonging to a different DeliveryRequest.
+  @@unique([id, deliveryRequestId])
+  @@index([status, deliveredAt])
+  @@index([createdAt, id])
+}
+
+/// Immutable migration evidence: an award that existed before DB credit enforcement.
+/// actorId is a DeliveryProvider id for PROVIDER, or a Driver id for INDEPENDENT_DRIVER.
+model DispatchPreEnforcementAward {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dispatchId String @db.Uuid
+  actorType CreditAccountOwnerType
+  actorId String @db.Uuid
+  awardedAt DateTime
+  recordedAt DateTime @default(now())
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Restrict)
+  @@unique([dispatchId, actorType, actorId, awardedAt], map: "DispatchPreEnforcementAward_identity_key")
+}
+/// Snapshot of the providers a dispatch was offered to. Never recalculated or deleted.
+model DispatchCandidate {
+  id String @id @default(uuid()) @db.Uuid
+  dispatchId String @db.Uuid
+  providerId String @db.Uuid
+  status DispatchCandidateStatus @default(OFFERED)
+  offeredAt DateTime
+  claimedAt DateTime?
+  releasedAt DateTime?
+  releaseReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  @@unique([dispatchId, providerId])
+  @@index([providerId, status, dispatchId])
+}
+
+/// ACTIVE: the driver and vehicle currently operating the dispatch. REASSIGNED: replaced by a newer
+/// assignment. CANCELLED: ended without replacement (unassign or delivery cancellation).
+/// Execution states (picked up, in transit, delivered) belong to later versions.
+/// V1.11-A: COMPLETED is the successful end of an assignment, written when the delivery is
+/// confirmed. It reuses the V1.8 ending mechanism (endedAt/endedByUserId) instead of inventing a
+/// second one, and carries no endReason because nothing failed. Like any non-ACTIVE row it frees
+/// the driver and the vehicle for another service while the history stays.
+enum DeliveryAssignmentStatus {
+  ACTIVE
+  REASSIGNED
+  CANCELLED
+  COMPLETED
+}
+enum DeliveryAssignmentEndReason {
+  DRIVER_UNAVAILABLE
+  VEHICLE_ISSUE
+  OPERATIONAL_CHANGE
+  DELIVERY_CANCELLED
+  OTHER
+}
+/// V1.9: who executes a service. FLEET is the V1.8 model (a provider assigns one of its drivers).
+/// INDEPENDENT is the driver itself, with its own vehicle and no provider involved.
+enum DeliveryAssignmentMode {
+  FLEET
+  INDEPENDENT
+}
+/// V1.8/V1.9: which driver and vehicle execute a CLAIMED dispatch, in either execution mode. Rows
+/// are never overwritten: reassignment ends the ACTIVE row and inserts a new one, keeping the
+/// history. mode decides which owner column is set (XOR CHECK in the migration): FLEET carries
+/// providerId, INDEPENDENT carries independentDriverProfileId. The partial unique indexes still
+/// allow one ACTIVE row per dispatch, per driver and per vehicle — globally, so a driver busy as
+/// fleet cannot also be busy as independent. `delivery_assignment_guard` replaces the V1.8
+/// composite FKs: it proves, per mode, that driver and vehicle belong to the owner and that the
+/// owner currently holds the dispatch claim.
+model DeliveryAssignment {
+  id String @id @default(uuid()) @db.Uuid
+  dispatchId String @db.Uuid
+  mode DeliveryAssignmentMode @default(FLEET)
+  /// FLEET only; null for INDEPENDENT (never filled with a placeholder provider).
+  providerId String? @db.Uuid
+  /// INDEPENDENT only; null for FLEET.
+  independentDriverProfileId String? @db.Uuid
+  driverId String @db.Uuid
+  vehicleId String @db.Uuid
+  status DeliveryAssignmentStatus @default(ACTIVE)
+  assignedAt DateTime
+  assignedByUserId String @db.Uuid
+  endedAt DateTime?
+  endedByUserId String? @db.Uuid
+  endReason DeliveryAssignmentEndReason?
+  endReasonDetail String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  provider DeliveryProvider? @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  independentDriverProfile IndependentDriverProfile? @relation(fields: [independentDriverProfileId], references: [id], onDelete: Restrict)
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  assignedBy User @relation("DeliveryAssignmentAssignedBy", fields: [assignedByUserId], references: [id], onDelete: Restrict)
+  endedBy User? @relation("DeliveryAssignmentEndedBy", fields: [endedByUserId], references: [id], onDelete: Restrict)
+  @@index([dispatchId, assignedAt])
+  @@index([providerId, status, assignedAt])
+  @@index([independentDriverProfileId, status, assignedAt])
+  @@index([driverId, assignedAt])
+  @@index([vehicleId, assignedAt])
+}
+
+/// V1.10: who a CreditAccount belongs to. A fleet driver never has one: it works on its provider's.
+enum CreditAccountOwnerType {
+  PROVIDER
+  INDEPENDENT_DRIVER
+}
+/// V1.10 sign convention (enforced by CHECK): RECHARGE and SERVICE_REFUND are credits (> 0),
+/// SERVICE_AWARD is a debit (< 0), ADMIN_ADJUSTMENT may be either but never 0. Only RECHARGE and
+/// ADMIN_ADJUSTMENT are produced in V1.10-A; the other two are reserved for claim/take charging.
+/// V1.10-E: why a SERVICE_REFUND exists. Only operational events the backend really supports.
+enum CreditRefundReason {
+  PROVIDER_RELEASE
+  INDEPENDENT_RELEASE
+  DELIVERY_CANCELLED
+}
+enum CreditLedgerEntryType {
+  RECHARGE
+  SERVICE_AWARD
+  SERVICE_REFUND
+  ADMIN_ADJUSTMENT
+}
+/// How a manual recharge was paid outside Mandaria. A declaration by SUPER_ADMIN, not a gateway:
+/// Mandaria never moves or verifies that money.
+enum CreditRechargeMethod {
+  TRANSFER
+  CASH
+  OTHER
+}
+/// V1.10: Mandaria credits — the commercial right to be awarded services. They are integers and
+/// they are NOT money: not the delivery fee, not the goods value, not a driver's cash. Exactly one
+/// owner column is set, matching ownerType (CHECK). balance is materialized for fast reads and
+/// future claim-time checks, but it can only move through a CreditLedgerEntry: inserting an entry
+/// updates it in the same statement (trigger), and a direct UPDATE of balance is rejected.
+model CreditAccount {
+  id String @id @default(uuid()) @db.Uuid
+  ownerType CreditAccountOwnerType
+  providerId String? @unique @db.Uuid
+  independentDriverProfileId String? @unique @db.Uuid
+  /// Whole credits, 0..1_000_000_000 (CHECK). Starts at 0: an account is never born with credits.
+  balance Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  provider DeliveryProvider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  independentDriverProfile IndependentDriverProfile? @relation(fields: [independentDriverProfileId], references: [id], onDelete: Cascade)
+  entries CreditLedgerEntry[]
+  @@index([ownerType, createdAt])
+}
+/// V1.10: append-only history of an account. No row is ever updated, and deletion is refused too
+/// (trigger). balanceAfter = balanceBefore + amount, and each entry's balanceBefore is the
+/// account's balance at the moment it is written, so the chain ordered by sequence is gapless.
+/// Every human movement carries an Idempotency-Key, unique per account.
+model CreditLedgerEntry {
+  id String @id @default(uuid()) @db.Uuid
+  /// Global insertion order. Movements of one account are serialized by its row lock, so ordering
+  /// an account's entries by sequence reproduces the exact order they were applied in.
+  sequence Int @unique @default(autoincrement())
+  creditAccountId String @db.Uuid
+  type CreditLedgerEntryType
+  /// Signed whole credits: > 0 adds, < 0 removes. |amount| <= 1_000_000 per movement.
+  amount Int
+  balanceBefore Int
+  balanceAfter Int
+  /// RECHARGE only: how it was paid outside Mandaria.
+  rechargeMethod CreditRechargeMethod?
+  /// RECHARGE only: bank transfer folio, receipt number, etc. Never card data or credentials.
+  externalReference String?
+  /// Why the movement exists. Required for ADMIN_ADJUSTMENT and for RECHARGE with method OTHER.
+  reason String?
+  /// What the movement paid for. V1.10-D writes DISPATCH + Dispatch.id on every SERVICE_AWARD,
+  /// which together with the account (and so the actor) identifies the frozen snapshot charged.
+  /// A partial unique index allows at most one SERVICE_AWARD per account and Dispatch.
+  referenceType String?
+  referenceId String? @db.Uuid
+  /// V1.10-E: the SERVICE_AWARD this SERVICE_REFUND compensates, and the operational event that
+  /// caused it. The award itself is never modified: a refund is a new, opposite entry that points
+  /// at it, and a partial unique index allows at most one refund per award (full refunds only).
+  reversesEntryId String? @db.Uuid
+  refundReason CreditRefundReason?
+  /// Human actor. Required for RECHARGE and ADMIN_ADJUSTMENT.
+  createdByUserId String? @db.Uuid
+  /// Client-supplied key, unique per account; only its request fingerprint is kept alongside it.
+  idempotencyKey String?
+  requestHash String? @db.Char(64)
+  createdAt DateTime @default(now())
+  creditAccount CreditAccount @relation(fields: [creditAccountId], references: [id], onDelete: Restrict)
+  createdBy User? @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  reverses CreditLedgerEntry? @relation("CreditLedgerReversal", fields: [reversesEntryId], references: [id], onDelete: Restrict)
+  reversedBy CreditLedgerEntry[] @relation("CreditLedgerReversal")
+  @@unique([creditAccountId, idempotencyKey])
+  @@index([creditAccountId, sequence])
+  @@index([type, createdAt])
+  @@index([reversesEntryId])
+}
+
+/// V1.10-B: how a credit policy turns the canonical distance of a service into credits.
+enum CreditCalculationType {
+  PER_KM
+  FLAT
+  DISTANCE_RANGE
+}
+/// V1.10-B: at most one ACTIVE policy per serviceType + actorType (partial unique index). A new
+/// version supersedes the ACTIVE one in the same transaction; superseded versions stay INACTIVE
+/// forever as history.
+enum CreditPolicyStatus {
+  ACTIVE
+  INACTIVE
+}
+/// V1.10-B: how many credits it costs a given actor to be awarded a service. Versioned and
+/// immutable: economics never change in place, a change is a new version (max + 1 per
+/// serviceType + actorType, enforced by trigger). actorType reuses CreditAccountOwnerType because it
+/// is exactly who pays: PROVIDER for a provider and its fleet drivers, INDEPENDENT_DRIVER for an
+/// independent driver. effectiveFrom/effectiveUntil record when the version was really in force
+/// (set by the server on activation and on supersession); there is no scheduling. Only the column
+/// set of its calculationType is filled (CHECK). V1.10-B only calculates: nothing consumes credits.
+model CreditPolicy {
+  snapshots DispatchCreditSnapshot[]
+  id String @id @default(uuid()) @db.Uuid
+  serviceType ServiceType
+  actorType CreditAccountOwnerType
+  version Int
+  status CreditPolicyStatus @default(ACTIVE)
+  calculationType CreditCalculationType
+  creditsPerKm Int?
+  minimumCredits Int?
+  flatCredits Int?
+  effectiveFrom DateTime
+  effectiveUntil DateTime?
+  reason String?
+  createdByUserId String @db.Uuid
+  createdAt DateTime @default(now())
+  createdBy User @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  ranges CreditPolicyRange[]
+  @@unique([serviceType, actorType, version])
+  @@index([serviceType, actorType, status])
+  @@index([createdAt, id])
+}
+/// V1.10-B DISTANCE_RANGE row. [minDistanceMeters, maxDistanceMeters): min inclusive, max
+/// exclusive, integer meters; maxDistanceMeters null means "and beyond". A policy's ranges start
+/// at 0, are contiguous and the last one is open, so every distance matches exactly one range
+/// (deferred constraint trigger). Written only with its policy and never changed.
+model CreditPolicyRange {
+  snapshots DispatchCreditSnapshot[]
+  id String @id @default(uuid()) @db.Uuid
+  creditPolicyId String @db.Uuid
+  position Int
+  minDistanceMeters Int
+  maxDistanceMeters Int?
+  credits Int
+  creditPolicy CreditPolicy @relation(fields: [creditPolicyId], references: [id], onDelete: Restrict)
+  @@unique([creditPolicyId, position])
+  @@unique([creditPolicyId, minDistanceMeters])
+}
+
+/// V1.10-C: the credit cost of being awarded one Dispatch by one kind of actor, frozen when the
+/// Dispatch opens (same transaction as the quote acceptance). One row per Dispatch and actorType
+/// that may execute its ServiceType (SERVICE_EXECUTION_MODES). It copies the canonical distance
+/// (DeliveryQuote.distanceMeters) and every economic input of the policy version it used, so the
+/// cost stays explainable even without reading the policy again. Never updated; it only disappears
+/// together with its Dispatch. Dispatches opened before V1.10-C have none (legacy, no invented
+/// history). V1.10-C only records the cost: claim and take do not consume credits yet.
+model DispatchCreditSnapshot {
+  id String @id @default(uuid()) @db.Uuid
+  dispatchId String @db.Uuid
+  actorType CreditAccountOwnerType
+  serviceType ServiceType
+  creditPolicyId String @db.Uuid
+  policyVersion Int
+  calculationType CreditCalculationType
+  distanceMeters Int
+  /// PER_KM evidence: ceil(distanceMeters / 1000), the policy rate and minimum, and the product.
+  billableKm Int?
+  creditsPerKm Int?
+  minimumCredits Int?
+  calculatedCredits Int?
+  /// FLAT evidence.
+  flatCredits Int?
+  /// DISTANCE_RANGE evidence: the range applied, [min, max) with null max = open-ended.
+  appliedRangeId String? @db.Uuid
+  appliedRangePosition Int?
+  appliedRangeMinDistanceMeters Int?
+  appliedRangeMaxDistanceMeters Int?
+  credits Int
+  createdAt DateTime @default(now())
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  creditPolicy CreditPolicy @relation(fields: [creditPolicyId], references: [id], onDelete: Restrict)
+  appliedRange CreditPolicyRange? @relation(fields: [appliedRangeId], references: [id], onDelete: Restrict)
+  @@unique([dispatchId, actorType])
+  @@index([creditPolicyId])
+}
+
+/// V1.12-B: the B2B events Mandaria has durably recorded. V1.12-B only records them; delivering
+/// them over HTTP is a later version, so there is no transport state here (no SENT, no retries,
+/// no attempts): the row existing *is* the fact that the event happened.
+enum B2bEventType {
+  /// Wire name `delivery.completed`. The wire spelling lives in code, in one place, so the
+  /// database keeps a controlled type and the public catalogue keeps its own vocabulary.
+  DELIVERY_COMPLETED
+}
+
+/// One recorded B2B event, owned by the IntegrationClient that created the DeliveryRequest.
+///
+/// `payload` is a frozen snapshot of the V1.12-A public model as it was when the event happened,
+/// never a dump of Prisma rows and never recomputed later: a webhook sent tomorrow must carry
+/// what was true today. The envelope (id, type, occurredAt) lives in columns instead of being
+/// repeated inside the payload, so there is exactly one representation of each.
+///
+/// Immutable and undeletable by `b2b_outbox_event_guard`, like the credit ledger and the dispatch
+/// credit snapshots.
+model B2bOutboxEvent {
+  /// The event id a consumer will deduplicate on. Never the DeliveryRequest id: a request can
+  /// produce several events over its life, and they are different things.
+  id String @id @default(uuid()) @db.Uuid
+  type B2bEventType
+  integrationClientId String @db.Uuid
+  deliveryRequestId String @db.Uuid
+  /// The Dispatch the event is about. Required for DELIVERY_COMPLETED (CHECK in the migration)
+  /// and left open for future event types that happen before a service is published.
+  dispatchId String? @db.Uuid
+  /// When the fact happened, not when the row was written. For DELIVERY_COMPLETED it is the very
+  /// `Dispatch.deliveredAt` of the same transaction, not a second reading of the clock.
+  occurredAt DateTime
+  payload Json
+  recordedAt DateTime @default(now())
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  dispatch Dispatch? @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict)
+  attempts B2bWebhookDeliveryAttempt[]
+  delivery B2bWebhookDelivery?
+  /// V1.12-C: lets a delivery attempt reference (event, owner) as one unit, so PostgreSQL
+  /// refuses an attempt that pairs an event with a client that does not own it.
+  @@unique([id, integrationClientId])
+  @@index([integrationClientId, occurredAt, id])
+  @@index([type, occurredAt])
+  @@index([deliveryRequestId])
+  /// V1.12-E: the administrative listing, newest first with a stable tiebreak.
+  @@index([occurredAt, id])
+}
+
+/// V1.12-C: where a B2B client wants to be notified. One endpoint per IntegrationClient in this
+/// version, which is why integrationClientId is unique: subscriptions per event type, several
+/// endpoints or per-endpoint policies would be a later decision, not an empty column today.
+///
+/// Only SUPER_ADMIN configures it. The URL is validated as an SSRF surface when it is written
+/// *and* again when it is used, because DNS can change in between.
+model B2bWebhookEndpoint {
+  id String @id @default(uuid()) @db.Uuid
+  integrationClientId String @unique @db.Uuid
+  url String
+  enabled Boolean @default(true)
+  /// V1.12-D: the HMAC secret, encrypted with AES-256-GCM under the master key in
+  /// B2B_WEBHOOK_SECRET_KEY. Never stored in plaintext, never returned by a read: the value is
+  /// shown once, when it is generated or rotated, and after that only its presence is visible.
+  secretCiphertext String?
+  secretSetAt DateTime?
+  /// V1.12-D enforcement boundary. Only events that happened from this instant on enter
+  /// automatic delivery. It is set to «now» when an endpoint is configured, so wiring a webhook
+  /// months later cannot unleash an avalanche of history, and the migration set it for the
+  /// endpoints that already existed, so nothing recorded under V1.12-B or V1.12-C is ever sent
+  /// on its own. Older events are still deliverable by hand, one at a time.
+  deliverFrom DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdByUserId String @db.Uuid
+  updatedByUserId String @db.Uuid
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  createdBy User @relation("WebhookEndpointCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  updatedBy User @relation("WebhookEndpointUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict)
+  attempts B2bWebhookDeliveryAttempt[]
+  deliveries B2bWebhookDelivery[]
+  /// Lets an attempt reference (endpoint, owner) as one unit: an event of one client can never
+  /// be recorded as delivered to the endpoint of another.
+  @@unique([id, integrationClientId])
+}
+
+/// Was the event handed over, or not.
+enum B2bWebhookAttemptResult {
+  SUCCEEDED
+  FAILED
+}
+
+/// Why a handover failed, classified and bounded. Never the remote body, never headers.
+enum B2bWebhookFailureKind {
+  /// The endpoint answered, but not with 2xx (including a redirect, which is never followed).
+  HTTP_STATUS
+  TIMEOUT
+  NETWORK
+  /// The configured URL stopped being an acceptable target between configuration and use,
+  /// typically because its hostname now resolves to a private address.
+  INVALID_ENDPOINT
+}
+
+/// V1.12-C: one attempt to hand a recorded event to a client, kept as history.
+///
+/// Separate from B2bOutboxEvent on purpose: the event is the fact and stays immutable, while a
+/// transport attempt is a different kind of thing that can happen more than once. There is no
+/// retry machinery yet, so there is no scheduling state here either; V1.12-D will build on these
+/// rows rather than on a mutable queue.
+model B2bWebhookDeliveryAttempt {
+  id String @id @default(uuid()) @db.Uuid
+  eventId String @db.Uuid
+  integrationClientId String @db.Uuid
+  endpointId String @db.Uuid
+  /// The exact URL this attempt went to. The endpoint row can be edited afterwards; what was
+  /// tried at the time cannot.
+  endpointUrl String
+  attemptedAt DateTime
+  durationMs Int
+  result B2bWebhookAttemptResult
+  /// Present only when the endpoint actually answered.
+  httpStatus Int?
+  failureKind B2bWebhookFailureKind?
+  /// A short, sanitized classification. Never a response body, headers or credentials.
+  failureDetail String?
+  /// V1.12-D: which attempt this was for its event, assigned under the delivery lease so two
+  /// workers cannot mint the same ordinal. Null for the V1.12-C attempts, which were made
+  /// before the counter existed and are not rewritten.
+  attemptNumber Int?
+  recordedAt DateTime @default(now())
+  event B2bOutboxEvent @relation(fields: [eventId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  endpoint B2bWebhookEndpoint @relation(fields: [endpointId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  @@index([eventId, attemptedAt])
+  @@index([integrationClientId, attemptedAt, id])
+  @@index([result, attemptedAt])
+}
+
+/// V1.12-D transport state. Deliberately small: what is left to do, and who is doing it.
+enum B2bWebhookDeliveryState {
+  /// Still owed to the client: either waiting for its next attempt or being attempted right now.
+  PENDING
+  /// The endpoint answered 2xx. Terminal; nothing is ever sent again on its own.
+  DELIVERED
+  /// The policy ran out of attempts, or the endpoint answered something retrying cannot fix.
+  /// Terminal for the worker, still recoverable by an administrator.
+  EXHAUSTED
+}
+
+/// V1.12-D: the mutable operational projection of handing one event to one client.
+///
+/// Three things are kept apart on purpose: the **event** is an immutable fact (V1.12-B), an
+/// **attempt** is immutable history (V1.12-C), and this row is the only mutable part — what is
+/// still owed and when to try again. Turning the outbox itself into a queue would have made the
+/// fact editable, which is exactly what V1.12-B was built to prevent.
+///
+/// The row is not created with the event. The worker discovers eligible events durably from the
+/// outbox and materialises this row when it first picks one up, so an event is never lost to a
+/// crash between the commit and the first request, and an event whose client had no webhook yet
+/// is not condemned to never having one.
+model B2bWebhookDelivery {
+  id String @id @default(uuid()) @db.Uuid
+  /// One transport state per event: a second one would mean two workers owed the same handover.
+  eventId String @unique @db.Uuid
+  integrationClientId String @db.Uuid
+  endpointId String @db.Uuid
+  state B2bWebhookDeliveryState @default(PENDING)
+  /// Attempts already made. The next ordinal and the next delay are both derived from it, under
+  /// the lease, never from counting rows.
+  attemptCount Int @default(0)
+  /// When the worker may try again. Null once the state is terminal.
+  nextAttemptAt DateTime?
+  /// The lease: who is working on this and until when. A worker that dies leaves an expired
+  /// lease, and the next one takes it over; nothing stays blocked forever.
+  leaseOwner String?
+  leaseExpiresAt DateTime?
+  lastAttemptAt DateTime?
+  deliveredAt DateTime?
+  exhaustedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  event B2bOutboxEvent @relation(fields: [eventId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  endpoint B2bWebhookEndpoint @relation(fields: [endpointId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict)
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  /// Required by the composite foreign key to the event; `eventId` alone is already unique, so
+  /// this states the same invariant in the shape the relation needs.
+  @@unique([eventId, integrationClientId])
+  /// The worker queue: what is PENDING and due, oldest first.
+  @@index([state, nextAttemptAt])
+  @@index([integrationClientId, state])
 }

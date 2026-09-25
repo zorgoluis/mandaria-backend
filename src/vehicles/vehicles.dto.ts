@@ -25,14 +25,24 @@ const IDENTIFIER = /^[A-Z0-9][A-Z0-9_-]{0,29}$/;
 const PLATE = /^[A-Z0-9][A-Z0-9 -]{0,14}$/;
 
 class VehicleDetailsDto {
-  @ApiPropertyOptional({ nullable: true, example: 'Italika', maxLength: 50 })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    example: 'Italika',
+    maxLength: 50,
+  })
   @Transform(trim)
   @ValidateIf(present)
   @IsString()
   @MinLength(1)
   @MaxLength(50)
   brand?: string | null;
-  @ApiPropertyOptional({ nullable: true, example: 'FT150', maxLength: 50 })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    example: 'FT150',
+    maxLength: 50,
+  })
   @Transform(trim)
   @ValidateIf(present)
   @IsString()
@@ -40,6 +50,7 @@ class VehicleDetailsDto {
   @MaxLength(50)
   model?: string | null;
   @ApiPropertyOptional({
+    type: 'integer',
     nullable: true,
     example: 2023,
     minimum: 1900,
@@ -50,7 +61,12 @@ class VehicleDetailsDto {
   @Min(1900)
   @Max(2100)
   year?: number | null;
-  @ApiPropertyOptional({ nullable: true, example: 'Rojo', maxLength: 30 })
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    example: 'Rojo',
+    maxLength: 30,
+  })
   @Transform(trim)
   @ValidateIf(present)
   @IsString()
@@ -58,6 +74,7 @@ class VehicleDetailsDto {
   @MaxLength(30)
   color?: string | null;
   @ApiPropertyOptional({
+    type: String,
     nullable: true,
     description:
       'Placa opcional, normalizada a mayúsculas; null para bicicletas u otros vehículos sin placa. No se valida unicidad ni formato oficial.',

@@ -4,6 +4,7 @@ import { IsInt, Max, Min } from 'class-validator';
 
 export class PaginationQueryDto {
   @ApiPropertyOptional({
+    type: 'integer',
     description: 'Página, empezando en 1.',
     default: 1,
     minimum: 1,
@@ -15,6 +16,7 @@ export class PaginationQueryDto {
   @Max(100000)
   page: number = 1;
   @ApiPropertyOptional({
+    type: 'integer',
     description: 'Elementos por página; máximo 100.',
     default: 20,
     minimum: 1,

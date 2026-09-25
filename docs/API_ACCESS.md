@@ -6,12 +6,36 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 
 | Método | Ruta | Autenticación | Roles globales | Scopes | Operación |
 |---|---|---|---|---|---|
+| GET | /api/v1/admin/b2b-events | bearer | SUPER_ADMIN | — | Listar eventos B2B y su estado de transporte |
+| GET | /api/v1/admin/b2b-events/{eventId} | bearer | SUPER_ADMIN | — | Diagnóstico completo de un evento B2B |
+| POST | /api/v1/admin/b2b-events/{eventId}/deliver | bearer | SUPER_ADMIN | — | Intentar entregar un evento B2B registrado |
+| POST | /api/v1/admin/b2b-events/{eventId}/rescue | bearer | SUPER_ADMIN | — | Devolver a la cola un evento con los reintentos agotados |
+| GET | /api/v1/admin/credit-policies | bearer | SUPER_ADMIN | — | Listar políticas de créditos (historial) |
+| POST | /api/v1/admin/credit-policies | bearer | SUPER_ADMIN | — | Crear la primera política de una combinación |
+| GET | /api/v1/admin/credit-policies/{id} | bearer | SUPER_ADMIN | — | Consultar una versión de política de créditos |
+| POST | /api/v1/admin/credit-policies/{id}/versions | bearer | SUPER_ADMIN | — | Crear una nueva versión de una política de créditos |
+| GET | /api/v1/admin/credit-policies/calculation | bearer | SUPER_ADMIN | — | Calcular el costo en créditos de un servicio |
 | GET | /api/v1/admin/delivery-quotes | bearer | SUPER_ADMIN | — | Listar Quotes |
 | GET | /api/v1/admin/delivery-quotes/{publicId} | bearer | SUPER_ADMIN | — | Consultar cualquier Quote |
 | GET | /api/v1/admin/delivery-requests | bearer | SUPER_ADMIN | — | Listar todas las DeliveryRequests |
 | GET | /api/v1/admin/delivery-requests/{publicId} | bearer | SUPER_ADMIN | — | Consultar cualquier DeliveryRequest |
 | POST | /api/v1/admin/delivery-requests/{publicId}/cancel | bearer | SUPER_ADMIN | — | Cancelar cualquier DeliveryRequest |
 | GET | /api/v1/admin/delivery-requests/{publicId}/quotes | bearer | SUPER_ADMIN | — | Quotes de una DeliveryRequest |
+| GET | /api/v1/admin/dispatches | bearer | SUPER_ADMIN | — | Listar Dispatches |
+| GET | /api/v1/admin/dispatches/{dispatchId} | bearer | SUPER_ADMIN | — | Consultar Dispatch |
+| GET | /api/v1/admin/dispatches/{dispatchId}/assignments | bearer | SUPER_ADMIN | — | Historial de asignaciones de un Dispatch |
+| GET | /api/v1/admin/drivers/{driverId}/independent | bearer | SUPER_ADMIN | — | Consultar el perfil independiente de un Driver |
+| POST | /api/v1/admin/drivers/{driverId}/independent | bearer | SUPER_ADMIN | — | Habilitar un Driver existente como independiente |
+| GET | /api/v1/admin/drivers/{driverId}/independent/credits | bearer | SUPER_ADMIN | — | Consultar la cuenta de créditos de un repartidor independiente |
+| POST | /api/v1/admin/drivers/{driverId}/independent/credits/adjustment | bearer | SUPER_ADMIN | — | Ajustar créditos de un repartidor independiente |
+| GET | /api/v1/admin/drivers/{driverId}/independent/credits/ledger | bearer | SUPER_ADMIN | — | Historial de créditos de un repartidor independiente |
+| POST | /api/v1/admin/drivers/{driverId}/independent/credits/recharge | bearer | SUPER_ADMIN | — | Recargar créditos a un repartidor independiente |
+| POST | /api/v1/admin/drivers/{driverId}/independent/reject | bearer | SUPER_ADMIN | — | Rechazar el perfil independiente de un Driver |
+| POST | /api/v1/admin/drivers/{driverId}/independent/suspend | bearer | SUPER_ADMIN | — | Suspender a un repartidor independiente |
+| GET | /api/v1/admin/drivers/{driverId}/independent/vehicles | bearer | SUPER_ADMIN | — | Vehículos propios del repartidor independiente |
+| POST | /api/v1/admin/drivers/{driverId}/independent/vehicles | bearer | SUPER_ADMIN | — | Alta de vehículo propio del repartidor independiente |
+| PATCH | /api/v1/admin/drivers/{driverId}/independent/vehicles/{vehicleId} | bearer | SUPER_ADMIN | — | Editar o cambiar el estado de un vehículo independiente |
+| GET | /api/v1/admin/independent-drivers | bearer | SUPER_ADMIN | — | Listar repartidores independientes |
 | GET | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |
 | POST | /api/v1/admin/integrations | bearer | SUPER_ADMIN | — | AdminIntegrationsController_create[0] |
 | GET | /api/v1/admin/integrations/{id} | bearer | SUPER_ADMIN | — | AdminIntegrationsController_get[0] |
@@ -21,6 +45,11 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | DELETE | /api/v1/admin/integrations/{id}/credentials/{credentialId} | bearer | SUPER_ADMIN | — | Compatibility alias for credential revocation |
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/revoke | bearer | SUPER_ADMIN | — | AdminIntegrationsController_revoke[0] |
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/rotate | bearer | SUPER_ADMIN | — | Create replacement with the same scopes/expiry; revoke old credential explicitly after transition |
+| GET | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Consultar el endpoint de webhook de un IntegrationClient |
+| PUT | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Configurar el endpoint de webhook de un IntegrationClient |
+| GET | /api/v1/admin/integrations/{id}/webhook/deliveries | bearer | SUPER_ADMIN | — | Estado de entrega de los eventos de un IntegrationClient |
+| POST | /api/v1/admin/integrations/{id}/webhook/secret | bearer | SUPER_ADMIN | — | Generar o rotar el secreto de firma del webhook |
+| GET | /api/v1/admin/integrations/{id}/webhook/summary | bearer | SUPER_ADMIN | — | Resumen de entregas de un IntegrationClient |
 | GET | /api/v1/admin/providers | bearer | SUPER_ADMIN | — | Listar proveedores con filtros y paginación |
 | POST | /api/v1/admin/providers | bearer | SUPER_ADMIN | — | Crear proveedor FLEET o INDEPENDENT |
 | GET | /api/v1/admin/providers/{id} | bearer | SUPER_ADMIN | — | Consultar proveedor por ID |
@@ -28,6 +57,10 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/admin/providers/{id}/activate | bearer | SUPER_ADMIN | — | Activar o reactivar proveedor |
 | GET | /api/v1/admin/providers/{id}/capacity | bearer | SUPER_ADMIN | — | Consultar uso de límites del proveedor |
 | POST | /api/v1/admin/providers/{id}/suspend | bearer | SUPER_ADMIN | — | Suspender proveedor activo |
+| GET | /api/v1/admin/providers/{providerId}/credits | bearer | SUPER_ADMIN | — | Consultar la cuenta de créditos de un proveedor |
+| POST | /api/v1/admin/providers/{providerId}/credits/adjustment | bearer | SUPER_ADMIN | — | Ajustar créditos de un proveedor |
+| GET | /api/v1/admin/providers/{providerId}/credits/ledger | bearer | SUPER_ADMIN | — | Historial de créditos de un proveedor |
+| POST | /api/v1/admin/providers/{providerId}/credits/recharge | bearer | SUPER_ADMIN | — | Recargar créditos a un proveedor |
 | GET | /api/v1/admin/providers/{providerId}/drivers | bearer | SUPER_ADMIN | — | Listar Drivers del proveedor |
 | POST | /api/v1/admin/providers/{providerId}/drivers | bearer | SUPER_ADMIN | — | Crear Driver para un User DRIVER existente |
 | GET | /api/v1/admin/providers/{providerId}/drivers/{driverId} | bearer | SUPER_ADMIN | — | Consultar Driver |
@@ -39,6 +72,9 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/providers/{providerId}/members | bearer | SUPER_ADMIN | — | Listar memberships administrativas |
 | POST | /api/v1/admin/providers/{providerId}/members | bearer | SUPER_ADMIN | — | Asociar administrador existente |
 | DELETE | /api/v1/admin/providers/{providerId}/members/{membershipId} | bearer | SUPER_ADMIN | — | Retirar administrador de este proveedor |
+| GET | /api/v1/admin/providers/{providerId}/service-coverages | bearer | SUPER_ADMIN | — | Listar coberturas del proveedor |
+| POST | /api/v1/admin/providers/{providerId}/service-coverages | bearer | SUPER_ADMIN | — | Habilitar proveedor en zona y tipo de servicio |
+| PATCH | /api/v1/admin/providers/{providerId}/service-coverages/{coverageId} | bearer | SUPER_ADMIN | — | Activar o desactivar cobertura |
 | GET | /api/v1/admin/providers/{providerId}/vehicles | bearer | SUPER_ADMIN | — | Listar vehículos del proveedor |
 | POST | /api/v1/admin/providers/{providerId}/vehicles | bearer | SUPER_ADMIN | — | Crear vehículo del proveedor |
 | GET | /api/v1/admin/providers/{providerId}/vehicles/{vehicleId} | bearer | SUPER_ADMIN | — | Consultar vehículo |
@@ -64,6 +100,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/user-invitations/{invitationId} | bearer | SUPER_ADMIN | — | Consultar invitación |
 | POST | /api/v1/admin/user-invitations/{invitationId}/resend | bearer | SUPER_ADMIN | — | Reenviar invitación |
 | POST | /api/v1/admin/user-invitations/{invitationId}/revoke | bearer | SUPER_ADMIN | — | Revocar invitación pendiente |
+| GET | /api/v1/admin/webhooks/health | bearer | SUPER_ADMIN | — | Cuánto trabajo de webhooks queda, y qué hace esta instancia |
 | POST | /api/v1/auth/activate-account | Pública | — | — | Activar cuenta invitada |
 | POST | /api/v1/auth/login | Pública | — | — | AuthController_login |
 | POST | /api/v1/auth/logout | Pública | — | — | AuthController_logout |
@@ -77,8 +114,17 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/delivery-requests/{publicId}/cancel | integration-bearer | — | deliveries:cancel | Cancelar mi DeliveryRequest |
 | GET | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:read | Historial de Quotes de mi DeliveryRequest |
 | POST | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:create | Cotizar mi DeliveryRequest |
+| GET | /api/v1/delivery-requests/{publicId}/status | integration-bearer | — | deliveries:read | Consultar el estado logístico de mi DeliveryRequest |
 | PATCH | /api/v1/driver/availability | bearer | DRIVER | — | Cambiar mi disponibilidad |
+| GET | /api/v1/driver/credits | bearer | DRIVER | — | Mi saldo de créditos como repartidor independiente |
+| GET | /api/v1/driver/credits/ledger | bearer | DRIVER | — | Mi historial de créditos |
+| GET | /api/v1/driver/dispatches/{dispatchId} | bearer | DRIVER | — | Detalle de un servicio ofrecido o tomado por mí |
+| POST | /api/v1/driver/dispatches/{dispatchId}/deliver | bearer | DRIVER | — | Confirmar la entrega de un servicio que tomé |
+| POST | /api/v1/driver/dispatches/{dispatchId}/release | bearer | DRIVER | — | Liberar un servicio que tomé |
+| POST | /api/v1/driver/dispatches/{dispatchId}/take | bearer | DRIVER | — | Tomar un servicio |
+| GET | /api/v1/driver/dispatches/available | bearer | DRIVER | — | Servicios que puedo tomar |
 | GET | /api/v1/driver/me | bearer | DRIVER | — | Consultar mi perfil de repartidor |
+| GET | /api/v1/driver/vehicles | bearer | DRIVER | — | Mis vehículos como repartidor independiente |
 | GET | /api/v1/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |
 | POST | /api/v1/integrations | bearer | SUPER_ADMIN | — | AdminIntegrationsController_create[1] |
 | GET | /api/v1/integrations/{id} | bearer | SUPER_ADMIN | — | AdminIntegrationsController_get[1] |
@@ -92,6 +138,19 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/integrations/scope-check | integration-bearer | — | deliveries:read | Authorization probe for deliveries:read; does not access or implement deliveries |
 | POST | /api/v1/integrations/token | Pública | — | — | Exchange Client Credentials for a short-lived B2B token; no refresh token |
 | GET | /api/v1/provider/capacity | bearer | PROVIDER_ADMIN | — | Consultar uso de Drivers y Vehicles de mi proveedor |
+| GET | /api/v1/provider/credits | bearer | PROVIDER_ADMIN | — | Saldo de créditos de mi proveedor |
+| GET | /api/v1/provider/credits/ledger | bearer | PROVIDER_ADMIN | — | Historial de créditos de mi proveedor |
+| GET | /api/v1/provider/dispatches | bearer | PROVIDER_ADMIN | — | Listar Dispatches de mi proveedor |
+| GET | /api/v1/provider/dispatches/{dispatchId} | bearer | PROVIDER_ADMIN | — | Consultar Dispatch de mi proveedor |
+| POST | /api/v1/provider/dispatches/{dispatchId}/assignment | bearer | PROVIDER_ADMIN | — | Asignar Driver y Vehicle a mi Dispatch |
+| POST | /api/v1/provider/dispatches/{dispatchId}/assignment/cancel | bearer | PROVIDER_ADMIN | — | Liberar Driver y Vehicle sin reemplazo |
+| POST | /api/v1/provider/dispatches/{dispatchId}/assignment/reassign | bearer | PROVIDER_ADMIN | — | Reasignar Driver y Vehicle |
+| GET | /api/v1/provider/dispatches/{dispatchId}/assignments | bearer | PROVIDER_ADMIN | — | Historial de asignaciones de mi proveedor |
+| GET | /api/v1/provider/dispatches/{dispatchId}/available-drivers | bearer | PROVIDER_ADMIN | — | Drivers asignables para mi Dispatch |
+| GET | /api/v1/provider/dispatches/{dispatchId}/available-vehicles | bearer | PROVIDER_ADMIN | — | Vehicles asignables para mi Dispatch |
+| POST | /api/v1/provider/dispatches/{dispatchId}/claim | bearer | PROVIDER_ADMIN | — | Reclamar Dispatch para mi proveedor |
+| POST | /api/v1/provider/dispatches/{dispatchId}/deliver | bearer | PROVIDER_ADMIN | — | Confirmar la entrega de un Dispatch de mi proveedor |
+| POST | /api/v1/provider/dispatches/{dispatchId}/release | bearer | PROVIDER_ADMIN | — | Liberar Dispatch reclamado por mi proveedor |
 | GET | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Listar invitaciones de repartidores de mi proveedor |
 | POST | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Invitar repartidor a mi proveedor |
 | GET | /api/v1/provider/driver-invitations/{invitationId} | bearer | PROVIDER_ADMIN | — | Consultar invitación de repartidor |
@@ -106,6 +165,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | DELETE | /api/v1/provider/drivers/{driverId}/vehicle | bearer | PROVIDER_ADMIN | — | Desasignar vehículo vigente |
 | GET | /api/v1/provider/profile | bearer | PROVIDER_ADMIN | — | Consultar perfil de un proveedor asociado |
 | GET | /api/v1/provider/profiles | bearer | PROVIDER_ADMIN | — | Identificar mis proveedores asociados |
+| GET | /api/v1/provider/service-coverages | bearer | PROVIDER_ADMIN | — | Consultar coberturas de mi proveedor |
 | GET | /api/v1/provider/vehicles | bearer | PROVIDER_ADMIN | — | Listar vehículos de mi proveedor |
 | POST | /api/v1/provider/vehicles | bearer | PROVIDER_ADMIN | — | Crear vehículo en mi proveedor |
 | GET | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Consultar vehículo de mi proveedor |
