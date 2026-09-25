@@ -179,8 +179,8 @@ La migración `20260915000200_b2b_credentials`:
 | GOOGLE_ROUTES_TIMEOUT_MS, GOOGLE_ROUTES_MAX_RETRIES, GOOGLE_ROUTES_TRAVEL_MODE | Timeout por intento (1000–15000, 5000), reintentos transitorios (0–2, 1), DRIVE/TWO_WHEELER |
 | MANDARIA_WEB_URL | Base de Mandaria Web para `{url}/activate-account?token=…`; sin query, fragmento ni credenciales; https obligatorio en producción |
 | USER_INVITATION_TTL_HOURS, USER_INVITATION_RESEND_COOLDOWN_SECONDS | Vigencia de invitaciones (1–168, 24) y espera mínima entre reenvíos (0–3600, 60) |
-| MAIL_PROVIDER | `smtp` (obligatorio en producción) o `local_outbox` (LOCAL/TEST ONLY; default fuera de producción; rechazado en producción) |
-| MAIL_FROM, SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD | Remitente y relay SMTP; host y remitente obligatorios con smtp; usuario y contraseña juntos; nunca versionar |
+| MAIL_PROVIDER | `resend` (obligatorio en producción) o `local_outbox` (LOCAL/TEST ONLY; default fuera de producción; rechazado en producción) |
+| MAIL_FROM, RESEND_API_KEY | Remitente de dominio verificado y clave de Resend; ambos obligatorios con resend; nunca versionar la clave |
 | DISPATCH_TTL_MINUTES | Minutos que un servicio aceptado es reclamable (1–1440, default 10); independiente de la vigencia de la Quote |
 | LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES | Minutos que el proveedor tiene para asignar Driver y Vehicle tras reclamar un LOCAL_DELIVERY (1–1440, default 5); sólo señal `assignmentOverdue`, sin liberación automática |
 | INDEPENDENT_DRIVER_MAX_VEHICLES | Vehículos propios que SUPER_ADMIN puede dar de alta a un repartidor independiente (1–100, default 3); cuentan todos, sea cual sea su estado |
@@ -1047,13 +1047,13 @@ El dominio depende sólo de la interfaz `MailProvider.sendUserInvitation(...)` (
 
 | MAIL_PROVIDER | Uso |
 |---|---|
-| `smtp` | Producción (obligatorio). Cualquier relay SMTP (Resend, SES, Postmark, Mailgun, propio) vía nodemailer; STARTTLS obligatorio en producción salvo `SMTP_SECURE=true`; timeouts; errores reducidos a un código (`EAUTH`, `ECONNECTION`…) |
+| `resend` | Producción (obligatorio). API HTTPS de Resend por puerto 443 mediante fetch; timeout total de 20 s; sin redirects, reintentos automáticos ni fallback SMTP; errores sanitizados |
 | `local_outbox` | **LOCAL/TEST ONLY** y default fuera de producción: escribe cada correo como JSON privado en `LOCAL_MAIL_OUTBOX_DIR` o `<temp del SO>/mandaria-mail-outbox`, fuera del repositorio. Contiene el enlace con token: nunca usar en producción (la configuración lo rechaza) |
 | FakeMailProvider | Sólo pruebas automatizadas (`test/support/fake-mail.provider.ts`); nunca envían correo real |
 
 El correo se envía **después** del commit: si falla, la invitación queda PENDING, la respuesta indica `emailDelivery: "FAILED"` y puede reenviarse. Plantilla en español con proveedor, rol (Administrador de proveedor / Repartidor), botón «Activar cuenta» y fecha de expiración en hora del centro de México; nunca incluye contraseña. Recomendación para Mandaria Web: leer `token` de la URL, eliminarlo del historial (`history.replaceState`) y servir la página con `Referrer-Policy: no-referrer`.
 
-Configuración (ver `.env.example`): `MANDARIA_WEB_URL` (https obligatorio en producción), `USER_INVITATION_TTL_HOURS`, `USER_INVITATION_RESEND_COOLDOWN_SECONDS`, `MAIL_PROVIDER`, `MAIL_FROM`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`/`SMTP_PASSWORD` (juntos), `LOCAL_MAIL_OUTBOX_DIR`. **Actualización de despliegues:** con `NODE_ENV=production` el backend no arranca sin `MAIL_PROVIDER=smtp`, `SMTP_HOST`, `MAIL_FROM` y `MANDARIA_WEB_URL` https.
+Configuración (ver `.env.example`): `MANDARIA_WEB_URL` (https obligatorio en producción), `USER_INVITATION_TTL_HOURS`, `USER_INVITATION_RESEND_COOLDOWN_SECONDS`, `MAIL_PROVIDER`, `MAIL_FROM`, `RESEND_API_KEY`, `LOCAL_MAIL_OUTBOX_DIR`. **Actualización de despliegues:** con `NODE_ENV=production` el backend no arranca sin `MAIL_PROVIDER=resend`, `RESEND_API_KEY`, `MAIL_FROM` y `MANDARIA_WEB_URL` https.
 
 ### Seguridad, límites y auditoría
 
@@ -1073,7 +1073,7 @@ npm run verify:user-invitations
 
 El script usa login real (5 logins), lee el token del outbox local como lo haría la persona invitada, comprueba `Admin A → Provider A ✅ / Provider B ❌`, activación, reutilización rechazada y `/driver/me`, y elimina sólo las cuentas que creó. No imprime contraseñas ni tokens.
 
-Pruebas: `test/invitations.spec.ts` (token/hash, expiración, errores, matriz de roles, política de contraseña, validaciones previas a la base, plantilla, SMTP con transporte simulado, outbox local y configuración) y `test/user-invitations.e2e-spec.ts` (flujos PROVIDER_ADMIN y DRIVER completos con login/refresh/logout, aislamiento A/B en ambos sentidos, matriz de roles, IntegrationClient, expirado, reutilizado, revocado, duplicados, ACTIVE/DISABLED, validaciones, fallo de correo, reserva de lugares, concurrencia de invitación/reenvío/activación, rate limits, invariantes SQL y auditoría sin secretos). `node scripts/verify-migrations.mjs` cubre V1.6 → V1.6.1 con datos.
+Pruebas: `test/invitations.spec.ts` (token/hash, expiración, errores, matriz de roles, política de contraseña, validaciones previas a la base, plantilla, Resend HTTPS con transporte simulado, outbox local y configuración) y `test/user-invitations.e2e-spec.ts` (flujos PROVIDER_ADMIN y DRIVER completos con login/refresh/logout, aislamiento A/B en ambos sentidos, matriz de roles, IntegrationClient, expirado, reutilizado, revocado, duplicados, ACTIVE/DISABLED, validaciones, fallo de correo, reserva de lugares, concurrencia de invitación/reenvío/activación, rate limits, invariantes SQL y auditoría sin secretos). `node scripts/verify-migrations.mjs` cubre V1.6 → V1.6.1 con datos.
 
 ## Dispatch Engine (V1.7-A)
 
@@ -1525,7 +1525,7 @@ Un repartidor independiente puede **consultar** su cuenta aunque su perfil esté
 
 ### Auditoría
 
-`CREDIT_RECHARGED` y `CREDIT_ADJUSTED` registran `actorUserId`, `creditAccountId`, `ownerType`, `ownerId`, `entryId`, `sequence`, `amount`, `balanceBefore`, `balanceAfter`, `rechargeMethod` y `externalReference`. También `CREDIT_MOVEMENT_REPLAYED`, `CREDIT_IDEMPOTENCY_CONFLICT` y `CREDIT_MOVEMENT_REJECTED`. Nunca tokens, contraseñas, secretos B2B ni credenciales SMTP.
+`CREDIT_RECHARGED` y `CREDIT_ADJUSTED` registran `actorUserId`, `creditAccountId`, `ownerType`, `ownerId`, `entryId`, `sequence`, `amount`, `balanceBefore`, `balanceAfter`, `rechargeMethod` y `externalReference`. También `CREDIT_MOVEMENT_REPLAYED`, `CREDIT_IDEMPOTENCY_CONFLICT` y `CREDIT_MOVEMENT_REJECTED`. Nunca tokens, contraseñas, secretos B2B ni credenciales de correo.
 
 ### Base de datos
 
@@ -2243,3 +2243,14 @@ Todo SUPER_ADMIN; un token B2B ni siquiera es una sesión aquí (401, no 403). N
 `/webhooks/health` separa dos bloques a propósito: los conteos son persistidos y compartidos por todos los backends, mientras que `thisInstance` es configuración y memoria **de la instancia que responde**. Con varios backends nadie sabe lo que hacen los demás, así que esto no es salud global y no se presenta como tal.
 
 Detalle completo en [V1.12-E Webhook Operations & Observability](docs/V1.12-E-WEBHOOK-OPERATIONS.md). Pruebas: `test/b2b-webhook-operations.spec.ts` (derivación del estado de transporte, las tres razones de `NO_DELIVERY`, lease en curso frente a caducado, nombre público del evento y clasificación del reenvío) y 17 casos en `test/b2b-webhooks.e2e-spec.ts` sobre Nest y PostgreSQL reales (búsqueda por referencia externa, detalle con payload congelado, evento fuera de la frontera, filtros y paginación coherentes, rescate y rescate repetido, carreras de rescate y de reenvío, salud, enmascaramiento del secreto, aislamiento por rol e inmutabilidad del Outbox bajo SQL).
+
+
+## Migración del correo a Resend HTTPS (2026-09-25)
+
+Todos los envíos actuales (invitaciones iniciales y reenvíos para PROVIDER_ADMIN y DRIVER, incluidos los repartidores independientes aprovisionados por ese flujo) utilizan MailModule. SMTP y Nodemailer fueron retirados. No se añadió recuperación de contraseña ni otro flujo nuevo. El buzón local sólo es para desarrollo/pruebas y nunca se usa como respaldo ante un fallo de Resend.
+
+En la VM configurar MAIL_PROVIDER=resend, RESEND_API_KEY con una clave propia habilitada para enviar desde el dominio verificado y MAIL_FROM="Mandaria <notificaciones@mandaria.com.mx>". Mantener MANDARIA_WEB_URL=https://mandaria.com.mx. Pasar estas variables en backend.environment del Compose remoto (el archivo de la VM es distinto del local); eliminar las entradas SMTP_HOST/PORT/SECURE/USER/PASSWORD. No copiar claves en documentación ni comandos de diagnóstico.
+
+Después de llevar este código al servidor, reconstruir y recrear sólo el backend. Configurar las variables antes del arranque: MAIL_PROVIDER=smtp ahora se rechaza. No hay migración de base de datos. El .env local del propietario no se modifica automáticamente.
+
+La aceptación requiere una respuesta HTTP exitosa con id de Resend. emailDelivery=SENT significa aceptación del proveedor, no entrega a la bandeja. Un fallo mantiene la invitación para reenvío manual, sin cambiar su contrato. Sólo se registran códigos RESEND_HTTP_<status>, RESEND_TIMEOUT, RESEND_NETWORK o RESEND_INVALID_RESPONSE; nunca el cuerpo de error, API key o enlace de activación. Validar en despliegue con una invitación a una cuenta controlada y revisar recepción/activación.

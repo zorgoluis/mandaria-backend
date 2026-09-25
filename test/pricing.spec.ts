@@ -396,8 +396,8 @@ describe('V1.6 configuration and quote views', () => {
         NODE_ENV: 'production',
         GOOGLE_ROUTES_API_KEY: 'k'.repeat(30),
         // V1.6.1: production also requires real mail delivery.
-        MAIL_PROVIDER: 'smtp',
-        SMTP_HOST: 'smtp.example.com',
+        MAIL_PROVIDER: 'resend',
+        RESEND_API_KEY: 'test-resend-key',
         MAIL_FROM: 'Mandaria <no-reply@example.com>',
         MANDARIA_WEB_URL: 'https://app.example.com',
         B2B_WEBHOOK_SECRET_KEY: 'k'.repeat(64),

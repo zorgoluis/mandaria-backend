@@ -73,16 +73,9 @@ const schema = z.object({
       }, 'must be an http(s) URL without credentials, query or fragment')
       .transform((value) => value.replace(/\/+$/, '')),
   ),
-  MAIL_PROVIDER: optional(z.enum(['smtp', 'local_outbox'])),
+  MAIL_PROVIDER: optional(z.enum(['resend', 'local_outbox'])),
   MAIL_FROM: optional(z.string().min(3).max(320)),
-  SMTP_HOST: optional(z.string().min(1).max(255)),
-  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
-  SMTP_SECURE: z
-    .enum(['true', 'false'])
-    .default('false')
-    .transform((value) => value === 'true'),
-  SMTP_USER: optional(z.string().min(1).max(320)),
-  SMTP_PASSWORD: optional(z.string().min(1).max(1024)),
+  RESEND_API_KEY: optional(z.string().trim().min(1).max(1024)),
   LOCAL_MAIL_OUTBOX_DIR: optional(z.string().min(1).max(1024)),
   // V1.7 dispatch: how long an accepted service stays claimable by eligible providers.
   DISPATCH_TTL_MINUTES: z.coerce.number().int().min(1).max(1440).default(10),
@@ -141,7 +134,12 @@ const schema = z.object({
   B2B_WEBHOOK_SECRET_KEY: optional(z.string().min(32).max(200)),
   // How often a backend looks for work. 0 disables the loop, which is how the suites drive the
   // worker deterministically; production keeps a moderate, unhurried cadence.
-  B2B_WEBHOOK_POLL_SECONDS: z.coerce.number().int().min(0).max(3600).default(15),
+  B2B_WEBHOOK_POLL_SECONDS: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(3600)
+    .default(15),
   // How long a worker owns a handover before another may take it over. It has to outlast a request
   // (timeout plus margin) and still be short enough that a dead worker does not block for long.
   B2B_WEBHOOK_LEASE_SECONDS: z.coerce
@@ -173,8 +171,8 @@ export function validateEnvironment(input: Record<string, unknown>) {
       );
     if (env.ROUTING_PROVIDER === 'google' && !env.GOOGLE_ROUTES_API_KEY)
       throw new Error('GOOGLE_ROUTES_API_KEY is required in production');
-    if (env.MAIL_PROVIDER !== 'smtp')
-      throw new Error('MAIL_PROVIDER=smtp is required in production');
+    if (env.MAIL_PROVIDER !== 'resend')
+      throw new Error('MAIL_PROVIDER=resend is required in production');
     if (!env.MANDARIA_WEB_URL?.startsWith('https://'))
       throw new Error('MANDARIA_WEB_URL must be an https URL in production');
     if (env.B2B_WEBHOOK_ALLOW_INSECURE_TARGETS)
@@ -186,11 +184,11 @@ export function validateEnvironment(input: Record<string, unknown>) {
   }
   // Development and test default to the local outbox so no real email is ever sent by accident.
   const mailProvider = env.MAIL_PROVIDER ?? 'local_outbox';
-  if (mailProvider === 'smtp') {
-    if (!env.SMTP_HOST || !env.MAIL_FROM)
-      throw new Error('MAIL_PROVIDER=smtp requires SMTP_HOST and MAIL_FROM');
-    if (!env.SMTP_USER !== !env.SMTP_PASSWORD)
-      throw new Error('SMTP_USER and SMTP_PASSWORD must be set together');
+  if (mailProvider === 'resend') {
+    if (!env.RESEND_API_KEY || !env.MAIL_FROM?.trim())
+      throw new Error(
+        'MAIL_PROVIDER=resend requires RESEND_API_KEY and MAIL_FROM',
+      );
   }
   for (const origin of env.CORS_ORIGINS.split(',').filter(Boolean)) {
     let url: URL;
