@@ -4,6 +4,12 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Orientación de entrega del contrato B2B (2026-09-25):** explicada la separación entre documentación pública, administración de integraciones y consumo server-to-server por Coita Eats. Rutas y scopes contrastados con API_ACCESS/README; entregar OpenAPI y guía de webhook sin secretos. No se implementó portal ni se configuró un cliente remoto.
+
+- **Comparación con roadmap acordado (2026-09-25):** recuperada la conversación «mandaria». El listado general posterior al adelanto de créditos incluía V1.0–V1.20 y V2.0; después se reemplazó V1.11 Driver App por MVP Delivery Completion y V1.12 Lifecycle por B2B Integration Infrastructure, adelantando integración a V1.13 y dejando ejecución completa/apps/GPS para post-MVP. V1.3 y V1.9-C aparecen en el historial conversacional (membresías/aislamiento y cobertura Web); su ausencia como versión backend no demuestra ausencia funcional. Web V1.9 y créditos V1.10-F reportados completos históricamente, sin reverificación del frontend en esta tarea. Integración externa sin cierre comprobado desde este repositorio.
+
+- **Roadmap revisado (2026-09-25):** presentación consolidada al propietario basada en README, BITACORA y VERIFICATION: backend documentado hasta V1.12-E; prioridad inmediata de comprobar despliegue de Resend, invitación/activación y uso funcional remoto. Evolución posterior presentada como propuesta sin versiones ni fechas comprometidas. Las listas históricas de exclusiones no sustituyen las entregas posteriores de independientes, créditos y cierre de entrega. Revisión documental únicamente; no se repitieron pruebas ni se verificó producción.
+
 - **Correo Resend HTTPS implementado (2026-09-25):** todos los envíos actuales de invitaciones y reenvíos usan el adaptador Resend por 443. SMTP/Nodemailer retirados, sin fallback; producción requiere MAIL_PROVIDER=resend, RESEND_API_KEY y MAIL_FROM. Outbox sólo local/test. Build, lint, TypeScript, documentación, 285 unitarias y 24 E2E de invitaciones pasan; luego 19 pruebas del adaptador/módulo pasan incluyendo tres nuevas de wiring. Pendiente desplegar y verificar un envío real; sin Docker ni acceso a Coita Eats ni cambios en .env.
 
 - **SMTP (2026-09-25):** propietario aporta fallo USER_INVITATION_EMAIL_FAILED con ETIMEDOUT. Dominio Resend verificado según propietario; timeout no demuestra fallo de credenciales. Posible bloqueo saliente del puerto 587 (documentado por DigitalOcean); se propone Resend 2465 con TLS directo. Conectividad y envío remoto pendientes de comprobar.
@@ -226,6 +232,30 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-09-25 — Cómo compartir endpoints con Coita Eats
+
+- **Solicitud:** explicar documentación web, administración API y entrega de endpoints a Coita Eats.
+- **Cambios:** orientación y mensaje reutilizable de integración; actualización de esta bitácora, sin cambios funcionales.
+- **Verificaciones actuales:** lectura del contrato, matriz de acceso, rutas de cotización, autenticación y firma de webhook. Sin pruebas ni verificación del despliegue.
+- **Resultado:** identificado el paquete de documentación y configuración necesario y la secuencia solicitud → cotización → aceptación → estado/webhook.
+- **Pendientes:** publicar referencia B2B filtrada, comprobar URL desplegada, provisionar credenciales de forma segura y validar integración real cuando se solicite.
+
+### 2026-09-25 — Comparación contra el listado previamente establecido
+
+- **Solicitud:** conservar el listado acordado y marcar avances y faltantes.
+- **Cambios:** anotación de continuidad; comparación presentada por alcance original, correspondencia actual y estado. Se corrige la omisión del roadmap conversacional en la respuesta anterior.
+- **Verificaciones actuales:** consulta de las conversaciones «mandaria» y «Propuesta Mandaria Detallada», incluyendo roadmap general y decisiones posteriores de adelantar créditos e integración; contraste con documentación local leída en esta sesión. Sin pruebas nuevas ni acceso al código/base de Coita Eats; frontend no inspeccionado.
+- **Resultado:** backend hasta V1.12-E contrastado documentalmente; avances Web identificados como reportes históricos; apps, lifecycle completo, GPS/tracking y expansiones conservados como pendientes del alcance original, sin inventar renumeración.
+- **Pendientes:** acreditar integración real y despliegue; fijar numeración futura de los bloques desplazados cuando se retomen.
+
+### 2026-09-25 — Presentación del roadmap consolidado
+
+- **Solicitud:** mostrar el roadmap con orden y estado real.
+- **Cambios:** actualización de continuidad y presentación de hitos entregados, cierre operativo pendiente y evolución propuesta; sin cambios de producto.
+- **Verificaciones actuales:** lectura de README.md, BITACORA.md, VERIFICATION.md, AGENTS.md y versión del paquete; consulta del estado de trabajo. No se ejecutaron pruebas, Docker ni acciones remotas. Los resultados funcionales citados son históricos.
+- **Resultado:** se distingue implementación validada localmente de evidencia de despliegue y de planes aún no aprobados; no se atribuyen entregas a V1.3 ni a V1.9-C sin evidencia.
+- **Pendientes:** comprobar Resend real, activación/login y flujo operativo en el despliegue; definir alcance y criterios de aceptación de las siguientes etapas antes de implementarlas.
 
 ### 2026-09-15 — Implementación inicial del Core (1.0.0)
 
