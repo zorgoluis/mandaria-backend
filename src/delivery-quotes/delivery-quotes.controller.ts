@@ -163,12 +163,13 @@ export class DeliveryQuotesController {
   @ApiOkResponse({ type: DeliveryQuoteResponse })
   @ApiErrorDescriptions({
     ...b2bErrors,
-    409: 'QUOTE_EXPIRED (expiresAt alcanzado; solicitar nueva Quote) | QUOTE_NOT_ACCEPTABLE (cancelada o solicitud cancelada).',
+    409: 'QUOTE_EXPIRED (expiresAt alcanzado; solicitar nueva Quote) | QUOTE_NOT_ACCEPTABLE (cancelada o solicitud cancelada) | CREDIT_POLICY_UNAVAILABLE (falta política ACTIVE o configuración válida para uno de los actores requeridos; accept y apertura de Dispatch se revierten). Leer code del JSON, no inferir la causa del HTTP 409.',
+    422: 'CREDIT_COST_OUT_OF_RANGE | CREDIT_DISTANCE_INVALID: no puede congelarse un costo válido; aceptación revertida.',
   })
   @ApiOperation({
     summary: 'Aceptar mi Quote',
     description:
-      'Requiere quotes:accept. OFFERED vigente → ACCEPTED y congela el precio. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver (Dispatch V1.7).',
+      'Requiere quotes:accept. OFFERED vigente → ACCEPTED y abre Dispatch con snapshots de créditos en una sola transacción. LOCAL_DELIVERY requiere políticas ACTIVE de PROVIDER e INDEPENDENT_DRIVER, incluso sin candidatos. No consulta saldos ni debita créditos. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver. En errores conservar statusCode, code y requestId (también X-Request-Id); no sustituir code por REMOTE_ERROR.',
   })
   async accept(
     @Req() req: IntegrationRequest,

@@ -1,0 +1,671 @@
+{
+  "description": "Requiere quotes:create. Resuelve ServiceType (LOCAL_DELIVERY), zona ACTIVE de pickup y dropoff (misma zona), RatePlan ACTIVE, ruta real con el RoutingProvider y banda de distancia [min, max). Crea una Quote OFFERED inmutable con vigencia del plan. Si ya hay una OFFERED vigente o una ACCEPTED, la devuelve. Idempotente por DeliveryRequest (bloqueo de fila): peticiones simultáneas producen una sola Quote y una sola llamada de routing. 30/min por IP.",
+  "operationId": "DeliveryQuotesController_create",
+  "parameters": [
+    {
+      "name": "publicId",
+      "required": true,
+      "in": "path",
+      "description": "DeliveryRequest propia.",
+      "schema": {
+        "example": "MDR-000001",
+        "type": "string"
+      }
+    }
+  ],
+  "responses": {
+    "200": {
+      "description": "Quote vigente reutilizada (OFFERED no vencida o ACCEPTED), sin recalcular ni llamar a routing (Quote-Reused: true).",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "publicId": {
+                "type": "string",
+                "example": "MQ-000001"
+              },
+              "deliveryRequestPublicId": {
+                "type": "string",
+                "example": "MDR-000001"
+              },
+              "serviceType": {
+                "type": "string",
+                "enum": [
+                  "LOCAL_DELIVERY"
+                ]
+              },
+              "serviceZone": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "example": "OCOZOCOAUTLA"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Ocozocoautla de Espinosa, Chiapas, México"
+                  }
+                },
+                "required": [
+                  "code",
+                  "name"
+                ]
+              },
+              "distanceMeters": {
+                "type": "number",
+                "example": 4700,
+                "description": "Distancia de ruta real (m) usada para tarificar."
+              },
+              "durationSeconds": {
+                "type": "number",
+                "example": 780
+              },
+              "amount": {
+                "type": "string",
+                "example": "50.00",
+                "description": "Precio logístico congelado. No incluye goodsValue de la mercancía."
+              },
+              "currency": {
+                "type": "string",
+                "example": "MXN"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "OFFERED",
+                  "ACCEPTED",
+                  "EXPIRED",
+                  "CANCELLED"
+                ],
+                "description": "Estado efectivo: una OFFERED con expiresAt vencido se informa como EXPIRED."
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "expiresAt": {
+                "format": "date-time",
+                "type": "string",
+                "description": "Fin de la vigencia del precio. No indica cuándo se realiza el servicio."
+              },
+              "acceptedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "cancelledAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "cancellationReason": {
+                "type": "string",
+                "nullable": true,
+                "example": "DELIVERY_REQUEST_CANCELLED"
+              }
+            },
+            "required": [
+              "publicId",
+              "deliveryRequestPublicId",
+              "serviceType",
+              "serviceZone",
+              "distanceMeters",
+              "durationSeconds",
+              "amount",
+              "currency",
+              "status",
+              "createdAt",
+              "expiresAt"
+            ]
+          }
+        }
+      }
+    },
+    "201": {
+      "description": "Nueva Quote OFFERED (Quote-Reused: false).",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "publicId": {
+                "type": "string",
+                "example": "MQ-000001"
+              },
+              "deliveryRequestPublicId": {
+                "type": "string",
+                "example": "MDR-000001"
+              },
+              "serviceType": {
+                "type": "string",
+                "enum": [
+                  "LOCAL_DELIVERY"
+                ]
+              },
+              "serviceZone": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "example": "OCOZOCOAUTLA"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Ocozocoautla de Espinosa, Chiapas, México"
+                  }
+                },
+                "required": [
+                  "code",
+                  "name"
+                ]
+              },
+              "distanceMeters": {
+                "type": "number",
+                "example": 4700,
+                "description": "Distancia de ruta real (m) usada para tarificar."
+              },
+              "durationSeconds": {
+                "type": "number",
+                "example": 780
+              },
+              "amount": {
+                "type": "string",
+                "example": "50.00",
+                "description": "Precio logístico congelado. No incluye goodsValue de la mercancía."
+              },
+              "currency": {
+                "type": "string",
+                "example": "MXN"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "OFFERED",
+                  "ACCEPTED",
+                  "EXPIRED",
+                  "CANCELLED"
+                ],
+                "description": "Estado efectivo: una OFFERED con expiresAt vencido se informa como EXPIRED."
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "expiresAt": {
+                "format": "date-time",
+                "type": "string",
+                "description": "Fin de la vigencia del precio. No indica cuándo se realiza el servicio."
+              },
+              "acceptedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "cancelledAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "cancellationReason": {
+                "type": "string",
+                "nullable": true,
+                "example": "DELIVERY_REQUEST_CANCELLED"
+              }
+            },
+            "required": [
+              "publicId",
+              "deliveryRequestPublicId",
+              "serviceType",
+              "serviceZone",
+              "distanceMeters",
+              "durationSeconds",
+              "amount",
+              "currency",
+              "status",
+              "createdAt",
+              "expiresAt"
+            ]
+          }
+        }
+      }
+    },
+    "400": {
+      "description": "publicId o parámetros inválidos.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": [
+              "statusCode",
+              "code",
+              "message",
+              "errors",
+              "timestamp",
+              "path"
+            ],
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "example": 400
+              },
+              "code": {
+                "type": "string",
+                "example": "VALIDATION_ERROR"
+              },
+              "message": {
+                "type": "string",
+                "example": "Validation failed"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": [
+                  "maxDrivers must not be less than 1"
+                ]
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/v1/admin/providers"
+              }
+            }
+          }
+        }
+      }
+    },
+    "401": {
+      "description": "Token B2B inválido, expirado, revocado o de cliente suspendido; un JWT humano no es válido.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": [
+              "statusCode",
+              "code",
+              "message",
+              "errors",
+              "timestamp",
+              "path"
+            ],
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "example": 401
+              },
+              "code": {
+                "type": "string",
+                "example": "HTTP_401"
+              },
+              "message": {
+                "type": "string",
+                "example": "Request failed"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": []
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/v1/admin/providers"
+              }
+            }
+          }
+        }
+      }
+    },
+    "403": {
+      "description": "Falta el scope requerido.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": [
+              "statusCode",
+              "code",
+              "message",
+              "errors",
+              "timestamp",
+              "path"
+            ],
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "example": 403
+              },
+              "code": {
+                "type": "string",
+                "example": "HTTP_403"
+              },
+              "message": {
+                "type": "string",
+                "example": "Forbidden resource"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": []
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/v1/admin/providers"
+              }
+            }
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "No existe o pertenece a otro IntegrationClient (no se revela existencia).",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": [
+              "statusCode",
+              "code",
+              "message",
+              "errors",
+              "timestamp",
+              "path"
+            ],
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "example": 404
+              },
+              "code": {
+                "type": "string",
+                "example": "HTTP_404"
+              },
+              "message": {
+                "type": "string",
+                "example": "Request failed"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": []
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/v1/admin/providers"
+              }
+            }
+          }
+        }
+      }
+    },
+    "409": {
+      "description": "DELIVERY_REQUEST_NOT_QUOTABLE: la solicitud no está CREATED.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": [
+              "statusCode",
+              "code",
+              "message",
+              "errors",
+              "timestamp",
+              "path"
+            ],
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "example": 409
+              },
+              "code": {
+                "type": "string",
+                "example": "HTTP_409"
+              },
+              "message": {
+                "type": "string",
+                "example": "Request failed"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": []
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/v1/admin/providers"
+              }
+            }
+          }
+        }
+      }
+    },
+    "422": {
+      "description": "OUT_OF_SERVICE_AREA | CROSS_ZONE_NOT_SUPPORTED | ROUTE_NOT_FOUND | DISTANCE_NOT_SUPPORTED. No se crea Quote; la solicitud sigue CREATED.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": [
+              "statusCode",
+              "code",
+              "message",
+              "errors",
+              "timestamp",
+              "path"
+            ],
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "example": 422
+              },
+              "code": {
+                "type": "string",
+                "example": "HTTP_422"
+              },
+              "message": {
+                "type": "string",
+                "example": "Request failed"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": []
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/v1/admin/providers"
+              }
+            }
+          }
+        }
+      }
+    },
+    "429": {
+      "description": "Límite de peticiones excedido.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": [
+              "statusCode",
+              "code",
+              "message",
+              "errors",
+              "timestamp",
+              "path"
+            ],
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "example": 429
+              },
+              "code": {
+                "type": "string",
+                "example": "HTTP_429"
+              },
+              "message": {
+                "type": "string",
+                "example": "Request failed"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": []
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/v1/admin/providers"
+              }
+            }
+          }
+        }
+      }
+    },
+    "500": {
+      "description": "Error interno sanitizado.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": [
+              "statusCode",
+              "code",
+              "message",
+              "errors",
+              "timestamp",
+              "path"
+            ],
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "example": 500
+              },
+              "code": {
+                "type": "string",
+                "example": "HTTP_500"
+              },
+              "message": {
+                "type": "string",
+                "example": "Request failed"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": []
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/v1/admin/providers"
+              }
+            }
+          }
+        }
+      }
+    },
+    "503": {
+      "description": "ROUTING_UNAVAILABLE | RATE_CONFIGURATION_UNAVAILABLE | RATE_CONFIGURATION_INVALID | SERVICE_ZONE_AMBIGUOUS. Reintentable; nunca se devuelve precio aproximado.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": [
+              "statusCode",
+              "code",
+              "message",
+              "errors",
+              "timestamp",
+              "path"
+            ],
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "example": 503
+              },
+              "code": {
+                "type": "string",
+                "example": "HTTP_503"
+              },
+              "message": {
+                "type": "string",
+                "example": "Request failed"
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": []
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/v1/admin/providers"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "integration-bearer": []
+    }
+  ],
+  "summary": "Cotizar mi DeliveryRequest",
+  "tags": [
+    "Delivery Quotes (B2B)"
+  ],
+  "x-scopes": [
+    "quotes:create"
+  ]
+}

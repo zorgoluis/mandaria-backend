@@ -4,6 +4,20 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación Git del diagnóstico (2026-09-28):** commit y push a QA solicitados por el propietario; se prepara el conjunto verificado en la investigación anterior. Causa remota aún pendiente; sin despliegue desde esta tarea.
+
+- **Investigación accept B2B 409 (2026-09-28 UTC):** causa remota pendiente; diagnóstico local y observabilidad segura implementados, 303 unitarias pasan. Informe: docs/INVESTIGATION_B2B_ACCEPT_409_MDR_000002.md. Sin cambios de reglas, escrituras de datos ni despliegue.
+
+- **Brecha Web de webhooks confirmada (2026-09-27):** inspección de sólo lectura de mandaria-frontend: README identifica V1.11-B y búsqueda en src no encuentra implementación de webhooks. Generación/rotación de secreto existe en backend V1.12, pero no está conectada a una pantalla en esta copia local de Web. No se verificó el despliegue remoto.
+
+- **Guía de secretos webhook (2026-09-27):** formatos y generación contrastados con el código: clave maestra de Mandaria separada del secreto por IntegrationClient emitido mediante API administrativa. Orientación únicamente; sin generar/exponer secretos ni cambiar configuración.
+
+- **Orientación de entrega del contrato B2B (2026-09-25):** explicada la separación entre documentación pública, administración de integraciones y consumo server-to-server por Coita Eats. Rutas y scopes contrastados con API_ACCESS/README; entregar OpenAPI y guía de webhook sin secretos. No se implementó portal ni se configuró un cliente remoto.
+
+- **Comparación con roadmap acordado (2026-09-25):** recuperada la conversación «mandaria». El listado general posterior al adelanto de créditos incluía V1.0–V1.20 y V2.0; después se reemplazó V1.11 Driver App por MVP Delivery Completion y V1.12 Lifecycle por B2B Integration Infrastructure, adelantando integración a V1.13 y dejando ejecución completa/apps/GPS para post-MVP. V1.3 y V1.9-C aparecen en el historial conversacional (membresías/aislamiento y cobertura Web); su ausencia como versión backend no demuestra ausencia funcional. Web V1.9 y créditos V1.10-F reportados completos históricamente, sin reverificación del frontend en esta tarea. Integración externa sin cierre comprobado desde este repositorio.
+
+- **Roadmap revisado (2026-09-25):** presentación consolidada al propietario basada en README, BITACORA y VERIFICATION: backend documentado hasta V1.12-E; prioridad inmediata de comprobar despliegue de Resend, invitación/activación y uso funcional remoto. Evolución posterior presentada como propuesta sin versiones ni fechas comprometidas. Las listas históricas de exclusiones no sustituyen las entregas posteriores de independientes, créditos y cierre de entrega. Revisión documental únicamente; no se repitieron pruebas ni se verificó producción.
+
 - **Correo Resend HTTPS implementado (2026-09-25):** todos los envíos actuales de invitaciones y reenvíos usan el adaptador Resend por 443. SMTP/Nodemailer retirados, sin fallback; producción requiere MAIL_PROVIDER=resend, RESEND_API_KEY y MAIL_FROM. Outbox sólo local/test. Build, lint, TypeScript, documentación, 285 unitarias y 24 E2E de invitaciones pasan; luego 19 pruebas del adaptador/módulo pasan incluyendo tres nuevas de wiring. Pendiente desplegar y verificar un envío real; sin Docker ni acceso a Coita Eats ni cambios en .env.
 
 - **SMTP (2026-09-25):** propietario aporta fallo USER_INVITATION_EMAIL_FAILED con ETIMEDOUT. Dominio Resend verificado según propietario; timeout no demuestra fallo de credenciales. Posible bloqueo saliente del puerto 587 (documentado por DigitalOcean); se propone Resend 2465 con TLS directo. Conectividad y envío remoto pendientes de comprobar.
@@ -226,6 +240,46 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-09-27 — Comprobación de pantalla de secretos webhook
+
+- **Solicitud:** confirmar si Mandaria Web permite generar el secreto de webhook.
+- **Cambios:** documentación de la brecha; sin implementación ni modificación del frontend.
+- **Verificaciones actuales:** lectura de README y búsqueda de webhook/generación/rotación en src y documentación de mandaria-frontend. Backend revisado en la tarea anterior. Sin pruebas ni acceso remoto.
+- **Resultado:** no se encontró apartado webhook en la copia local de Web V1.11-B; la API administrativa V1.12 sí existe. No confundir secreto webhook con clientSecret B2B.
+- **Pendientes:** añadir interfaz SUPER_ADMIN para configurar webhook y generar/rotar secreto, mostrando el valor una sola vez; clave maestra permanece en configuración del servidor.
+
+### 2026-09-27 — Generación de claves para webhooks
+
+- **Solicitud:** explicar cómo generar B2B_WEBHOOK_SECRET_KEY y obtener MANDARIA_WEBHOOK_SECRET para Coita Eats QA.
+- **Cambios:** guía de generación local de clave maestra y emisión del secreto por cliente mediante endpoint SUPER_ADMIN; actualización de continuidad.
+- **Verificaciones actuales:** lectura de README, BITACORA, VERIFICATION, webhook-secret.ts, configuración y endpoint administrativo. Sin pruebas ejecutadas ni consulta de secretos.
+- **Resultado:** diferenciados formato, destino y ciclo de vida de ambas claves; no se generaron claves ni se llamó al endpoint de rotación.
+- **Pendientes:** configuración segura por el propietario y comprobación de firma en integración QA.
+
+### 2026-09-25 — Cómo compartir endpoints con Coita Eats
+
+- **Solicitud:** explicar documentación web, administración API y entrega de endpoints a Coita Eats.
+- **Cambios:** orientación y mensaje reutilizable de integración; actualización de esta bitácora, sin cambios funcionales.
+- **Verificaciones actuales:** lectura del contrato, matriz de acceso, rutas de cotización, autenticación y firma de webhook. Sin pruebas ni verificación del despliegue.
+- **Resultado:** identificado el paquete de documentación y configuración necesario y la secuencia solicitud → cotización → aceptación → estado/webhook.
+- **Pendientes:** publicar referencia B2B filtrada, comprobar URL desplegada, provisionar credenciales de forma segura y validar integración real cuando se solicite.
+
+### 2026-09-25 — Comparación contra el listado previamente establecido
+
+- **Solicitud:** conservar el listado acordado y marcar avances y faltantes.
+- **Cambios:** anotación de continuidad; comparación presentada por alcance original, correspondencia actual y estado. Se corrige la omisión del roadmap conversacional en la respuesta anterior.
+- **Verificaciones actuales:** consulta de las conversaciones «mandaria» y «Propuesta Mandaria Detallada», incluyendo roadmap general y decisiones posteriores de adelantar créditos e integración; contraste con documentación local leída en esta sesión. Sin pruebas nuevas ni acceso al código/base de Coita Eats; frontend no inspeccionado.
+- **Resultado:** backend hasta V1.12-E contrastado documentalmente; avances Web identificados como reportes históricos; apps, lifecycle completo, GPS/tracking y expansiones conservados como pendientes del alcance original, sin inventar renumeración.
+- **Pendientes:** acreditar integración real y despliegue; fijar numeración futura de los bloques desplazados cuando se retomen.
+
+### 2026-09-25 — Presentación del roadmap consolidado
+
+- **Solicitud:** mostrar el roadmap con orden y estado real.
+- **Cambios:** actualización de continuidad y presentación de hitos entregados, cierre operativo pendiente y evolución propuesta; sin cambios de producto.
+- **Verificaciones actuales:** lectura de README.md, BITACORA.md, VERIFICATION.md, AGENTS.md y versión del paquete; consulta del estado de trabajo. No se ejecutaron pruebas, Docker ni acciones remotas. Los resultados funcionales citados son históricos.
+- **Resultado:** se distingue implementación validada localmente de evidencia de despliegue y de planes aún no aprobados; no se atribuyen entregas a V1.3 ni a V1.9-C sin evidencia.
+- **Pendientes:** comprobar Resend real, activación/login y flujo operativo en el despliegue; definir alcance y criterios de aceptación de las siguientes etapas antes de implementarlas.
 
 ### 2026-09-15 — Implementación inicial del Core (1.0.0)
 
@@ -954,3 +1008,18 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificaciones de esta tarea:** fetch remoto; confirmado QA local antecesor de origin/QA y archivos base de main idénticos a origin/QA. Actualización fast-forward y recuperación de cambios sin conflictos. La revisión automática rechazó actualizar directamente la referencia local; resuelto preservando cambios con stash y merge --ff-only. Pruebas funcionales corresponden a la tarea anterior (285 unitarias, 19 específicas al cierre, 24 E2E); no repetidas para la entrega Git.
 - **Resultado:** cambios preparados en QA para commit y push normal, sin force-push. Verificación del SHA remoto se realiza tras publicar y se informa al propietario.
 - **Pendientes:** despliegue en VM y correo real con RESEND_API_KEY; no efectuados por esta entrega.
+
+### 2026-09-28 UTC — Investigación accept B2B 409, MDR-000002
+
+- **Solicitud:** investigar con evidencia el 409 de Coita Eats, sin accept real, cambios remotos, commit, push ni despliegue.
+- **Cambios:** correlación X-Request-Id y evento seguro DELIVERY_QUOTE_ACCEPT_FAILED; OpenAPI documenta CREDIT_POLICY_UNAVAILABLE y errores de cálculo. Agregadas 15 pruebas de diagnóstico, SQL acotado READ ONLY e informe docs/INVESTIGATION_B2B_ACCEPT_409_MDR_000002.md. Reglas de aceptación y transacción intactas; cambios previos conservados.
+- **Verificaciones actuales:** 15/15 casos nuevos, 303/303 unitarias con pool threads; build, TypeScript, Oxlint, ESLint, generación OpenAPI y docs:check pasan. SQL ejecutado sobre PostgreSQL local en READ ONLY. Primer arranque Vitest limitado por spawn EPERM; repetición autorizada pasó. No E2E con escrituras ni comprobaciones remotas.
+- **Resultado:** reproducido 409 con cotización vigente por política ausente de cualquiera de los actores; también distinguidos vencimiento, estado incompatible, scope 403 y Prisma 500. Esto no confirma la causa de la VM. Contrato previo ya exponía code; observabilidad insuficiente corregida localmente.
+- **Pendientes:** obtener revisión desplegada, salida del SQL y publicId/code de evidencia ya capturada. No repetir accept ni cambiar políticas, saldos, permisos o secretos para diagnosticar.
+### 2026-09-28 — Commit y push del diagnóstico B2B
+
+- **Solicitud:** commitear y subir los cambios a la rama actual QA.
+- **Cambios:** publicación de observabilidad, documentación, prueba de regresión y SQL de sólo lectura del diagnóstico; se conservan entradas previas de bitácora. El archivo local preexistente nul se excluye.
+- **Verificaciones actuales:** revisión de estado, rama, destino remoto y git diff --check. Las 303 unitarias, build y linters corresponden a la investigación inmediatamente anterior; no se repiten por esta operación Git.
+- **Resultado:** conjunto preparado para commit y push autorizado a origin/QA; el resultado de la operación se comunica al cierre de la tarea.
+- **Pendientes:** confirmar causa del incidente mediante evidencia de la VM; no se despliega ni se repite accept.

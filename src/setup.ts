@@ -10,8 +10,15 @@ import helmet from 'helmet';
 import { json, urlencoded } from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { HttpErrorFilter } from './common/http-exception.filter.js';
+import { randomUUID } from 'node:crypto';
 export function setup(app: INestApplication) {
   const config = app.get(ConfigService);
+  // Server-generated correlation only: never trust/log an incoming request-id header.
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.locals.requestId = randomUUID();
+    res.setHeader('X-Request-Id', res.locals.requestId as string);
+    next();
+  });
   app.use(helmet());
   app.use(json({ limit: '16kb' }));
   app.use(urlencoded({ extended: false, limit: '16kb' }));
@@ -23,7 +30,7 @@ export function setup(app: INestApplication) {
     credentials: false,
     // Browsers may only read non-safelisted response headers that are exposed explicitly; Mandaria
     // Web needs this one to tell an idempotent replay from a new movement.
-    exposedHeaders: ['Idempotent-Replayed'],
+    exposedHeaders: ['Idempotent-Replayed', 'X-Request-Id'],
   });
   app.setGlobalPrefix('api/v1', {
     exclude: [{ path: 'health', method: RequestMethod.GET }],
@@ -44,6 +51,7 @@ export function setup(app: INestApplication) {
     res.on('finish', () =>
       logger.log({
         event: 'http_request',
+        requestId: res.locals.requestId,
         method: req.method,
         route:
           (req.route as { path?: string } | undefined)?.path ?? 'unmatched',

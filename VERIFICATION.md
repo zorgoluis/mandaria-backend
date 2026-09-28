@@ -1,3 +1,14 @@
+# Investigación accept B2B 409 — 2026-09-28 UTC
+
+Rama QA, base `1c29f370e3afe5a256c73d98b9f14ce39b61102c`, paquete 1.12.0. **Causa remota pendiente de evidencia; no declarar resuelto.**
+
+Verificaciones ejecutadas en esta tarea: 15/15 pruebas nuevas de diagnóstico HTTP sobre doble transaccional en memoria; 303/303 unitarias completas (pool threads); build, TypeScript, Oxlint, ESLint, generación OpenAPI y docs:check PASS. Script diagnóstico SQL ejecutado con éxito sobre PostgreSQL local en READ ONLY. No E2E con escrituras, accept real, cambios de datos, VM, commit, push ni despliegue. El primer arranque Vitest falló por spawn EPERM; repetición autorizada pasó.
+
+Informe y límites: [Investigación MDR-000002](docs/INVESTIGATION_B2B_ACCEPT_409_MDR_000002.md). SQL operativo: [diagnóstico sólo lectura](scripts/diagnose-mdr-000002-readonly.sql).
+
+**Las verificaciones siguientes son históricas y no se repitieron como parte de esta investigación.**
+
+---
 # CHECK FINAL V1.12 — B2B Integration Infrastructure (2026-09-24)
 
 Rama `v1.12-B2B_webhook_delivery` sobre `3ed3d89`, paquete **1.12.0**. Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin commit ni push, sin tocar `.env` y sin modificar producto.** Informe completo en [docs/CHECK_FINAL_V1_12.md](docs/CHECK_FINAL_V1_12.md); evidencia en [docs/checks/v1.12-final-evidence.json](docs/checks/v1.12-final-evidence.json).
