@@ -5,6 +5,8 @@ import { existsSync, readdirSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
 const url = new URL(process.env.DATABASE_URL);
+if (!['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))
+  throw new Error('Migration verification requires local PostgreSQL');
 const suffix = randomBytes(5).toString('hex');
 const cleanDb = `mandaria_clean_${suffix}_test`;
 const upgradeDb = `mandaria_upgrade_${suffix}_test`;
@@ -708,13 +710,42 @@ try {
     Object.fromEntries(
       v19Tables.map((table) => [
         table,
-        sql(v19Db, ['-c', `SELECT json_agg(t ORDER BY id) FROM "${table}" t`]),
+        sql(v19Db, [
+          '-c',
+          table === 'Driver'
+            ? `SELECT jsonb_agg(to_jsonb(t) - 'displayName' ORDER BY id) FROM "Driver" t`
+            : `SELECT json_agg(t ORDER BY id) FROM "${table}" t`,
+        ]),
       ]),
     );
   const beforeCredits = v19Snapshot();
   prisma(v19Db, ['migrate', 'deploy']);
-  // The credit migration adds tables only: every pre-existing row is byte-identical.
+  // Historical columns remain identical. V1.12-G adds a nullable presentation field; verify
+  // its absence of backfill separately instead of comparing the newly extended row shape.
   assert.deepEqual(v19Snapshot(), beforeCredits);
+  assert.equal(
+    sql(v19Db, [
+      '-c',
+      `SELECT count(*) FROM "Driver" WHERE "displayName" IS NOT NULL`,
+    ]),
+    '0',
+  );
+  for (const db of [cleanDb, upgradeDb, v19Db]) {
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM "Dispatch" WHERE "publicExecutionSnapshot" IS NOT NULL`,
+      ]),
+      '0',
+    );
+    assert.equal(
+      sql(db, [
+        '-c',
+        `SELECT count(*) FROM pg_trigger WHERE tgname IN ('Dispatch_public_execution_guard','B2bOutboxEvent_public_execution_guard')`,
+      ]),
+      '2',
+    );
+  }
   // One zero-balance account per provider, whatever its status; none invented as a recharge.
   assert.equal(
     sql(v19Db, [
@@ -1291,7 +1322,7 @@ try {
 } catch (error) {
   console.error(
     error instanceof assert.AssertionError
-      ? `Migration preservation assertion failed: ${error.message}`
+      ? 'Migration preservation assertion failed (row values omitted to avoid logging credentials)'
       : error.message,
   );
   process.exitCode = 1;

@@ -752,6 +752,7 @@ describe('V1.12-A ownership and authorization', () => {
     const shape = (body: Record<string, unknown>) => ({
       ...body,
       timestamp: undefined,
+      requestId: undefined,
       path: undefined,
     });
     expect(shape(foreign.body)).toEqual(shape(unknown.body));
@@ -940,5 +941,331 @@ describe('V1.12-A reading has no consequences', () => {
     const settled = await statusOf(t.b2b, dispatch.requestPublicId).expect(200);
     expect(settled.body.status).toBe('DELIVERED');
     expect(settled.body.deliveredAt).not.toBeNull();
+  });
+});
+
+describe('V1.12-G public execution identity CHECK', () => {
+  withApp();
+  const configureName = (key: string, displayName: string | null) =>
+    api()
+      .patch(`/api/v1/admin/providers/${providers.A}/drivers/${drivers[key]}`)
+      .auth(t.sa, bearer)
+      .send({ displayName });
+  const eventFor = (dispatchId: string) =>
+    prisma.b2bOutboxEvent.findFirstOrThrow({ where: { dispatchId } });
+
+  it('rejects a forged Outbox identity and rolls back the entire completion including its snapshot', async () => {
+    const dispatch = await openDispatch();
+    await claim(t.A, dispatch.id).expect(200);
+    await assign(t.A, dispatch.id, {
+      driverId: drivers.ana,
+      vehicleId: vehicles.fleet1,
+    }).expect(201);
+    const original = await dispatchRow(dispatch.id);
+    const assignments = await assignmentsOf(dispatch.id);
+    const before = await economy();
+    const subject = await prisma.deliveryRequest.findUniqueOrThrow({
+      where: { publicId: dispatch.requestPublicId },
+    });
+    const current = (
+      await statusOf(t.b2b, dispatch.requestPublicId).expect(200)
+    ).body;
+    await expect(
+      prisma.$transaction(async (tx) => {
+        const at = new Date();
+        await tx.$queryRaw`SELECT id FROM "Dispatch" WHERE id = ${dispatch.id}::uuid FOR UPDATE`;
+        await tx.deliveryAssignment.update({
+          where: { id: assignments[0].id },
+          data: {
+            status: 'COMPLETED',
+            endedAt: at,
+            endedByUserId: users.adminA,
+          },
+        });
+        await tx.dispatch.update({
+          where: { id: dispatch.id },
+          data: {
+            status: 'DELIVERED',
+            deliveredAt: at,
+            deliveredByUserId: users.adminA,
+          },
+        });
+        await tx.b2bOutboxEvent.create({
+          data: {
+            type: 'DELIVERY_COMPLETED',
+            integrationClientId: subject.integrationClientId,
+            deliveryRequestId: subject.id,
+            dispatchId: dispatch.id,
+            occurredAt: at,
+            payload: {
+              ...current,
+              status: 'DELIVERED',
+              deliveredAt: at.toISOString(),
+              execution: {
+                mode: 'PROVIDER',
+                provider: null,
+                driver: { displayName: 'Wrong assignment' },
+              },
+            },
+          },
+        });
+      }),
+    ).rejects.toThrow(/PUBLIC_EXECUTION_MISMATCH/);
+    expect(await dispatchRow(dispatch.id)).toEqual(original);
+    expect(await assignmentsOf(dispatch.id)).toEqual(assignments);
+    expect(
+      await prisma.b2bOutboxEvent.count({ where: { dispatchId: dispatch.id } }),
+    ).toBe(0);
+    expect(await economy()).toEqual(before);
+  });
+
+  it('configures only explicit public names, validates them and preserves provider isolation', async () => {
+    for (const displayName of ['', '  ', 'a'.repeat(101), 42])
+      await configureName('ana', displayName as string).expect(400);
+    const saved = await configureName('ana', '  Ana pública  ').expect(200);
+    expect(saved.body.displayName).toBe('Ana pública');
+    await api()
+      .patch(`/api/v1/provider/drivers/${drivers.ana}`)
+      .auth(t.B, bearer)
+      .send({ displayName: 'forged' })
+      .expect(404);
+    await api()
+      .patch(`/api/v1/admin/providers/${providers.A}/drivers/${drivers.ana}`)
+      .auth(t.b2b, bearer)
+      .send({ displayName: 'forged' })
+      .expect(401);
+    expect(
+      (await configureName('ana', null).expect(200)).body.displayName,
+    ).toBeNull();
+  });
+
+  it('claim, assignment, reassignment, completion and later profile changes preserve the right identity', async () => {
+    await configureName('ana', 'Ana pública').expect(200);
+    await configureName('beto', 'Beto público').expect(200);
+    const dispatch = await openDispatch();
+    expect(
+      (await statusOf(t.b2b, dispatch.requestPublicId).expect(200)).body
+        .execution,
+    ).toBeNull();
+    await claim(t.A, dispatch.id).expect(200);
+    const claimed = (
+      await statusOf(t.b2b, dispatch.requestPublicId).expect(200)
+    ).body;
+    expect(claimed.execution).toEqual({
+      mode: 'PROVIDER',
+      provider: { displayName: `Proveedor A ${run}` },
+      driver: null,
+    });
+    await assign(t.A, dispatch.id, {
+      driverId: drivers.ana,
+      vehicleId: vehicles.fleet1,
+    }).expect(201);
+    expect(
+      (await statusOf(t.b2b, dispatch.requestPublicId)).body.execution.driver,
+    ).toEqual({ displayName: 'Ana pública' });
+    await api()
+      .post(`/api/v1/provider/dispatches/${dispatch.id}/assignment/reassign`)
+      .auth(t.A, bearer)
+      .send({
+        driverId: drivers.beto,
+        vehicleId: vehicles.fleet2,
+        reason: 'OPERATIONAL_CHANGE',
+      })
+      .expect(200);
+    const reassigned = (
+      await statusOf(t.b2b, dispatch.requestPublicId).expect(200)
+    ).body;
+    expect(reassigned.execution.driver).toEqual({
+      displayName: 'Beto público',
+    });
+    const before = {
+      economy: await economy(),
+      routing: routing.calls,
+      quote: await prisma.deliveryQuote.findFirstOrThrow({
+        where: { deliveryRequest: { publicId: dispatch.requestPublicId } },
+      }),
+      request: await prisma.deliveryRequest.findUniqueOrThrow({
+        where: { publicId: dispatch.requestPublicId },
+      }),
+    };
+    await deliver(t.A, dispatch.id).expect(200);
+    const final = (await statusOf(t.b2b, dispatch.requestPublicId).expect(200))
+      .body;
+    const event = await eventFor(dispatch.id);
+    expect(event.payload).toEqual(final);
+    expect((await dispatchRow(dispatch.id)).publicExecutionSnapshot).toEqual(
+      final.execution,
+    );
+    expect(final.execution).toEqual(reassigned.execution);
+    await configureName('beto', 'Nombre posterior').expect(200);
+    await prisma.deliveryProvider.update({
+      where: { id: providers.A },
+      data: { name: 'Marca posterior' },
+    });
+    await prisma.user.update({
+      where: { id: users.beto },
+      data: { active: false },
+    });
+    try {
+      expect(
+        (await statusOf(t.b2b, dispatch.requestPublicId).expect(200)).body,
+      ).toEqual(final);
+      expect((await eventFor(dispatch.id)).payload).toEqual(final);
+      await api()
+        .post(`/api/v1/provider/dispatches/${dispatch.id}/assignment/reassign`)
+        .auth(t.A, bearer)
+        .send({
+          driverId: drivers.ana,
+          vehicleId: vehicles.fleet1,
+          reason: 'OPERATIONAL_CHANGE',
+        })
+        .expect(409);
+      await expect(
+        prisma.dispatch.update({
+          where: { id: dispatch.id },
+          data: {
+            publicExecutionSnapshot: {
+              mode: 'PROVIDER',
+              provider: null,
+              driver: { displayName: 'forged' },
+            },
+          },
+        }),
+      ).rejects.toThrow();
+      await deliver(t.A, dispatch.id).expect(200);
+      expect(await economy()).toEqual(before.economy);
+      expect(routing.calls).toBe(before.routing);
+      expect(
+        await prisma.deliveryQuote.findUniqueOrThrow({
+          where: { id: before.quote.id },
+        }),
+      ).toEqual(before.quote);
+      expect(
+        await prisma.deliveryRequest.findUniqueOrThrow({
+          where: { id: before.request.id },
+        }),
+      ).toEqual(before.request);
+      await statusOf(t.b2bOther, dispatch.requestPublicId).expect(404);
+      const serialized = JSON.stringify(final);
+      for (const value of [
+        drivers.beto,
+        providers.A,
+        users.beto,
+        vehicles.fleet2,
+        mail('beto'),
+        '9615550011',
+        'driverId',
+        'userId',
+        'vehicleId',
+        'secretHash',
+      ])
+        expect(serialized).not.toContain(value);
+      // Existing consumers still read the unchanged mode field.
+      expect(final.execution.mode).toBe('PROVIDER');
+    } finally {
+      await prisma.user.update({
+        where: { id: users.beto },
+        data: { active: true },
+      });
+      await prisma.deliveryProvider.update({
+        where: { id: providers.A },
+        data: { name: `Proveedor A ${run}` },
+      });
+    }
+  }, 30000);
+
+  it('missing public identity never falls back to private operational name, including after completion', async () => {
+    await configureName('ana', null).expect(200);
+    const dispatch = await deliveredByProvider();
+    const final = (await statusOf(t.b2b, dispatch.requestPublicId).expect(200))
+      .body;
+    expect(final.execution.driver).toBeNull();
+    await configureName('ana', 'Configured too late').expect(200);
+    expect(
+      (await statusOf(t.b2b, dispatch.requestPublicId).expect(200)).body,
+    ).toEqual(final);
+    expect((await eventFor(dispatch.id)).payload).toEqual(final);
+  });
+
+  it('Independent TAKE uses the same explicit Driver identity, with no provider; freezes it at delivery', async () => {
+    await configureName('indy', 'Independiente público').expect(200);
+    const dispatch = await openDispatch();
+    await take(t.indy, dispatch.id, vehicles.indy).expect(200);
+    const current = (
+      await statusOf(t.b2b, dispatch.requestPublicId).expect(200)
+    ).body;
+    expect(current.execution).toEqual({
+      mode: 'INDEPENDENT',
+      provider: null,
+      driver: { displayName: 'Independiente público' },
+    });
+    const before = await economy();
+    await driverDeliver(t.indy, dispatch.id).expect(200);
+    const final = (await statusOf(t.b2b, dispatch.requestPublicId).expect(200))
+      .body;
+    expect((await eventFor(dispatch.id)).payload).toEqual(final);
+    await configureName('indy', null).expect(200);
+    expect(
+      (await statusOf(t.b2b, dispatch.requestPublicId).expect(200)).body,
+    ).toEqual(final);
+    expect(await economy()).toEqual(before);
+  });
+
+  it('release removes identity; reads racing release never publish the old actor as OPEN', async () => {
+    const dispatch = await openDispatch();
+    await claim(t.A, dispatch.id).expect(200);
+    const [released, ...reads] = await Promise.all([
+      api()
+        .post(`/api/v1/provider/dispatches/${dispatch.id}/release`)
+        .auth(t.A, bearer)
+        .send({ reason: 'No disponible' }),
+      ...Array.from({ length: 8 }, () =>
+        statusOf(t.b2b, dispatch.requestPublicId),
+      ),
+    ]);
+    expect(released.status).toBe(200);
+    for (const read of reads) {
+      expect(read.status).toBe(200);
+      if (read.body.status === 'OPEN') expect(read.body.execution).toBeNull();
+      else expect(read.body.execution.mode).toBe('PROVIDER');
+    }
+    expect(
+      (await statusOf(t.b2b, dispatch.requestPublicId).expect(200)).body,
+    ).toMatchObject({ status: 'OPEN', execution: null });
+  });
+
+  it('reads racing reassignment contain one current driver, never a historical row', async () => {
+    await configureName('ana', 'Ana pública').expect(200);
+    await configureName('beto', 'Beto público').expect(200);
+    const dispatch = await openDispatch();
+    await claim(t.A, dispatch.id).expect(200);
+    await assign(t.A, dispatch.id, {
+      driverId: drivers.ana,
+      vehicleId: vehicles.fleet1,
+    }).expect(201);
+    const [changed, ...reads] = await Promise.all([
+      api()
+        .post(`/api/v1/provider/dispatches/${dispatch.id}/assignment/reassign`)
+        .auth(t.A, bearer)
+        .send({
+          driverId: drivers.beto,
+          vehicleId: vehicles.fleet2,
+          reason: 'OPERATIONAL_CHANGE',
+        }),
+      ...Array.from({ length: 8 }, () =>
+        statusOf(t.b2b, dispatch.requestPublicId),
+      ),
+    ]);
+    expect(changed.status).toBe(200);
+    for (const read of reads) {
+      expect(read.status).toBe(200);
+      expect(['Ana pública', 'Beto público']).toContain(
+        read.body.execution.driver.displayName,
+      );
+    }
+    expect(
+      (await statusOf(t.b2b, dispatch.requestPublicId).expect(200)).body
+        .execution.driver,
+    ).toEqual({ displayName: 'Beto público' });
   });
 });

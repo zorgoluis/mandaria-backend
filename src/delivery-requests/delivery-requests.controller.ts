@@ -42,7 +42,10 @@ import {
   DeliveryRequestPageResponse,
   DeliveryRequestResponse,
 } from './delivery-requests.responses.js';
-import { DeliveryStatusResponse } from './delivery-status.responses.js';
+import {
+  DeliveryStatusResponse,
+  PUBLIC_EXECUTION_EXAMPLES,
+} from './delivery-status.responses.js';
 
 const IDEMPOTENCY_KEY = /^[\x21-\x7e]{8,255}$/;
 export const publicIdParam = ApiParam({
@@ -164,7 +167,10 @@ export class DeliveryRequestsController {
   @Get(':publicId/status')
   @IntegrationScopes('deliveries:read')
   @publicIdParam
-  @ApiOkResponse({ type: DeliveryStatusResponse })
+  @ApiOkResponse({
+    type: DeliveryStatusResponse,
+    examples: PUBLIC_EXECUTION_EXAMPLES,
+  })
   @ApiErrorDescriptions({
     ...b2bErrors,
     404: 'No existe o pertenece a otro IntegrationClient (no se revela existencia).',
@@ -172,7 +178,7 @@ export class DeliveryRequestsController {
   @ApiOperation({
     summary: 'Consultar el estado logístico de mi DeliveryRequest',
     description:
-      'Requiere deliveries:read. Sólo lectura: Mandaria sigue siendo la única autoridad logística y un IntegrationClient no marca entregas, ni reclama, ni asigna. Devuelve un estado público y estable —REQUESTED, OPEN, ASSIGNED, DELIVERED, CANCELLED o EXPIRED— que no expone el modelo interno de Dispatch: quién ejecuta se resume en execution.mode (PROVIDER o INDEPENDENT) y no se publican Driver, Vehicle, créditos ni políticas. deliveredAt llega con la entrega y es null antes. Apto para sondeo periódico: la lectura no tiene efectos.',
+      'Requiere deliveries:read. Sólo lectura: Mandaria sigue siendo la única autoridad logística y un IntegrationClient no marca entregas, ni reclama, ni asigna. Devuelve un estado público y estable —REQUESTED, OPEN, ASSIGNED, DELIVERED, CANCELLED o EXPIRED— que no expone el modelo interno de Dispatch: execution.mode (PROVIDER o INDEPENDENT) se amplía con provider/driver nullable y únicamente displayName público. DELIVERED congela la identidad al entregar; no expone IDs internos, datos privados, Vehicle, créditos ni políticas. deliveredAt llega con la entrega y es null antes. Apto para sondeo periódico: la lectura no tiene efectos.',
   })
   async status(
     @Req() req: IntegrationRequest,
