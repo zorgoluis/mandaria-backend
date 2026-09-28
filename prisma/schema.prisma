@@ -69,6 +69,7 @@ model IntegrationClient {
   credentials IntegrationCredential[]
   deliveryRequests DeliveryRequest[]
   idempotencyRecords ApiIdempotencyRecord[]
+  prequotes DeliveryPrequote[]
   outboxEvents B2bOutboxEvent[]
   webhookEndpoint B2bWebhookEndpoint?
   webhookAttempts B2bWebhookDeliveryAttempt[]
@@ -371,6 +372,8 @@ model DeliveryFinancialContext {
 }
 /// Reusable B2B idempotency ledger. Stores only a payload hash, never the payload.
 model ApiIdempotencyRecord {
+  execution ApiIdempotencyExecution?
+  prequote DeliveryPrequote?
   id String @id @default(uuid()) @db.Uuid
   integrationClientId String @db.Uuid
   key String
@@ -409,6 +412,7 @@ enum DeliveryQuoteStatus {
 /// Operating area. boundary is a validated GeoJSON Polygon/MultiPolygon; the bbox columns
 /// pre-filter candidates in SQL before the exact point-in-polygon check (PostGIS-replaceable).
 model ServiceZone {
+  prequotes DeliveryPrequote[]
   id String @id @default(uuid()) @db.Uuid
   code String @unique
   name String
@@ -428,6 +432,7 @@ model ServiceZone {
 }
 /// Versioned tariff for ServiceZone + ServiceType. Only DRAFT is editable; at most one ACTIVE.
 model RatePlan {
+  prequotes DeliveryPrequote[]
   id String @id @default(uuid()) @db.Uuid
   serviceZoneId String @db.Uuid
   serviceType ServiceType
@@ -449,6 +454,7 @@ model RatePlan {
 }
 /// Distance band [minDistanceMeters, maxDistanceMeters): min inclusive, max exclusive.
 model RateBand {
+  prequotes DeliveryPrequote[]
   id String @id @default(uuid()) @db.Uuid
   ratePlanId String @db.Uuid
   minDistanceMeters Int
@@ -1109,4 +1115,53 @@ model B2bWebhookDelivery {
   /// The worker queue: what is PENDING and due, oldest first.
   @@index([state, nextAttemptAt])
   @@index([integrationClientId, state])
+}
+
+/// Internal execution metadata, subordinate to the sole integration/key authority.
+enum IdempotencyExecutionState {
+  PROCESSING
+  RETRYABLE_FAILED
+  FAILED
+  SUCCEEDED
+}
+model ApiIdempotencyExecution {
+  recordId String @id @db.Uuid
+  state IdempotencyExecutionState
+  owner String @db.Uuid
+  version Int
+  attempts Int
+  maxAttempts Int
+  leaseExpiresAt DateTime
+  errorCode String?
+  record ApiIdempotencyRecord @relation(fields: [recordId], references: [id], onDelete: Restrict)
+}
+/// Published immutable offer. Expiration is derived; no conversion state in A3.
+model DeliveryPrequote {
+  id String @id @db.Uuid
+  publicId String @unique
+  idempotencyRecordId String @unique @db.Uuid
+  integrationClientId String @db.Uuid
+  conditionsVersion Int
+  conditions Json
+  serviceType ServiceType
+  serviceZoneId String @db.Uuid
+  zoneCode String
+  zoneName String
+  zoneBoundary Json
+  ratePlanId String @db.Uuid
+  rateBandId String @db.Uuid
+  distanceMeters Int
+  durationSeconds Int
+  routingProvider String
+  routeCalculatedAt DateTime
+  amount Decimal @db.Decimal(14, 2)
+  currency String @db.Char(3)
+  issuedAt DateTime
+  expiresAt DateTime
+  record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict)
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
+  ratePlan RatePlan @relation(fields: [ratePlanId, serviceZoneId], references: [id, serviceZoneId], onDelete: Restrict)
+  rateBand RateBand @relation(fields: [rateBandId, ratePlanId], references: [id, ratePlanId], onDelete: Restrict)
+  @@index([integrationClientId, issuedAt])
 }

@@ -75,17 +75,28 @@ export class IdempotencyService {
           key: scope.key,
         },
       },
-      select: { requestHash: true, resourceId: true, resourceType: true },
+      select: {
+        requestHash: true,
+        resourceId: true,
+        resourceType: true,
+        execution: { select: { recordId: true } },
+      },
     });
   }
 
   private async replay<T>(
     scope: IdempotencyScope,
-    record: { requestHash: string; resourceId: string; resourceType: string },
+    record: {
+      requestHash: string;
+      resourceId: string;
+      resourceType: string;
+      execution?: { recordId: string } | null;
+    },
     requestHash: string,
     load: (resourceId: string) => Promise<T>,
   ) {
     if (
+      record.execution ||
       record.requestHash !== requestHash ||
       record.resourceType !== scope.resourceType
     ) {

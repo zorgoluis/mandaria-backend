@@ -202,14 +202,12 @@ describe('IdempotencyService', () => {
               .mockResolvedValueOnce(null)
               .mockResolvedValue(record({ a: 1 }))
           : vi.fn().mockResolvedValue(record({ a: 1 }));
-        const transaction = vi
-          .fn()
-          .mockRejectedValue(
-            new Prisma.PrismaClientKnownRequestError('duplicate', {
-              code: 'P2002',
-              clientVersion: 'test',
-            }),
-          );
+        const transaction = vi.fn().mockRejectedValue(
+          new Prisma.PrismaClientKnownRequestError('duplicate', {
+            code: 'P2002',
+            clientVersion: 'test',
+          }),
+        );
         const create = vi.fn();
         const load = vi.fn();
         await expect(
@@ -229,7 +227,12 @@ describe('IdempotencyService', () => {
               key: scope.key,
             },
           },
-          select: { requestHash: true, resourceId: true, resourceType: true },
+          select: {
+            requestHash: true,
+            resourceId: true,
+            resourceType: true,
+            execution: { select: { recordId: true } },
+          },
         });
         if (!race) expect(transaction).not.toHaveBeenCalled();
       }

@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.13-A3 (2026-09-28):** commit y push autorizados a la rama actual; se publica la persistencia e idempotencia durable validada en la tarea anterior. Sin despliegue ni migración de la base principal.
+
+- **V1.13-A3 — persistencia e idempotencia durable (2026-09-28):** LISTO PARA A4. DeliveryPrequote independiente e inmutable; metadata 1:1 bajo la única autoridad ApiIdempotencyRecord, leases con fencing y publicación atómica. 347/347 unitarias y 436/436 E2E consolidadas por archivo; migración limpia/upgrade, Prisma, tipos/build/linters/docs:check PASS. Dos migraciones aplicadas sólo a bases locales de pruebas; principal sin migrar. Sin endpoints/routing nuevo/cuotas/conversión, versión, commit/push/despliegue. Informe: docs/V1.13-A3-PREQUOTE-PERSISTENCE-IDEMPOTENCY.md.
+
 - **Publicación V1.13-A2 (2026-09-28):** commit y push autorizados a la rama actual; se publica la extracción validada en la tarea anterior. Sin despliegue.
 
 - **V1.13-A2 — cálculo compartido (2026-09-28):** LISTO PARA A3. DeliveryQuotesService usa funciones extraídas de preparación/validación/precio/snapshot, conservando routing transaccional, TTL y contrato. Verificación nueva: 331/331 unitarias y 412/412 E2E consolidadas por archivo; tipos/build/Oxlint/ESLint/docs:check pasan. Abortos Windows y repeticiones documentados. Sin precotización, Prisma, versión, commit/push/despliegue. Informe: docs/V1.13-A2-SHARED-PRICING-EXTRACTION.md.
@@ -258,6 +262,23 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-09-28 — Publicación de V1.13-A3
+
+- Solicitud: realizar commit y push a la rama actual.
+- Cambios: publicación de modelos, dos migraciones incrementales, servicios internos, pruebas, verificador de migraciones e informe de A3. Archivo ajeno `nul` excluido.
+- Verificaciones de esta tarea: revisión del conjunto y `git diff --check`; comprobación del commit y sincronización remota al publicar. Las 347 unitarias y 436 E2E corresponden a la tarea anterior y no se repiten para esta publicación.
+- Resultado: conjunto preparado para commit y push autorizados; confirmación remota pendiente de ejecutar. Sin despliegue.
+- Pendientes: A4; migración de la base principal fuera del alcance de esta publicación.
+
+### 2026-09-28 — V1.13-A3: DeliveryPrequote y protocolo interno durable
+
+- **Solicitud:** persistencia de precotización y reserva/recuperación/publicación interna, sin emisión ni consulta pública.
+- **Cambios:** DeliveryPrequote, ApiIdempotencyExecution y dos migraciones incrementales; normalizador FOOD/LOCAL_DELIVERY separado de legacy; servicio con owner/version/lease e intentos acotados; MPQ; guard de replay legacy ante metadata durable; pruebas y verificador de migración específicos; informe A3.
+- **Verificaciones actuales:** Prisma validate/generate y estado de 26 migraciones; build, TypeScript, Oxlint, ESLint, docs:check y git diff --check PASS. 347/347 unitarias (16 nuevas) y 436/436 E2E en 24 archivos (412 legacy +24 nuevas). Bases nuevas mandaria_a3_clean_52b4dfb5d3_test y mandaria_a3_upgrade_52b4dfb5d3_test retenidas: instalación/upgrade PASS, comparación de 12 tablas y registro/hash idempotente legacy preservados. Sólo escrituras en bases locales de pruebas verificadas.
+- **Incidencias:** primera migración nueva falló por sintaxis; se comprobó rollback íntegro, se marcó rolled-back y se corrigió/aplicó sólo en test. Verificador inicialmente abortó antes de crear bases por selector de nombres, corregido. Tres suites abortaron nativamente; invitaciones pasó en primera repetición, quotes y solicitudes B2B en segunda tras errores de worker. Ejecuciones incompletas no contadas como PASS; detalle en informe.
+- **Resultado:** LISTO PARA A4. Misma clave por integración, replay sin renovación, terminales no reabren, todas las mutaciones con fencing; publicación y éxito se confirman juntos o rollback. Snapshot, condiciones, referencias y dinero protegidos en PostgreSQL. Comparación de 284 archivos preexistentes: sólo cambios autorizados en schema, public-id, IdempotencyService y su mock; .env/migraciones históricas/contratos/flujos operativos sin cambios.
+- **Pendientes/riesgos:** primero migrar esquema en futuro despliegue autorizado; principal intacta. A4 debe conectar API/guardas/orquestación y A5 cuotas. No hay endpoints públicos, routing nuevo, cuotas activadas, conversión ni aceptación del flujo nuevo; transferencia completa pendiente. Fixtures durables y bases de validación retenidos; zona de fixtures se desactiva. Inestabilidad de runner Windows sin causa raíz resuelta. Sin Docker, versión/CHANGELOG, commit, push o despliegue.
 
 ### 2026-09-28 — Publicación de V1.13-A2
 

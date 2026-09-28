@@ -11,6 +11,7 @@ export const formatPublicId = (prefix: string, value: bigint | number) =>
 const SEQUENCES = {
   MDR: '"DeliveryRequest_publicId_seq"',
   MQ: '"DeliveryQuote_publicId_seq"',
+  MPQ: '"DeliveryPrequote_publicId_seq"',
 } as const;
 export async function nextPublicId(
   tx: Prisma.TransactionClient,
