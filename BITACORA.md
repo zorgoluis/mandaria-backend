@@ -4,6 +4,12 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Análisis de reutilización de precotización (2026-09-28):** docs/PREQUOTE-REUSE-ASSESSMENT.md recomienda compartir cálculo, routing, tarifas e infraestructura; conservar una autoridad de idempotencia y agregar sólo persistencia MPQ necesaria. Reutilizar DeliveryQuote como recurso sin solicitud exige romper invariantes actuales y no se recomienda. Sin implementación.
+
+- **Diseño de precotización garantizada (2026-09-28):** propuesta documentada en docs/PROPOSAL-PREQUOTE-PREPAID-RECIPIENT-CASH.md; MPQ independiente, conversión única a MDR/MQ con vencimiento heredado, accept autorizado e instrucción de efectivo al destinatario. Viabilidad estática, no implementado ni aprobado como contrato operativo. Conserva legacy/COURIER_ADVANCE y separa entrega de cobro.
+
+- **Análisis de comida prepagada y envío al destinatario (2026-09-28):** PREPAID declara mercancía ya cobrada, no envío pagado; el contrato no modela transferencia pendiente ni evidencia de cobro del envío. Aceptar Quote abre Dispatch atómicamente. Cotización previa sin declaración falsa requiere precotización externa o extensión aditiva; no se implementó. Revisión estática de OpenAPI/código, sin operaciones reales ni pruebas ejecutadas.
+
 - **Publicación V1.12-G (2026-09-28):** propietario autoriza commit y push en la rama actual v1.12-Public_Execution_Identity. Se publica el conjunto validado en la tarea anterior; sin despliegue.
 
 - **V1.12-G validada localmente (2026-09-28):** identidad pública B2B aditiva; Driver.displayName explícito nullable, snapshot inmutable al entregar y Outbox consistente. 309 unitarias y 409 E2E pasan; migración incremental, build, linters y documentación verificados. Sin commit/push/despliegue ni cambios de .env/Web/Coita Eats. Informe: docs/V1.12-G-B2B-PUBLIC-EXECUTION-IDENTITY.md.
@@ -1043,3 +1049,24 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificaciones actuales:** estado, rama, remoto y git diff --check. Las 309 unitarias y 409 E2E corresponden a la tarea anterior; no se repiten para la publicación Git.
 - **Resultado:** conjunto listo para commit y push autorizado a origin; resultado remoto confirmado al cierre de esta tarea.
 - **Pendientes:** despliegue coordinado de migración y escritores; configurar nombres públicos explícitos. No se ejecuta despliegue ni se modifica .env.
+### 2026-09-28 — Análisis de transferencia al restaurante y cobro exclusivo del envío
+
+- **Solicitud:** revisar contrato e implementación para comida pagada por transferencia al restaurante, sin adelanto del repartidor y con cobro exclusivo del envío; permitir cotización antes de confirmar pago sin despachar ni autorizar aumentos automáticamente.
+- **Cambios:** sólo esta bitácora; análisis entregado en la conversación. Sin cambios funcionales, configuración, migraciones ni alteraciones al flujo COURIER_ADVANCE.
+- **Verificaciones actuales:** lectura dirigida de BITACORA, README y VERIFICATION; contraste de docs/openapi.json, DTOs, normalización, serializadores, quote/accept, vistas proveedor/independiente, completion/status, cancelación, esquema y migraciones; inspección de pruebas existentes sin ejecutarlas. git diff --check y estado Git. No HTTP, bases de datos, routing, despachos, Docker ni acceso a Coita Eats o Mandaria Web.
+- **Resultado:** financialContext PREPAID con goodsValue positivo opcional representa mercancía ya cobrada; paymentContext deriva false/null para adelanto y deliveryFee de Quote. No hay campo de cobro al destinatario, estado de pago del envío, recibo ni reembolso monetario. Inmutabilidad de solicitud por contrato API (sin edición), sin atribuirle un trigger SQL de inmutabilidad financiera. Crear/cotizar no despacha; accept sí. Sin modo pendiente ni precotización desacoplada en API actual. No usar COURIER_ADVANCE ficticio ni PREPAID pendiente. Vencimiento exige nueva Quote y autorización explícita ante aumento. Completion/webhook acredita logística, no cobro. SERVICE_REFUND devuelve créditos del ejecutor, no comida/envío.
+- **Pendientes:** decidir precotización independiente, política de consentimiento y vencimientos, responsable/evidencia de cobro del envío y devolución de transferencia por restaurante; verificar interfaces en tareas separadas. Pruebas históricas no reejecutadas. Sin commit, push ni despliegue; archivo nul preexistente conservado.
+### 2026-09-28 — Diseño de precotización y envío en efectivo al destinatario
+
+- **Solicitud:** diseñar extensión para precotizar antes de transferencia, garantizar temporalmente precio y convertir tras confirmación del restaurante; no implementar.
+- **Cambios:** documento de propuesta con endpoints/scopes/cuerpos/respuestas/errores, estados e invariantes, snapshot y garantía, conversión/aceptación, idempotencia/concurrencia, abuso de routing, responsabilidades, interfaces, migraciones futuras, decisiones y matriz de pruebas/etapas. Sólo documentación y esta bitácora.
+- **Verificaciones actuales:** lectura de continuidad y contraste estático de OpenAPI/código, helper idempotente, trigger de Quote, apertura de Dispatch, scopes y driver/me (asignación propia sin contexto financiero). Ocho bloques JSON de ejemplos parseados correctamente; git diff --check sin errores. No pruebas de producto, HTTP, routing, SQL, migraciones ni operaciones reales.
+- **Resultado:** diseño viable condicionado a implementar persistencia y guardas. MPQ garantiza precio hasta aceptación antes del vencimiento original, sin disponibilidad garantizada; conversión no renueva plazo. Nuevo flujo exige aceptación autorizada y bloquea bypass legacy. Instrucción de cobrar envío no confirma recepción de dinero. Flotilla requiere canal operativo verificado o extensión de lectura/UI; capacidades Web/KMP no inspeccionadas.
+- **Pendientes:** aprobar políticas de vigencia, consentimiento, suspensión, límites/retención, canal de flotilla y devoluciones externas; ejecutar etapas y matriz en tareas futuras. Las verificaciones históricas no se reejecutaron. Sin cambios de código/OpenAPI operativo/configuración/versión, commit, push o despliegue. nul preexistente conservado.
+### 2026-09-28 — Acoplamiento sin duplicación innecesaria
+
+- **Solicitud:** analizar adaptación de componentes existentes antes de implementar precotización, evitando duplicidad de recursos y preservando comportamiento validado.
+- **Cambios:** informe docs/PREQUOTE-REUSE-ASSESSMENT.md y bitácora; propuesta de extracción controlada de cálculo común, único registro de claves con extensión durable y una entidad MPQ con función propia. No crear tablas futuras sin necesidad.
+- **Verificaciones actuales:** lectura de continuidad, esquema, cotización/routing/idempotencia, configuración HTTP, patrón de leases y utilidades; git diff --check. No pruebas de producto ni operaciones reales.
+- **Resultado:** viable reutilizar sin alterar contrato legacy, pero requiere ajustes internos. DeliveryQuote exige solicitud y congela vínculo; reutilizarla como MPQ sería más invasivo. Snapshot futuro duplicado como evidencia no implica recálculo/cobro duplicado. Presupuesto global MPQ no debe confundirse con total de Google ni alterar legacy silenciosamente.
+- **Pendientes:** revisar recomendación y concretar extensión de idempotencia antes de etapa A; validar regresiones al implementar. Sin código, migraciones, configuración, commit, push ni despliegue; cambios previos y nul conservados.
