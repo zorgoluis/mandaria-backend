@@ -14,7 +14,25 @@ import { PaginationQueryDto } from '../common/pagination.dto.js';
 const trim = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? value.trim() : value;
 
-export class CreateDriverDto {
+export class DriverPublicIdentityDto {
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    minLength: 1,
+    maxLength: 100,
+    description:
+      'Nombre expresamente autorizado para presentación pública B2B. null lo retira de servicios futuros y en curso; no modifica entregas finalizadas. No copiar nombre legal, email ni teléfono.',
+    example: 'Carlos',
+  })
+  @Transform(trim)
+  @ValidateIf((_o, v) => v !== undefined && v !== null)
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  displayName?: string | null;
+}
+
+export class CreateDriverDto extends DriverPublicIdentityDto {
   @ApiProperty({
     format: 'uuid',
     description:
@@ -34,7 +52,7 @@ export class CreateDriverDto {
   @MaxLength(100)
   name!: string;
 }
-export class UpdateDriverDto {
+export class UpdateDriverDto extends DriverPublicIdentityDto {
   @ApiPropertyOptional({
     description: 'Nuevo nombre operativo.',
     example: 'Carlos Pérez',

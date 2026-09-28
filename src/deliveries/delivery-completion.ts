@@ -135,6 +135,9 @@ export async function completeDelivery(
       endedByUserId: actorUserId,
     },
   });
+  // V1.12-G: Dispatch_public_execution_guard freezes public presentation names from this
+  // COMPLETED assignment during this UPDATE. Never read mutable profiles after the commit.
+  // The Outbox below must match that identity or PostgreSQL rolls the whole completion back.
   await tx.dispatch.update({
     where: { id: dispatchId },
     data: {

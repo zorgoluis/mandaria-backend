@@ -55,6 +55,16 @@ export const deliveryStatusSelect = {
       claimedByIndependentDriverId: true,
       deliveredAt: true,
       cancelledAt: true,
+      publicExecutionSnapshot: true,
+      candidates: {
+        where: { status: 'CLAIMED' },
+        select: { providerId: true, provider: { select: { name: true } } },
+      },
+      deliveryAssignments: {
+        where: { status: 'ACTIVE' },
+        take: 1,
+        select: { driver: { select: { displayName: true } } },
+      },
     },
   },
 } as const;
@@ -63,11 +73,38 @@ export type DeliveryStatusRecord = Prisma.DeliveryRequestGetPayload<{
   select: typeof deliveryStatusSelect;
 }>;
 
+export type PublicExecutionIdentity = {
+  mode: B2bExecutionMode;
+  provider: { displayName: string } | null;
+  driver: { displayName: string } | null;
+};
+
+const publicName = (value: unknown): { displayName: string } | null =>
+  typeof value === 'string' && value.trim() ? { displayName: value } : null;
+
+/** Allowlist even persisted JSON: never spread historical payloads into a public response. */
+function historicalIdentity(
+  value: Prisma.JsonValue | undefined,
+  mode: B2bExecutionMode,
+): PublicExecutionIdentity {
+  const record =
+    value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const name = (entry: Prisma.JsonValue | undefined) =>
+    entry && typeof entry === 'object' && !Array.isArray(entry)
+      ? publicName(entry.displayName)
+      : null;
+  return {
+    mode,
+    provider: mode === 'PROVIDER' ? name(record.provider) : null,
+    driver: name(record.driver),
+  };
+}
+
 export type DeliveryStatusView = {
   publicId: string;
   externalReference: string | null;
   status: B2bDeliveryStatus;
-  execution: { mode: B2bExecutionMode } | null;
+  execution: PublicExecutionIdentity | null;
   requestedAt: Date;
   deliveredAt: Date | null;
   cancelledAt: Date | null;
@@ -93,8 +130,8 @@ const DISPATCH_STATUS: Record<string, B2bDeliveryStatus> = {
  * effective status V1.7 reports everywhere else.
  *
  * ASSIGNED means "somebody is executing this service", whether a provider claimed it or an
- * independent driver took it. Which driver or vehicle is doing it is an internal matter and is
- * deliberately not part of the public contract.
+ * independent driver took it. V1.12-G adds explicitly public presentation names; internal IDs remain
+ * outside the public contract. Delivered identities always come from the immutable snapshot.
  */
 export function deliveryStatusView(
   request: DeliveryStatusRecord,
@@ -115,7 +152,28 @@ export function deliveryStatusView(
     publicId: request.publicId,
     externalReference: request.externalReference,
     status,
-    execution: mode ? { mode } : null,
+    execution: !mode
+      ? null
+      : status === 'DELIVERED'
+        ? historicalIdentity(dispatch?.publicExecutionSnapshot, mode)
+        : status === 'ASSIGNED'
+          ? {
+              mode,
+              provider:
+                mode === 'PROVIDER'
+                  ? publicName(
+                      dispatch?.candidates?.find(
+                        (c) => c.providerId === dispatch.claimedByProviderId,
+                      )?.provider.name,
+                    )
+                  : null,
+              driver: publicName(
+                dispatch?.deliveryAssignments?.[0]?.driver.displayName,
+              ),
+            }
+          : status === 'CANCELLED'
+            ? { mode, provider: null, driver: null }
+            : null,
     requestedAt: request.requestedAt,
     // Null until the delivery is completed: never 0, never an empty string.
     deliveredAt: dispatch?.deliveredAt ?? null,

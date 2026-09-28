@@ -5,6 +5,7 @@ export const driverSelect = {
   providerId: true,
   userId: true,
   name: true,
+  displayName: true,
   status: true,
   availability: true,
   createdAt: true,
@@ -24,6 +25,7 @@ export const driverSelect = {
 export const driverSelfSelect = {
   id: true,
   name: true,
+  displayName: true,
   status: true,
   availability: true,
   provider: {

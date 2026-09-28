@@ -201,10 +201,16 @@ export class DeliveryRequestsService {
    * deliveryStatusView, the single place that turns internal logistics into the public contract.
    */
   async deliveryStatus(publicId: string, integrationClientId: string) {
-    const request = await this.prisma.deliveryRequest.findFirst({
-      where: { publicId, integrationClientId },
-      select: deliveryStatusSelect,
-    });
+    // Prisma can load relations through several SELECTs. A single database snapshot prevents
+    // mixing an old claim with a new assignment during release/reassignment/completion.
+    const request = await this.prisma.$transaction(
+      (tx) =>
+        tx.deliveryRequest.findFirst({
+          where: { publicId, integrationClientId },
+          select: deliveryStatusSelect,
+        }),
+      { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
+    );
     if (!request) throw new NotFoundException('Delivery request not found');
     return deliveryStatusView(request);
   }

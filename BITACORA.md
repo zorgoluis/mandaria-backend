@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.12-G (2026-09-28):** propietario autoriza commit y push en la rama actual v1.12-Public_Execution_Identity. Se publica el conjunto validado en la tarea anterior; sin despliegue.
+
+- **V1.12-G validada localmente (2026-09-28):** identidad pública B2B aditiva; Driver.displayName explícito nullable, snapshot inmutable al entregar y Outbox consistente. 309 unitarias y 409 E2E pasan; migración incremental, build, linters y documentación verificados. Sin commit/push/despliegue ni cambios de .env/Web/Coita Eats. Informe: docs/V1.12-G-B2B-PUBLIC-EXECUTION-IDENTITY.md.
+
 - **Publicación Git del diagnóstico (2026-09-28):** commit y push a QA solicitados por el propietario; se prepara el conjunto verificado en la investigación anterior. Causa remota aún pendiente; sin despliegue desde esta tarea.
 
 - **Investigación accept B2B 409 (2026-09-28 UTC):** causa remota pendiente; diagnóstico local y observabilidad segura implementados, 303 unitarias pasan. Informe: docs/INVESTIGATION_B2B_ACCEPT_409_MDR_000002.md. Sin cambios de reglas, escrituras de datos ni despliegue.
@@ -1023,3 +1027,19 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificaciones actuales:** revisión de estado, rama, destino remoto y git diff --check. Las 303 unitarias, build y linters corresponden a la investigación inmediatamente anterior; no se repiten por esta operación Git.
 - **Resultado:** conjunto preparado para commit y push autorizado a origin/QA; el resultado de la operación se comunica al cierre de la tarea.
 - **Pendientes:** confirmar causa del incidente mediante evidencia de la VM; no se despliega ni se repite accept.
+### 2026-09-28 — V1.12-G B2B Public Execution Identity
+
+- **Solicitud:** extender status y delivery.completed con identidad de presentación, sin IDs/PII privados, conservando aislamiento, atomicidad, economía e infraestructura webhook.
+- **Inspección:** Provider.name es nombre visible; Driver.name sólo operativo. No existía nombre explícitamente público para Driver ni snapshot histórico de presentación. IndependentDriverProfile reutiliza Driver. Revisados CLAIM/TAKE, asignación, release, completion, Outbox, transporte/retry/HMAC y administración.
+- **Cambios:** Driver.displayName nullable administrable mediante DTOs/rutas existentes; lectura RepeatableRead con identidad de asignación ACTIVE; Dispatch.publicExecutionSnapshot generado e inmutable por trigger al completar; Outbox exige igualdad. Sin backfill ni fallback privado. Migración 20260928000100_b2b_public_execution_identity, OpenAPI con ejemplos, README e informe de contrato actualizados.
+- **Verificaciones actuales:** Prisma validate/generate, deploy en bases locales principal/test sin reset, status 24 migraciones, drift sin diferencias, verify-migrations PASS; TypeScript/build/Oxlint/ESLint/docs PASS; 309/309 unitarias; 409/409 E2E en 23 archivos. CHECK status 21/21 (7 nuevos), Outbox 17/17, webhooks 54/54. Evidencia docs/checks/v1.12-g-evidence.json.
+- **Incidencias de prueba:** proceso combinado E2E abortó sin informe; webhooks threads terminó nativamente Windows 3221226505 y pasó completo con forks/un worker/no isolate. Corregidas expectativas aditivas y timestamp inconsistente en fixture; no se modificaron reglas de negocio. Comparación de migraciones preserva columnas anteriores y verifica nuevo displayName null.
+- **Resultado:** COMPLETADA Y VALIDADA localmente. Snapshot/retries conservan identidad pese a renombres posteriores, falsificar Outbox revierte cierre/asignación/snapshot, y scopes/404 se mantienen. No se modificó economía, routing ni PaymentContext.
+- **Pendientes/riesgos:** configurar nombres públicos explícitos; historia anterior sin evidencia permanece null. Coordinar migración con actualización de escritores de completion; backend anterior será rechazado por la nueva guarda. Despliegue/consumidores remotos no verificados. Bases verify-migrations retenidas según script, fixtures E2E limpiados. Sin commit/push/despliegue ni cambios a .env, Coita Eats o Mandaria Web; nul preexistente conservado.
+### 2026-09-28 — Commit y push V1.12-G
+
+- **Solicitud:** commitear y subir a la rama actual.
+- **Cambios:** preparación del commit V1.12-G con implementación, migración, pruebas, OpenAPI y documentación. Rama detectada: v1.12-Public_Execution_Identity; la validación previa se hizo sobre base QA 4dbc331. nul preexistente excluido.
+- **Verificaciones actuales:** estado, rama, remoto y git diff --check. Las 309 unitarias y 409 E2E corresponden a la tarea anterior; no se repiten para la publicación Git.
+- **Resultado:** conjunto listo para commit y push autorizado a origin; resultado remoto confirmado al cierre de esta tarea.
+- **Pendientes:** despliegue coordinado de migración y escritores; configurar nombres públicos explícitos. No se ejecuta despliegue ni se modifica .env.
