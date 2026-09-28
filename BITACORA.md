@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.13-A2 (2026-09-28):** commit y push autorizados a la rama actual; se publica la extracción validada en la tarea anterior. Sin despliegue.
+
+- **V1.13-A2 — cálculo compartido (2026-09-28):** LISTO PARA A3. DeliveryQuotesService usa funciones extraídas de preparación/validación/precio/snapshot, conservando routing transaccional, TTL y contrato. Verificación nueva: 331/331 unitarias y 412/412 E2E consolidadas por archivo; tipos/build/Oxlint/ESLint/docs:check pasan. Abortos Windows y repeticiones documentados. Sin precotización, Prisma, versión, commit/push/despliegue. Informe: docs/V1.13-A2-SHARED-PRICING-EXTRACTION.md.
+
 - **Publicación V1.13-A1 (2026-09-28):** commit y push a la rama actual autorizados por el propietario; se publica la baseline validada en la tarea anterior, sin despliegue.
 
 - **V1.13-A1 — baseline legacy (2026-09-28):** LISTO PARA A2. Caracterización de cotización/idempotencia/accept/cancel y seis pruebas nuevas; 312/312 unitarias, 412/412 E2E consolidadas por archivo, tipos/build/Oxlint/ESLint pasan. Intentos Windows abortados/incompletos y repeticiones documentados; no equivalen a PASS. Sin cambios de producto ni precotización. Informe: docs/V1.13-A1-LEGACY-REGRESSION-BASELINE.md.
@@ -254,6 +258,23 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-09-28 — Publicación de V1.13-A2
+
+- **Solicitud:** commit y push a la rama actual.
+- **Cambios:** publicación del cálculo compartido, integración en DeliveryQuotesService, pruebas, informe y bitácora. nul preexistente queda fuera del commit.
+- **Verificación actual:** revisión del conjunto y git diff --check. Las 331 unitarias, 412 E2E y comprobaciones de calidad corresponden a la tarea A2 anterior; no se repiten para publicar.
+- **Resultado y pendientes:** conjunto preparado para commit/push; se comprobará sincronización con origin al finalizar. Sin despliegue ni trabajo de A3.
+
+
+### 2026-09-28 — V1.13-A2: extracción del cálculo compartido
+
+- **Solicitud:** extraer preparación, validación, evaluación y snapshot sin alterar comportamiento legacy ni implementar precotizaciones.
+- **Cambios:** nuevo src/pricing/quote-pricing.ts usado por DeliveryQuotesService; nuevo test/quote-pricing.spec.ts con 19 casos; informe de extracción. Baseline A1 y mocks intactos, sin módulos nuevos ni algoritmo duplicado.
+- **Verificaciones ejecutadas en A2:** destino local mandaria_test confirmado por lectura, 24 migraciones existentes; 331/331 unitarias; 412/412 E2E consolidadas de 23 archivos. Build, TypeScript, Oxlint, ESLint, docs:check y git diff --check PASS. Comparación de 286 archivos preexistentes protegidos: sólo cambia el servicio de quotes; contratos, Prisma, tests A1, configuración y .env iguales. Tramo route/accept/lecturas del servicio idéntico al inicial.
+- **Ejecuciones incompletas:** webhooks exit 1 con 16/54, luego 51/54 por salida inesperada del worker; dispatch aborto nativo 3221226505. No se contabilizan como PASS. Dispatch repitió 13/13; webhooks completó 54/54 con forks/1 worker y aislamiento predeterminado. Ninguna aserción debilitada o configuración global alterada.
+- **Resultado:** LISTO PARA A3, con inestabilidad Windows documentada. Routing dentro de transacción y bloqueo, TTL anclado antes de routing y snapshot con tiempos explícitos; accept/cancel/openDispatch/idempotencia/finanzas sin cambios.
+- **Pendientes/límites:** diseñar el alcance autorizado de A3; ninguna MPQ, cuota, lease, conversión o instrucción de cobro implementada. Servicios externos reales/VM no verificados. Fixtures residuales de abortos pueden permanecer en la base local de pruebas; no se ejecutó barrido global. Sin Docker, migraciones, cambio de versión/CHANGELOG, commit, push ni despliegue.
 
 ### 2026-09-28 — Publicación de baseline V1.13-A1
 
