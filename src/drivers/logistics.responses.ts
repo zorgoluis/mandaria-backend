@@ -50,6 +50,13 @@ export class DriverUserResponse {
   @ApiProperty({ example: true }) active!: boolean;
 }
 export class DriverResponse {
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description:
+      'Nombre explícitamente autorizado para presentación B2B; sin fallback privado.',
+  })
+  displayName!: string | null;
   @ApiProperty(uuid) id!: string;
   @ApiProperty(uuid) providerId!: string;
   @ApiProperty({ ...uuid, description: 'User que autentica al Driver.' })
@@ -186,6 +193,13 @@ export class DriverSelfActiveDeliveryAssignmentResponse {
   @ApiProperty(uuid) dispatchId!: string;
 }
 export class DriverSelfResponse {
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description:
+      'Nombre explícitamente autorizado para presentación B2B; sin fallback privado.',
+  })
+  displayName!: string | null;
   @ApiProperty(uuid) id!: string;
   @ApiProperty({ example: 'Carlos' }) name!: string;
   @ApiProperty({ enum: DriverStatus }) status!: DriverStatus;

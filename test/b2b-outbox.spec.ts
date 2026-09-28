@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-const { B2B_EVENT_TYPES, b2bEventPayload, recordedEventLog } = await import(
-  '../dist/b2b-events/b2b-outbox.js'
-);
-const { deliveryStatusView } = await import(
-  '../dist/deliveries/delivery-status.js'
-);
+const { B2B_EVENT_TYPES, b2bEventPayload, recordedEventLog } =
+  await import('../dist/b2b-events/b2b-outbox.js');
+const { deliveryStatusView } =
+  await import('../dist/deliveries/delivery-status.js');
 
 /**
  * V1.12-B: the event is built from the V1.12-A public model and nothing else. These cases pin the
@@ -46,7 +44,7 @@ describe('V1.12-B delivery.completed event', () => {
       publicId: 'MDR-000123',
       externalReference: 'ORDER-4711',
       status: 'DELIVERED',
-      execution: { mode: 'PROVIDER' },
+      execution: { mode: 'PROVIDER', provider: null, driver: null },
       requestedAt: '2026-09-24T09:00:00.000Z',
       deliveredAt: '2026-09-24T09:47:12.345Z',
       cancelledAt: null,
@@ -60,7 +58,11 @@ describe('V1.12-B delivery.completed event', () => {
         claimedByIndependentDriverId: 'driver-1',
       }),
     );
-    expect(independent.execution).toEqual({ mode: 'INDEPENDENT' });
+    expect(independent.execution).toEqual({
+      mode: 'INDEPENDENT',
+      provider: null,
+      driver: null,
+    });
     expect({ ...independent, execution: null }).toEqual({
       ...payloadOf(delivered()),
       execution: null,

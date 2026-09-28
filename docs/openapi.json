@@ -18128,7 +18128,7 @@
     },
     "/api/v1/delivery-requests/{publicId}/status": {
       "get": {
-        "description": "Requiere deliveries:read. Sólo lectura: Mandaria sigue siendo la única autoridad logística y un IntegrationClient no marca entregas, ni reclama, ni asigna. Devuelve un estado público y estable —REQUESTED, OPEN, ASSIGNED, DELIVERED, CANCELLED o EXPIRED— que no expone el modelo interno de Dispatch: quién ejecuta se resume en execution.mode (PROVIDER o INDEPENDENT) y no se publican Driver, Vehicle, créditos ni políticas. deliveredAt llega con la entrega y es null antes. Apto para sondeo periódico: la lectura no tiene efectos.",
+        "description": "Requiere deliveries:read. Sólo lectura: Mandaria sigue siendo la única autoridad logística y un IntegrationClient no marca entregas, ni reclama, ni asigna. Devuelve un estado público y estable —REQUESTED, OPEN, ASSIGNED, DELIVERED, CANCELLED o EXPIRED— que no expone el modelo interno de Dispatch: execution.mode (PROVIDER o INDEPENDENT) se amplía con provider/driver nullable y únicamente displayName público. DELIVERED congela la identidad al entregar; no expone IDs internos, datos privados, Vehicle, créditos ni políticas. deliveredAt llega con la entrega y es null antes. Apto para sondeo periódico: la lectura no tiene efectos.",
         "operationId": "DeliveryRequestsController_status",
         "parameters": [
           {
@@ -18149,6 +18149,128 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeliveryStatusResponse"
+                },
+                "examples": {
+                  "open": {
+                    "summary": "open",
+                    "value": {
+                      "publicId": "MDR-000123",
+                      "externalReference": "ORDER-4711",
+                      "status": "OPEN",
+                      "execution": null,
+                      "requestedAt": "2026-09-28T10:00:00.000Z",
+                      "deliveredAt": null,
+                      "cancelledAt": null
+                    }
+                  },
+                  "providerClaimed": {
+                    "summary": "providerClaimed",
+                    "value": {
+                      "publicId": "MDR-000123",
+                      "externalReference": "ORDER-4711",
+                      "status": "ASSIGNED",
+                      "execution": {
+                        "mode": "PROVIDER",
+                        "provider": {
+                          "displayName": "Mensajería Centro"
+                        },
+                        "driver": null
+                      },
+                      "requestedAt": "2026-09-28T10:00:00.000Z",
+                      "deliveredAt": null,
+                      "cancelledAt": null
+                    }
+                  },
+                  "providerAssigned": {
+                    "summary": "providerAssigned",
+                    "value": {
+                      "publicId": "MDR-000123",
+                      "externalReference": "ORDER-4711",
+                      "status": "ASSIGNED",
+                      "execution": {
+                        "mode": "PROVIDER",
+                        "provider": {
+                          "displayName": "Mensajería Centro"
+                        },
+                        "driver": {
+                          "displayName": "Alex"
+                        }
+                      },
+                      "requestedAt": "2026-09-28T10:00:00.000Z",
+                      "deliveredAt": null,
+                      "cancelledAt": null
+                    }
+                  },
+                  "independent": {
+                    "summary": "independent",
+                    "value": {
+                      "publicId": "MDR-000123",
+                      "externalReference": "ORDER-4711",
+                      "status": "ASSIGNED",
+                      "execution": {
+                        "mode": "INDEPENDENT",
+                        "provider": null,
+                        "driver": {
+                          "displayName": "Alex"
+                        }
+                      },
+                      "requestedAt": "2026-09-28T10:00:00.000Z",
+                      "deliveredAt": null,
+                      "cancelledAt": null
+                    }
+                  },
+                  "delivered": {
+                    "summary": "delivered",
+                    "value": {
+                      "publicId": "MDR-000123",
+                      "externalReference": "ORDER-4711",
+                      "status": "DELIVERED",
+                      "execution": {
+                        "mode": "PROVIDER",
+                        "provider": {
+                          "displayName": "Mensajería Centro"
+                        },
+                        "driver": {
+                          "displayName": "Alex"
+                        }
+                      },
+                      "requestedAt": "2026-09-28T10:00:00.000Z",
+                      "deliveredAt": "2026-09-28T10:30:00.000Z",
+                      "cancelledAt": null
+                    }
+                  },
+                  "identityNotConfigured": {
+                    "summary": "identityNotConfigured",
+                    "value": {
+                      "publicId": "MDR-000123",
+                      "externalReference": "ORDER-4711",
+                      "status": "ASSIGNED",
+                      "execution": {
+                        "mode": "INDEPENDENT",
+                        "provider": null,
+                        "driver": null
+                      },
+                      "requestedAt": "2026-09-28T10:00:00.000Z",
+                      "deliveredAt": null,
+                      "cancelledAt": null
+                    }
+                  },
+                  "historicalDelivery": {
+                    "summary": "historicalDelivery",
+                    "value": {
+                      "publicId": "MDR-000123",
+                      "externalReference": "ORDER-4711",
+                      "status": "DELIVERED",
+                      "execution": {
+                        "mode": "PROVIDER",
+                        "provider": null,
+                        "driver": null
+                      },
+                      "requestedAt": "2026-09-28T10:00:00.000Z",
+                      "deliveredAt": "2026-09-28T10:30:00.000Z",
+                      "cancelledAt": null
+                    }
+                  }
                 }
               }
             }
@@ -55763,6 +55885,14 @@
       "CreateDriverDto": {
         "type": "object",
         "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Nombre expresamente autorizado para presentación pública B2B. null lo retira de servicios futuros y en curso; no modifica entregas finalizadas. No copiar nombre legal, email ni teléfono.",
+            "example": "Carlos"
+          },
           "userId": {
             "type": "string",
             "format": "uuid",
@@ -55880,6 +56010,11 @@
       "DriverResponse": {
         "type": "object",
         "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nombre explícitamente autorizado para presentación B2B; sin fallback privado."
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -55944,6 +56079,7 @@
           }
         },
         "required": [
+          "displayName",
           "id",
           "providerId",
           "userId",
@@ -55999,6 +56135,14 @@
       "UpdateDriverDto": {
         "type": "object",
         "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Nombre expresamente autorizado para presentación pública B2B. null lo retira de servicios futuros y en curso; no modifica entregas finalizadas. No copiar nombre legal, email ni teléfono.",
+            "example": "Carlos"
+          },
           "name": {
             "type": "string",
             "description": "Nuevo nombre operativo.",
@@ -56357,6 +56501,11 @@
       "DriverSelfResponse": {
         "type": "object",
         "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nombre explícitamente autorizado para presentación B2B; sin fallback privado."
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -56416,6 +56565,7 @@
           }
         },
         "required": [
+          "displayName",
           "id",
           "name",
           "status",
@@ -57288,6 +57438,19 @@
           "items"
         ]
       },
+      "PublicExecutionNameResponse": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "example": "Nombre público",
+            "description": "Identidad exclusivamente de presentación; no es un identificador ni garantiza unicidad."
+          }
+        },
+        "required": [
+          "displayName"
+        ]
+      },
       "DeliveryExecutionResponse": {
         "type": "object",
         "properties": {
@@ -57298,10 +57461,32 @@
               "INDEPENDENT"
             ],
             "description": "Quién ejecuta el servicio: PROVIDER (un proveedor con su flotilla) o INDEPENDENT (un repartidor independiente). No se exponen Driver, Vehicle ni membresías."
+          },
+          "provider": {
+            "nullable": true,
+            "description": "Nombre visible del proveedor. null para INDEPENDENT o si no existe evidencia pública histórica.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicExecutionNameResponse"
+              }
+            ]
+          },
+          "driver": {
+            "nullable": true,
+            "description": "displayName configurado explícitamente del Driver vigente. null sin asignación o identidad pública. Nunca se deriva del nombre operativo o del User.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicExecutionNameResponse"
+              }
+            ]
           }
         },
         "required": [
-          "mode"
+          "mode",
+          "provider",
+          "driver"
         ]
       },
       "DeliveryStatusResponse": {
@@ -57332,7 +57517,7 @@
           },
           "execution": {
             "nullable": true,
-            "description": "Presente desde que alguien se adjudica el servicio; null mientras nadie lo ha tomado.",
+            "description": "null antes de adjudicar o después de release. ASSIGNED muestra identidad vigente; DELIVERED usa snapshot histórico inmutable. Entregas anteriores sin evidencia conservan mode con provider/driver null. CANCELLED conserva mode histórico, con ambas identidades null.",
             "type": "object",
             "allOf": [
               {

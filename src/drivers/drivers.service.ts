@@ -63,7 +63,12 @@ export class DriversService {
         )
           throw new ConflictException('Provider driver limit reached');
         return tx.driver.create({
-          data: { providerId, userId: dto.userId, name: dto.name },
+          data: {
+            providerId,
+            userId: dto.userId,
+            name: dto.name,
+            displayName: dto.displayName,
+          },
           select: driverSelect,
         });
       });
@@ -171,6 +176,7 @@ export class DriversService {
         where: { id: driverId },
         data: {
           name: dto.name,
+          displayName: dto.displayName,
           status: dto.status,
           ...(forceOffline ? { availability: 'OFFLINE' as const } : {}),
         },
@@ -179,7 +185,10 @@ export class DriversService {
       return { driver, previous, statusChanged, forceOffline };
     });
     const ids = { providerId, driverId, actorId };
-    if (dto.name !== undefined && dto.name !== result.previous.name)
+    if (
+      (dto.name !== undefined && dto.name !== result.previous.name) ||
+      dto.displayName !== undefined
+    )
       this.logger.log({ event: 'DRIVER_UPDATED', ...ids });
     if (result.statusChanged)
       this.logger.log({

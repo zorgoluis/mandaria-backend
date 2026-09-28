@@ -1413,10 +1413,21 @@ describe('V1.12-D reliable delivery', () => {
   }, 30000);
 
   it('a failure is rescheduled, and the retry that succeeds carries the same event', async () => {
+    await prisma.driver.update({
+      where: { id: drivers.ana },
+      data: { displayName: 'Public at completion' },
+    });
     receiver.always({ status: 503 });
     const dispatch = await deliveredByProvider();
     const event = await eventOf(dispatch.id);
     await waitForAttempts(event.id);
+    await prisma.driver.update({
+      where: { id: drivers.ana },
+      data: { displayName: 'Changed before retry' },
+    });
+    expect(
+      (event.payload as { execution: { driver: unknown } }).execution.driver,
+    ).toEqual({ displayName: 'Public at completion' });
     const failed = await deliveryOf(event.id);
     expect(failed).toMatchObject({ state: 'PENDING', attemptCount: 1 });
     // One minute out, per the policy, and not due yet.
@@ -2050,9 +2061,9 @@ describe('V1.12-E answering «what happened with my order»', () => {
       where: { integrationClientId: ids.b2bClient },
       data: { secretCiphertext: null, secretSetAt: null },
     });
-    expect((await eventDetail(event.id).expect(200)).body.noDeliveryReason).toBe(
-      'NO_ENDPOINT',
-    );
+    expect(
+      (await eventDetail(event.id).expect(200)).body.noDeliveryReason,
+    ).toBe('NO_ENDPOINT');
     // And it is findable as such, which is how an operator sweeps for gaps.
     const swept = await listEvents({
       transportState: 'NO_DELIVERY',
@@ -2097,7 +2108,9 @@ describe('V1.12-E answering «what happened with my order»', () => {
     expect(new Set(walked).size).toBe(walked.length);
     // A filter narrows that same list rather than producing a different one.
     for (const reference of references) {
-      const one = await listEvents({ externalReference: reference }).expect(200);
+      const one = await listEvents({ externalReference: reference }).expect(
+        200,
+      );
       expect(one.body.total).toBe(1);
       expect(ordered).toContain(one.body.items[0].eventId);
     }
@@ -2406,9 +2419,9 @@ describe('V1.12-E the operational surface is administrative, and keeps its secre
     expect(bodies).not.toContain(ciphertext);
     expect(bodies).not.toContain('secretCiphertext');
     // What it does say is whether one exists, which is what an operator actually needs.
-    expect((await eventDetail(event.id).expect(200)).body.endpoint).toMatchObject(
-      { secretConfigured: true },
-    );
+    expect(
+      (await eventDetail(event.id).expect(200)).body.endpoint,
+    ).toMatchObject({ secretConfigured: true });
   }, 30000);
 
   it('reading or acting on it requires SUPER_ADMIN', async () => {

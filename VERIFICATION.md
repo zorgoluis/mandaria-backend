@@ -1,3 +1,31 @@
+# V1.12-G — B2B Public Execution Identity (2026-09-28)
+
+**COMPLETADA Y VALIDADA localmente.** Base QA `4dbc331`, paquete 1.12.0. Informe: [V1.12-G](docs/V1.12-G-B2B-PUBLIC-EXECUTION-IDENTITY.md). Evidencia resumida, sin secretos: [v1.12-g-evidence.json](docs/checks/v1.12-g-evidence.json).
+
+| Verificación actual | Resultado |
+|---|---|
+| Prisma validate / generate | PASS |
+| Migración incremental local y test, sin reset | PASS; 24 migraciones aplicadas |
+| migrate status ambas bases / drift del esquema local | al día / sin diferencias |
+| verify-migrations | PASS: instalación limpia y upgrades, columnas históricas preservadas, sin backfill público |
+| TypeScript / Nest build | PASS |
+| Oxlint / ESLint | PASS |
+| OpenAPI generado / docs:check | PASS; 7 ejemplos y nullability inspeccionados |
+| Unitarias | **309/309**, incluidas 6 nuevas de identidad |
+| E2E, 23 archivos | **409/409**, ejecución por archivo |
+| CHECK de identidad HTTP + PostgreSQL | **21/21** en status, incluidos 7 escenarios nuevos; Outbox **17/17** |
+| Webhooks / HMAC / retries / administración | **54/54**, incluye cambio de nombre entre intentos y cuerpo idéntico |
+| git diff --check | PASS |
+
+**Límites y correcciones de la verificación:** la corrida E2E combinada terminó sin informe; no se cuenta como aprobada. Webhooks también terminó con código nativo Windows 3221226505 usando threads; sus 54 casos pasaron usando forks, un worker y sin isolate. Los demás archivos pasaron con threads. Se corrigieron expectativas de campos aditivos, requestId de errores (adición de la tarea anterior) y el timestamp compartido en un fixture de completion. El verificador histórico ahora compara las columnas previas de Driver y comprueba displayName null separadamente. No se relajaron reglas para aprobar pruebas.
+
+Pruebas cubren fuente pública explícita, ausencia de fallback privado, no assignment, reassignment/release y carreras de lectura, Provider/Independent, nombres/cuentas modificados tras entregar, snapshot histórico sin evidencia, status = Outbox, rollback completo al falsificar identidad del evento, aislamiento 404 y economía/routing/contexto de pago conservados. No se ejecutaron Coita Eats, Mandaria Web, Docker ni despliegues remotos. `.env` no se modificó. Las bases desechables creadas por verify-migrations quedan retenidas conforme al comportamiento del script; fixtures E2E se limpian mediante sus hooks.
+
+La nueva guarda de Outbox exige coordinar migración y actualización de instancias que completan entregas; un escritor anterior sin identidad en su payload será rechazado. Consumidores B2B mantienen mode y reciben campos adicionales. Sin commit ni push.
+
+**Lo siguiente es historial de tareas anteriores.**
+
+---
 # Investigación accept B2B 409 — 2026-09-28 UTC
 
 Rama QA, base `1c29f370e3afe5a256c73d98b9f14ce39b61102c`, paquete 1.12.0. **Causa remota pendiente de evidencia; no declarar resuelto.**

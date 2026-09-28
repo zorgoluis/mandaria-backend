@@ -168,6 +168,8 @@ model Driver {
   providerId String @db.Uuid
   userId String @unique @db.Uuid
   name String
+  /// Explicitly configured public presentation identity; never derived from name or User.
+  displayName String? @db.VarChar(100)
   status DriverStatus @default(PENDING)
   availability DriverAvailability @default(OFFLINE)
   createdAt DateTime @default(now())
@@ -582,6 +584,8 @@ enum DispatchCandidateStatus {
 /// V1.7: offer of an ACCEPTED quote to eligible providers. Created in the same transaction that
 /// accepts the quote (one per quote). The winner is claimedByProviderId; no Driver/Vehicle yet.
 model Dispatch {
+  /// V1.12-G: frozen by PostgreSQL at completion. NULL for historical deliveries; no backfill.
+  publicExecutionSnapshot Json?
   /// V1.10-C: frozen credit cost per actor type; empty for Dispatches opened before V1.10-C.
   creditSnapshots DispatchCreditSnapshot[]
   preEnforcementAwards DispatchPreEnforcementAward[]

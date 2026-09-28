@@ -1,0 +1,233 @@
+{
+  "date": "2026-09-28",
+  "scope": "Local Node.js/PostgreSQL only",
+  "branch": "QA",
+  "base": "4dbc331",
+  "version": "1.12.0",
+  "migration": "20260928000100_b2b_public_execution_identity",
+  "quality": {
+    "prismaValidate": "PASS",
+    "prismaGenerate": "PASS",
+    "migrateDeploy": "PASS main and dedicated test DB, no reset",
+    "migrateStatus": "24 applied, both DBs",
+    "schemaDrift": "No difference detected",
+    "verifyMigrations": "PASS clean and incremental; historical Driver columns preserved, new displayName null",
+    "typescript": "PASS",
+    "build": "PASS",
+    "oxlint": "PASS",
+    "eslint": "PASS",
+    "openapi": "PASS",
+    "docsCheck": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "unit": {
+    "passed": 309,
+    "failed": 0,
+    "total": 309
+  },
+  "e2e": {
+    "passed": 409,
+    "failed": 0,
+    "files": [
+      {
+        "file": "b2b-delivery-status.e2e-spec.ts",
+        "passed": 21,
+        "failed": 0,
+        "total": 21,
+        "pool": "threads"
+      },
+      {
+        "file": "b2b-outbox.e2e-spec.ts",
+        "passed": 17,
+        "failed": 0,
+        "total": 17,
+        "pool": "threads"
+      },
+      {
+        "file": "b2b-webhooks.e2e-spec.ts",
+        "passed": 54,
+        "failed": 0,
+        "total": 54,
+        "pool": "forks (single worker, no isolate)"
+      },
+      {
+        "file": "b2b.e2e-spec.ts",
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "pool": "threads"
+      },
+      {
+        "file": "core.e2e-spec.ts",
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "pool": "threads"
+      },
+      {
+        "file": "credit-consumption.e2e-spec.ts",
+        "passed": 36,
+        "failed": 0,
+        "total": 36,
+        "pool": "threads"
+      },
+      {
+        "file": "credit-policies.e2e-spec.ts",
+        "passed": 19,
+        "failed": 0,
+        "total": 19,
+        "pool": "threads"
+      },
+      {
+        "file": "credit-refunds.e2e-spec.ts",
+        "passed": 22,
+        "failed": 0,
+        "total": 22,
+        "pool": "threads"
+      },
+      {
+        "file": "credits.e2e-spec.ts",
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "pool": "threads"
+      },
+      {
+        "file": "delivery-assignments.e2e-spec.ts",
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "pool": "threads"
+      },
+      {
+        "file": "delivery-completion.e2e-spec.ts",
+        "passed": 29,
+        "failed": 0,
+        "total": 29,
+        "pool": "threads"
+      },
+      {
+        "file": "delivery-quotes.e2e-spec.ts",
+        "passed": 11,
+        "failed": 0,
+        "total": 11,
+        "pool": "threads"
+      },
+      {
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "passed": 15,
+        "failed": 0,
+        "total": 15,
+        "pool": "threads"
+      },
+      {
+        "file": "delivery-requests-validation.e2e-spec.ts",
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "pool": "threads"
+      },
+      {
+        "file": "dispatch-credit-snapshots.e2e-spec.ts",
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "pool": "threads"
+      },
+      {
+        "file": "dispatch.e2e-spec.ts",
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "pool": "threads"
+      },
+      {
+        "file": "driver-self.e2e-spec.ts",
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "pool": "threads"
+      },
+      {
+        "file": "drivers-vehicles.e2e-spec.ts",
+        "passed": 11,
+        "failed": 0,
+        "total": 11,
+        "pool": "threads"
+      },
+      {
+        "file": "independent-drivers.e2e-spec.ts",
+        "passed": 23,
+        "failed": 0,
+        "total": 23,
+        "pool": "threads"
+      },
+      {
+        "file": "pricing-admin.e2e-spec.ts",
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "pool": "threads"
+      },
+      {
+        "file": "provider-admin-access.e2e-spec.ts",
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "pool": "threads"
+      },
+      {
+        "file": "providers.e2e-spec.ts",
+        "passed": 15,
+        "failed": 0,
+        "total": 15,
+        "pool": "threads"
+      },
+      {
+        "file": "user-invitations.e2e-spec.ts",
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "pool": "threads"
+      }
+    ]
+  },
+  "identityCheck": [
+    {
+      "name": "V1.12-G public execution identity CHECK rejects a forged Outbox identity and rolls back the entire completion including its snapshot",
+      "status": "passed"
+    },
+    {
+      "name": "V1.12-G public execution identity CHECK configures only explicit public names, validates them and preserves provider isolation",
+      "status": "passed"
+    },
+    {
+      "name": "V1.12-G public execution identity CHECK claim, assignment, reassignment, completion and later profile changes preserve the right identity",
+      "status": "passed"
+    },
+    {
+      "name": "V1.12-G public execution identity CHECK missing public identity never falls back to private operational name, including after completion",
+      "status": "passed"
+    },
+    {
+      "name": "V1.12-G public execution identity CHECK Independent TAKE uses the same explicit Driver identity, with no provider; freezes it at delivery",
+      "status": "passed"
+    },
+    {
+      "name": "V1.12-G public execution identity CHECK release removes identity; reads racing release never publish the old actor as OPEN",
+      "status": "passed"
+    },
+    {
+      "name": "V1.12-G public execution identity CHECK reads racing reassignment contain one current driver, never a historical row",
+      "status": "passed"
+    }
+  ],
+  "executionNotes": [
+    "Combined E2E process terminated without report; not counted as pass.",
+    "Per-file webhooks threads process exited Windows 3221226505; all 54 cases passed in a single fork worker.",
+    "Initial test expectations corrected for additive fields and shared completion timestamp; business rules were not weakened.",
+    "Initial Prisma sandbox spawn EPERM; authorized local migration succeeded."
+  ],
+  "privacy": "No secrets or real personal data included in this evidence",
+  "git": "No commit, push or deployment; .env unchanged; preexisting nul retained"
+}

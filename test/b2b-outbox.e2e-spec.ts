@@ -583,7 +583,11 @@ describe('V1.12-B a completed delivery records its B2B event', () => {
       publicId: dispatch.requestPublicId,
       externalReference: dispatch.reference,
       status: 'DELIVERED',
-      execution: { mode: 'PROVIDER' },
+      execution: {
+        mode: 'PROVIDER',
+        provider: { displayName: `Proveedor A ${run}` },
+        driver: null,
+      },
       requestedAt: expect.any(String),
       deliveredAt: row.deliveredAt!.toISOString(),
       cancelledAt: null,
@@ -808,6 +812,7 @@ describe('V1.12-B the event and the delivery are the same commit', () => {
       vehicleId: vehicles.fleet1,
     }).expect(201);
     const [assignment] = await assignmentsOf(dispatch.id);
+    const completedAt = new Date();
     // Writing the same transition by hand, skipping the outbox, is rejected at COMMIT.
     await expect(
       prisma.$transaction(async (tx) => {
@@ -815,7 +820,7 @@ describe('V1.12-B the event and the delivery are the same commit', () => {
           where: { id: assignment.id },
           data: {
             status: 'COMPLETED',
-            endedAt: new Date(),
+            endedAt: completedAt,
             endedByUserId: users.adminA,
           },
         });
@@ -823,7 +828,7 @@ describe('V1.12-B the event and the delivery are the same commit', () => {
           where: { id: dispatch.id },
           data: {
             status: 'DELIVERED',
-            deliveredAt: new Date(),
+            deliveredAt: completedAt,
             deliveredByUserId: users.adminA,
           },
         });

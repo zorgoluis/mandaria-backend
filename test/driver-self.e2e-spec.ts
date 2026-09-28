@@ -179,6 +179,7 @@ describe.sequential(
         'activeDeliveryAssignment',
         'availability',
         'currentAssignment',
+        'displayName',
         'id',
         'independent',
         'name',
