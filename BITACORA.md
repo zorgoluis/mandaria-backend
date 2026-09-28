@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.13-A1 (2026-09-28):** commit y push a la rama actual autorizados por el propietario; se publica la baseline validada en la tarea anterior, sin despliegue.
+
+- **V1.13-A1 — baseline legacy (2026-09-28):** LISTO PARA A2. Caracterización de cotización/idempotencia/accept/cancel y seis pruebas nuevas; 312/312 unitarias, 412/412 E2E consolidadas por archivo, tipos/build/Oxlint/ESLint pasan. Intentos Windows abortados/incompletos y repeticiones documentados; no equivalen a PASS. Sin cambios de producto ni precotización. Informe: docs/V1.13-A1-LEGACY-REGRESSION-BASELINE.md.
+
 - **Análisis de reutilización de precotización (2026-09-28):** docs/PREQUOTE-REUSE-ASSESSMENT.md recomienda compartir cálculo, routing, tarifas e infraestructura; conservar una autoridad de idempotencia y agregar sólo persistencia MPQ necesaria. Reutilizar DeliveryQuote como recurso sin solicitud exige romper invariantes actuales y no se recomienda. Sin implementación.
 
 - **Diseño de precotización garantizada (2026-09-28):** propuesta documentada en docs/PROPOSAL-PREQUOTE-PREPAID-RECIPIENT-CASH.md; MPQ independiente, conversión única a MDR/MQ con vencimiento heredado, accept autorizado e instrucción de efectivo al destinatario. Viabilidad estática, no implementado ni aprobado como contrato operativo. Conserva legacy/COURIER_ADVANCE y separa entrega de cobro.
@@ -250,6 +254,22 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-09-28 — Publicación de baseline V1.13-A1
+
+- **Solicitud:** commit y push a la rama actual.
+- **Cambios:** publicación de tres archivos de pruebas, informe de baseline y bitácora; se conserva nul preexistente fuera del commit.
+- **Verificación actual:** revisión del diff y git diff --check; las 312 unitarias y 412 E2E corresponden a la tarea anterior, no se repiten para esta publicación.
+- **Resultado y pendientes:** conjunto preparado para commit/push; comprobar sincronización remota al finalizar. Sin despliegue ni implementación A2.
+
+
+### 2026-09-28 — V1.13-A1: base de regresión previa a precotización
+
+- **Solicitud:** inspeccionar y verificar legacy, cubrir brechas relevantes y proponer extracción A2, sin modificar producto.
+- **Cambios:** informe docs/V1.13-A1-LEGACY-REGRESSION-BASELINE.md; dos casos unitarios de conflicto idempotente entre operaciones/tipos, uno de routing transaccional/TTL, tres E2E accept/cancel y conteo de Dispatch en aceptación concurrente. Sólo pruebas, informe y bitácora.
+- **Verificaciones actuales:** destino local mandaria_test comprobado (24 migraciones aplicadas; sin migrar/resetear), 312/312 unitarias; 412/412 E2E en 23 archivos con ejecuciones completas, incluidas repeticiones de cinco archivos inicialmente incompletos. Build, TypeScript, Oxlint y ESLint pasan; git diff --check pasa. Comparación de 233 archivos protegidos sin cambios, incluido .env. Resultados históricos no se computan como actuales.
+- **Resultado:** LISTO PARA A2; se conservan routing dentro de transacción, TTL desde antes de routing, una autoridad de idempotencia y atomicidad accept/openDispatch/cancel. CASH es método de recarga, no GoodsPaymentMode. Replay accept tras cancel mantiene historia sin reabrir despacho.
+- **Limitaciones/pendientes:** inestabilidad de procesos Vitest en Windows; intentos abortados no aprobados. Posibles fixtures residuales de abortos sólo en base de pruebas; sin barrido destructivo ni restauración exacta acreditada. Servicios externos reales/VM no verificados. A2 queda propuesta, no implementada. Sin Docker, cambios de versión/OpenAPI, commit, push ni despliegue.
 
 ### 2026-09-27 — Comprobación de pantalla de secretos webhook
 
