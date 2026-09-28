@@ -35,6 +35,7 @@ export function ApiErrorDescriptions(custom: Record<number, string>) {
               'errors',
               'timestamp',
               'path',
+              'requestId',
             ],
             properties: {
               statusCode: { type: 'integer', example: status },
@@ -59,6 +60,12 @@ export function ApiErrorDescriptions(custom: Record<number, string>) {
               },
               timestamp: { type: 'string', format: 'date-time' },
               path: { type: 'string', example: '/api/v1/admin/providers' },
+              requestId: {
+                type: 'string',
+                format: 'uuid',
+                description:
+                  'Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode.',
+              },
             },
           },
         }),

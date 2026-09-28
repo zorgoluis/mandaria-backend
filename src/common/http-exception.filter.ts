@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { randomUUID } from 'node:crypto';
 @Catch()
 export class HttpErrorFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpErrorFilter.name);
@@ -38,15 +39,47 @@ export class HttpErrorFilter implements ExceptionFilter {
       typeof body.code === 'string'
         ? body.code
         : undefined;
-    if (status >= 500) this.logger.error({ event: 'request_failed', status });
+    const req = ctx.getRequest<Request & { integration?: { id: string } }>();
+    const res = ctx.getResponse<Response>();
+    const requestId =
+      (res.locals.requestId as string | undefined) ?? randomUUID();
+    res.setHeader('X-Request-Id', requestId);
+    const code = errors.length
+      ? 'VALIDATION_ERROR'
+      : (domainCode ?? `HTTP_${status}`);
+    // Only this known route and allowlisted identifiers are audited. No exception message,
+    // SQL, headers, URL/query string or body: any of them may contain credentials or PII.
+    const accept =
+      req.method === 'POST' &&
+      (req.route as { path?: string } | undefined)?.path ===
+        '/api/v1/delivery-quotes/:publicId/accept';
+    if (accept || status >= 500) {
+      const quote = req.params?.publicId;
+      const integration = req.integration?.id;
+      const event = {
+        event: accept ? 'DELIVERY_QUOTE_ACCEPT_FAILED' : 'request_failed',
+        status,
+        code: /^[A-Z][A-Z0-9_]{0,79}$/.test(code) ? code : `HTTP_${status}`,
+        requestId,
+        ...(accept && typeof quote === 'string' && /^MQ-\d{6,12}$/i.test(quote)
+          ? { quotePublicId: quote.toUpperCase() }
+          : {}),
+        ...(accept &&
+        integration &&
+        /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(integration)
+          ? { integrationClientId: integration }
+          : {}),
+      };
+      if (status >= 500) this.logger.error(event);
+      else this.logger.warn(event);
+    }
     ctx
       .getResponse<Response>()
       .status(status)
       .json({
         statusCode: status,
-        code: errors.length
-          ? 'VALIDATION_ERROR'
-          : (domainCode ?? `HTTP_${status}`),
+        code,
+        requestId,
         message:
           status >= 500
             ? 'Service unavailable'
