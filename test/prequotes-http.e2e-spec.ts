@@ -105,7 +105,7 @@ let persistence: import('../src/delivery-prequotes/prequote-persistence.service.
 let baseline: number[];
 const tokens: string[] = [];
 const api = () => request(app.getHttpServer());
-const post = (k = key(), b: unknown = body, t = tokens[0]) =>
+const post = (k = key(), b: object = body, t = tokens[0]) =>
   api()
     .post('/api/v1/delivery-prequotes')
     .auth(t, { type: 'bearer' })

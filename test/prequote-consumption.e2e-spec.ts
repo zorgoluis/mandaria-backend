@@ -108,7 +108,7 @@ const counts = () =>
   ]);
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const key = () => `a5-${randomUUID()}`;
-const post = (i = 0, k = key(), data: unknown = body) =>
+const post = (i = 0, k = key(), data: object = body) =>
   request(apps[i].getHttpServer())
     .post('/api/v1/delivery-prequotes')
     .auth(tokens[0], { type: 'bearer' })

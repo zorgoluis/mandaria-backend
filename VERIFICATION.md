@@ -1,3 +1,11 @@
+# Verificación actual — Subsanación final B4
+
+**Subsanación final B4 (2026-09-29): PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE.** Nuevas: 380 unitarias y 248 E2E en seis archivos completos; 406 casos E2E históricos en 24 archivos con hashes/procedencia verificados. Total consolidado 654/654, 30/30 archivos. Webhooks pasó completo dos veces sin cambios (bases nueva e histórica); causa raíz de abortos anteriores no confirmada. Un aborto nuevo de B3 forks excluido; único ensayo diagnóstico threads 58/58. Nueve errores de tipos corregidos en seis pruebas; ambos tsconfig, Oxlint y ESLint pasan. Producto/.env/HEAD/versión intactos; escaneo final sin violaciones. No certifica estabilidad absoluta del runner ni activación. C/D y pendientes A siguen abiertos. Informe: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia: docs/checks/v1.13-b4-final-evidence.json.
+
+Comandos, resultados por intento, límites de diagnóstico y procedencia en el informe. Los resultados anteriores siguientes se conservan como historia.
+
+---
+
 # Verificación actual — CHECK B4 reejecutado
 
 **CHECK B4 reejecutado (2026-09-29): PARTIAL.** 380/380 unitarias y 600 E2E en 29/30 archivos completos con exit 0; webhooks sigue abortando y no se acredita. B4 corregido 24/24, B2 39/39, B3 58/58, A6 36/36. Corregidos falso positivo SQL, aserciones de concurrencia, consolidación y limpieza de fixture sin deshabilitar guardas. Nueve errores de tipos preexistentes en pruebas; tipos de producto/build/linters pasan. Migraciones limpia/upgrade/reaplicación/drift y escaneo final pasan. 261 archivos originales idénticos; .env/HEAD/versión intactos. Sin defecto bloqueante de producto confirmado, sin commit/push/activación. El PASS anterior es histórico y no se ratifica. Detalle: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia nueva: docs/checks/v1.13-b4-rerun-evidence.json.

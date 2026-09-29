@@ -412,7 +412,7 @@ afterAll(async () => {
 
 const post = (
   k = key(),
-  data: unknown = body,
+  data: object = body,
   token = tokens[0],
   instance = 0,
 ) =>

@@ -104,7 +104,7 @@ let planId: string;
 
 const tokens: string[] = [];
 const api = () => request(app.getHttpServer());
-const post = (k = key(), b: unknown = body, t = tokens[0]) =>
+const post = (k = key(), b: object = body, t = tokens[0]) =>
   api()
     .post('/api/v1/delivery-prequotes')
     .auth(t, { type: 'bearer' })
@@ -312,7 +312,7 @@ const conversionBody = () => ({
 const convert = (
   id: string,
   k = key(),
-  b: unknown = conversionBody(),
+  b: object = conversionBody(),
   t = tokens[0],
 ) =>
   api()

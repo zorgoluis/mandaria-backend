@@ -1,3 +1,93 @@
+# CHECK V1.13-B4 — Subsanación final (2026-09-29)
+
+**Dictamen: PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE.** Cierre limitado a conversión única MPQ → MDR PREPAID + MQ OFFERED y barreras pre-C. No habilita emisión/conversión, aceptación autorizada, despacho, cobro, interfaces, despliegue ni inicio automático de C/D.
+
+Este dictamen combina **ejecuciones nuevas y evidencia histórica comprobada**, no una ejecución nueva de toda la suite. [Evidencia final sanitizada](checks/v1.13-b4-final-evidence.json). Los informes PARTIAL y PASS anteriores se conservan íntegros debajo como historial.
+
+## 1. Baseline y producto congelado
+
+Rama `1.13-Precotización_integración_comida_prepagada`, HEAD `be2e76b48afb649bfc9ce70d1a661c97fa918564`, paquete 1.12.0. Único archivo preexistente sin seguimiento: `nul`, intacto. Leídos AGENTS, BITACORA, README, VERIFICATION, B1/B2/B3, informe/revisión/evidencia B4 y runners referenciados.
+
+Los **262 archivos** de la referencia actual siguen idénticos antes/después, incluido el consolidador previamente publicado. Sus 261 archivos originales también coinciden con la referencia B4 anterior. `.env` comparado privadamente e idéntico; no se publica huella. Sin cambios en producto, schema/migraciones, configuración compartida de Vitest, versión, contrato, TTL, semántica económica ni barreras pre-C.
+
+Node v24.15.0, Vitest 4.1.11, Prisma Client 6.19.3, PostgreSQL 18.6 local. Nuevas bases `mandaria_b4_final_reg_29579f6562_test` y `mandaria_b4_final_integral_29579f6562_test`: migradas con las 28 migraciones existentes. La segunda sólo se preparó/escaneó; la regresión se ejecutó en la primera. Un ensayo comparativo de webhooks usó la base histórica aislada `mandaria_b4_reg_150bdb98b9_test`. Ninguna escritura/migración en principal, Docker, servicio externo real o dato operativo.
+
+## 2. Diagnóstico del aborto — hechos y límites
+
+Archivo exacto: `test/b2b-webhooks.e2e-spec.ts`. El runner histórico `.tmp/b4r/run.mjs` ejecutaba:
+
+```text
+node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/b2b-webhooks.e2e-spec.ts --pool=<forks|threads> --maxWorkers=1 --hookTimeout=30000 --reporter=default --reporter=json --outputFile=<directorio del intento>/report.json
+```
+
+Los intentos históricos quedaron conservados con UUID, base, horarios, exit, señal, log y reporter cuando existió. Threads terminó con código 3221226505; forks devolvió exit 1 y `Worker exited unexpectedly`. Los reportes parciales mostraban 7/54 y 14/54 con cero aserciones fallidas: **no son PASS**, aunque un reporter llegara a indicar success. No se observó timeout del padre (límite 300 s) ni error de aserción que explique la salida. No hay dump/stack nativo que identifique módulo culpable; no se atribuye a Windows, Prisma o Vitest como causa raíz probada. Las versiones históricas no se guardaron por intento; las versiones exactas publicadas arriba fueron medidas ahora.
+
+Plan acotado: dos ejecuciones completas con `forks`, maxWorkers 1 y mismo archivo/configuración; una sobre base nueva y otra sobre la base histórica aislada. Se añadió un reporter observador que registra inicio/fin/nombre/estado de cada caso, sin datos de requests. Resultados:
+
+| Intento nuevo | Base | Resultado |
+|---|---|---|
+| `4ef700bb-f175-4392-bbaa-7c0196b0afda` | Nueva | 54/54, exit 0, cierre normal, ~29 s |
+| `ba601d81-434a-4a88-8304-390c6e70481d` | Histórica aislada | 54/54, exit 0, cierre normal, ~31 s |
+
+**No se modificó webhooks ni se demostró una corrección causal del aborto.** Estas ejecuciones acreditan el archivo completo. No demuestran que la intermitencia haya desaparecido. La comparación no respalda afirmar que limpiar la base, cambiar pool o cerrar un recurso concreto resolvió el problema. No hubo acumulación visible de recursos que impidiera terminar en estos dos procesos; esto no es un perfil exhaustivo de recursos. No se repitió webhooks hasta conseguir verde: ambos ensayos previstos pasaron a la primera.
+
+Durante la regresión nueva, B3 sufrió otro `Worker exited unexpectedly` con forks: 45/58, cero aserciones fallidas, último caso iniciado `replay denies client-suspended`; intento excluido. Se hizo **un** ensayo diagnóstico completo con threads, pool de su evidencia histórica válida: 58/58, exit 0. Observador adicional de procesos hijos/uncaught monitor sin alterar producto. El primer preload tenía una llave faltante: Node rechazó su sintaxis antes de iniciar runner/pruebas; corregido y comprobado con `node --check`. Este fallo de infraestructura no se acredita como ejecución de tests.
+
+El pool alternativo está limitado al comando de ese ensayo; no se cambió configuración compartida ni cobertura. El éxito no prueba que el pool causara la caída. **Riesgo residual: terminación intermitente del worker sin causa raíz confirmada.** Si reaparece, conservar dump/stack nativo y salida del proceso hijo antes de intentar una corrección. No se justifica cambiar producto por esta evidencia.
+
+## 3. Correcciones de tipos
+
+Inventario reproducido inicialmente: nueve diagnósticos, ocho TS2345 y un TS2493.
+
+- `check-a6-prequotes.e2e-spec.ts`, `check-b3-conversion.e2e-spec.ts`, `prequote-consumption.e2e-spec.ts`, `prequote-conversion.e2e-spec.ts`, `prequotes-http.e2e-spec.ts`: ocho parámetros de helpers HTTP pasan de `unknown` a `object`. Sus fixtures, incluidos DTOs intencionalmente inválidos, son cuerpos JSON objeto admitidos por `supertest.send`. No se pretende validar el DTO en el helper; el backend sigue recibiendo y rechazando los casos adversariales. Sin casts ni filtrado de casos.
+- `pricing.spec.ts`: firma genérica de `vi.fn` describe callback transaccional y opciones opcionales `maxWait`, `timeout`, `isolationLevel` conforme al contrato Prisma. El mock ejecuta el mismo callback y la aserción de opciones permanece. Una primera versión introdujo un parámetro de implementación sin uso señalado por ESLint; se corrigió tipando la firma del mock, sin desactivar reglas.
+
+No exclusiones, `@ts-ignore`, cambio de strict ni nuevas conversiones indiscriminadas. Los seis archivos anteriores son los únicos cambios de pruebas; ninguna aserción de negocio fue retirada o debilitada.
+
+## 4. Verificaciones nuevas e históricas
+
+| Archivo/gate | Evidencia actual |
+|---|---|
+| Unitarias completas, incluida pricing | **380/380, 32 archivos**, nueva ejecución final exit 0 |
+| Webhooks | **54/54**, nueva; segunda pasada no suma casos |
+| CHECK A6 | **36/36**, nueva exit 0 |
+| CHECK B3 | **58/58**, nueva exit 0; aborto previo excluido |
+| Prequote consumption | **21/21**, nueva exit 0 |
+| Prequote conversion B2 | **39/39**, nueva exit 0 |
+| Prequotes HTTP | **40/40**, nueva exit 0 |
+| Otros 24 archivos E2E, incluido CHECK B4 24/24 y user-invitations 24/24 | **406 casos históricos**, no reejecutados ahora |
+| Total E2E consolidado por archivo | **654/654 en 30/30 archivos: 248 nuevos + 406 históricos** |
+| `tsc --noEmit -p tsconfig.json` | **exit 0**, nueva ejecución |
+| `tsc --noEmit -p tsconfig.build.json` | **exit 0**, nueva ejecución |
+| Prisma validate, Oxlint, ESLint | **exit 0**, nuevos |
+| `git diff --check` | **exit 0**, nuevo |
+| Build, docs:check, upgrade/reapply/drift y recorrido integral B4 | Históricos retenidos; producto/contrato/configuración idénticos, no reejecutados ahora |
+
+Procedencia: los reportes históricos se contrastaron con sus SHA-256 publicados; los 24 archivos no afectados coinciden con los blobs del commit `be2e76b` que publicó esa evidencia (normalización LF/CRLF sólo para comparar fuente). No se afirma que el runner histórico capturara hash de fuente por intento: la vinculación adicional es al snapshot Git publicado y la referencia de producto. Los archivos con cambios de tipos usan resultados nuevos completos, nunca su éxito histórico como sustituto.
+
+Consolidador existente: exige exit 0, sin señal/error, reporte completo exitoso, todas las aserciones aprobadas, inventario de archivos y hash del reporte. `node scripts/consolidate-conversion-check.mjs .tmp/b4-final/merged` termina exit 0, sin faltantes. Las copias de reportes no alteran bytes y conservan ruta original y edad de evidencia. Cinco controles negativos reejecutados pasan: descartar exit no cero, señal, reporte fallido/incompleto y rechazar hash adulterado. Repeticiones no inflan casos.
+
+Runners/evidencia privada: `.tmp/b4-final/run.mjs`, `trace.mjs`, `process-diagnostics.cjs`, `provenance.mjs`, `merge.mjs` y `attempts/<UUID>/`. Cada intento retiene comando sanitizado, versiones actuales, log, reporter, hash, exit/señal, base y traza. La evidencia final versionable incluye comandos, metadata, hashes y procedencia; no incluye cuerpos, tokens ni logs privados completos.
+
+## 5. Revisión independiente y cierre
+
+- Falso positivo Dispatch: candidato SQL válido y código exacto `AUTHORIZED_ACCEPT_REQUIRED`; corrección histórica del CHECK intacta, B4 completo histórico verificado. B2/B3 se reejecutaron ahora con sus barreras.
+- Concurrencia: aserciones estrictas de mismo ganador y códigos de negocio permanecen; no se reintrodujo aceptación arbitraria de 409/503.
+- Consolidación: exit 0 obligatorio y registros inmutables por intento; user-invitations tiene evidencia histórica completa verificable. Webhooks ahora tiene dos ejecuciones completas nuevas.
+- Gate de tipos acordado: ambos tsconfig pasan sin emisiones ni exclusiones.
+- Verificador antiguo A3: mantenimiento separado, no se modificó ni ejecutó para este cierre.
+
+Escaneo final de las dos bases nuevas: cero violaciones de vínculos, keys, manifiesto, snapshot y Dispatch prematuro; cero triggers de fallo/deshabilitados, 17/17 guardas del subconjunto inspeccionado activas y dos FKs diferidas. Revocados/desactivados fixtures B2/B3/A6 residuales cuando correspondía; bases e historia conservadas. Webhooks ejecuta su teardown propio. No se hicieron despachos operativos: los flujos legacy completos de E2E usan exclusivamente datos sintéticos en bases de pruebas.
+
+Se conserva el límite B1/B2/B3 de SQL directo con constraints inmediatas y commit tardío, y la incompatibilidad de lectores antiguos. No se amplía garantía temporal ni se acredita despliegue mixto. Siguen abiertos los pendientes operativos A: capacidad/mutex/volumen, política coordinada, entorno/migración de despliegue, observabilidad/responsables/retención.
+
+**PASS local de B**, con causa raíz de abortos no confirmada como riesgo de infraestructura. Sin defecto de producto demostrado ni modificación de su semántica. Sin `.env`, versión/CHANGELOG, commit, push, despliegue o activación. **C y D continúan pendientes.**
+
+
+---
+
+## Historial conservado — reejecución PARTIAL anterior
+
 # CHECK V1.13-B4 — Reejecución integral y revisión de evidencia
 
 **Dictamen actual: PARTIAL — evidencia incompleta.** No se ratifica el PASS histórico conservado al final. No se ha demostrado un defecto bloqueante de conversión, pero falta una ejecución completa exitosa de webhooks y el chequeo global de tipos tiene deuda existente.

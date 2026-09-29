@@ -529,16 +529,23 @@ describe('Quote transaction runs every lookup on its own connection', () => {
         ]),
       },
     };
-    const transaction = vi.fn(
-      async (work: (client: typeof tx) => Promise<unknown>) => {
-        inTransaction = true;
-        try {
-          return await work(tx);
-        } finally {
-          inTransaction = false;
-        }
-      },
-    );
+    const transaction = vi.fn<
+      (
+        work: (client: typeof tx) => Promise<unknown>,
+        options?: {
+          maxWait?: number;
+          timeout?: number;
+          isolationLevel?: Prisma.TransactionIsolationLevel;
+        },
+      ) => Promise<unknown>
+    >(async (work) => {
+      inTransaction = true;
+      try {
+        return await work(tx);
+      } finally {
+        inTransaction = false;
+      }
+    });
     const zones = {
       resolveActive: vi
         .fn()
