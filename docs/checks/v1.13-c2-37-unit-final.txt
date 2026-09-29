@@ -1,0 +1,265 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/prequote-consumption.spec.ts (15 tests) 40ms
+ ✓ src/config/environment.spec.ts (5 tests) 32ms
+ ✓ test/resend-mail.spec.ts (19 tests) 99ms
+ ✓ test/credit-policies.spec.ts (16 tests) 64ms
+[Nest] 2208  - 29/09/2026, 12:56:59 a.m.    WARN [CreditAccountsService] Object(7) {
+  event: 'CREDIT_MOVEMENT_REJECTED',
+  code: 'INSUFFICIENT_CREDITS',
+  creditAccountId: 'acc',
+  type: 'ADMIN_ADJUSTMENT',
+  amount: -8,
+  balance: 2,
+  actorUserId: 'admin'
+}
+[Nest] 2208  - 29/09/2026, 12:56:59 a.m.     LOG [CreditAccountsService] Object(12) {
+  event: 'CREDIT_RECHARGED',
+  creditAccountId: 'acc',
+  ownerType: 'PROVIDER',
+  ownerId: 'p',
+  entryId: 'new',
+  sequence: 1,
+  amount: 5,
+  balanceBefore: 10,
+  balanceAfter: 15,
+  rechargeMethod: 'CASH',
+  externalReference: null,
+  actorUserId: 'admin'
+}
+[Nest] 2208  - 29/09/2026, 12:56:59 a.m.     LOG [CreditAccountsService] Object(3) {
+  event: 'CREDIT_MOVEMENT_REPLAYED',
+  creditAccountId: 'acc',
+  entryId: 'orig'
+}
+[Nest] 2208  - 29/09/2026, 12:56:59 a.m.    WARN [CreditAccountsService] Object(3) {
+  event: 'CREDIT_IDEMPOTENCY_CONFLICT',
+  creditAccountId: 'acc',
+  entryId: 'orig'
+}
+ ✓ test/credits.spec.ts (17 tests) 46ms
+[Nest] 34108  - 29/09/2026, 12:56:59 a.m.     LOG [DeliveryAssignmentsService] Object(7) {
+  event: 'DELIVERY_ASSIGNMENT_CREATED',
+  assignmentId: 'new',
+  dispatchId: 'd1',
+  providerId: 'A',
+  driverId: 'carlos',
+  vehicleId: 'moto03',
+  actorUserId: 'u1'
+}
+[Nest] 34108  - 29/09/2026, 12:56:59 a.m.     LOG [DeliveryAssignmentsService] Object(11) {
+  event: 'DELIVERY_ASSIGNMENT_REASSIGNED',
+  previousAssignmentId: 'a1',
+  assignmentId: 'new',
+  dispatchId: 'd1',
+  providerId: 'A',
+  previousDriverId: 'pedro',
+  previousVehicleId: 'moto07',
+  driverId: 'carlos',
+  vehicleId: 'moto03',
+  actorUserId: 'u1',
+  reason: 'DRIVER_UNAVAILABLE'
+}
+[Nest] 32352  - 29/09/2026, 12:56:59 a.m.     LOG [DriversService] Object(6) {
+  event: 'DRIVER_STATUS_CHANGED',
+  providerId: 'p',
+  driverId: 'd',
+  actorId: 'a',
+  from: 'ACTIVE',
+  to: 'SUSPENDED'
+}
+[Nest] 32352  - 29/09/2026, 12:56:59 a.m.     LOG [DriversService] Object(7) {
+  event: 'DRIVER_AVAILABILITY_CHANGED',
+  providerId: 'p',
+  driverId: 'd',
+  actorId: 'a',
+  from: 'AVAILABLE',
+  to: 'OFFLINE',
+  reason: 'DRIVER_NOT_ACTIVE'
+}
+[Nest] 32352  - 29/09/2026, 12:56:59 a.m.     LOG [DriversService] Object(6) {
+  event: 'DRIVER_AVAILABILITY_CHANGED',
+  providerId: 'p',
+  driverId: 'd',
+  actorId: 'u',
+  from: 'OFFLINE',
+  to: 'AVAILABLE'
+}
+ ✓ test/delivery-assignments.spec.ts (10 tests) 58ms
+ ✓ test/logistics.spec.ts (8 tests) 36ms
+ ✓ test/b2b-webhooks.spec.ts (19 tests) 87ms
+[Nest] 28880  - 29/09/2026, 12:56:59 a.m.    WARN [IntegrationAuthService] Object(1) {
+  event: 'INTEGRATION_AUTH_FAILED'
+}
+[Nest] 28880  - 29/09/2026, 12:56:59 a.m.    WARN [IntegrationAuthService] Object(1) {
+  event: 'INTEGRATION_AUTH_FAILED'
+}
+[Nest] 28880  - 29/09/2026, 12:56:59 a.m.    WARN [IntegrationAuthService] Object(1) {
+  event: 'INTEGRATION_AUTH_FAILED'
+}
+[Nest] 28880  - 29/09/2026, 12:56:59 a.m.    WARN [IntegrationAuthService] Object(1) {
+  event: 'INTEGRATION_AUTH_FAILED'
+}
+[Nest] 28880  - 29/09/2026, 12:56:59 a.m.     LOG [IntegrationAuthService] Object(3) {
+  event: 'INTEGRATION_AUTH_SUCCESS',
+  integrationId: 'ee120a52-8520-474a-9efb-55a78cbcfd92',
+  credentialId: 'b2bb7ab2-cb2a-4de5-a2a4-502af1571a4b'
+}
+ ✓ test/integration-auth.spec.ts (3 tests) 45ms
+ ✓ test/quote-pricing.spec.ts (19 tests) 33ms
+ ✓ test/services.spec.ts (7 tests) 1271ms
+     ✓ rejects wrong password and unknown user  346ms
+[Nest] 37520  - 29/09/2026, 12:57:00 a.m.     LOG [IdempotencyService] Object(4) {
+  event: 'IDEMPOTENCY_REPLAY',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create',
+  resourceId: 'resource'
+}
+[Nest] 37520  - 29/09/2026, 12:57:00 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create'
+}
+[Nest] 37520  - 29/09/2026, 12:57:00 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'baseline.other'
+}
+ ✓ test/b2b-webhook-reliability.spec.ts (17 tests) 84ms
+[Nest] 37520  - 29/09/2026, 12:57:00 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'baseline.other'
+}
+[Nest] 37520  - 29/09/2026, 12:57:00 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create'
+}
+[Nest] 37520  - 29/09/2026, 12:57:00 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create'
+}
+[Nest] 37520  - 29/09/2026, 12:57:00 a.m.     LOG [IdempotencyService] Object(4) {
+  event: 'IDEMPOTENCY_REPLAY',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create',
+  resourceId: 'resource'
+}
+[Nest] 37520  - 29/09/2026, 12:57:00 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create'
+}
+ ✓ test/delivery-requests.spec.ts (11 tests) 40ms
+[Nest] 29708  - 29/09/2026, 12:57:00 a.m.     LOG [IndependentDriversService] Object(4) {
+  event: 'INDEPENDENT_DRIVER_ENABLED',
+  profileId: 'p',
+  driverId: 'd',
+  actorUserId: 'admin'
+}
+[Nest] 29708  - 29/09/2026, 12:57:00 a.m.     LOG [IndependentDriversService] Object(4) {
+  event: 'INDEPENDENT_DRIVER_ENABLED',
+  profileId: 'p',
+  driverId: 'd',
+  actorUserId: 'admin'
+}
+[Nest] 29708  - 29/09/2026, 12:57:00 a.m.     LOG [IndependentDriversService] Object(5) {
+  event: 'INDEPENDENT_DRIVER_SUSPENDED',
+  profileId: 'p',
+  driverId: 'd',
+  actorUserId: 'admin',
+  reason: 'documentos vencidos'
+}
+[Nest] 29708  - 29/09/2026, 12:57:00 a.m.     LOG [IndependentDriversService] Object(4) {
+  event: 'INDEPENDENT_VEHICLE_CREATED',
+  driverId: 'd',
+  vehicleId: 'v',
+  actorUserId: 'admin'
+}
+ ✓ test/independent-drivers.spec.ts (22 tests) 55ms
+[Nest] 38732  - 29/09/2026, 12:57:00 a.m.     LOG [IndependentDispatchesService] Object(7) {
+  event: 'DELIVERY_COMPLETED',
+  dispatchId: 'a3f1c0de-0000-4000-8000-000000000004',
+  assignmentId: 'a3f1c0de-0000-4000-8000-000000000005',
+  mode: 'INDEPENDENT',
+  driverId: 'a3f1c0de-0000-4000-8000-000000000002',
+  actorUserId: 'a3f1c0de-0000-4000-8000-000000000003',
+  deliveredAt: '2026-09-29T06:57:00.198Z'
+}
+[Nest] 38732  - 29/09/2026, 12:57:00 a.m.     LOG [IndependentDispatchesService] Object(5) {
+  event: 'B2B_EVENT_RECORDED',
+  eventId: 'a3f1c0de-0000-4000-8000-000000000008',
+  type: 'delivery.completed',
+  publicId: 'MDR-000123',
+  occurredAt: '2026-09-29T06:57:00.198Z'
+}
+ ✓ test/delivery-completion.spec.ts (23 tests) 41ms
+[Nest] 15212  - 29/09/2026, 12:57:00 a.m.    WARN [InvitationsService] Object(2) {
+  event: 'USER_ACTIVATION_REJECTED',
+  reason: 'INVITATION_TOKEN_INVALID'
+}
+[Nest] 45152  - 29/09/2026, 12:57:00 a.m.     LOG [ProvidersService] Object(3) {
+  event: 'PROVIDER_CREATED',
+  providerId: 'fixture',
+  actorId: 'actor'
+}
+[Nest] 45152  - 29/09/2026, 12:57:00 a.m.     LOG [ProvidersService] Object(3) {
+  event: 'PROVIDER_CREATED',
+  providerId: 'fixture',
+  actorId: 'actor'
+}
+ ✓ test/providers.spec.ts (3 tests) 38ms
+ ✓ test/invitations.spec.ts (16 tests) 142ms
+ ✓ test/prequote-conditions.spec.ts (16 tests) 46ms
+ ✓ test/dispatch.spec.ts (13 tests) 53ms
+ ✓ test/local-provider-admins.spec.ts (2 tests) 11ms
+ ✓ test/prequote-conversion.spec.ts (8 tests) 63ms
+ ✓ test/prequote-orchestration.spec.ts (10 tests) 30ms
+ ✓ test/credit-refunds.spec.ts (10 tests) 27ms
+ ✓ test/credit-consumption.spec.ts (12 tests) 27ms
+[Nest] 45092  - 29/09/2026, 12:57:01 a.m.    WARN [DeliveryQuotesService] Object(4) {
+  event: 'DELIVERY_QUOTE_FAILED',
+  reasonCode: 'RATE_CONFIGURATION_UNAVAILABLE',
+  deliveryRequestPublicId: 'MDR-000001',
+  integrationClientId: 'client'
+}
+[Nest] 45092  - 28/09/2026, 6:00:08 a.m.     LOG [DeliveryQuotesService] Object(4) {
+  event: 'ROUTING_CALCULATED',
+  routingProvider: 'fake',
+  latencyMs: 8000,
+  deliveryRequestPublicId: 'MDR-000001'
+}
+[Nest] 45092  - 28/09/2026, 6:00:08 a.m.     LOG [DeliveryQuotesService] Object(11) {
+  event: 'DELIVERY_QUOTE_CREATED',
+  quotePublicId: 'MQ-000001',
+  ratePlanId: 'plan',
+  ratePlanVersion: 3,
+  distanceMeters: 4700,
+  amount: '55.00',
+  currency: 'MXN',
+  deliveryRequestPublicId: 'MDR-000001',
+  integrationClientId: 'client',
+  actorType: 'INTEGRATION',
+  actorId: 'client'
+}
+ ✓ test/pricing.spec.ts (14 tests) 1152ms
+     ✓ retries timeouts, network errors, 429 and 5xx once, then reports ROUTING_UNAVAILABLE  1045ms
+ ✓ test/quote-accept-diagnostics.spec.ts (15 tests) 424ms
+ ✓ test/dispatch-credit-snapshots.spec.ts (10 tests) 13ms
+ ✓ test/b2b-outbox.spec.ts (9 tests) 9ms
+ ✓ test/authorized-acceptance.spec.ts (9 tests) 17ms
+ ✓ test/delivery-status.spec.ts (14 tests) 10ms
+ ✓ test/b2b-webhook-operations.spec.ts (8 tests) 9ms
+ ✓ test/public-execution-identity.spec.ts (6 tests) 8ms
+ ✓ test/http.spec.ts (4 tests) 5039ms
+
+ Test Files  33 passed (33)
+      Tests  390 passed (390)
+   Start at  00:56:55
+   Duration  7.96s (transform 13.12s, setup 0ms, import 87.79s, tests 9.15s, environment 8ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-unit-final.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

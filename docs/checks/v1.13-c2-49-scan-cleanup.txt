@@ -1,0 +1,1 @@
+C2 invariant scan passed; histories retained, synthetic C2 credentials disabled

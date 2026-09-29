@@ -3,6 +3,10 @@ import {
   preEnforcementSelect,
 } from '../credits/award-boundary.js';
 import type { DispatchCandidateStatus, Prisma } from '@prisma/client';
+import {
+  collectionConversionSelect,
+  collectionInstructionFields,
+} from '../delivery-assignments/collection-instructions.js';
 import { allowsIndependent } from '../independent-drivers/independent-driver-policy.js';
 import { effectiveDispatchStatus } from './dispatch-policy.js';
 import {
@@ -33,6 +37,7 @@ export const dispatchSelect = {
   updatedAt: true,
   deliveryQuote: {
     select: {
+      status: true,
       publicId: true,
       serviceType: true,
       distanceMeters: true,
@@ -44,6 +49,7 @@ export const dispatchSelect = {
   },
   deliveryRequest: {
     select: {
+      prequoteConversion: { select: collectionConversionSelect },
       publicId: true,
       externalReference: true,
       status: true,
@@ -201,6 +207,11 @@ export function providerDispatchView(
   };
   return {
     ...base,
+    ...collectionInstructionFields(
+      dispatch,
+      access === 'OWNER' ? 'EXECUTOR' : 'OFFER',
+      now,
+    ),
     service: {
       deliveryFee: {
         amount: quote.amount.toFixed(2),

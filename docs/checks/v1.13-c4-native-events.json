@@ -1,0 +1,7 @@
+{
+  "fromUtc": "2026-09-29T07:55:00.0000000Z",
+  "toUtc": "2026-09-29T08:10:50.9915895Z",
+  "records": [],
+  "nativeReports": [],
+  "limitation": "Read-only Application event query after the final aborted attempt; absence of events does not establish a cause."
+}

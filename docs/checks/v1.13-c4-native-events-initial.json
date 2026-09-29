@@ -1,0 +1,7 @@
+{
+  "fromUtc": "2026-09-29T07:55:00.0000000Z",
+  "toUtc": "2026-09-29T08:05:21.2089971Z",
+  "records": [],
+  "nativeReports": [],
+  "limitation": "Application events and Node reports do not guarantee a native crash stack; no causal attribution."
+}

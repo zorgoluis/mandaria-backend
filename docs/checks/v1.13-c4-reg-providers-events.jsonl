@@ -1,0 +1,30 @@
+{"at":"2026-09-29T08:03:54.853Z","event":"start","name":"Delivery providers with real PostgreSQL > creates FLEET and INDEPENDENT in PENDING with configured defaults"}
+{"at":"2026-09-29T08:03:58.772Z","event":"finish","name":"Delivery providers with real PostgreSQL > creates FLEET and INDEPENDENT in PENDING with configured defaults","state":"passed"}
+{"at":"2026-09-29T08:03:58.776Z","event":"start","name":"Delivery providers with real PostgreSQL > normalizes code and name, supports custom limits and rejects duplicate code"}
+{"at":"2026-09-29T08:03:59.243Z","event":"finish","name":"Delivery providers with real PostgreSQL > normalizes code and name, supports custom limits and rejects duplicate code","state":"passed"}
+{"at":"2026-09-29T08:03:59.246Z","event":"start","name":"Delivery providers with real PostgreSQL > rejects invalid fields, limits, enum values and unknown keys"}
+{"at":"2026-09-29T08:03:59.634Z","event":"finish","name":"Delivery providers with real PostgreSQL > rejects invalid fields, limits, enum values and unknown keys","state":"passed"}
+{"at":"2026-09-29T08:03:59.637Z","event":"start","name":"Delivery providers with real PostgreSQL > paginates deterministically and combines type, status and search filters"}
+{"at":"2026-09-29T08:04:00.048Z","event":"finish","name":"Delivery providers with real PostgreSQL > paginates deterministically and combines type, status and search filters","state":"passed"}
+{"at":"2026-09-29T08:04:00.051Z","event":"start","name":"Delivery providers with real PostgreSQL > updates limits and metadata while rejecting type and status changes through PATCH"}
+{"at":"2026-09-29T08:04:00.447Z","event":"finish","name":"Delivery providers with real PostgreSQL > updates limits and metadata while rejecting type and status changes through PATCH","state":"passed"}
+{"at":"2026-09-29T08:04:00.450Z","event":"start","name":"Delivery providers with real PostgreSQL > validates explicit transitions and preserves provider on suspension"}
+{"at":"2026-09-29T08:04:00.846Z","event":"finish","name":"Delivery providers with real PostgreSQL > validates explicit transitions and preserves provider on suspension","state":"passed"}
+{"at":"2026-09-29T08:04:00.851Z","event":"start","name":"Delivery providers with real PostgreSQL > denies all administrative provider operations to PROVIDER_ADMIN and DRIVER"}
+{"at":"2026-09-29T08:04:01.345Z","event":"finish","name":"Delivery providers with real PostgreSQL > denies all administrative provider operations to PROVIDER_ADMIN and DRIVER","state":"passed"}
+{"at":"2026-09-29T08:04:01.350Z","event":"start","name":"Delivery providers with real PostgreSQL > rejects integration access tokens from both provider surfaces"}
+{"at":"2026-09-29T08:04:01.695Z","event":"finish","name":"Delivery providers with real PostgreSQL > rejects integration access tokens from both provider surfaces","state":"passed"}
+{"at":"2026-09-29T08:04:01.700Z","event":"start","name":"Delivery providers with real PostgreSQL > supports multiple administrators and rejects duplicated membership even concurrently"}
+{"at":"2026-09-29T08:04:02.128Z","event":"finish","name":"Delivery providers with real PostgreSQL > supports multiple administrators and rejects duplicated membership even concurrently","state":"passed"}
+{"at":"2026-09-29T08:04:02.133Z","event":"start","name":"Delivery providers with real PostgreSQL > requires an eligible existing user and keeps global role separate"}
+{"at":"2026-09-29T08:04:02.496Z","event":"finish","name":"Delivery providers with real PostgreSQL > requires an eligible existing user and keeps global role separate","state":"passed"}
+{"at":"2026-09-29T08:04:02.500Z","event":"start","name":"Delivery providers with real PostgreSQL > allows own profile and explicitly returns 403 for Provider A admin requesting Provider B"}
+{"at":"2026-09-29T08:04:02.895Z","event":"finish","name":"Delivery providers with real PostgreSQL > allows own profile and explicitly returns 403 for Provider A admin requesting Provider B","state":"passed"}
+{"at":"2026-09-29T08:04:02.898Z","event":"start","name":"Delivery providers with real PostgreSQL > supports multi-provider selection without silently choosing a membership"}
+{"at":"2026-09-29T08:04:03.263Z","event":"finish","name":"Delivery providers with real PostgreSQL > supports multi-provider selection without silently choosing a membership","state":"passed"}
+{"at":"2026-09-29T08:04:03.266Z","event":"start","name":"Delivery providers with real PostgreSQL > retiring a membership leaves User intact and invalidates access for the existing JWT"}
+{"at":"2026-09-29T08:04:03.771Z","event":"finish","name":"Delivery providers with real PostgreSQL > retiring a membership leaves User intact and invalidates access for the existing JWT","state":"passed"}
+{"at":"2026-09-29T08:04:03.775Z","event":"start","name":"Delivery providers with real PostgreSQL > checks current global role/active state and allows read-only suspended profiles"}
+{"at":"2026-09-29T08:04:04.161Z","event":"finish","name":"Delivery providers with real PostgreSQL > checks current global role/active state and allows read-only suspended profiles","state":"passed"}
+{"at":"2026-09-29T08:04:04.165Z","event":"start","name":"Delivery providers with real PostgreSQL > documents every provider operation, parameters, errors and human permissions without secrets"}
+{"at":"2026-09-29T08:04:04.449Z","event":"finish","name":"Delivery providers with real PostgreSQL > documents every provider operation, parameters, errors and human permissions without secrets","state":"passed"}

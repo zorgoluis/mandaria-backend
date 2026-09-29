@@ -1,0 +1,2 @@
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c4-reg-independent-drivers.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

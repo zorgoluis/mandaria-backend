@@ -1,0 +1,46 @@
+{"at":"2026-09-29T08:02:28.881Z","event":"start","name":"V1.9 enabling independent drivers > only SUPER_ADMIN can enable; nobody can self-approve"}
+{"at":"2026-09-29T08:02:28.885Z","event":"finish","name":"V1.9 enabling independent drivers > only SUPER_ADMIN can enable; nobody can self-approve","state":"passed"}
+{"at":"2026-09-29T08:02:28.981Z","event":"start","name":"V1.9 enabling independent drivers > enables an existing Driver straight to APPROVED, idempotently"}
+{"at":"2026-09-29T08:02:28.984Z","event":"finish","name":"V1.9 enabling independent drivers > enables an existing Driver straight to APPROVED, idempotently","state":"passed"}
+{"at":"2026-09-29T08:02:28.988Z","event":"start","name":"V1.9 enabling independent drivers > refuses a driver that is not operational and reports unknown ids as 404"}
+{"at":"2026-09-29T08:02:28.991Z","event":"finish","name":"V1.9 enabling independent drivers > refuses a driver that is not operational and reports unknown ids as 404","state":"passed"}
+{"at":"2026-09-29T08:02:28.993Z","event":"start","name":"V1.9 enabling independent drivers > registers vehicles owned by the driver, never by a provider, within the limit"}
+{"at":"2026-09-29T08:02:28.996Z","event":"finish","name":"V1.9 enabling independent drivers > registers vehicles owned by the driver, never by a provider, within the limit","state":"passed"}
+{"at":"2026-09-29T08:02:28.999Z","event":"start","name":"V1.9 enabling independent drivers > shows the capability and its own vehicles to the driver"}
+{"at":"2026-09-29T08:02:29.100Z","event":"finish","name":"V1.9 enabling independent drivers > shows the capability and its own vehicles to the driver","state":"passed"}
+{"at":"2026-09-29T08:02:29.279Z","event":"start","name":"V1.9 taking a service > lists eligible dispatches without leaking private data"}
+{"at":"2026-09-29T08:02:29.458Z","event":"finish","name":"V1.9 taking a service > lists eligible dispatches without leaking private data","state":"passed"}
+{"at":"2026-09-29T08:02:29.461Z","event":"start","name":"V1.9 taking a service > take is claim + assignment in one step, with OWNER detail and payment context"}
+{"at":"2026-09-29T08:02:29.590Z","event":"finish","name":"V1.9 taking a service > take is claim + assignment in one step, with OWNER detail and payment context","state":"passed"}
+{"at":"2026-09-29T08:02:29.594Z","event":"start","name":"V1.9 taking a service > refuses a vehicle that is not the driver own, in either direction"}
+{"at":"2026-09-29T08:02:29.733Z","event":"finish","name":"V1.9 taking a service > refuses a vehicle that is not the driver own, in either direction","state":"passed"}
+{"at":"2026-09-29T08:02:29.738Z","event":"start","name":"V1.9 taking a service > a suspended independent driver cannot take anything"}
+{"at":"2026-09-29T08:02:29.881Z","event":"finish","name":"V1.9 taking a service > a suspended independent driver cannot take anything","state":"passed"}
+{"at":"2026-09-29T08:02:30.066Z","event":"start","name":"V1.9 releasing a service > release cancels the assignment and reopens the dispatch, atomically"}
+{"at":"2026-09-29T08:02:30.191Z","event":"finish","name":"V1.9 releasing a service > release cancels the assignment and reopens the dispatch, atomically","state":"passed"}
+{"at":"2026-09-29T08:02:30.292Z","event":"start","name":"V1.9 releasing a service > requires a motive and only the driver holding the service may release it"}
+{"at":"2026-09-29T08:02:30.437Z","event":"finish","name":"V1.9 releasing a service > requires a motive and only the driver holding the service may release it","state":"passed"}
+{"at":"2026-09-29T08:02:30.440Z","event":"start","name":"V1.9 releasing a service > gives the driver no way to reassign a service to anyone"}
+{"at":"2026-09-29T08:02:30.594Z","event":"finish","name":"V1.9 releasing a service > gives the driver no way to reassign a service to anyone","state":"passed"}
+{"at":"2026-09-29T08:02:30.768Z","event":"start","name":"V1.9 concurrency: exactly one winner > a provider CLAIM and an independent TAKE on the same dispatch produce one owner"}
+{"at":"2026-09-29T08:02:31.153Z","event":"finish","name":"V1.9 concurrency: exactly one winner > a provider CLAIM and an independent TAKE on the same dispatch produce one owner","state":"passed"}
+{"at":"2026-09-29T08:02:31.306Z","event":"start","name":"V1.9 concurrency: exactly one winner > several independent drivers competing for one dispatch: exactly one wins"}
+{"at":"2026-09-29T08:02:31.309Z","event":"finish","name":"V1.9 concurrency: exactly one winner > several independent drivers competing for one dispatch: exactly one wins","state":"passed"}
+{"at":"2026-09-29T08:02:31.407Z","event":"start","name":"V1.9 concurrency: exactly one winner > the same driver taking two dispatches at once ends up busy on exactly one"}
+{"at":"2026-09-29T08:02:31.539Z","event":"finish","name":"V1.9 concurrency: exactly one winner > the same driver taking two dispatches at once ends up busy on exactly one","state":"passed"}
+{"at":"2026-09-29T08:02:31.739Z","event":"start","name":"V1.9 concurrency: exactly one winner > the same vehicle on two dispatches at once is used by exactly one"}
+{"at":"2026-09-29T08:02:31.743Z","event":"finish","name":"V1.9 concurrency: exactly one winner > the same vehicle on two dispatches at once is used by exactly one","state":"passed"}
+{"at":"2026-09-29T08:02:32.034Z","event":"start","name":"V1.9 one active service per driver and per vehicle, across both models > a driver busy with fleet work cannot take an independent service, and the reverse"}
+{"at":"2026-09-29T08:02:32.516Z","event":"finish","name":"V1.9 one active service per driver and per vehicle, across both models > a driver busy with fleet work cannot take an independent service, and the reverse","state":"passed"}
+{"at":"2026-09-29T08:02:32.743Z","event":"start","name":"V1.9 one active service per driver and per vehicle, across both models > a vehicle executing a service cannot start another one"}
+{"at":"2026-09-29T08:02:32.748Z","event":"finish","name":"V1.9 one active service per driver and per vehicle, across both models > a vehicle executing a service cannot start another one","state":"passed"}
+{"at":"2026-09-29T08:02:33.053Z","event":"start","name":"V1.9 suspension and vehicle deactivation with a service in progress > refuses both instead of leaving an inconsistent delivery"}
+{"at":"2026-09-29T08:02:33.287Z","event":"finish","name":"V1.9 suspension and vehicle deactivation with a service in progress > refuses both instead of leaving an inconsistent delivery","state":"passed"}
+{"at":"2026-09-29T08:02:33.625Z","event":"start","name":"V1.9 database invariants and audit > SQL rejects a dispatch owned by both models, whatever the service layer does"}
+{"at":"2026-09-29T08:02:33.799Z","event":"finish","name":"V1.9 database invariants and audit > SQL rejects a dispatch owned by both models, whatever the service layer does","state":"passed"}
+{"at":"2026-09-29T08:02:33.803Z","event":"start","name":"V1.9 database invariants and audit > SQL rejects an assignment whose dispatch nobody has taken, and unowned vehicles"}
+{"at":"2026-09-29T08:02:33.914Z","event":"finish","name":"V1.9 database invariants and audit > SQL rejects an assignment whose dispatch nobody has taken, and unowned vehicles","state":"passed"}
+{"at":"2026-09-29T08:02:33.917Z","event":"start","name":"V1.9 database invariants and audit > keeps the V1.8 guarantees and adds the V1.9 ones as database objects"}
+{"at":"2026-09-29T08:02:33.921Z","event":"finish","name":"V1.9 database invariants and audit > keeps the V1.8 guarantees and adds the V1.9 ones as database objects","state":"passed"}
+{"at":"2026-09-29T08:02:33.925Z","event":"start","name":"V1.9 database invariants and audit > every V1.9 event is audited and no secret reaches the logs"}
+{"at":"2026-09-29T08:02:33.928Z","event":"finish","name":"V1.9 database invariants and audit > every V1.9 event is audited and no secret reaches the logs","state":"passed"}

@@ -106,6 +106,9 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/auth/logout | Pública | — | — | AuthController_logout |
 | GET | /api/v1/auth/me | bearer | — | — | AuthController_me |
 | POST | /api/v1/auth/refresh | Pública | — | — | AuthController_refresh |
+| POST | /api/v1/delivery-prequotes | integration-bearer | — | prequotes:create | Emitir o recuperar mi precotización |
+| GET | /api/v1/delivery-prequotes/{publicId} | integration-bearer | — | prequotes:read | Consultar mi precotización |
+| POST | /api/v1/delivery-prequotes/{publicId}/convert | integration-bearer | — | prequotes:convert, deliveries:create, quotes:create | Convertir una precotización una sola vez |
 | GET | /api/v1/delivery-quotes/{publicId} | integration-bearer | — | quotes:read | Consultar mi Quote |
 | POST | /api/v1/delivery-quotes/{publicId}/accept | integration-bearer | — | quotes:accept | Aceptar mi Quote |
 | GET | /api/v1/delivery-requests | integration-bearer | — | deliveries:read | Listar mis DeliveryRequests |

@@ -1,0 +1,26 @@
+{"at":"2026-09-29T07:31:25.352Z","event":"start","name":"Assigning a driver and vehicle to a claimed dispatch > lists only assignable resources of the claim owner and assigns one ACTIVE pair with its payment context"}
+{"at":"2026-09-29T07:31:25.482Z","event":"finish","name":"Assigning a driver and vehicle to a claimed dispatch > lists only assignable resources of the claim owner and assigns one ACTIVE pair with its payment context","state":"passed"}
+{"at":"2026-09-29T07:31:25.638Z","event":"start","name":"Assigning a driver and vehicle to a claimed dispatch > keeps resources inside the provider and the claim owner"}
+{"at":"2026-09-29T07:31:25.642Z","event":"finish","name":"Assigning a driver and vehicle to a claimed dispatch > keeps resources inside the provider and the claim owner","state":"passed"}
+{"at":"2026-09-29T07:31:25.761Z","event":"start","name":"Assigning a driver and vehicle to a claimed dispatch > respects the V1.4 driver ↔ vehicle pairing in both directions"}
+{"at":"2026-09-29T07:31:25.763Z","event":"finish","name":"Assigning a driver and vehicle to a claimed dispatch > respects the V1.4 driver ↔ vehicle pairing in both directions","state":"passed"}
+{"at":"2026-09-29T07:31:25.896Z","event":"start","name":"Assigning a driver and vehicle to a claimed dispatch > refuses a driver or vehicle already executing another delivery"}
+{"at":"2026-09-29T07:31:25.899Z","event":"finish","name":"Assigning a driver and vehicle to a claimed dispatch > refuses a driver or vehicle already executing another delivery","state":"passed"}
+{"at":"2026-09-29T07:31:26.133Z","event":"start","name":"Assigning a driver and vehicle to a claimed dispatch > blocks changing the V1.4 vehicle pairing while the resources execute a delivery"}
+{"at":"2026-09-29T07:31:26.136Z","event":"finish","name":"Assigning a driver and vehicle to a claimed dispatch > blocks changing the V1.4 vehicle pairing while the resources execute a delivery","state":"passed"}
+{"at":"2026-09-29T07:31:26.349Z","event":"start","name":"Reassignment, release protection and cancellation > reassigns atomically keeping history and rejects an unchanged pair"}
+{"at":"2026-09-29T07:31:26.624Z","event":"finish","name":"Reassignment, release protection and cancellation > reassigns atomically keeping history and rejects an unchanged pair","state":"passed"}
+{"at":"2026-09-29T07:31:26.726Z","event":"start","name":"Reassignment, release protection and cancellation > refuses to release a dispatch with an active assignment and allows it after cancelling"}
+{"at":"2026-09-29T07:31:26.849Z","event":"finish","name":"Reassignment, release protection and cancellation > refuses to release a dispatch with an active assignment and allows it after cancelling","state":"passed"}
+{"at":"2026-09-29T07:31:26.949Z","event":"start","name":"Reassignment, release protection and cancellation > cancels the active assignment when the delivery is cancelled, keeping the history"}
+{"at":"2026-09-29T07:31:27.190Z","event":"finish","name":"Reassignment, release protection and cancellation > cancels the active assignment when the delivery is cancelled, keeping the history","state":"passed"}
+{"at":"2026-09-29T07:31:27.291Z","event":"start","name":"Reassignment, release protection and cancellation > flags an overdue assignment after the configured deadline"}
+{"at":"2026-09-29T07:31:27.570Z","event":"finish","name":"Reassignment, release protection and cancellation > flags an overdue assignment after the configured deadline","state":"passed"}
+{"at":"2026-09-29T07:31:27.809Z","event":"start","name":"Concurrency and database invariants > 10 simultaneous assignments on one dispatch leave exactly one ACTIVE"}
+{"at":"2026-09-29T07:31:28.225Z","event":"finish","name":"Concurrency and database invariants > 10 simultaneous assignments on one dispatch leave exactly one ACTIVE","state":"passed"}
+{"at":"2026-09-29T07:31:28.327Z","event":"start","name":"Concurrency and database invariants > the same driver or vehicle cannot be assigned to two dispatches at once"}
+{"at":"2026-09-29T07:31:28.948Z","event":"finish","name":"Concurrency and database invariants > the same driver or vehicle cannot be assigned to two dispatches at once","state":"passed"}
+{"at":"2026-09-29T07:31:29.049Z","event":"start","name":"Concurrency and database invariants > enforces the three ACTIVE invariants and history immutability in PostgreSQL"}
+{"at":"2026-09-29T07:31:29.468Z","event":"finish","name":"Concurrency and database invariants > enforces the three ACTIVE invariants and history immutability in PostgreSQL","state":"passed"}
+{"at":"2026-09-29T07:31:29.568Z","event":"start","name":"Concurrency and database invariants > gives SUPER_ADMIN the full history and never leaks secrets in logs"}
+{"at":"2026-09-29T07:31:29.740Z","event":"finish","name":"Concurrency and database invariants > gives SUPER_ADMIN the full history and never leaks secrets in logs","state":"passed"}

@@ -1,0 +1,1 @@
+Error: spawnSync C:\nvm4w\nodejs\node.exe EPERM

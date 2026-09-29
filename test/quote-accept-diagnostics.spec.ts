@@ -13,6 +13,9 @@ import type { ExecutionContext, INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import request from 'supertest';
+import { AuthorizedAcceptanceService } from '../dist/delivery-quotes/authorized-acceptance.service.js';
+import { PrismaService } from '../dist/prisma/prisma.service.js';
+import { IdempotencyService } from '../dist/idempotency/idempotency.service.js';
 import { DeliveryQuotesService } from '../dist/delivery-quotes/delivery-quotes.service.js';
 import { DeliveryQuotesController } from '../dist/delivery-quotes/delivery-quotes.controller.js';
 import { IntegrationGuard } from '../dist/integrations/integration.guard.js';
@@ -55,6 +58,7 @@ const persistenceError = () =>
   });
 // This is a transaction DOUBLE, not a PostgreSQL test. Only explicit commit publishes the draft.
 const db = {
+  deliveryQuote: { findFirst: async () => ({ prequoteConversion: null }) },
   $transaction: async (work: (tx: unknown) => Promise<unknown>) => {
     transactionCalls++;
     const draft = structuredClone(state);
@@ -79,6 +83,7 @@ const db = {
       acceptedAt: draft.status === 'ACCEPTED' ? instant : null,
     });
     const tx = {
+      prequoteConversion: { findUnique: vi.fn().mockResolvedValue(null) },
       $queryRaw: async (parts: TemplateStringsArray, ...values: unknown[]) => {
         const sql = parts.join('?');
         if (sql.includes('FROM "DeliveryQuote"')) {
@@ -147,6 +152,9 @@ beforeAll(async () => {
   const module = await Test.createTestingModule({
     controllers: [DeliveryQuotesController],
     providers: [
+      AuthorizedAcceptanceService,
+      { provide: PrismaService, useValue: db },
+      { provide: IdempotencyService, useValue: {} },
       { provide: DeliveryQuotesService, useValue: service },
       { provide: ConfigService, useValue: config },
     ],
@@ -201,7 +209,7 @@ const accept = (id = 'MQ-000004') =>
     .post('/api/v1/delivery-quotes/' + id + '/accept')
     .set('Authorization', 'Bearer ' + secret)
     .set('X-Request-Id', secret)
-    .send({ token: secret });
+    .send({});
 
 describe('accept 409 investigation: real controller/service/filter, transaction double', () => {
   for (const actor of ['PROVIDER', 'INDEPENDENT_DRIVER'])

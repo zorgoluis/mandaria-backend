@@ -1,0 +1,80 @@
+{"at":"2026-09-29T08:03:29.424Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > 201, complete safe representation, canonical conditions, GET and sequential replay without routing"}
+{"at":"2026-09-29T08:03:29.544Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > 201, complete safe representation, canonical conditions, GET and sequential replay without routing","state":"passed"}
+{"at":"2026-09-29T08:03:29.548Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > concurrent duplicate observes in progress and Retry-After, then replay"}
+{"at":"2026-09-29T08:03:29.551Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > concurrent duplicate observes in progress and Retry-After, then replay","state":"passed"}
+{"at":"2026-09-29T08:03:29.553Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > normalizes order and nullable measures without changing the key"}
+{"at":"2026-09-29T08:03:29.555Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > normalizes order and nullable measures without changing the key","state":"passed"}
+{"at":"2026-09-29T08:03:29.645Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation"}
+{"at":"2026-09-29T08:03:29.648Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation","state":"passed"}
+{"at":"2026-09-29T08:03:29.651Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation"}
+{"at":"2026-09-29T08:03:29.653Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation","state":"passed"}
+{"at":"2026-09-29T08:03:29.657Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation"}
+{"at":"2026-09-29T08:03:29.660Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation","state":"passed"}
+{"at":"2026-09-29T08:03:29.662Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation"}
+{"at":"2026-09-29T08:03:29.666Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation","state":"passed"}
+{"at":"2026-09-29T08:03:29.669Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation"}
+{"at":"2026-09-29T08:03:29.672Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation","state":"passed"}
+{"at":"2026-09-29T08:03:29.674Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation"}
+{"at":"2026-09-29T08:03:29.678Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation","state":"passed"}
+{"at":"2026-09-29T08:03:29.683Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation"}
+{"at":"2026-09-29T08:03:29.688Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation","state":"passed"}
+{"at":"2026-09-29T08:03:29.693Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation"}
+{"at":"2026-09-29T08:03:29.698Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects invalid/unknown conditions before reservation","state":"passed"}
+{"at":"2026-09-29T08:03:29.701Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects missing/invalid key before reservation"}
+{"at":"2026-09-29T08:03:29.704Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rejects missing/invalid key before reservation","state":"passed"}
+{"at":"2026-09-29T08:03:29.709Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > conflicting body and legacy operation reject before routing"}
+{"at":"2026-09-29T08:03:29.758Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > conflicting body and legacy operation reject before routing","state":"passed"}
+{"at":"2026-09-29T08:03:29.763Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > scope and ownership: foreign and missing both 404; human token rejected"}
+{"at":"2026-09-29T08:03:29.767Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > scope and ownership: foreign and missing both 404; human token rejected","state":"passed"}
+{"at":"2026-09-29T08:03:29.772Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > suspended integration and revoked credential reject even replay"}
+{"at":"2026-09-29T08:03:29.879Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > suspended integration and revoked credential reject even replay","state":"passed"}
+{"at":"2026-09-29T08:03:29.882Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > disabled flag creates no reservation; GET/replay still work and expired replay never renews"}
+{"at":"2026-09-29T08:03:29.986Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > disabled flag creates no reservation; GET/replay still work and expired replay never renews","state":"passed"}
+{"at":"2026-09-29T08:03:30.086Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > production admission denies despite enabled flag and creates no reservation"}
+{"at":"2026-09-29T08:03:30.089Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > production admission denies despite enabled flag and creates no reservation","state":"passed"}
+{"at":"2026-09-29T08:03:30.092Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > denial with justified retry propagates Retry-After without reserve"}
+{"at":"2026-09-29T08:03:30.094Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > denial with justified retry propagates Retry-After without reserve","state":"passed"}
+{"at":"2026-09-29T08:03:30.097Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > disabling while admission waits does not reserve or consume attempts"}
+{"at":"2026-09-29T08:03:30.100Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > disabling while admission waits does not reserve or consume attempts","state":"passed"}
+{"at":"2026-09-29T08:03:30.103Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > disabling before routing blocks; disabling during routing allows only that publication"}
+{"at":"2026-09-29T08:03:30.106Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > disabling before routing blocks; disabling during routing allows only that publication","state":"passed"}
+{"at":"2026-09-29T08:03:30.108Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > routing runs outside locks and receives only canonical points"}
+{"at":"2026-09-29T08:03:30.192Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > routing runs outside locks and receives only canonical points","state":"passed"}
+{"at":"2026-09-29T08:03:30.196Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > routing timeout recovers under same key with bounded attempts"}
+{"at":"2026-09-29T08:03:30.199Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > routing timeout recovers under same key with bounded attempts","state":"passed"}
+{"at":"2026-09-29T08:03:30.201Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > route not found is terminal and never invokes routing on retry"}
+{"at":"2026-09-29T08:03:30.204Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > route not found is terminal and never invokes routing on retry","state":"passed"}
+{"at":"2026-09-29T08:03:30.295Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > exhaustion stops further routing and preserves stored attempt budget"}
+{"at":"2026-09-29T08:03:30.299Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > exhaustion stops further routing and preserves stored attempt budget","state":"passed"}
+{"at":"2026-09-29T08:03:30.302Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > expired abandoned last lease maps attempts exhausted without routing"}
+{"at":"2026-09-29T08:03:30.436Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > expired abandoned last lease maps attempts exhausted without routing","state":"passed"}
+{"at":"2026-09-29T08:03:30.575Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > revocation during routing prevents publication"}
+{"at":"2026-09-29T08:03:30.579Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > revocation during routing prevents publication","state":"passed"}
+{"at":"2026-09-29T08:03:30.582Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > scope revocation during admission rechecked before external work"}
+{"at":"2026-09-29T08:03:30.585Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > scope revocation during admission rechecked before external work","state":"passed"}
+{"at":"2026-09-29T08:03:30.588Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > administrative change during routing cannot publish incompatible configuration"}
+{"at":"2026-09-29T08:03:30.590Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > administrative change during routing cannot publish incompatible configuration","state":"passed"}
+{"at":"2026-09-29T08:03:30.804Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > administrative changes after publication do not alter price/zone evidence"}
+{"at":"2026-09-29T08:03:30.808Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > administrative changes after publication do not alter price/zone evidence","state":"passed"}
+{"at":"2026-09-29T08:03:30.810Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > lost COMMIT response returns success only after verifying committed evidence"}
+{"at":"2026-09-29T08:03:30.813Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > lost COMMIT response returns success only after verifying committed evidence","state":"passed"}
+{"at":"2026-09-29T08:03:30.816Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > late executor cannot publish and same key can recover"}
+{"at":"2026-09-29T08:03:30.819Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > late executor cannot publish and same key can recover","state":"passed"}
+{"at":"2026-09-29T08:03:30.977Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > publication failure rolls back snapshot and permits bounded recovery"}
+{"at":"2026-09-29T08:03:30.982Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > publication failure rolls back snapshot and permits bounded recovery","state":"passed"}
+{"at":"2026-09-29T08:03:30.986Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > same key is isolated by integration"}
+{"at":"2026-09-29T08:03:30.991Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > same key is isolated by integration","state":"passed"}
+{"at":"2026-09-29T08:03:31.095Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > admission race still reserves one attempt and finalizes the unused permit"}
+{"at":"2026-09-29T08:03:31.099Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > admission race still reserves one attempt and finalizes the unused permit","state":"passed"}
+{"at":"2026-09-29T08:03:31.265Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > insufficient remaining lease budget blocks routing without stealing a new attempt"}
+{"at":"2026-09-29T08:03:31.268Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > insufficient remaining lease budget blocks routing without stealing a new attempt","state":"passed"}
+{"at":"2026-09-29T08:03:31.274Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rate plan replacement during routing rejects old evidence and retry uses new version"}
+{"at":"2026-09-29T08:03:31.280Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > rate plan replacement during routing rejects old evidence and retry uses new version","state":"passed"}
+{"at":"2026-09-29T08:03:31.391Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > permit finalization failure cannot turn a committed snapshot into failure"}
+{"at":"2026-09-29T08:03:31.396Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > permit finalization failure cannot turn a committed snapshot into failure","state":"passed"}
+{"at":"2026-09-29T08:03:31.400Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > GET and replay expire at exact expiresAt with no routing or renewed deadline"}
+{"at":"2026-09-29T08:03:31.405Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > GET and replay expire at exact expiresAt with no routing or renewed deadline","state":"passed"}
+{"at":"2026-09-29T08:03:31.424Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > admission infrastructure failure fails closed without key or routing"}
+{"at":"2026-09-29T08:03:31.436Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > admission infrastructure failure fails closed without key or routing","state":"passed"}
+{"at":"2026-09-29T08:03:31.442Z","event":"start","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > no emission side effects; A-only scopes cannot convert and MPQ accept stays absent; safe logs"}
+{"at":"2026-09-29T08:03:31.449Z","event":"finish","name":"A4 HTTP prequotes with PostgreSQL and controlled routing > no emission side effects; A-only scopes cannot convert and MPQ accept stays absent; safe logs","state":"passed"}

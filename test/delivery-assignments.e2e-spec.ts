@@ -486,6 +486,7 @@ describe.sequential(
       const row = await prisma.deliveryAssignment.findUniqueOrThrow({
         where: { id: created.body.id },
       });
+      expect(created.body).not.toHaveProperty('collectionInstructions');
       expect(row).toMatchObject({
         status: 'ACTIVE',
         providerId: providers.A,

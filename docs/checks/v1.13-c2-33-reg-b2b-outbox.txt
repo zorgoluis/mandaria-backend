@@ -1,0 +1,19 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/b2b-outbox.e2e-spec.ts (17 tests) 10509ms
+     ✓ a provider delivery writes exactly one delivery.completed, owned by the right client  325ms
+     ✓ the event outlives the process: it is in PostgreSQL, not in memory  594ms
+     ✓ the snapshot is frozen: later legitimate changes to the request do not touch it  388ms
+     ✓ repeating deliver keeps one event with the identical payload  315ms
+     ✓ ten simultaneous provider completions produce one transition and one event  334ms
+     ✓ a failing event insert rolls the whole delivery back  325ms
+     ✓ SQL cannot change its identity, its owner, its subject, its clock or its snapshot  370ms
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  00:53:53
+   Duration  11.69s (transform 1.55s, setup 0ms, import 964ms, tests 10.51s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-b2b-outbox.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

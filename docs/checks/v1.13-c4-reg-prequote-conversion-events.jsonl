@@ -1,0 +1,78 @@
+{"at":"2026-09-29T08:03:06.881Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > HTTP contract, exact snapshot, no routing/consumption/dispatch/economic mutation"}
+{"at":"2026-09-29T08:03:06.885Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > HTTP contract, exact snapshot, no routing/consumption/dispatch/economic mutation","state":"passed"}
+{"at":"2026-09-29T08:03:06.995Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > same-key concurrent replay and different-body conflict"}
+{"at":"2026-09-29T08:03:07.146Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > same-key concurrent replay and different-body conflict","state":"passed"}
+{"at":"2026-09-29T08:03:07.148Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > many keys consume MPQ once with no orphan keys"}
+{"at":"2026-09-29T08:03:07.288Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > many keys consume MPQ once with no orphan keys","state":"passed"}
+{"at":"2026-09-29T08:03:07.290Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > key includes source MPQ and shares namespace with emission and legacy"}
+{"at":"2026-09-29T08:03:07.417Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > key includes source MPQ and shares namespace with emission and legacy","state":"passed"}
+{"at":"2026-09-29T08:03:07.536Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > physical mismatch rejects without writes; defaults/omitted null are equivalent"}
+{"at":"2026-09-29T08:03:07.539Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > physical mismatch rejects without writes; defaults/omitted null are equivalent","state":"passed"}
+{"at":"2026-09-29T08:03:07.541Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body missing-confirmation"}
+{"at":"2026-09-29T08:03:07.543Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body missing-confirmation","state":"passed"}
+{"at":"2026-09-29T08:03:07.638Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body pending"}
+{"at":"2026-09-29T08:03:07.640Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body pending","state":"passed"}
+{"at":"2026-09-29T08:03:07.642Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body future"}
+{"at":"2026-09-29T08:03:07.645Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body future","state":"passed"}
+{"at":"2026-09-29T08:03:07.647Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body no-zone"}
+{"at":"2026-09-29T08:03:07.771Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body no-zone","state":"passed"}
+{"at":"2026-09-29T08:03:07.774Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body extra"}
+{"at":"2026-09-29T08:03:07.776Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body extra","state":"passed"}
+{"at":"2026-09-29T08:03:07.779Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body non-prepaid"}
+{"at":"2026-09-29T08:03:07.782Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body non-prepaid","state":"passed"}
+{"at":"2026-09-29T08:03:07.900Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body currency"}
+{"at":"2026-09-29T08:03:07.903Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body currency","state":"passed"}
+{"at":"2026-09-29T08:03:07.906Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body precision"}
+{"at":"2026-09-29T08:03:07.909Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body precision","state":"passed"}
+{"at":"2026-09-29T08:03:07.911Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body non-food"}
+{"at":"2026-09-29T08:03:07.915Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body non-food","state":"passed"}
+{"at":"2026-09-29T08:03:08.001Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > strict invalid body wrong-components"}
+{"at":"2026-09-29T08:03:08.006Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > strict invalid body wrong-components","state":"passed"}
+{"at":"2026-09-29T08:03:08.009Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > ownership, scopes, suspension and revocation"}
+{"at":"2026-09-29T08:03:08.121Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > ownership, scopes, suspension and revocation","state":"passed"}
+{"at":"2026-09-29T08:03:08.125Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > flag off denies new, permits committed replay and permanent CONVERTED"}
+{"at":"2026-09-29T08:03:08.277Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > flag off denies new, permits committed replay and permanent CONVERTED","state":"passed"}
+{"at":"2026-09-29T08:03:08.280Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > cancel does not free source; replay uses current statuses; emission replay also CONVERTED"}
+{"at":"2026-09-29T08:03:08.386Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > cancel does not free source; replay uses current statuses; emission replay also CONVERTED","state":"passed"}
+{"at":"2026-09-29T08:03:08.390Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > legacy HTTP quote and accept are blocked, GET allowed"}
+{"at":"2026-09-29T08:03:08.486Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > legacy HTTP quote and accept are blocked, GET allowed","state":"passed"}
+{"at":"2026-09-29T08:03:08.489Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > frozen zone metadata and inactive/replaced tariff do not reprice; inactive zone blocks only new"}
+{"at":"2026-09-29T08:03:08.646Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > frozen zone metadata and inactive/replaced tariff do not reprice; inactive zone blocks only new","state":"passed"}
+{"at":"2026-09-29T08:03:08.651Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > expired MPQ fails; committed conversion survives expiry"}
+{"at":"2026-09-29T08:03:10.809Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > expired MPQ fails; committed conversion survives expiry","state":"passed"}
+{"at":"2026-09-29T08:03:10.958Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > SQL rejects accepted quote, Dispatch, second quote and content/key/link mutations"}
+{"at":"2026-09-29T08:03:10.961Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > SQL rejects accepted quote, Dispatch, second quote and content/key/link mutations","state":"passed"}
+{"at":"2026-09-29T08:03:10.964Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > SQL rejects orphan conversion key at commit"}
+{"at":"2026-09-29T08:03:10.968Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > SQL rejects orphan conversion key at commit","state":"passed"}
+{"at":"2026-09-29T08:03:10.970Z","event":"start","name":"B2 atomic conversion on real PostgreSQL > openDispatch defense uses real origin before any operational work"}
+{"at":"2026-09-29T08:03:10.974Z","event":"finish","name":"B2 atomic conversion on real PostgreSQL > openDispatch defense uses real origin before any operational work","state":"passed"}
+{"at":"2026-09-29T08:03:11.144Z","event":"start","name":"B2 controlled failures and SQL construction > failure at DeliveryRequest rolls back key, origin and all destinations"}
+{"at":"2026-09-29T08:03:11.149Z","event":"finish","name":"B2 controlled failures and SQL construction > failure at DeliveryRequest rolls back key, origin and all destinations","state":"passed"}
+{"at":"2026-09-29T08:03:11.152Z","event":"start","name":"B2 controlled failures and SQL construction > failure at DeliveryQuote rolls back key, origin and all destinations"}
+{"at":"2026-09-29T08:03:11.155Z","event":"finish","name":"B2 controlled failures and SQL construction > failure at DeliveryQuote rolls back key, origin and all destinations","state":"passed"}
+{"at":"2026-09-29T08:03:12.586Z","event":"start","name":"B2 controlled failures and SQL construction > deferred failure after all inserts rolls back completely"}
+{"at":"2026-09-29T08:03:12.590Z","event":"finish","name":"B2 controlled failures and SQL construction > deferred failure after all inserts rolls back completely","state":"passed"}
+{"at":"2026-09-29T08:03:12.594Z","event":"start","name":"B2 controlled failures and SQL construction > expiry while waiting for MPQ lock rejects without destination"}
+{"at":"2026-09-29T08:03:12.599Z","event":"finish","name":"B2 controlled failures and SQL construction > expiry while waiting for MPQ lock rejects without destination","state":"passed"}
+{"at":"2026-09-29T08:03:12.696Z","event":"start","name":"B2 controlled failures and SQL construction > expiry during construction rejected by real deferred constraint"}
+{"at":"2026-09-29T08:03:13.990Z","event":"finish","name":"B2 controlled failures and SQL construction > expiry during construction rejected by real deferred constraint","state":"passed"}
+{"at":"2026-09-29T08:03:14.093Z","event":"start","name":"B2 controlled failures and SQL construction > lost response after commit recovers same committed resource"}
+{"at":"2026-09-29T08:03:14.099Z","event":"finish","name":"B2 controlled failures and SQL construction > lost response after commit recovers same committed resource","state":"passed"}
+{"at":"2026-09-29T08:03:14.240Z","event":"start","name":"B2 controlled failures and SQL construction > all three scopes required individually"}
+{"at":"2026-09-29T08:03:14.245Z","event":"finish","name":"B2 controlled failures and SQL construction > all three scopes required individually","state":"passed"}
+{"at":"2026-09-29T08:03:14.249Z","event":"start","name":"B2 controlled failures and SQL construction > deferred FK catalog and immutable manifest survive savepoints and later INSERT"}
+{"at":"2026-09-29T08:03:14.255Z","event":"finish","name":"B2 controlled failures and SQL construction > deferred FK catalog and immutable manifest survive savepoints and later INSERT","state":"passed"}
+{"at":"2026-09-29T08:03:14.414Z","event":"start","name":"B2 controlled failures and SQL construction > SQL rejects destination adoption and incomplete manifest with no orphan result"}
+{"at":"2026-09-29T08:03:14.419Z","event":"finish","name":"B2 controlled failures and SQL construction > SQL rejects destination adoption and incomplete manifest with no orphan result","state":"passed"}
+{"at":"2026-09-29T08:03:14.613Z","event":"start","name":"B2 controlled failures and SQL construction > captured logs omit token, opaque confirmation refs and request contacts"}
+{"at":"2026-09-29T08:03:14.617Z","event":"finish","name":"B2 controlled failures and SQL construction > captured logs omit token, opaque confirmation refs and request contacts","state":"passed"}
+{"at":"2026-09-29T08:03:14.623Z","event":"start","name":"B2 additional boundaries > independent Nest instances share one conversion result"}
+{"at":"2026-09-29T08:03:14.790Z","event":"finish","name":"B2 additional boundaries > independent Nest instances share one conversion result","state":"passed"}
+{"at":"2026-09-29T08:03:14.896Z","event":"start","name":"B2 additional boundaries > admin detail/list and B2B list use frozen zone, human cannot convert"}
+{"at":"2026-09-29T08:03:15.052Z","event":"finish","name":"B2 additional boundaries > admin detail/list and B2B list use frozen zone, human cannot convert","state":"passed"}
+{"at":"2026-09-29T08:03:15.058Z","event":"start","name":"B2 additional boundaries > tampered SQL snapshot fails deferred verification and rolls back"}
+{"at":"2026-09-29T08:03:15.065Z","event":"finish","name":"B2 additional boundaries > tampered SQL snapshot fails deferred verification and rolls back","state":"passed"}
+{"at":"2026-09-29T08:03:15.257Z","event":"start","name":"B2 additional boundaries > different coordinates, weights and multiplicity reject without mutation"}
+{"at":"2026-09-29T08:03:15.261Z","event":"finish","name":"B2 additional boundaries > different coordinates, weights and multiplicity reject without mutation","state":"passed"}
+{"at":"2026-09-29T08:03:15.265Z","event":"start","name":"B2 additional boundaries > null and omitted goodsValue are allowed and remain separate from fee"}
+{"at":"2026-09-29T08:03:15.273Z","event":"finish","name":"B2 additional boundaries > null and omitted goodsValue are allowed and remain separate from fee","state":"passed"}

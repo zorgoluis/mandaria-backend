@@ -1,0 +1,28 @@
+{"at":"2026-09-29T07:31:08.180Z","event":"start","name":"V1.6 quotes — distance bands > maps route distances to [min, max) bands and rejects distances beyond the last band"}
+{"at":"2026-09-29T07:31:08.515Z","event":"finish","name":"V1.6 quotes — distance bands > maps route distances to [min, max) bands and rejects distances beyond the last band","state":"passed"}
+{"at":"2026-09-29T07:31:08.965Z","event":"start","name":"V1.6 quotes — lifecycle, snapshot and financial separation > creates an OFFERED snapshot, reuses it without routing, accepts idempotently and freezes the price"}
+{"at":"2026-09-29T07:31:09.420Z","event":"finish","name":"V1.6 quotes — lifecycle, snapshot and financial separation > creates an OFFERED snapshot, reuses it without routing, accepts idempotently and freezes the price","state":"passed"}
+{"at":"2026-09-29T07:31:09.527Z","event":"start","name":"V1.6 quotes — lifecycle, snapshot and financial separation > keeps goods value and payment mode independent from the delivery price"}
+{"at":"2026-09-29T07:31:09.673Z","event":"finish","name":"V1.6 quotes — lifecycle, snapshot and financial separation > keeps goods value and payment mode independent from the delivery price","state":"passed"}
+{"at":"2026-09-29T07:31:11.337Z","event":"start","name":"V1.6 quotes — expiration > treats OFFERED past expiresAt as EXPIRED, rejects acceptance and prices a new quote"}
+{"at":"2026-09-29T07:31:11.979Z","event":"finish","name":"V1.6 quotes — expiration > treats OFFERED past expiresAt as EXPIRED, rejects acceptance and prices a new quote","state":"passed"}
+{"at":"2026-09-29T07:31:13.106Z","event":"start","name":"V1.6 quotes — domain failures never create quotes nor cancel the request > maps service area and cross-zone cases without calling routing"}
+{"at":"2026-09-29T07:31:13.110Z","event":"finish","name":"V1.6 quotes — domain failures never create quotes nor cancel the request > maps service area and cross-zone cases without calling routing","state":"passed"}
+{"at":"2026-09-29T07:31:13.207Z","event":"start","name":"V1.6 quotes — domain failures never create quotes nor cancel the request > maps routing failures, allows retrying, and refuses inconsistent active configuration"}
+{"at":"2026-09-29T07:31:13.597Z","event":"finish","name":"V1.6 quotes — domain failures never create quotes nor cancel the request > maps routing failures, allows retrying, and refuses inconsistent active configuration","state":"passed"}
+{"at":"2026-09-29T07:31:13.999Z","event":"start","name":"V1.6 quotes — cancellation and concurrency > cancels OFFERED quotes with the request and preserves ACCEPTED history"}
+{"at":"2026-09-29T07:31:14.235Z","event":"finish","name":"V1.6 quotes — cancellation and concurrency > cancels OFFERED quotes with the request and preserves ACCEPTED history","state":"passed"}
+{"at":"2026-09-29T07:31:14.344Z","event":"start","name":"V1.6 quotes — cancellation and concurrency > 20 concurrent quote calls produce one quote and one routing call; concurrent accepts one ACCEPTED"}
+{"at":"2026-09-29T07:31:15.325Z","event":"finish","name":"V1.6 quotes — cancellation and concurrency > 20 concurrent quote calls produce one quote and one routing call; concurrent accepts one ACCEPTED","state":"passed"}
+{"at":"2026-09-29T07:31:15.793Z","event":"start","name":"V1.13-A1 accept/cancel serialization baseline > cancel-first never leaves a cancelled request with a claimable or duplicate Dispatch"}
+{"at":"2026-09-29T07:31:15.935Z","event":"finish","name":"V1.13-A1 accept/cancel serialization baseline > cancel-first never leaves a cancelled request with a claimable or duplicate Dispatch","state":"passed"}
+{"at":"2026-09-29T07:31:15.939Z","event":"start","name":"V1.13-A1 accept/cancel serialization baseline > accept-first never leaves a cancelled request with a claimable or duplicate Dispatch"}
+{"at":"2026-09-29T07:31:16.080Z","event":"finish","name":"V1.13-A1 accept/cancel serialization baseline > accept-first never leaves a cancelled request with a claimable or duplicate Dispatch","state":"passed"}
+{"at":"2026-09-29T07:31:16.085Z","event":"start","name":"V1.13-A1 accept/cancel serialization baseline > concurrent never leaves a cancelled request with a claimable or duplicate Dispatch"}
+{"at":"2026-09-29T07:31:16.295Z","event":"finish","name":"V1.13-A1 accept/cancel serialization baseline > concurrent never leaves a cancelled request with a claimable or duplicate Dispatch","state":"passed"}
+{"at":"2026-09-29T07:31:16.670Z","event":"start","name":"V1.6 quotes — isolation, scopes, roles, admin, audit and docs > isolates IntegrationClients and enforces quote scopes independently"}
+{"at":"2026-09-29T07:31:16.675Z","event":"finish","name":"V1.6 quotes — isolation, scopes, roles, admin, audit and docs > isolates IntegrationClients and enforces quote scopes independently","state":"passed"}
+{"at":"2026-09-29T07:31:16.819Z","event":"start","name":"V1.6 quotes — isolation, scopes, roles, admin, audit and docs > keeps humans out of B2B quote routes, gives SUPER_ADMIN read-only quote administration"}
+{"at":"2026-09-29T07:31:16.823Z","event":"finish","name":"V1.6 quotes — isolation, scopes, roles, admin, audit and docs > keeps humans out of B2B quote routes, gives SUPER_ADMIN read-only quote administration","state":"passed"}
+{"at":"2026-09-29T07:31:16.921Z","event":"start","name":"V1.6 quotes — isolation, scopes, roles, admin, audit and docs > audits without coordinates, addresses or secrets and documents the V1.6 contract"}
+{"at":"2026-09-29T07:31:16.927Z","event":"finish","name":"V1.6 quotes — isolation, scopes, roles, admin, audit and docs > audits without coordinates, addresses or secrets and documents the V1.6 contract","state":"passed"}

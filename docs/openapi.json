@@ -18612,7 +18612,7 @@
     },
     "/api/v1/delivery-requests/{publicId}/cancel": {
       "post": {
-        "description": "Requiere deliveries:cancel. CREATED → CANCELLED con reason y cancelledAt. Si ya estaba CANCELLED responde 200 con el estado actual y conserva la razón y fecha originales. No existe edición ni borrado: para corregir datos, cancelar y crear otra solicitud.",
+        "description": "Requiere deliveries:cancel. CREATED → CANCELLED con reason y cancelledAt. Si ya estaba CANCELLED responde 200 con el estado actual y conserva la razón y fecha originales. Admite origen convertido con MQ vencida. Un 200/MDR CANCELLED no prueba ausencia de entrega: GET /delivery-requests/:publicId/status puede seguir DELIVERED. Antes de reiniciar: confirmar MDR CANCELLED y cancelledAt, luego status CANCELLED/EXPIRED con deliveredAt null; si incierto o DELIVERED, no reemplazar. Reintentar cancel sobre la misma MDR conserva fecha/razón; no libera MPQ ni reabre Dispatch. Nueva secuencia exige nueva MPQ, conversión y consentimiento sobre MQ exacta, sin otra transferencia de comida ni reembolso implícito. Coita serializa por pedido; externalReference no es único.",
         "operationId": "DeliveryRequestsController_cancel",
         "parameters": [
           {
@@ -26909,7 +26909,7 @@
     },
     "/api/v1/delivery-requests/{publicId}/quotes": {
       "post": {
-        "description": "Requiere quotes:create. Resuelve ServiceType (LOCAL_DELIVERY), zona ACTIVE de pickup y dropoff (misma zona), RatePlan ACTIVE, ruta real con el RoutingProvider y banda de distancia [min, max). Crea una Quote OFFERED inmutable con vigencia del plan. Si ya hay una OFFERED vigente o una ACCEPTED, la devuelve. Idempotente por DeliveryRequest (bloqueo de fila): peticiones simultáneas producen una sola Quote y una sola llamada de routing. 30/min por IP.",
+        "description": "Requiere quotes:create. Origen MPQ rechazado antes de cualquier recálculo/reutilización; GET sigue permitido. Resuelve ServiceType (LOCAL_DELIVERY), zona ACTIVE de pickup y dropoff (misma zona), RatePlan ACTIVE, ruta real con el RoutingProvider y banda de distancia [min, max). Crea una Quote OFFERED inmutable con vigencia del plan. Si ya hay una OFFERED vigente o una ACCEPTED, la devuelve. Idempotente por DeliveryRequest (bloqueo de fila): peticiones simultáneas producen una sola Quote y una sola llamada de routing. 30/min por IP.",
         "operationId": "DeliveryQuotesController_create",
         "parameters": [
           {
@@ -27159,7 +27159,7 @@
             }
           },
           "409": {
-            "description": "DELIVERY_REQUEST_NOT_QUOTABLE: la solicitud no está CREATED.",
+            "description": "PREQUOTE_REQUOTE_NOT_ALLOWED: origen MPQ no admite recotización/reutilización por POST. DELIVERY_REQUEST_NOT_QUOTABLE: la solicitud no está CREATED.",
             "content": {
               "application/json": {
                 "schema": {
@@ -27438,7 +27438,7 @@
         ]
       },
       "get": {
-        "description": "Requiere quotes:read. Quotes de una solicitud propia, más recientes primero; snapshots persistidos sin recalcular.",
+        "description": "Requiere quotes:read. Quotes de una solicitud propia, más recientes primero; snapshots persistidos sin recalcular; zona de origen MPQ usa código/nombre congelados.",
         "operationId": "DeliveryQuotesController_listForRequest",
         "parameters": [
           {
@@ -28186,7 +28186,7 @@
     },
     "/api/v1/delivery-quotes/{publicId}/accept": {
       "post": {
-        "description": "Requiere quotes:accept. OFFERED vigente → ACCEPTED y abre Dispatch con snapshots de créditos en una sola transacción. LOCAL_DELIVERY requiere políticas ACTIVE de PROVIDER e INDEPENDENT_DRIVER, incluso sin candidatos. No consulta saldos ni debita créditos. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver. En errores conservar statusCode, code y requestId (también X-Request-Id); no sustituir code por REMOTE_ERROR.",
+        "description": "Requiere quotes:accept. Convertidas requieren Idempotency-Key y atestación del integrador sobre MQ/importe/moneda/expiry exactos, con consentimiento posterior a conversión. Flag false por defecto. Mandaria no verifica directamente consentimiento humano. Evidencia inmutable, ACCEPTED y Dispatch atómicos. Replay con autenticación vigente funciona incluso vencida/cancelada o flag off; Idempotent-Replayed y Cache-Control no-store. No significa comida/envío cobrado ni entrega física. Legacy conserva body vacío y replay actual. OFFERED vigente → ACCEPTED y abre Dispatch con snapshots de créditos en una sola transacción. LOCAL_DELIVERY requiere políticas ACTIVE de PROVIDER e INDEPENDENT_DRIVER, incluso sin candidatos. No consulta saldos ni debita créditos. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver. En errores conservar statusCode, code y requestId (también X-Request-Id); no sustituir code por REMOTE_ERROR.",
         "operationId": "DeliveryQuotesController_accept",
         "parameters": [
           {
@@ -28198,11 +28198,45 @@
               "example": "MQ-000001",
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Obligatoria para MQ convertida: ASCII visible 8–255; repetir misma key y atestación ante respuesta perdida. Legacy no la requiere.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "description": "Body opcional sólo para legacy. En MQ convertida customerAuthorization y Idempotency-Key son obligatorios; no hay consentimiento inferido.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptDeliveryQuoteDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Aceptación técnica, no cobro ni entrega. Convertida: creación/replay 200; Idempotent-Replayed false/true. Replay no reabre Dispatch.",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "Sólo rama convertida; true al recuperar la misma intención.",
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "example": "no-store"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -28212,7 +28246,7 @@
             }
           },
           "400": {
-            "description": "publicId o parámetros inválidos.",
+            "description": "VALIDATION_ERROR: falta key/atestación o datos inválidos; AUTHORIZED_ACCEPT_ORIGIN_REQUIRED: atestación enviada a legacy.",
             "content": {
               "application/json": {
                 "schema": {
@@ -28426,7 +28460,7 @@
             }
           },
           "409": {
-            "description": "QUOTE_EXPIRED (expiresAt alcanzado; solicitar nueva Quote) | QUOTE_NOT_ACCEPTABLE (cancelada o solicitud cancelada) | CREDIT_POLICY_UNAVAILABLE (falta política ACTIVE o configuración válida para uno de los actores requeridos; accept y apertura de Dispatch se revierten). Leer code del JSON, no inferir la causa del HTTP 409.",
+            "description": "HTTP_409 (key incompatible) | CUSTOMER_AUTHORIZATION_MISMATCH | QUOTE_ALREADY_AUTHORIZED | AUTHORIZED_ACCEPT_SERVICE_UNAVAILABLE | QUOTE_EXPIRED (convertida: cancelar y confirmar estado definitivo antes de nueva secuencia/consentimiento) | QUOTE_NOT_ACCEPTABLE (cancelada o solicitud cancelada) | CREDIT_POLICY_UNAVAILABLE (falta política ACTIVE o configuración válida para uno de los actores requeridos; accept y apertura de Dispatch se revierten). Leer code del JSON, no inferir la causa del HTTP 409.",
             "content": {
               "application/json": {
                 "schema": {
@@ -28607,6 +28641,59 @@
                     "code": {
                       "type": "string",
                       "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AUTHORIZED_ACCEPT_DISABLED | AUTHORIZED_ACCEPT_UNAVAILABLE. Reintentar misma key/intención, sin reapertura.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
                     },
                     "message": {
                       "type": "string",
@@ -54859,6 +54946,1256 @@
           "SUPER_ADMIN"
         ]
       }
+    },
+    "/api/v1/delivery-prequotes": {
+      "post": {
+        "description": "Requiere prequotes:create. Contrato A4: FOOD, MXN, inmediato y conditionsVersion=1 obligatorio. Autentica y normaliza antes de consultar la clave. Replay disponible aun deshabilitado. Nuevas emisiones requieren flag y permiso compartido; requieren configuración global explícita y coherente entre instancias; cuotas 10/min, 500/24h y 2 slots por integración por defecto. Consumo potencial conservador MAX_RETRIES+1 unidades por inicio, aun sin publicación. Routing fuera de transacciones; publicación con fencing y revalidación de configuración y autenticación. Una llamada al adaptador por intento, hasta presupuesto persistido. No crea solicitud, Quote, Dispatch ni movimientos. Conversión separada mediante /:publicId/convert; no aceptación autorizada.",
+        "operationId": "PrequotesController_create",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clave estable por intención y cliente, compartida con las operaciones legacy.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 255,
+              "pattern": "^[!-~]{8,255}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Sólo los campos documentados; desconocidos rechazados. No financialContext, integrationClientId, direcciones, contactos ni datos bancarios.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePrequoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Replay durable, Idempotent-Replayed: true; puede estar EXPIRED, sin routing ni renovar fechas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrequoteResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Snapshot publicado. Idempotent-Replayed: false. Deshabilitada por defecto; requiere configuración y admisión compartida A5.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrequoteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "PREQUOTE_CONDITIONS_INVALID | IDEMPOTENCY_KEY_INVALID. Sin reserva ni routing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token B2B inválido o estado/credencial revocados; PREQUOTE_AUTHORIZATION_CHANGED durante ejecución.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere prequotes:create, no otorgado automáticamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP_409: clave/cuerpo/operación incompatible. PREQUOTE_IN_PROGRESS: Retry-After hasta lease actual. PREQUOTE_PERMIT_INVALID | PREQUOTE_LEASE_LOST | PREQUOTE_LEASE_BUDGET_INSUFFICIENT | PREQUOTE_CONFIGURATION_CHANGED | ATTEMPTS_EXHAUSTED | PREQUOTE_FAILED (intención terminal). No significa éxito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "OUT_OF_SERVICE_AREA | CROSS_ZONE_NOT_SUPPORTED | ROUTE_NOT_FOUND | DISTANCE_NOT_SUPPORTED. Fallo terminal de esta intención.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 422
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_422"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "PREQUOTE_CONSUMPTION_LIMIT: cuota móvil de 60s/24h, concurrencia o presupuesto global MPQ agotados. Retry-After refleja todos los límites bloqueantes, sin prometer admisión. Separado del límite HTTP de abuso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "PREQUOTE_DISABLED | PREQUOTE_CONSUMPTION_UNAVAILABLE (configuración global ausente/incoherente o infraestructura caída; sin plazo inventado). ROUTING_UNAVAILABLE | RATE_CONFIGURATION_UNAVAILABLE | RATE_CONFIGURATION_INVALID | SERVICE_ZONE_AMBIGUOUS | PREQUOTE_EXECUTION_FAILED. Reintentos con misma key acotados; sin Retry-After inventado. Leer code, message y requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "integration-bearer": []
+          }
+        ],
+        "summary": "Emitir o recuperar mi precotización",
+        "tags": [
+          "Delivery Prequotes (B2B)"
+        ],
+        "x-scopes": [
+          "prequotes:create"
+        ]
+      }
+    },
+    "/api/v1/delivery-prequotes/{publicId}": {
+      "get": {
+        "description": "Requiere prequotes:read y ownership. Disponible aun con emisión bloqueada. Estado efectivo OFFERED/EXPIRED/CONVERTED; igualdad con expiresAt ya está vencida. Precio y zona congelados; sin datos internos; vínculos permanentes tras cancelar o vencer.",
+        "operationId": "PrequotesController_get",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "description": "Identificador público de precotización propia.",
+            "schema": {
+              "example": "MPQ-000123",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sólo snapshot propio; lectura sin routing ni escrituras.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrequoteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Identificador inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token B2B inválido, integración/credencial inactiva.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Falta prequotes:read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ajena e inexistente indistinguibles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite HTTP global.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "integration-bearer": []
+          }
+        ],
+        "summary": "Consultar mi precotización",
+        "tags": [
+          "Delivery Prequotes (B2B)"
+        ],
+        "x-scopes": [
+          "prequotes:read"
+        ]
+      }
+    },
+    "/api/v1/delivery-prequotes/{publicId}/convert": {
+      "post": {
+        "description": "Requiere prequotes:convert + deliveries:create + quotes:create y ownership B2B. Flag independiente false por defecto. Una transacción copia precio, ruta, tarifa y expiry MPQ sin routing ni recálculo. Zona INACTIVE impide nuevas conversiones; tarifa reemplazada no cambia snapshot. Registra declaración del integrador, no verificación bancaria. No acepta Quote, no abre Dispatch ni cobra créditos. Durante B, accept legacy y recotización están bloqueados para este origen. Cancelar no libera MPQ.",
+        "operationId": "PrequoteConversionController_convert",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "description": "MPQ propia, vigente y no consumida para una conversión nueva.",
+            "schema": {
+              "example": "MPQ-000101",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Namespace compartido con emisión y solicitudes legacy; no reutilizar para otra intención.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 255,
+              "pattern": "^[!-~]{8,255}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Confirmación declarada por restaurante e intención RECIPIENT/CASH/DELIVERY/DELIVERY_FEE. Propiedades extra rechazadas; no comprobantes ni datos bancarios.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConvertPrequoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Idempotent-Replayed=true, mismos vínculos/expiry y estados actuales, incluso cancelada, vencida o flag apagado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrequoteConversionResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "MDR PREPAID y MQ OFFERED atómicas. Idempotent-Replayed=false; Location hacia MDR (GET requiere deliveries:read). Cache-Control=no-store; X-Request-Id de servidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrequoteConversionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR | PREQUOTE_CONDITIONS_INVALID: body, fechas, key o condiciones inválidas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token B2B inválido, credencial revocada o integración suspendida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Se requieren los tres scopes; no se otorgan automáticamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "MPQ ajena o inexistente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP_409 (key incompatible), PREQUOTE_ALREADY_CONVERTED, PREQUOTE_EXPIRED, PREQUOTE_CONDITIONS_MISMATCH, PREQUOTE_SERVICE_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite HTTP de abuso; no consume presupuesto routing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "PREQUOTE_CONVERSION_DISABLED | PREQUOTE_CONVERSION_UNAVAILABLE. Reintentar misma key ante fallo transitorio; sin Retry-After inventado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "integration-bearer": []
+          }
+        ],
+        "summary": "Convertir una precotización una sola vez",
+        "tags": [
+          "Delivery Prequotes (B2B)"
+        ],
+        "x-scopes": [
+          "prequotes:convert",
+          "deliveries:create",
+          "quotes:create"
+        ]
+      }
     }
   },
   "info": {
@@ -55041,6 +56378,9 @@
             "items": {
               "type": "string",
               "enum": [
+                "prequotes:convert",
+                "prequotes:create",
+                "prequotes:read",
                 "quotes:create",
                 "quotes:read",
                 "quotes:accept",
@@ -55086,6 +56426,9 @@
             "items": {
               "type": "string",
               "enum": [
+                "prequotes:convert",
+                "prequotes:create",
+                "prequotes:read",
                 "quotes:create",
                 "quotes:read",
                 "quotes:accept",
@@ -55258,6 +56601,9 @@
             "items": {
               "type": "string",
               "enum": [
+                "prequotes:convert",
+                "prequotes:create",
+                "prequotes:read",
                 "quotes:create",
                 "quotes:read",
                 "quotes:accept",
@@ -56431,9 +57777,110 @@
           "vehicle"
         ]
       },
+      "CollectionDeliveryFeeResponse": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "25.00",
+            "description": "Importe exacto de la MQ aceptada; decimal con dos posiciones. Nunca incluye comida o créditos."
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN",
+            "description": "Moneda de la MQ aceptada."
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ]
+      },
+      "CollectionInstructionsResponse": {
+        "type": "object",
+        "properties": {
+          "applicability": {
+            "type": "string",
+            "enum": [
+              "OFFER",
+              "CURRENT",
+              "HISTORICAL"
+            ],
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura."
+          },
+          "goodsPaidToRestaurant": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Comida pagada al restaurante según la declaración persistida del integrador. Mandaria no verifica el banco."
+          },
+          "advanceToRestaurant": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "No adelantar dinero al restaurante."
+          },
+          "collectGoodsFromRecipient": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "No cobrar comida al destinatario."
+          },
+          "deliveryFee": {
+            "$ref": "#/components/schemas/CollectionDeliveryFeeResponse"
+          },
+          "payer": {
+            "type": "string",
+            "enum": [
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ],
+            "description": "Cobro exclusivo del envío; nunca del valor de comida ni de créditos del ejecutor."
+          }
+        },
+        "required": [
+          "applicability",
+          "goodsPaidToRestaurant",
+          "advanceToRestaurant",
+          "collectGoodsFromRecipient",
+          "deliveryFee",
+          "payer",
+          "method",
+          "dueAt",
+          "component"
+        ]
+      },
       "DriverSelfActiveDeliveryAssignmentResponse": {
         "type": "object",
         "properties": {
+          "collectionInstructions": {
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -58542,6 +59989,77 @@
           "items"
         ]
       },
+      "CustomerAuthorizationDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AUTHORIZED_BY_CUSTOMER"
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Referencia opaca de evidencia conservada por el integrador; sin PII ni comprobantes. Mandaria no verifica directamente el consentimiento humano."
+          },
+          "authorizedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Posterior a la creación de MQ; zona explícita. No amplía TTL."
+          },
+          "quotePublicId": {
+            "type": "string",
+            "example": "MQ-000101"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00",
+            "description": "Eco exacto del snapshot; nunca determina el precio."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "MXN"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Vencimiento exacto de MQ, sin renovación."
+          }
+        },
+        "required": [
+          "version",
+          "status",
+          "reference",
+          "authorizedAt",
+          "quotePublicId",
+          "amount",
+          "currency",
+          "expiresAt"
+        ]
+      },
+      "AcceptDeliveryQuoteDto": {
+        "type": "object",
+        "properties": {
+          "customerAuthorization": {
+            "description": "Obligatorio sólo para MQ convertidas. Legacy admite ausencia/body vacío; atestación en legacy se rechaza.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerAuthorizationDto"
+              }
+            ]
+          }
+        }
+      },
       "AdminQuoteRequestResponse": {
         "type": "object",
         "properties": {
@@ -59453,6 +60971,14 @@
       "ProviderDispatchResponse": {
         "type": "object",
         "properties": {
+          "collectionInstructions": {
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
           "creditEnforcementMode": {
             "type": "string",
             "enum": [
@@ -60927,6 +62453,14 @@
             "type": "string",
             "nullable": true
           },
+          "collectionInstructions": {
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
           "paymentContext": {
             "$ref": "#/components/schemas/PaymentContextResponse"
           }
@@ -62002,6 +63536,14 @@
       "DriverDispatchResponse": {
         "type": "object",
         "properties": {
+          "collectionInstructions": {
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
           "creditEnforcementMode": {
             "type": "string",
             "enum": [
@@ -62983,6 +64525,586 @@
         },
         "required": [
           "calculationType"
+        ]
+      },
+      "PrequoteStop": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DROPOFF"
+            ],
+            "description": "V1.5: exactamente un PICKUP (sequence 1) y un DROPOFF (sequence 2).",
+            "example": "PICKUP"
+          },
+          "sequence": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 2,
+            "example": 1
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "example": 16.753554
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "example": -93.115983
+          }
+        },
+        "required": [
+          "type",
+          "sequence",
+          "latitude",
+          "longitude"
+        ]
+      },
+      "PrequoteFoodPackage": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "FOOD"
+            ],
+            "example": "FOOD"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000,
+            "example": 2
+          },
+          "weightKg": {
+            "type": "number",
+            "nullable": true,
+            "example": 1.5,
+            "description": "Kilogramos > 0, hasta 3 decimales."
+          },
+          "lengthCm": {
+            "type": "number",
+            "nullable": true,
+            "example": 30,
+            "description": "cm > 0"
+          },
+          "widthCm": {
+            "type": "number",
+            "nullable": true,
+            "example": 20,
+            "description": "cm > 0"
+          },
+          "heightCm": {
+            "type": "number",
+            "nullable": true,
+            "example": 15,
+            "description": "cm > 0"
+          },
+          "isFragile": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "category",
+          "quantity"
+        ]
+      },
+      "CreatePrequoteDto": {
+        "type": "object",
+        "properties": {
+          "conditionsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ],
+            "description": "Obligatorio, sin default. Versión de condiciones canónicas.",
+            "example": 1
+          },
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "LOCAL_DELIVERY"
+            ],
+            "description": "Sólo servicio inmediato. No admite programación."
+          },
+          "stops": {
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "PICKUP/1 y DROPOFF/2; coordenadas hasta 6 decimales; sin direcciones ni contactos.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrequoteStop"
+            }
+          },
+          "packages": {
+            "minItems": 1,
+            "maxItems": 50,
+            "description": "Sólo FOOD. Orden canónico por contenido; conserva multiplicidad. Medidas omitidas/null equivalentes; isFragile omitido=false, null inválido.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrequoteFoodPackage"
+            }
+          }
+        },
+        "required": [
+          "conditionsVersion",
+          "serviceType",
+          "stops",
+          "packages"
+        ]
+      },
+      "PrequoteZoneResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "CENTRO"
+          },
+          "name": {
+            "type": "string",
+            "example": "Zona Centro"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "PrequoteResponse": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "example": "MPQ-000123"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OFFERED",
+              "EXPIRED",
+              "CONVERTED"
+            ],
+            "description": "EXPIRED cuando now >= expiresAt. No se persiste ni renueva por replay."
+          },
+          "conditionsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "conditions": {
+            "description": "Condiciones normalizadas completas, incluida conditionsVersion; medidas siempre presentes como número o null.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreatePrequoteDto"
+              }
+            ]
+          },
+          "serviceZone": {
+            "description": "Código y nombre congelados al emitir.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrequoteZoneResponse"
+              }
+            ]
+          },
+          "distanceMeters": {
+            "type": "number",
+            "minimum": 0
+          },
+          "durationSeconds": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Duración calculada de ruta, no promesa de llegada."
+          },
+          "amount": {
+            "type": "string",
+            "example": "60.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "MXN"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Reloj DB de publicación; issuedAt interno."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Vigencia absoluta independiente del TTL de RatePlan."
+          },
+          "convertedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Fecha de conversión inmutable; null si no consumida."
+          },
+          "deliveryRequestPublicId": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryQuotePublicId": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "availabilityGuaranteed": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "No reserva capacidad logística."
+          }
+        },
+        "required": [
+          "publicId",
+          "status",
+          "conditionsVersion",
+          "conditions",
+          "serviceZone",
+          "distanceMeters",
+          "durationSeconds",
+          "amount",
+          "currency",
+          "createdAt",
+          "expiresAt",
+          "convertedAt",
+          "deliveryRequestPublicId",
+          "deliveryQuotePublicId",
+          "availabilityGuaranteed"
+        ]
+      },
+      "ConversionFoodPackageDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "FOOD"
+            ],
+            "example": "FOOD"
+          },
+          "description": {
+            "type": "string",
+            "example": "Pedido preparado de restaurante",
+            "maxLength": 200,
+            "description": "Descripción genérica; no enviar productos, precios ni carrito."
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000,
+            "example": 2
+          },
+          "weightKg": {
+            "type": "number",
+            "nullable": true,
+            "example": 1.5,
+            "description": "Kilogramos > 0, hasta 3 decimales."
+          },
+          "lengthCm": {
+            "type": "number",
+            "nullable": true,
+            "example": 30,
+            "description": "cm > 0"
+          },
+          "widthCm": {
+            "type": "number",
+            "nullable": true,
+            "example": 20,
+            "description": "cm > 0"
+          },
+          "heightCm": {
+            "type": "number",
+            "nullable": true,
+            "example": 15,
+            "description": "cm > 0"
+          },
+          "isFragile": {
+            "type": "boolean",
+            "default": false
+          },
+          "handlingInstructions": {
+            "type": "string",
+            "nullable": true,
+            "example": "Mantener vertical",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "category",
+          "description",
+          "quantity"
+        ]
+      },
+      "ConversionFinancialContextDto": {
+        "type": "object",
+        "properties": {
+          "goodsValue": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "example": "450.00",
+            "description": "Valor de la mercancía (no incluye envío). Decimal > 0 con hasta 2 decimales; se recomienda string. Opcional con PREPAID; obligatorio con COURIER_ADVANCE."
+          },
+          "goodsPaymentMode": {
+            "type": "string",
+            "enum": [
+              "PREPAID"
+            ],
+            "description": "PREPAID: el origen ya cobró la mercancía; el Driver paga 0 en pickup. COURIER_ADVANCE: el Driver adelanta goodsValue en pickup y lo recupera del destinatario en dropoff.",
+            "example": "PREPAID"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN",
+            "description": "Código ISO 4217.",
+            "enum": [
+              "MXN"
+            ]
+          }
+        },
+        "required": [
+          "goodsPaymentMode",
+          "currency"
+        ]
+      },
+      "ConversionDeliveryRequestDto": {
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "LOCAL_DELIVERY"
+            ],
+            "default": "LOCAL_DELIVERY",
+            "description": "V1.6: sólo LOCAL_DELIVERY (servicio inmediato; sin programación). Omitirlo equivale a LOCAL_DELIVERY."
+          },
+          "externalReference": {
+            "type": "string",
+            "example": "ORDER-1842",
+            "maxLength": 100,
+            "nullable": true,
+            "description": "Referencia del sistema externo. No es única ni sustituye a Idempotency-Key: puede repetirse (p. ej. tras cancelar)."
+          },
+          "stops": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryStopDto"
+            }
+          },
+          "packages": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConversionFoodPackageDto"
+            }
+          },
+          "financialContext": {
+            "$ref": "#/components/schemas/ConversionFinancialContextDto"
+          }
+        },
+        "required": [
+          "serviceType",
+          "stops",
+          "packages",
+          "financialContext"
+        ]
+      },
+      "MerchantConfirmationDto": {
+        "type": "object",
+        "properties": {
+          "goodsPaymentStatus": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED_BY_MERCHANT"
+            ],
+            "description": "Declaración del integrador sobre ingreso confirmado por el restaurante, no verificación bancaria Mandaria."
+          },
+          "goodsPaymentReference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Referencia opaca; sin comprobantes, datos bancarios ni PII."
+          },
+          "goodsPaymentConfirmedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha confirmada, zona explícita; no futura respecto al reloj DB."
+          },
+          "orderAcceptanceStatus": {
+            "type": "string",
+            "enum": [
+              "ACCEPTED_BY_MERCHANT"
+            ]
+          },
+          "orderAcceptanceReference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Referencia opaca de aceptación del restaurante."
+          },
+          "orderAcceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "goodsPaymentStatus",
+          "goodsPaymentReference",
+          "goodsPaymentConfirmedAt",
+          "orderAcceptanceStatus",
+          "orderAcceptanceReference",
+          "orderAcceptedAt"
+        ]
+      },
+      "CollectionInstructionDto": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "DELIVERY"
+            ]
+          },
+          "components": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "description": "Sólo envío; sin monto paralelo ni cobro efectivo registrado.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DELIVERY_FEE"
+              ]
+            }
+          }
+        },
+        "required": [
+          "payer",
+          "method",
+          "dueAt",
+          "components"
+        ]
+      },
+      "ConvertPrequoteDto": {
+        "type": "object",
+        "properties": {
+          "conditionsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "deliveryRequest": {
+            "description": "Solicitud completa. En conversión sólo PREPAID/MXN/FOOD y LOCAL_DELIVERY. Datos textuales definitivos incluidos en fingerprint. goodsValue no incluye envío.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConversionDeliveryRequestDto"
+              }
+            ]
+          },
+          "merchantConfirmation": {
+            "$ref": "#/components/schemas/MerchantConfirmationDto"
+          },
+          "deliveryCollectionInstruction": {
+            "$ref": "#/components/schemas/CollectionInstructionDto"
+          }
+        },
+        "required": [
+          "conditionsVersion",
+          "deliveryRequest",
+          "merchantConfirmation",
+          "deliveryCollectionInstruction"
+        ]
+      },
+      "PrequoteConversionResponse": {
+        "type": "object",
+        "properties": {
+          "prequotePublicId": {
+            "type": "string",
+            "example": "MPQ-000101"
+          },
+          "convertedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deliveryRequestPublicId": {
+            "type": "string",
+            "example": "MDR-000101"
+          },
+          "externalReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryRequestStatus": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "CANCELLED"
+            ],
+            "description": "Estado actual; replay no recrea una solicitud cancelada."
+          },
+          "deliveryCollectionInstruction": {
+            "$ref": "#/components/schemas/CollectionInstructionDto"
+          },
+          "quote": {
+            "description": "Snapshot MPQ exacto, expiry original y metadata de zona congelada. No aceptable ni despachable durante B.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DeliveryQuoteResponse"
+              }
+            ]
+          },
+          "availabilityGuaranteed": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "prequotePublicId",
+          "convertedAt",
+          "deliveryRequestPublicId",
+          "externalReference",
+          "deliveryRequestStatus",
+          "deliveryCollectionInstruction",
+          "quote",
+          "availabilityGuaranteed"
         ]
       }
     }

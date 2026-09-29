@@ -1,0 +1,124 @@
+{"at":"2026-09-29T07:58:44.498Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > upgrade B history fixture remains a converted OFFERED resource"}
+{"at":"2026-09-29T07:58:44.688Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > upgrade B history fixture remains a converted OFFERED resource","state":"passed"}
+{"at":"2026-09-29T07:58:44.692Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > atomic exact attestation opens one dispatch and snapshots without routing, A5 or debit; private data never exposed"}
+{"at":"2026-09-29T07:58:44.791Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > atomic exact attestation opens one dispatch and snapshots without routing, A5 or debit; private data never exposed","state":"passed"}
+{"at":"2026-09-29T07:58:44.919Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > rejects mismatched amount with no key/economic effects"}
+{"at":"2026-09-29T07:58:44.922Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > rejects mismatched amount with no key/economic effects","state":"passed"}
+{"at":"2026-09-29T07:58:45.020Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > rejects mismatched currency with no key/economic effects"}
+{"at":"2026-09-29T07:58:45.148Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > rejects mismatched currency with no key/economic effects","state":"passed"}
+{"at":"2026-09-29T07:58:45.152Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > rejects mismatched expiresAt with no key/economic effects"}
+{"at":"2026-09-29T07:58:45.262Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > rejects mismatched expiresAt with no key/economic effects","state":"passed"}
+{"at":"2026-09-29T07:58:45.264Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > rejects mismatched quotePublicId with no key/economic effects"}
+{"at":"2026-09-29T07:58:45.267Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > rejects mismatched quotePublicId with no key/economic effects","state":"passed"}
+{"at":"2026-09-29T07:58:45.460Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > validates missing authorization"}
+{"at":"2026-09-29T07:58:45.463Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > validates missing authorization","state":"passed"}
+{"at":"2026-09-29T07:58:45.466Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > validates null authorization"}
+{"at":"2026-09-29T07:58:45.469Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > validates null authorization","state":"passed"}
+{"at":"2026-09-29T07:58:45.569Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > validates extra authorization"}
+{"at":"2026-09-29T07:58:45.572Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > validates extra authorization","state":"passed"}
+{"at":"2026-09-29T07:58:45.669Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > validates future authorization"}
+{"at":"2026-09-29T07:58:45.790Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > validates future authorization","state":"passed"}
+{"at":"2026-09-29T07:58:45.794Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > validates before authorization"}
+{"at":"2026-09-29T07:58:45.891Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > validates before authorization","state":"passed"}
+{"at":"2026-09-29T07:58:45.895Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > validates no-key authorization"}
+{"at":"2026-09-29T07:58:45.899Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > validates no-key authorization","state":"passed"}
+{"at":"2026-09-29T07:58:46.060Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > requires owner and scope and valid token on new acceptance and replay"}
+{"at":"2026-09-29T07:58:46.063Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > requires owner and scope and valid token on new acceptance and replay","state":"passed"}
+{"at":"2026-09-29T07:58:46.244Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > flag off blocks first acceptance; lost response replay remains available after cancel and never reopens"}
+{"at":"2026-09-29T07:58:46.248Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > flag off blocks first acceptance; lost response replay remains available after cancel and never reopens","state":"passed"}
+{"at":"2026-09-29T07:58:46.359Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > same key concurrent attempts replay one result; incompatible body and namespace conflict"}
+{"at":"2026-09-29T07:58:46.485Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > same key concurrent attempts replay one result; incompatible body and namespace conflict","state":"passed"}
+{"at":"2026-09-29T07:58:46.588Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > different keys concurrent: one winner, other keys rolled back"}
+{"at":"2026-09-29T07:58:46.699Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > different keys concurrent: one winner, other keys rolled back","state":"passed"}
+{"at":"2026-09-29T07:58:46.800Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > cancel wins MDR lock: acceptance fails, repeated cancellation retains original timestamp"}
+{"at":"2026-09-29T07:58:46.997Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > cancel wins MDR lock: acceptance fails, repeated cancellation retains original timestamp","state":"passed"}
+{"at":"2026-09-29T07:58:47.000Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > both live accept/cancel requests serialize without leaving dispatch operational"}
+{"at":"2026-09-29T07:58:47.146Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > both live accept/cancel requests serialize without leaving dispatch operational","state":"passed"}
+{"at":"2026-09-29T07:58:47.150Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > TTL is rechecked after MDR lock; expired converted request can be cancelled"}
+{"at":"2026-09-29T07:58:48.992Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > TTL is rechecked after MDR lock; expired converted request can be cancelled","state":"passed"}
+{"at":"2026-09-29T07:58:50.906Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > replay after natural expiry returns same accepted result"}
+{"at":"2026-09-29T07:58:50.910Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > replay after natural expiry returns same accepted result","state":"passed"}
+{"at":"2026-09-29T07:58:51.008Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > revocation committed before credential lock rejects without effects"}
+{"at":"2026-09-29T07:58:51.135Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > revocation committed before credential lock rejects without effects","state":"passed"}
+{"at":"2026-09-29T07:58:51.139Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > missing credit policy rolls back evidence, key, quote and dispatch"}
+{"at":"2026-09-29T07:58:51.290Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > missing credit policy rolls back evidence, key, quote and dispatch","state":"passed"}
+{"at":"2026-09-29T07:58:51.294Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > SQL denies direct accept and forged dispatch without authorized evidence with exact error"}
+{"at":"2026-09-29T07:58:51.299Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > SQL denies direct accept and forged dispatch without authorized evidence with exact error","state":"passed"}
+{"at":"2026-09-29T07:58:51.413Z","event":"start","name":"C3 authorized acceptance, real isolated PostgreSQL > SQL rejects orphan C key, and immutable record/key edits/deletes after acceptance"}
+{"at":"2026-09-29T07:58:51.416Z","event":"finish","name":"C3 authorized acceptance, real isolated PostgreSQL > SQL rejects orphan C key, and immutable record/key edits/deletes after acceptance","state":"passed"}
+{"at":"2026-09-29T07:58:51.781Z","event":"start","name":"C3 controlled operational and transactional barriers > completion wins concurrent completion/cancel: no reopened dispatch and delivered state prevails"}
+{"at":"2026-09-29T07:58:51.784Z","event":"finish","name":"C3 controlled operational and transactional barriers > completion wins concurrent completion/cancel: no reopened dispatch and delivered state prevails","state":"passed"}
+{"at":"2026-09-29T07:58:52.163Z","event":"start","name":"C3 controlled operational and transactional barriers > cancel wins concurrent completion/cancel: no reopened dispatch and delivered state prevails"}
+{"at":"2026-09-29T07:58:52.167Z","event":"finish","name":"C3 controlled operational and transactional barriers > cancel wins concurrent completion/cancel: no reopened dispatch and delivered state prevails","state":"passed"}
+{"at":"2026-09-29T07:58:52.266Z","event":"start","name":"C3 controlled operational and transactional barriers > controlled failure after evidence/MQ/Dispatch mutation rolls back everything"}
+{"at":"2026-09-29T07:58:52.437Z","event":"finish","name":"C3 controlled operational and transactional barriers > controlled failure after evidence/MQ/Dispatch mutation rolls back everything","state":"passed"}
+{"at":"2026-09-29T07:58:52.441Z","event":"start","name":"C3 controlled operational and transactional barriers > credential scope removed while request waits is rejected on revalidation"}
+{"at":"2026-09-29T07:58:52.595Z","event":"finish","name":"C3 controlled operational and transactional barriers > credential scope removed while request waits is rejected on revalidation","state":"passed"}
+{"at":"2026-09-29T07:58:52.599Z","event":"start","name":"C3 SQL structural forgeries > rejects wrong-owner in structurally valid statements, exact guard failure"}
+{"at":"2026-09-29T07:58:52.607Z","event":"finish","name":"C3 SQL structural forgeries > rejects wrong-owner in structurally valid statements, exact guard failure","state":"passed"}
+{"at":"2026-09-29T07:58:52.783Z","event":"start","name":"C3 SQL structural forgeries > rejects wrong-quote in structurally valid statements, exact guard failure"}
+{"at":"2026-09-29T07:58:52.787Z","event":"finish","name":"C3 SQL structural forgeries > rejects wrong-quote in structurally valid statements, exact guard failure","state":"passed"}
+{"at":"2026-09-29T07:58:52.883Z","event":"start","name":"C3 SQL structural forgeries > rejects wrong-amount in structurally valid statements, exact guard failure"}
+{"at":"2026-09-29T07:58:52.887Z","event":"finish","name":"C3 SQL structural forgeries > rejects wrong-amount in structurally valid statements, exact guard failure","state":"passed"}
+{"at":"2026-09-29T07:58:52.890Z","event":"start","name":"C3 SQL structural forgeries > rejects no-dispatch in structurally valid statements, exact guard failure"}
+{"at":"2026-09-29T07:58:52.997Z","event":"finish","name":"C3 SQL structural forgeries > rejects no-dispatch in structurally valid statements, exact guard failure","state":"passed"}
+{"at":"2026-09-29T07:58:53.098Z","event":"start","name":"C3 final transaction deadline > expiry during snapshot persistence rolls back at deferred SQL validation with business code"}
+{"at":"2026-09-29T07:58:54.951Z","event":"finish","name":"C3 final transaction deadline > expiry during snapshot persistence rolls back at deferred SQL validation with business code","state":"passed"}
+{"at":"2026-09-29T07:58:55.070Z","event":"start","name":"C3 deterministic accept/cancel and administrative lock order > cancel transaction holds MDR first; concurrent accept sees terminal state after waiting"}
+{"at":"2026-09-29T07:58:55.074Z","event":"finish","name":"C3 deterministic accept/cancel and administrative lock order > cancel transaction holds MDR first; concurrent accept sees terminal state after waiting","state":"passed"}
+{"at":"2026-09-29T07:58:55.177Z","event":"start","name":"C3 deterministic accept/cancel and administrative lock order > accept holds MDR and credential first; concurrent cancel and revocation wait for its atomic commit"}
+{"at":"2026-09-29T07:58:55.355Z","event":"finish","name":"C3 deterministic accept/cancel and administrative lock order > accept holds MDR and credential first; concurrent cancel and revocation wait for its atomic commit","state":"passed"}
+{"at":"2026-09-29T07:58:55.362Z","event":"start","name":"C3 real integration and two application boundaries > real token endpoint and distinct pools; issue consumes exactly once, convert and accept consume zero"}
+{"at":"2026-09-29T07:58:55.479Z","event":"finish","name":"C3 real integration and two application boundaries > real token endpoint and distinct pools; issue consumes exactly once, convert and accept consume zero","state":"passed"}
+{"at":"2026-09-29T07:58:55.483Z","event":"start","name":"C3 real integration and two application boundaries > same-key collisions under an observed lock: another body, MQ and operation are exact conflicts"}
+{"at":"2026-09-29T07:58:55.629Z","event":"finish","name":"C3 real integration and two application boundaries > same-key collisions under an observed lock: another body, MQ and operation are exact conflicts","state":"passed"}
+{"at":"2026-09-29T07:58:58.435Z","event":"start","name":"C3 real integration and two application boundaries > own unknown quote and foreign quote have indistinguishable error envelopes"}
+{"at":"2026-09-29T07:58:58.441Z","event":"finish","name":"C3 real integration and two application boundaries > own unknown quote and foreign quote have indistinguishable error envelopes","state":"passed"}
+{"at":"2026-09-29T07:58:58.446Z","event":"start","name":"C3 real integration and two application boundaries > credential-expiry crossing request lock fails with exact 401 and rollback"}
+{"at":"2026-09-29T07:58:58.452Z","event":"finish","name":"C3 real integration and two application boundaries > credential-expiry crossing request lock fails with exact 401 and rollback","state":"passed"}
+{"at":"2026-09-29T07:58:58.536Z","event":"start","name":"C3 real integration and two application boundaries > token-expiry crossing request lock fails with exact 401 and rollback"}
+{"at":"2026-09-29T07:59:01.176Z","event":"finish","name":"C3 real integration and two application boundaries > token-expiry crossing request lock fails with exact 401 and rollback","state":"passed"}
+{"at":"2026-09-29T07:59:07.024Z","event":"start","name":"C3 real integration and two application boundaries > suspension commits first while accept waits on parent: no effects; replay also requires current auth"}
+{"at":"2026-09-29T07:59:07.027Z","event":"finish","name":"C3 real integration and two application boundaries > suspension commits first while accept waits on parent: no effects; replay also requires current auth","state":"passed"}
+{"at":"2026-09-29T07:59:07.031Z","event":"start","name":"C3 real integration and two application boundaries > transient transaction timeout is exact and another instance can recover same intention"}
+{"at":"2026-09-29T07:59:07.036Z","event":"finish","name":"C3 real integration and two application boundaries > transient transaction timeout is exact and another instance can recover same intention","state":"passed"}
+{"at":"2026-09-29T07:59:07.127Z","event":"start","name":"C3 real integration and two application boundaries > post-commit response load failure returns 500; other app replay recovers same graph"}
+{"at":"2026-09-29T07:59:07.132Z","event":"finish","name":"C3 real integration and two application boundaries > post-commit response load failure returns 500; other app replay recovers same graph","state":"passed"}
+{"at":"2026-09-29T07:59:07.241Z","event":"start","name":"C3 real integration and two application boundaries > already EXPIRED converted quote cancels definitively without releasing MPQ"}
+{"at":"2026-09-29T07:59:09.025Z","event":"finish","name":"C3 real integration and two application boundaries > already EXPIRED converted quote cancels definitively without releasing MPQ","state":"passed"}
+{"at":"2026-09-29T07:59:09.185Z","event":"start","name":"C3 real integration and two application boundaries > same externalReference legitimately produces different resources; no uniqueness guarantee for orders"}
+{"at":"2026-09-29T07:59:09.191Z","event":"finish","name":"C3 real integration and two application boundaries > same externalReference legitimately produces different resources; no uniqueness guarantee for orders","state":"passed"}
+{"at":"2026-09-29T07:59:09.350Z","event":"start","name":"C3 SQL attacks and trust boundary > savepoint attack tuple after immediate validation is rejected; valid result survives"}
+{"at":"2026-09-29T07:59:09.354Z","event":"finish","name":"C3 SQL attacks and trust boundary > savepoint attack tuple after immediate validation is rejected; valid result survives","state":"passed"}
+{"at":"2026-09-29T07:59:09.511Z","event":"start","name":"C3 SQL attacks and trust boundary > savepoint attack expiry after immediate validation is rejected; valid result survives"}
+{"at":"2026-09-29T07:59:09.515Z","event":"finish","name":"C3 SQL attacks and trust boundary > savepoint attack expiry after immediate validation is rejected; valid result survives","state":"passed"}
+{"at":"2026-09-29T07:59:09.613Z","event":"start","name":"C3 SQL attacks and trust boundary > savepoint attack key after immediate validation is rejected; valid result survives"}
+{"at":"2026-09-29T07:59:09.764Z","event":"finish","name":"C3 SQL attacks and trust boundary > savepoint attack key after immediate validation is rejected; valid result survives","state":"passed"}
+{"at":"2026-09-29T07:59:09.769Z","event":"start","name":"C3 SQL attacks and trust boundary > savepoint attack evidence-delete after immediate validation is rejected; valid result survives"}
+{"at":"2026-09-29T07:59:09.917Z","event":"finish","name":"C3 SQL attacks and trust boundary > savepoint attack evidence-delete after immediate validation is rejected; valid result survives","state":"passed"}
+{"at":"2026-09-29T07:59:09.922Z","event":"start","name":"C3 SQL attacks and trust boundary > savepoint attack dispatch-reparent after immediate validation is rejected; valid result survives"}
+{"at":"2026-09-29T07:59:10.061Z","event":"finish","name":"C3 SQL attacks and trust boundary > savepoint attack dispatch-reparent after immediate validation is rejected; valid result survives","state":"passed"}
+{"at":"2026-09-29T07:59:10.065Z","event":"start","name":"C3 SQL attacks and trust boundary > savepoint attack quote-revert after immediate validation is rejected; valid result survives"}
+{"at":"2026-09-29T07:59:10.224Z","event":"finish","name":"C3 SQL attacks and trust boundary > savepoint attack quote-revert after immediate validation is rejected; valid result survives","state":"passed"}
+{"at":"2026-09-29T07:59:10.229Z","event":"start","name":"C3 SQL attacks and trust boundary > savepoint attack snapshot after immediate validation is rejected; valid result survives"}
+{"at":"2026-09-29T07:59:10.379Z","event":"finish","name":"C3 SQL attacks and trust boundary > savepoint attack snapshot after immediate validation is rejected; valid result survives","state":"passed"}
+{"at":"2026-09-29T07:59:10.383Z","event":"start","name":"C3 SQL attacks and trust boundary > SET CONSTRAINTS IMMEDIATE before graph construction rejects the orphan key"}
+{"at":"2026-09-29T07:59:10.388Z","event":"finish","name":"C3 SQL attacks and trust boundary > SET CONSTRAINTS IMMEDIATE before graph construction rejects the orphan key","state":"passed"}
+{"at":"2026-09-29T07:59:10.393Z","event":"start","name":"C3 SQL attacks and trust boundary > documented temporal limit: direct writer validates complete graph early and commits after expiry without changing it"}
+{"at":"2026-09-29T07:59:12.229Z","event":"finish","name":"C3 SQL attacks and trust boundary > documented temporal limit: direct writer validates complete graph early and commits after expiry without changing it","state":"passed"}
+{"at":"2026-09-29T07:59:12.415Z","event":"start","name":"C3 SQL attacks and trust boundary > adoption of previously existing dispatch is rejected by exact destination guard"}
+{"at":"2026-09-29T07:59:12.419Z","event":"finish","name":"C3 SQL attacks and trust boundary > adoption of previously existing dispatch is rejected by exact destination guard","state":"passed"}
+{"at":"2026-09-29T07:59:12.517Z","event":"start","name":"C3 SQL attacks and trust boundary > SQL cross-owner evidence with corresponding key still rejects owner linkage"}
+{"at":"2026-09-29T07:59:12.521Z","event":"finish","name":"C3 SQL attacks and trust boundary > SQL cross-owner evidence with corresponding key still rejects owner linkage","state":"passed"}
+{"at":"2026-09-29T07:59:12.525Z","event":"start","name":"C3 compatibility with pre-C revision on new schema > previous backend reads and cancels authorized history but its accept barrier prevents C replay"}
+{"at":"2026-09-29T07:59:14.482Z","event":"finish","name":"C3 compatibility with pre-C revision on new schema > previous backend reads and cancels authorized history but its accept barrier prevents C replay","state":"passed"}
+{"at":"2026-09-29T07:59:14.625Z","event":"start","name":"C3 failpoints and historical operation > controlled failure at AuthorizedQuoteAcceptance leaves no partial graph"}
+{"at":"2026-09-29T07:59:14.629Z","event":"finish","name":"C3 failpoints and historical operation > controlled failure at AuthorizedQuoteAcceptance leaves no partial graph","state":"passed"}
+{"at":"2026-09-29T07:59:14.770Z","event":"start","name":"C3 failpoints and historical operation > controlled failure at DeliveryQuote leaves no partial graph"}
+{"at":"2026-09-29T07:59:14.775Z","event":"finish","name":"C3 failpoints and historical operation > controlled failure at DeliveryQuote leaves no partial graph","state":"passed"}
+{"at":"2026-09-29T07:59:14.916Z","event":"start","name":"C3 failpoints and historical operation > controlled failure at Dispatch leaves no partial graph"}
+{"at":"2026-09-29T07:59:14.920Z","event":"finish","name":"C3 failpoints and historical operation > controlled failure at Dispatch leaves no partial graph","state":"passed"}
+{"at":"2026-09-29T07:59:15.059Z","event":"start","name":"C3 failpoints and historical operation > controlled failure at DispatchCandidate leaves no partial graph"}
+{"at":"2026-09-29T07:59:15.066Z","event":"finish","name":"C3 failpoints and historical operation > controlled failure at DispatchCandidate leaves no partial graph","state":"passed"}
+{"at":"2026-09-29T07:59:17.482Z","event":"start","name":"C3 failpoints and historical operation > executor can complete history after original quote expiry, B2B revocation and flag off"}
+{"at":"2026-09-29T07:59:17.487Z","event":"finish","name":"C3 failpoints and historical operation > executor can complete history after original quote expiry, B2B revocation and flag off","state":"passed"}

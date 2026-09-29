@@ -20,6 +20,7 @@ import { IndependentDriversModule } from './independent-drivers/independent-driv
 import { CreditsModule } from './credits/credits.module.js';
 import { CreditPoliciesModule } from './credit-policies/credit-policies.module.js';
 import { B2bWebhooksModule } from './b2b-webhooks/b2b-webhooks.module.js';
+import { PrequotesModule } from './delivery-prequotes/prequotes.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
@@ -41,6 +42,7 @@ import { B2bWebhooksModule } from './b2b-webhooks/b2b-webhooks.module.js';
     CreditsModule,
     CreditPoliciesModule,
     B2bWebhooksModule,
+    PrequotesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

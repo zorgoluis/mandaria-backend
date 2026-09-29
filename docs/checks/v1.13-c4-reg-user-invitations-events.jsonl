@@ -1,0 +1,48 @@
+{"at":"2026-09-29T08:04:13.410Z","event":"start","name":"Provisioning flows (real login, FakeMailProvider) > SUPER_ADMIN invites a PROVIDER_ADMIN: INVITED user, hashed single token, emailed link"}
+{"at":"2026-09-29T08:04:13.415Z","event":"finish","name":"Provisioning flows (real login, FakeMailProvider) > SUPER_ADMIN invites a PROVIDER_ADMIN: INVITED user, hashed single token, emailed link","state":"passed"}
+{"at":"2026-09-29T08:04:13.418Z","event":"start","name":"Provisioning flows (real login, FakeMailProvider) > activation stores an Argon2id password and creates the membership in one step"}
+{"at":"2026-09-29T08:04:13.422Z","event":"finish","name":"Provisioning flows (real login, FakeMailProvider) > activation stores an Argon2id password and creates the membership in one step","state":"passed"}
+{"at":"2026-09-29T08:04:13.510Z","event":"start","name":"Provisioning flows (real login, FakeMailProvider) > the activated PROVIDER_ADMIN logs in normally: me, own provider, 403 elsewhere, refresh, logout"}
+{"at":"2026-09-29T08:04:13.514Z","event":"finish","name":"Provisioning flows (real login, FakeMailProvider) > the activated PROVIDER_ADMIN logs in normally: me, own provider, 403 elsewhere, refresh, logout","state":"passed"}
+{"at":"2026-09-29T08:04:13.757Z","event":"start","name":"Provisioning flows (real login, FakeMailProvider) > the same token cannot be used twice"}
+{"at":"2026-09-29T08:04:13.760Z","event":"finish","name":"Provisioning flows (real login, FakeMailProvider) > the same token cannot be used twice","state":"passed"}
+{"at":"2026-09-29T08:04:13.763Z","event":"start","name":"Provisioning flows (real login, FakeMailProvider) > PROVIDER_ADMIN A invites a DRIVER to Provider A; the payload cannot pick role or provider"}
+{"at":"2026-09-29T08:04:13.766Z","event":"finish","name":"Provisioning flows (real login, FakeMailProvider) > PROVIDER_ADMIN A invites a DRIVER to Provider A; the payload cannot pick role or provider","state":"passed"}
+{"at":"2026-09-29T08:04:13.769Z","event":"start","name":"Provisioning flows (real login, FakeMailProvider) > the DRIVER activates, logs in and resolves its Driver profile in Provider A"}
+{"at":"2026-09-29T08:04:13.772Z","event":"finish","name":"Provisioning flows (real login, FakeMailProvider) > the DRIVER activates, logs in and resolves its Driver profile in Provider A","state":"passed"}
+{"at":"2026-09-29T08:04:14.003Z","event":"start","name":"Role matrix and provider isolation > Admin A → Provider A ✅ / Provider B ❌; Admin B → Provider B ✅ / Provider A ❌"}
+{"at":"2026-09-29T08:04:14.006Z","event":"finish","name":"Role matrix and provider isolation > Admin A → Provider A ✅ / Provider B ❌; Admin B → Provider B ✅ / Provider A ❌","state":"passed"}
+{"at":"2026-09-29T08:04:14.113Z","event":"start","name":"Role matrix and provider isolation > PROVIDER_ADMIN sees and manages only DRIVER invitations of its own provider"}
+{"at":"2026-09-29T08:04:14.116Z","event":"finish","name":"Role matrix and provider isolation > PROVIDER_ADMIN sees and manages only DRIVER invitations of its own provider","state":"passed"}
+{"at":"2026-09-29T08:04:14.119Z","event":"start","name":"Role matrix and provider isolation > DRIVER and PROVIDER_ADMIN cannot use SUPER_ADMIN invitation routes; admins without membership are refused"}
+{"at":"2026-09-29T08:04:14.282Z","event":"finish","name":"Role matrix and provider isolation > DRIVER and PROVIDER_ADMIN cannot use SUPER_ADMIN invitation routes; admins without membership are refused","state":"passed"}
+{"at":"2026-09-29T08:04:14.285Z","event":"start","name":"Role matrix and provider isolation > IntegrationClient credentials cannot invite, list, resend, revoke or read users"}
+{"at":"2026-09-29T08:04:14.289Z","event":"finish","name":"Role matrix and provider isolation > IntegrationClient credentials cannot invite, list, resend, revoke or read users","state":"passed"}
+{"at":"2026-09-29T08:04:14.479Z","event":"start","name":"Invitation lifecycle and negative cases > expired token is rejected without activating; resend rotates the token and reopens activation"}
+{"at":"2026-09-29T08:04:14.589Z","event":"finish","name":"Invitation lifecycle and negative cases > expired token is rejected without activating; resend rotates the token and reopens activation","state":"passed"}
+{"at":"2026-09-29T08:04:14.594Z","event":"start","name":"Invitation lifecycle and negative cases > revoked token is rejected; revoke is idempotent and the email can be invited again without a second User"}
+{"at":"2026-09-29T08:04:14.598Z","event":"finish","name":"Invitation lifecycle and negative cases > revoked token is rejected; revoke is idempotent and the email can be invited again without a second User","state":"passed"}
+{"at":"2026-09-29T08:04:14.690Z","event":"start","name":"Invitation lifecycle and negative cases > rejects duplicate pending, ACTIVE and DISABLED emails without creating users"}
+{"at":"2026-09-29T08:04:14.875Z","event":"finish","name":"Invitation lifecycle and negative cases > rejects duplicate pending, ACTIVE and DISABLED emails without creating users","state":"passed"}
+{"at":"2026-09-29T08:04:14.879Z","event":"start","name":"Invitation lifecycle and negative cases > keeps the invitation when email delivery fails so it can be resent"}
+{"at":"2026-09-29T08:04:14.883Z","event":"finish","name":"Invitation lifecycle and negative cases > keeps the invitation when email delivery fails so it can be resent","state":"passed"}
+{"at":"2026-09-29T08:04:14.887Z","event":"start","name":"Invitation lifecycle and negative cases > pending DRIVER invitations reserve maxDrivers seats"}
+{"at":"2026-09-29T08:04:14.890Z","event":"finish","name":"Invitation lifecycle and negative cases > pending DRIVER invitations reserve maxDrivers seats","state":"passed"}
+{"at":"2026-09-29T08:04:15.028Z","event":"start","name":"Validation and public activation hardening > validates roles and role-specific fields"}
+{"at":"2026-09-29T08:04:15.032Z","event":"finish","name":"Validation and public activation hardening > validates roles and role-specific fields","state":"passed"}
+{"at":"2026-09-29T08:04:15.129Z","event":"start","name":"Validation and public activation hardening > INVITED accounts cannot log in and get exactly the error of a wrong password"}
+{"at":"2026-09-29T08:04:15.262Z","event":"finish","name":"Validation and public activation hardening > INVITED accounts cannot log in and get exactly the error of a wrong password","state":"passed"}
+{"at":"2026-09-29T08:04:15.267Z","event":"start","name":"Validation and public activation hardening > rejects unknown tokens and passwords outside the 16-128 policy without side effects"}
+{"at":"2026-09-29T08:04:15.371Z","event":"finish","name":"Validation and public activation hardening > rejects unknown tokens and passwords outside the 16-128 policy without side effects","state":"passed"}
+{"at":"2026-09-29T08:04:15.568Z","event":"start","name":"Concurrency > 20 simultaneous invitations for one email create one User and one valid invitation (both routes)"}
+{"at":"2026-09-29T08:04:15.803Z","event":"finish","name":"Concurrency > 20 simultaneous invitations for one email create one User and one valid invitation (both routes)","state":"passed"}
+{"at":"2026-09-29T08:04:15.916Z","event":"start","name":"Concurrency > simultaneous resends rotate the token exactly once"}
+{"at":"2026-09-29T08:04:15.921Z","event":"finish","name":"Concurrency > simultaneous resends rotate the token exactly once","state":"passed"}
+{"at":"2026-09-29T08:04:15.929Z","event":"start","name":"Concurrency > simultaneous activations of one token: one success, every other attempt rejected"}
+{"at":"2026-09-29T08:04:16.092Z","event":"finish","name":"Concurrency > simultaneous activations of one token: one success, every other attempt rejected","state":"passed"}
+{"at":"2026-09-29T08:04:16.397Z","event":"start","name":"Rate limits > throttles activation (10/min), invitation creation (20/min) and resend (10/min) per IP"}
+{"at":"2026-09-29T08:04:16.506Z","event":"finish","name":"Rate limits > throttles activation (10/min), invitation creation (20/min) and resend (10/min) per IP","state":"passed"}
+{"at":"2026-09-29T08:04:16.510Z","event":"start","name":"Database invariants > rejects active users without password, a second PENDING invitation and edits of resolved invitations"}
+{"at":"2026-09-29T08:04:16.514Z","event":"finish","name":"Database invariants > rejects active users without password, a second PENDING invitation and edits of resolved invitations","state":"passed"}
+{"at":"2026-09-29T08:04:16.548Z","event":"start","name":"Audit > records provisioning events without tokens, hashes, passwords, emails or JWTs"}
+{"at":"2026-09-29T08:04:16.552Z","event":"finish","name":"Audit > records provisioning events without tokens, hashes, passwords, emails or JWTs","state":"passed"}

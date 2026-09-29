@@ -1,0 +1,27 @@
+[Nest] 46276  - 29/09/2026, 9:37:55 a.m.     LOG [DriversService] Object(6) {
+  event: 'DRIVER_STATUS_CHANGED',
+  providerId: 'p',
+  driverId: 'd',
+  actorId: 'a',
+  from: 'ACTIVE',
+  to: 'SUSPENDED'
+}
+[Nest] 46276  - 29/09/2026, 9:37:55 a.m.     LOG [DriversService] Object(7) {
+  event: 'DRIVER_AVAILABILITY_CHANGED',
+  providerId: 'p',
+  driverId: 'd',
+  actorId: 'a',
+  from: 'AVAILABLE',
+  to: 'OFFLINE',
+  reason: 'DRIVER_NOT_ACTIVE'
+}
+[Nest] 46276  - 29/09/2026, 9:37:55 a.m.     LOG [DriversService] Object(6) {
+  event: 'DRIVER_AVAILABILITY_CHANGED',
+  providerId: 'p',
+  driverId: 'd',
+  actorId: 'u',
+  from: 'OFFLINE',
+  to: 'AVAILABLE'
+}
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-d-units-logistics.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

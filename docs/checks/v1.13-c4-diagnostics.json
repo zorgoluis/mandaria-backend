@@ -1,0 +1,40 @@
+{
+  "attempts": [
+    {
+      "file": "b2b-delivery-status",
+      "database": "mandaria_c4_reg_bcfc4211e5c4_test",
+      "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/c4/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/b2b-delivery-status.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/v1.13-c4-diag-b2b-delivery-status.json",
+      "startedAt": "2026-09-29T08:04:48.481Z",
+      "endedAt": "2026-09-29T08:04:57.863Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c4-diag-b2b-delivery-status.json",
+      "log": "docs/checks/v1.13-c4-diag-b2b-delivery-status.txt",
+      "observer": "docs/checks/v1.13-c4-diag-b2b-delivery-status-events.jsonl"
+    },
+    {
+      "file": "b2b-webhooks",
+      "database": "mandaria_c4_reg_ed33db48610c_test",
+      "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/c4/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/b2b-webhooks.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/v1.13-c4-diag-b2b-webhooks.json",
+      "startedAt": "2026-09-29T08:04:57.869Z",
+      "endedAt": "2026-09-29T08:05:27.361Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c4-diag-b2b-webhooks.json",
+      "log": "docs/checks/v1.13-c4-diag-b2b-webhooks.txt",
+      "observer": "docs/checks/v1.13-c4-diag-b2b-webhooks-events.jsonl"
+    },
+    {
+      "file": "delivery-requests-b2b",
+      "database": "mandaria_c4_reg_02b867eb3058_test",
+      "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/c4/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-requests-b2b.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/v1.13-c4-diag-delivery-requests-b2b.json",
+      "startedAt": "2026-09-29T08:05:27.364Z",
+      "endedAt": "2026-09-29T08:05:36.710Z",
+      "exit": 3221226505,
+      "signal": null,
+      "report": "docs/checks/v1.13-c4-diag-delivery-requests-b2b.json",
+      "log": "docs/checks/v1.13-c4-diag-delivery-requests-b2b.txt",
+      "observer": "docs/checks/v1.13-c4-diag-delivery-requests-b2b-events.jsonl"
+    }
+  ]
+}

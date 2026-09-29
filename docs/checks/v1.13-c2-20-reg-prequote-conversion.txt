@@ -1,0 +1,16 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/prequote-conversion.e2e-spec.ts (39 tests) 10169ms
+     ✓ expired MPQ fails; committed conversion survives expiry  2218ms
+     ✓ expiry while waiting for MPQ lock rejects without destination  1351ms
+     ✓ expiry during construction rejected by real deferred constraint  1356ms
+     ✓ independent Nest instances share one conversion result  334ms
+
+ Test Files  1 passed (1)
+      Tests  39 passed (39)
+   Start at  00:51:33
+   Duration  11.13s (transform 1.07s, setup 0ms, import 781ms, tests 10.17s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-prequote-conversion.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

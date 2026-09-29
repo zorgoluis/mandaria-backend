@@ -1,0 +1,33 @@
+{"at":"2026-09-29T07:57:03.721Z","event":"start","name":"V1.12-A a B2B client can observe its own delivery > reports every public state of a provider service, ending in DELIVERED"}
+{"at":"2026-09-29T07:57:03.943Z","event":"finish","name":"V1.12-A a B2B client can observe its own delivery > reports every public state of a provider service, ending in DELIVERED","state":"passed"}
+{"at":"2026-09-29T07:57:04.044Z","event":"start","name":"V1.12-A a B2B client can observe its own delivery > reports an independent delivery with the same public shape"}
+{"at":"2026-09-29T07:57:04.153Z","event":"finish","name":"V1.12-A a B2B client can observe its own delivery > reports an independent delivery with the same public shape","state":"passed"}
+{"at":"2026-09-29T07:57:04.157Z","event":"start","name":"V1.12-A a B2B client can observe its own delivery > a request with no accepted quote is REQUESTED, never a 500"}
+{"at":"2026-09-29T07:57:04.159Z","event":"finish","name":"V1.12-A a B2B client can observe its own delivery > a request with no accepted quote is REQUESTED, never a 500","state":"passed"}
+{"at":"2026-09-29T07:57:04.335Z","event":"start","name":"V1.12-A a B2B client can observe its own delivery > a cancelled request reads as CANCELLED with its timestamp"}
+{"at":"2026-09-29T07:57:04.339Z","event":"finish","name":"V1.12-A a B2B client can observe its own delivery > a cancelled request reads as CANCELLED with its timestamp","state":"passed"}
+{"at":"2026-09-29T07:57:04.343Z","event":"start","name":"V1.12-A a B2B client can observe its own delivery > a lapsed dispatch reads as EXPIRED, distinct from a cancellation"}
+{"at":"2026-09-29T07:57:04.347Z","event":"finish","name":"V1.12-A a B2B client can observe its own delivery > a lapsed dispatch reads as EXPIRED, distinct from a cancellation","state":"passed"}
+{"at":"2026-09-29T07:57:04.437Z","event":"start","name":"V1.12-A a B2B client can observe its own delivery > exposes only the public contract: no internal ids, no credits, no payment context"}
+{"at":"2026-09-29T07:57:04.617Z","event":"finish","name":"V1.12-A a B2B client can observe its own delivery > exposes only the public contract: no internal ids, no credits, no payment context","state":"passed"}
+{"at":"2026-09-29T07:57:04.809Z","event":"start","name":"V1.12-A ownership and authorization > another IntegrationClient gets a 404 indistinguishable from a request that does not exist"}
+{"at":"2026-09-29T07:57:04.986Z","event":"finish","name":"V1.12-A ownership and authorization > another IntegrationClient gets a 404 indistinguishable from a request that does not exist","state":"passed"}
+{"at":"2026-09-29T07:57:04.990Z","event":"start","name":"V1.12-A ownership and authorization > an unknown request of my own answers with the same rejection"}
+{"at":"2026-09-29T07:57:04.993Z","event":"finish","name":"V1.12-A ownership and authorization > an unknown request of my own answers with the same rejection","state":"passed"}
+{"at":"2026-09-29T07:57:04.996Z","event":"start","name":"V1.12-A ownership and authorization > human and missing credentials cannot read the B2B status"}
+{"at":"2026-09-29T07:57:05.090Z","event":"finish","name":"V1.12-A ownership and authorization > human and missing credentials cannot read the B2B status","state":"passed"}
+{"at":"2026-09-29T07:57:05.095Z","event":"start","name":"V1.12-A ownership and authorization > a token without deliveries:read cannot read the status"}
+{"at":"2026-09-29T07:57:05.205Z","event":"finish","name":"V1.12-A ownership and authorization > a token without deliveries:read cannot read the status","state":"passed"}
+{"at":"2026-09-29T07:57:05.209Z","event":"start","name":"V1.12-A ownership and authorization > a B2B client has no way to move the delivery itself"}
+{"at":"2026-09-29T07:57:05.212Z","event":"finish","name":"V1.12-A ownership and authorization > a B2B client has no way to move the delivery itself","state":"passed"}
+{"at":"2026-09-29T07:57:05.513Z","event":"start","name":"V1.12-A reading has no consequences > repeated reads change nothing: no economy, no dispatch, no assignment, no routing"}
+{"at":"2026-09-29T07:57:05.840Z","event":"finish","name":"V1.12-A reading has no consequences > repeated reads change nothing: no economy, no dispatch, no assignment, no routing","state":"passed"}
+{"at":"2026-09-29T07:57:06.269Z","event":"start","name":"V1.12-A reading has no consequences > many simultaneous reads are safe and agree with each other"}
+{"at":"2026-09-29T07:57:06.272Z","event":"finish","name":"V1.12-A reading has no consequences > many simultaneous reads are safe and agree with each other","state":"passed"}
+{"at":"2026-09-29T07:57:06.380Z","event":"start","name":"V1.12-A reading has no consequences > a read racing the delivery is coherent: never DELIVERED without its timestamp"}
+{"at":"2026-09-29T07:57:06.543Z","event":"finish","name":"V1.12-A reading has no consequences > a read racing the delivery is coherent: never DELIVERED without its timestamp","state":"passed"}
+{"at":"2026-09-29T07:57:06.844Z","event":"start","name":"V1.12-G public execution identity CHECK > rejects a forged Outbox identity and rolls back the entire completion including its snapshot"}
+{"at":"2026-09-29T07:57:06.953Z","event":"finish","name":"V1.12-G public execution identity CHECK > rejects a forged Outbox identity and rolls back the entire completion including its snapshot","state":"passed"}
+{"at":"2026-09-29T07:57:07.055Z","event":"start","name":"V1.12-G public execution identity CHECK > configures only explicit public names, validates them and preserves provider isolation"}
+{"at":"2026-09-29T07:57:07.058Z","event":"finish","name":"V1.12-G public execution identity CHECK > configures only explicit public names, validates them and preserves provider isolation","state":"passed"}
+{"at":"2026-09-29T07:57:07.061Z","event":"start","name":"V1.12-G public execution identity CHECK > claim, assignment, reassignment, completion and later profile changes preserve the right identity"}

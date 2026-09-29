@@ -1,0 +1,34 @@
+{"at":"2026-09-29T07:57:16.829Z","event":"start","name":"V1.12-B a completed delivery records its B2B event > a provider delivery writes exactly one delivery.completed, owned by the right client"}
+{"at":"2026-09-29T07:57:17.116Z","event":"finish","name":"V1.12-B a completed delivery records its B2B event > a provider delivery writes exactly one delivery.completed, owned by the right client","state":"passed"}
+{"at":"2026-09-29T07:57:17.220Z","event":"start","name":"V1.12-B a completed delivery records its B2B event > an independent delivery records the same event with INDEPENDENT execution"}
+{"at":"2026-09-29T07:57:17.333Z","event":"finish","name":"V1.12-B a completed delivery records its B2B event > an independent delivery records the same event with INDEPENDENT execution","state":"passed"}
+{"at":"2026-09-29T07:57:17.471Z","event":"start","name":"V1.12-B a completed delivery records its B2B event > the snapshot is exactly what the V1.12-A endpoint answers at that moment"}
+{"at":"2026-09-29T07:57:17.474Z","event":"finish","name":"V1.12-B a completed delivery records its B2B event > the snapshot is exactly what the V1.12-A endpoint answers at that moment","state":"passed"}
+{"at":"2026-09-29T07:57:17.615Z","event":"start","name":"V1.12-B a completed delivery records its B2B event > the payload carries no internal identifier of any kind"}
+{"at":"2026-09-29T07:57:17.619Z","event":"finish","name":"V1.12-B a completed delivery records its B2B event > the payload carries no internal identifier of any kind","state":"passed"}
+{"at":"2026-09-29T07:57:17.718Z","event":"start","name":"V1.12-B a completed delivery records its B2B event > the event outlives the process: it is in PostgreSQL, not in memory"}
+{"at":"2026-09-29T07:57:17.972Z","event":"finish","name":"V1.12-B a completed delivery records its B2B event > the event outlives the process: it is in PostgreSQL, not in memory","state":"passed"}
+{"at":"2026-09-29T07:57:18.244Z","event":"start","name":"V1.12-B a completed delivery records its B2B event > the snapshot is frozen: later legitimate changes to the request do not touch it"}
+{"at":"2026-09-29T07:57:18.248Z","event":"finish","name":"V1.12-B a completed delivery records its B2B event > the snapshot is frozen: later legitimate changes to the request do not touch it","state":"passed"}
+{"at":"2026-09-29T07:57:18.559Z","event":"start","name":"V1.12-B one delivery, one event > repeating deliver keeps one event with the identical payload"}
+{"at":"2026-09-29T07:57:18.738Z","event":"finish","name":"V1.12-B one delivery, one event > repeating deliver keeps one event with the identical payload","state":"passed"}
+{"at":"2026-09-29T07:57:18.838Z","event":"start","name":"V1.12-B one delivery, one event > ten simultaneous provider completions produce one transition and one event"}
+{"at":"2026-09-29T07:57:19.060Z","event":"finish","name":"V1.12-B one delivery, one event > ten simultaneous provider completions produce one transition and one event","state":"passed"}
+{"at":"2026-09-29T07:57:19.166Z","event":"start","name":"V1.12-B one delivery, one event > ten simultaneous independent completions produce one transition and one event"}
+{"at":"2026-09-29T07:57:19.273Z","event":"finish","name":"V1.12-B one delivery, one event > ten simultaneous independent completions produce one transition and one event","state":"passed"}
+{"at":"2026-09-29T07:57:19.590Z","event":"start","name":"V1.12-B the event and the delivery are the same commit > a failing event insert rolls the whole delivery back"}
+{"at":"2026-09-29T07:57:19.814Z","event":"finish","name":"V1.12-B the event and the delivery are the same commit > a failing event insert rolls the whole delivery back","state":"passed"}
+{"at":"2026-09-29T07:57:19.914Z","event":"start","name":"V1.12-B the event and the delivery are the same commit > PostgreSQL refuses a new DELIVERED that carries no event"}
+{"at":"2026-09-29T07:57:20.106Z","event":"finish","name":"V1.12-B the event and the delivery are the same commit > PostgreSQL refuses a new DELIVERED that carries no event","state":"passed"}
+{"at":"2026-09-29T07:57:20.210Z","event":"start","name":"V1.12-B a recorded event is history > SQL cannot change its identity, its owner, its subject, its clock or its snapshot"}
+{"at":"2026-09-29T07:57:20.574Z","event":"finish","name":"V1.12-B a recorded event is history > SQL cannot change its identity, its owner, its subject, its clock or its snapshot","state":"passed"}
+{"at":"2026-09-29T07:57:20.734Z","event":"start","name":"V1.12-B a recorded event is history > SQL cannot record a second delivery.completed for the same delivery"}
+{"at":"2026-09-29T07:57:20.738Z","event":"finish","name":"V1.12-B a recorded event is history > SQL cannot record a second delivery.completed for the same delivery","state":"passed"}
+{"at":"2026-09-29T07:57:20.949Z","event":"start","name":"V1.12-B a recorded event is history > SQL cannot record an event for a delivery that is not being delivered right now"}
+{"at":"2026-09-29T07:57:20.954Z","event":"finish","name":"V1.12-B a recorded event is history > SQL cannot record an event for a delivery that is not being delivered right now","state":"passed"}
+{"at":"2026-09-29T07:57:20.959Z","event":"start","name":"V1.12-B a recorded event is history > SQL cannot attribute an event to a client that does not own the request"}
+{"at":"2026-09-29T07:57:20.964Z","event":"finish","name":"V1.12-B a recorded event is history > SQL cannot attribute an event to a client that does not own the request","state":"passed"}
+{"at":"2026-09-29T07:57:21.253Z","event":"start","name":"V1.12-B deliveries older than the outbox > a delivery completed before the boundary keeps no event and stays observable"}
+{"at":"2026-09-29T07:57:21.421Z","event":"finish","name":"V1.12-B deliveries older than the outbox > a delivery completed before the boundary keeps no event and stays observable","state":"passed"}
+{"at":"2026-09-29T07:57:21.595Z","event":"start","name":"V1.12-B deliveries older than the outbox > the integrity scan finds no violation across the whole database"}
+{"at":"2026-09-29T07:57:21.599Z","event":"finish","name":"V1.12-B deliveries older than the outbox > the integrity scan finds no violation across the whole database","state":"passed"}

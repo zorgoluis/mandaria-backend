@@ -1,0 +1,562 @@
+[
+  {
+    "database": "mandaria_c4_clean_7ea77a453d_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_upgrade_7ea77a453d_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 1,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_ef2d421047f1_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 4,
+    "zonesDisabled": 0,
+    "providersSuspended": 2,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 36,
+      "authorizations": 10,
+      "ledger": 5
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_e7858a43ec3c_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_bcfc4211e5c4_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_feed1d0a6aac_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_ed33db48610c_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_e5092ddd9bdb_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 1,
+    "zonesDisabled": 0,
+    "providersSuspended": 1,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 2,
+      "authorizations": 0,
+      "ledger": 2
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_7d336449679a_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 1,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 61,
+      "authorizations": 0,
+      "ledger": 2
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_d4ca759c663c_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 1,
+    "zonesDisabled": 1,
+    "providersSuspended": 1,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 25,
+      "authorizations": 0,
+      "ledger": 2
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_7967f7300c1d_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 6,
+    "zonesDisabled": 0,
+    "providersSuspended": 3,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 74,
+      "authorizations": 29,
+      "ledger": 7
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_5daeb44d3d0b_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 4,
+      "authorizations": 2,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_c55508d4335f_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_6deed4c50097_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_8c3ccc558a65_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_b3475fd91c55_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_863dc73f76b0_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_e6a753559b46_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_f9928162b1d8_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_5aeb86ff380d_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_02b867eb3058_test",
+    "credentialsRevoked": 14,
+    "usersDisabled": 6,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 79,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_7f2e33536b2e_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_5773962e2a6f_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_4dbdb5afefb6_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_6bb56b397578_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_a9020a6d04bd_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_2ca2fd8bbb78_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_43df70c863ec_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_a6ec717400cf_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 23,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_6c9d27e5be9b_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_26fa6f021d31_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_73401fbf472b_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_ef559e7d0fd5_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_83effe480339_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  },
+  {
+    "database": "mandaria_c4_reg_9c272c63e59f_test",
+    "credentialsRevoked": 0,
+    "usersDisabled": 0,
+    "zonesDisabled": 0,
+    "providersSuspended": 0,
+    "activeCredentialsRemaining": 0,
+    "connections": {
+      "otherconnections": 0
+    },
+    "retained": {
+      "requests": 0,
+      "authorizations": 0,
+      "ledger": 0
+    }
+  }
+]

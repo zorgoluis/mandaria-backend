@@ -1,0 +1,14 @@
+{"at":"2026-09-29T07:59:39.191Z","event":"start","name":"Core with real PostgreSQL > health checks PostgreSQL; Swagger is available"}
+{"at":"2026-09-29T07:59:39.198Z","event":"finish","name":"Core with real PostgreSQL > health checks PostgreSQL; Swagger is available","state":"passed"}
+{"at":"2026-09-29T07:59:39.201Z","event":"start","name":"Core with real PostgreSQL > denies unauthenticated and malformed requests"}
+{"at":"2026-09-29T07:59:39.308Z","event":"finish","name":"Core with real PostgreSQL > denies unauthenticated and malformed requests","state":"passed"}
+{"at":"2026-09-29T07:59:39.311Z","event":"start","name":"Core with real PostgreSQL > logs in and exposes only public user data"}
+{"at":"2026-09-29T07:59:39.313Z","event":"finish","name":"Core with real PostgreSQL > logs in and exposes only public user data","state":"passed"}
+{"at":"2026-09-29T07:59:39.409Z","event":"start","name":"Core with real PostgreSQL > enforces roles using current database state"}
+{"at":"2026-09-29T07:59:39.413Z","event":"finish","name":"Core with real PostgreSQL > enforces roles using current database state","state":"passed"}
+{"at":"2026-09-29T07:59:39.416Z","event":"start","name":"Core with real PostgreSQL > atomically rotates refresh; rejects reuse and logout revokes replacement"}
+{"at":"2026-09-29T07:59:39.552Z","event":"finish","name":"Core with real PostgreSQL > atomically rotates refresh; rejects reuse and logout revokes replacement","state":"passed"}
+{"at":"2026-09-29T07:59:39.556Z","event":"start","name":"Core with real PostgreSQL > returns sanitized 503 when the database query fails"}
+{"at":"2026-09-29T07:59:39.558Z","event":"finish","name":"Core with real PostgreSQL > returns sanitized 503 when the database query fails","state":"passed"}
+{"at":"2026-09-29T07:59:39.561Z","event":"start","name":"Core with real PostgreSQL > limits body size, rejects malformed JSON and throttles authentication"}
+{"at":"2026-09-29T07:59:39.563Z","event":"finish","name":"Core with real PostgreSQL > limits body size, rejects malformed JSON and throttles authentication","state":"passed"}

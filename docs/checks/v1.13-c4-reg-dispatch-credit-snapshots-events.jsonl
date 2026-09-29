@@ -1,0 +1,28 @@
+{"at":"2026-09-29T08:01:58.755Z","event":"start","name":"V1.10-C one frozen cost per actor, each view its own > opening a Dispatch freezes PROVIDER 7 and INDEPENDENT_DRIVER 14 for 6240 m, with full evidence"}
+{"at":"2026-09-29T08:01:58.939Z","event":"finish","name":"V1.10-C one frozen cost per actor, each view its own > opening a Dispatch freezes PROVIDER 7 and INDEPENDENT_DRIVER 14 for 6240 m, with full evidence","state":"passed"}
+{"at":"2026-09-29T08:01:58.947Z","event":"start","name":"V1.10-C one frozen cost per actor, each view its own > PROVIDER_ADMIN sees creditCost 7 (its own), outside deliveryFee and goods"}
+{"at":"2026-09-29T08:01:58.954Z","event":"finish","name":"V1.10-C one frozen cost per actor, each view its own > PROVIDER_ADMIN sees creditCost 7 (its own), outside deliveryFee and goods","state":"passed"}
+{"at":"2026-09-29T08:01:58.961Z","event":"start","name":"V1.10-C one frozen cost per actor, each view its own > the independent driver sees creditCost 14 (its own), never the provider one"}
+{"at":"2026-09-29T08:01:58.968Z","event":"finish","name":"V1.10-C one frozen cost per actor, each view its own > the independent driver sees creditCost 14 (its own), never the provider one","state":"passed"}
+{"at":"2026-09-29T08:01:58.976Z","event":"start","name":"V1.10-C one frozen cost per actor, each view its own > SUPER_ADMIN audits both snapshots; the B2B client sees no credit data"}
+{"at":"2026-09-29T08:01:58.983Z","event":"finish","name":"V1.10-C one frozen cost per actor, each view its own > SUPER_ADMIN audits both snapshots; the B2B client sees no credit data","state":"passed"}
+{"at":"2026-09-29T08:01:59.127Z","event":"start","name":"V1.10-C a policy change never alters a frozen cost > A keeps 7/14 on v1 after v2 (3/km, 4/km); B opens with 21/28 on v2"}
+{"at":"2026-09-29T08:01:59.253Z","event":"finish","name":"V1.10-C a policy change never alters a frozen cost > A keeps 7/14 on v1 after v2 (3/km, 4/km); B opens with 21/28 on v2","state":"passed"}
+{"at":"2026-09-29T08:01:59.261Z","event":"start","name":"V1.10-C a policy change never alters a frozen cost > FLAT and DISTANCE_RANGE evidence: flat 5 without km; 12 400 m in [10000, 20000) -> 20"}
+{"at":"2026-09-29T08:01:59.267Z","event":"finish","name":"V1.10-C a policy change never alters a frozen cost > FLAT and DISTANCE_RANGE evidence: flat 5 without km; 12 400 m in [10000, 20000) -> 20","state":"passed"}
+{"at":"2026-09-29T08:01:59.544Z","event":"start","name":"V1.10-C transactional opening, fail closed, concurrency > 10 simultaneous acceptances of one quote: 1 Dispatch, exactly 1 snapshot per actor"}
+{"at":"2026-09-29T08:01:59.680Z","event":"finish","name":"V1.10-C transactional opening, fail closed, concurrency > 10 simultaneous acceptances of one quote: 1 Dispatch, exactly 1 snapshot per actor","state":"passed"}
+{"at":"2026-09-29T08:01:59.782Z","event":"start","name":"V1.10-C transactional opening, fail closed, concurrency > concurrent openings racing a new policy version: every snapshot is one complete version"}
+{"at":"2026-09-29T08:01:59.941Z","event":"finish","name":"V1.10-C transactional opening, fail closed, concurrency > concurrent openings racing a new policy version: every snapshot is one complete version","state":"passed"}
+{"at":"2026-09-29T08:02:00.065Z","event":"start","name":"V1.10-C transactional opening, fail closed, concurrency > a missing ACTIVE policy for one allowed actor fails the whole opening; nothing is left behind"}
+{"at":"2026-09-29T08:02:00.074Z","event":"finish","name":"V1.10-C transactional opening, fail closed, concurrency > a missing ACTIVE policy for one allowed actor fails the whole opening; nothing is left behind","state":"passed"}
+{"at":"2026-09-29T08:02:00.377Z","event":"start","name":"V1.10-C database guarantees > refuses forged, duplicated, retroactive, mutated or orphan snapshots"}
+{"at":"2026-09-29T08:02:00.548Z","event":"finish","name":"V1.10-C database guarantees > refuses forged, duplicated, retroactive, mutated or orphan snapshots","state":"passed"}
+{"at":"2026-09-29T08:02:00.559Z","event":"start","name":"V1.10-C database guarantees > a snapshot disappears only together with its Dispatch"}
+{"at":"2026-09-29T08:02:00.566Z","event":"finish","name":"V1.10-C database guarantees > a snapshot disappears only together with its Dispatch","state":"passed"}
+{"at":"2026-09-29T08:02:00.767Z","event":"start","name":"V1.10-C legacy dispatches and no charging yet > a Dispatch without snapshots (pre-V1.10-C) reads with creditCost null and still works"}
+{"at":"2026-09-29T08:02:00.869Z","event":"finish","name":"V1.10-C legacy dispatches and no charging yet > a Dispatch without snapshots (pre-V1.10-C) reads with creditCost null and still works","state":"passed"}
+{"at":"2026-09-29T08:02:01.066Z","event":"start","name":"V1.10-C legacy dispatches and no charging yet > CLAIM and TAKE with balance 0 and a frozen cost > 0 are refused and move no credit"}
+{"at":"2026-09-29T08:02:01.076Z","event":"finish","name":"V1.10-C legacy dispatches and no charging yet > CLAIM and TAKE with balance 0 and a frozen cost > 0 are refused and move no credit","state":"passed"}
+{"at":"2026-09-29T08:02:01.168Z","event":"start","name":"V1.10-C legacy dispatches and no charging yet > no credit moved during the whole suite and every quote routed exactly once"}
+{"at":"2026-09-29T08:02:01.177Z","event":"finish","name":"V1.10-C legacy dispatches and no charging yet > no credit moved during the whole suite and every quote routed exactly once","state":"passed"}

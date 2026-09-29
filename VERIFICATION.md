@@ -1,3 +1,182 @@
+# V1.13-D — Verificación proporcional de instrucciones financieras (2026-09-29)
+
+**Backend D implementado y validado localmente; interfaces pendientes, flujo sin activar.** C4 permanece PARTIAL, no se retoma su diagnóstico ni se ejecuta su archivo pendiente. No se abre otro CHECK.
+
+Resultados **nuevos de esta tarea** sobre `9785ee1` más cambios D:
+
+- **63/63 unitarias**, cinco archivos completos: collection-instructions (10), dispatch (13), delivery-assignments (10), independent-drivers (22), logistics (8).
+- **61/61 E2E únicos**, cinco archivos completos: collection-instructions (5), dispatch (13), delivery-assignments (13), independent-drivers (23), driver-self (7). Nest y PostgreSQL locales en bases C4 de pruebas existentes; routing controlado. No toda la suite.
+- Build; TypeScript sin emisión para tsconfig.json y tsconfig.build.json; Oxlint; ESLint; generación OpenAPI/API_ACCESS y docs:check: exit 0. Oxlint: advertencia preexistente de import no usado en el runner histórico C3.
+- Sólo selects/proyecciones/DTOs de respuesta; sin precio paralelo, migraciones, flags, versión o cambios financieros. Archivo legacy agrega ausencia explícita de instrucciones conservando aserciones de dinero/adelanto. Permisos y privacidad comprobados en ambas superficies.
+- Los intentos fallidos de fixtures (passwordHash, identifier de vehículo y DTO release) se conservan, no se acreditan. Dispatch forks terminó incompleto, 7/13, exit 1; único diagnóstico adicional threads terminó 13/13 exit 0. Causa de la interrupción **no acreditada**; éxito posterior no demuestra su resolución. Sin omitir casos ni cambiar configuración compartida.
+- Sin principal/.env/Docker/servicios externos/despachos reales/commit/push/despliegue/activación; sin migraciones o escaneos masivos. Historia sintética conservada en bases aisladas; accesos propios retirados por hooks finales exitosos, sin certificar limpieza global de intentos interrumpidos.
+
+[Informe, contrato y guía Frontend](docs/V1.13-D-EXECUTOR-COLLECTION-INSTRUCTIONS.md) · [Comandos/exits/logs/reportes](docs/checks/v1.13-d-evidence.json) · [Ejemplo HTTP real sintético](docs/checks/v1.13-d-response-example.json).
+
+Las verificaciones históricas siguientes no se suman a D ni se presentan como ejecutadas ahora. C4 PARTIAL y pendientes operativos de A intactos.
+
+---
+
+# CHECK V1.13-C4 — Verificación integral local (2026-09-29)
+
+## Seguimiento acotado del único archivo pendiente — 2026-09-29, 15:04–15:06 UTC
+
+**PARTIAL conservado.** Se ejecutó exclusivamente `delivery-requests-b2b.e2e-spec.ts` en la base existente `mandaria_c4_reg_02b867eb3058_test`. Forks (configuración con éxito histórico B4) terminó con exit 1, 13/15 parciales y error del worker; el único diagnóstico adicional threads abortó `3221226505 / 0xC0000409`, sin reporte completo. Ningún fragmento se acredita. Límite de ejecuciones agotado; causa no resuelta.
+
+Se conservan **393 unitarias y 738 E2E en 32/33 archivos**, todos provenientes del CHECK anterior: no se reejecutaron esas suites ni gates, migraciones o escaneos. Se compararon los 348 archivos congelados antes de los intentos, sin diferencias; ningún cambio de producto, pruebas, .env o versión. [Nuevos intentos](docs/checks/v1.13-c4-completion-attempts.json). Los hooks de limpieza del archivo abortado no quedan acreditados; sus fixtures remanentes se conservan en esa base aislada, sin restaurar/borrar datos mediante un proceso adicional.
+
+### Resultado original conservado
+
+**PARTIAL.** Nuevas **393/393 unitarias en 34 archivos** y **738 E2E en 32/33 archivos** completos exit 0. Quince casos de `delivery-requests-b2b.e2e-spec.ts` quedan sin acreditar: primer intento incompleto exit 1 y único diagnóstico alternativo abortado `0xC0000409`, sin reporte final. No se cuentan fragmentos ni se reemplazan con historia. Webhooks 54/54 y estado B2B 21/21 sí completaron el diagnóstico; no acredita solución causal del runner.
+
+Prisma validate/generate, ambos tsconfig noEmit, build, Oxlint, ESLint, OpenAPI/docs:check pasan. Limpia y upgrade B con nueve tablas históricas intactas, 29 migraciones, reaplicación/drift y catálogo igual de 70 triggers activos. Escaneo de 35 bases nuevas: 23 contadores en cero más integridad económica; limpieza conserva historia, deshabilita accesos sintéticos. 348 archivos existentes, .env/HEAD/versión sin cambios. Sólo pruebas/runners/documentación C4; no producto, migraciones ni configuración operativa.
+
+[Informe C4](docs/CHECK-V1.13-C4-AUTHORIZED-ACCEPTANCE.md), [índice por intento](docs/checks/v1.13-c4-evidence.json), [consolidación por archivo/caso](docs/checks/v1.13-c4-consolidated.json). A6/B2/B3/B4/C2/C3 ejecutados ahora completos; resultados anteriores siguientes permanecen históricos. Pendiente diagnóstico causal y ejecución íntegra del archivo bloqueante. No declarar V1.13-C cerrada ni activar; D y pendientes A externos a esta tarea. Sin commit/push/despliegue.
+
+---
+
+# V1.13-C3 — Verificación local (2026-09-29)
+
+**V1.13-C3 (2026-09-29): LISTO PARA CHECK C4.** Verificación nueva: 62 E2E adversariales con dos Nest/pools y A5 durable real, 359 E2E de regresión en 14 archivos, total 421/421 E2E únicos y 393/393 unitarias. Migración limpia/upgrade B no vacío/status/reaplicación/drift, tipos/build/Prisma/linters/docs PASS; 336 archivos existentes y .env idénticos. Escaneo de 16 bases aisladas sin violaciones; historia preservada. Dos abortos nativos excluidos; único ensayo forks por archivo completó Quotes/Assignments, causa raíz pendiente. Binario pre-C lee/cancela historia C pero rechaza accept/replay: no despliegue mixto acreditado. Sin cambios de producto, commit/push/activación; C4/D no iniciados. Informe: docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md.
+
+Evidencia nueva por intento: [C3](docs/checks/v1.13-c3-evidence.json); [informe](docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md). Sólo archivos completos exit 0/reporte exitoso; 15 E2E y 34 unitarios. No es toda la suite E2E. Se conservan abajo los dictámenes históricos sin presentarlos como ejecuciones nuevas.
+
+---
+
+# Verificación actual — V1.13-C2
+
+**V1.13-C2 (2026-09-29): IMPLEMENTADO, LISTO PARA VERIFICACIÓN C3.** Accept convertido con atestación exacta, evidencia inmutable/constraints SQL, IdempotencyService y Dispatch/snapshots atómicos; contexto interno B2B y flag false por defecto. Conserva TTL, cancel/completion, CASH/COURIER_ADVANCE y refunds existentes; no D ni activación. Nuevas: 390 unitarias/33 archivos y 372 E2E únicos/15 archivos (35 C2 + 337 regresión), todos completos exit 0. Prisma, migración limpia/upgrade con historia B intacta, ambos tsconfig, build, linters y docs pasan; scan final cero violaciones. Intentos abortados/fallidos excluidos, causa nativa pendiente; Independent necesitó base propia por paginación global. Historia conservada y fixtures C2 deshabilitados/cancelados sólo en bases nuevas locales. Informe: docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md; índice: docs/checks/v1.13-c2-evidence.json.
+
+Evidencia nueva: [informe C2](docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md), [comandos/exits/reportes](docs/checks/v1.13-c2-evidence.json), [upgrade B](docs/checks/v1.13-c2-upgrade.json), [escaneo/cleanup](docs/checks/v1.13-c2-scan.json). Cobertura E2E seleccionada, no suite completa ni CHECK C4. C3 no iniciado y activación no autorizada. Se conservan a continuación los resultados históricos; no se cuentan como pruebas C2.
+
+---
+
+# Verificación actual — Subsanación final B4
+
+**Subsanación final B4 (2026-09-29): PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE.** Nuevas: 380 unitarias y 248 E2E en seis archivos completos; 406 casos E2E históricos en 24 archivos con hashes/procedencia verificados. Total consolidado 654/654, 30/30 archivos. Webhooks pasó completo dos veces sin cambios (bases nueva e histórica); causa raíz de abortos anteriores no confirmada. Un aborto nuevo de B3 forks excluido; único ensayo diagnóstico threads 58/58. Nueve errores de tipos corregidos en seis pruebas; ambos tsconfig, Oxlint y ESLint pasan. Producto/.env/HEAD/versión intactos; escaneo final sin violaciones. No certifica estabilidad absoluta del runner ni activación. C/D y pendientes A siguen abiertos. Informe: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia: docs/checks/v1.13-b4-final-evidence.json.
+
+Comandos, resultados por intento, límites de diagnóstico y procedencia en el informe. Los resultados anteriores siguientes se conservan como historia.
+
+---
+
+# Verificación actual — CHECK B4 reejecutado
+
+**CHECK B4 reejecutado (2026-09-29): PARTIAL.** 380/380 unitarias y 600 E2E en 29/30 archivos completos con exit 0; webhooks sigue abortando y no se acredita. B4 corregido 24/24, B2 39/39, B3 58/58, A6 36/36. Corregidos falso positivo SQL, aserciones de concurrencia, consolidación y limpieza de fixture sin deshabilitar guardas. Nueve errores de tipos preexistentes en pruebas; tipos de producto/build/linters pasan. Migraciones limpia/upgrade/reaplicación/drift y escaneo final pasan. 261 archivos originales idénticos; .env/HEAD/versión intactos. Sin defecto bloqueante de producto confirmado, sin commit/push/activación. El PASS anterior es histórico y no se ratifica. Detalle: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia nueva: docs/checks/v1.13-b4-rerun-evidence.json.
+
+Comandos, exits, intentos abortados y matriz en el informe enlazado; no reutilizar cifras históricas como ejecución actual.
+
+---
+
+## Historial conservado
+
+# CHECK V1.13-B4 — Conversión única de precotizaciones (2026-09-28/29)
+
+Rama `1.13-Precotización_integración_comida_prepagada` sobre `7660f13`, paquete **1.12.0**. Node.js 24, PostgreSQL 18 local. Docker no ejecutado. **Sin corrección de producto, sin cambio de versión o CHANGELOG, sin commit, push, despliegue ni activación.** Informe completo en [docs/CHECK-V1.13-B4-CONVERSION.md](docs/CHECK-V1.13-B4-CONVERSION.md); evidencia sanitizada en [docs/checks/v1.13-b4-evidence.json](docs/checks/v1.13-b4-evidence.json).
+
+**Dictamen: PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE.** Ningún defecto de producto. El cierre cubre sólo conversión MPQ → MDR PREPAID + MQ OFFERED con barreras pre-C; no acredita aceptación autorizada, despacho de convertidas, cobro efectivo, interfaces ni activación.
+
+| Verificación | Resultado |
+|---|---|
+| Producto congelado (`src/**`, `prisma/**`, `scripts/**`, contratos, configuración, paquetes) | **261 archivos, hash combinado idéntico antes y después, 0 diferencias**; `.env` comparado en privado e idéntico, sin publicar contenido ni huella; HEAD y versión intactos |
+| Inventario **descubierto** en esta tarea | **30 archivos E2E y 32 unitarios**; las cifras 380/572 de B2 y 380/237 de B3 no se reutilizan |
+| Unitarias completas | **380/380 en 32 archivos** |
+| E2E, todos los archivos actuales por archivo completo | **654/654 casos únicos en 30 archivos**, incluidos CHECK A6 (36), B2 (39), B3 (58) y el nuevo B4 (24) |
+| Recorrido integral nuevo con wiring real | **24/24** en `test/check-b4-conversion.e2e-spec.ts`: dos Nest con pools propios, auth/token/idempotencia/consumo durable/conversión/persistencia reales y **sólo routing controlado** |
+| Prisma validate, build, docs:check, tipos de producto, Oxlint, ESLint, `git diff --check` | exit 0; build y docs:check **antes** de las E2E, sin builds concurrentes |
+| Cadena de migraciones | `verify-migrations` PASS; instalación limpia y upgrade con historia no vacía PASS (28 migraciones, 14 tablas históricas, catálogo de FKs diferidas); consumo A5 PASS |
+| Estado, reaplicación y drift en las dos bases aisladas | al día, 28 aplicadas y **0 fallidas**; reaplicación idempotente con 199 y 127 conversiones existentes; drift **exit 0 sin diferencias** |
+| Escaneo SQL final | **doce invariantes en 0** en ambas bases; 17 triggers de integridad activos y 2 FKs diferidas |
+
+## Lo que el recorrido integral añadió sobre B2 y B3
+
+Las suites B2 y B3 sustituyen el consumo durable A5 por un doble. Ésa era la brecha, y el CHECK la cierra midiendo con el servicio real:
+
+| Barrera | Observado |
+|---|---|
+| Emitir consume lo que A5 promete | **un** permiso durable `FINISHED`, **una** ejecución A3 y **una** llamada de routing |
+| Convertir no consume | **0** permisos, **0** ejecuciones A3 y **0** llamadas de routing |
+| Replay de emisión | no duplica permiso ni routing |
+| Recorrido completo | token real → MPQ → conversión 201 con `Location`/`Cache-Control`/`X-Request-Id` → MPQ `CONVERTED` → accept 409 `AUTHORIZED_ACCEPT_REQUIRED` y recotización 409 `PREQUOTE_REQUOTE_NOT_ALLOWED` → cancelación → replay con estados actuales → otra key 409 `PREQUOTE_ALREADY_CONVERTED` |
+| Sin efectos ajenos | `Dispatch`, `DeliveryAssignment`, `CreditLedgerEntry`, `B2bOutboxEvent` y `DispatchCreditSnapshot` idénticos |
+
+## Contrato, concurrencia, tiempo y preservación
+
+| Área | Resultado |
+|---|---|
+| Tres scopes | quitar cualquiera de los tres → **403**; con los tres, 201 |
+| Ownership | ajena e inexistente devuelven 404 con envelope idéntico salvo `requestId`, `timestamp` y el `path` del propio llamante |
+| Auth del replay | credencial revocada, integración suspendida y credencial vencida → **401 incluso en replay**; restablecido, recupera el mismo ganador |
+| Validación | **12 cuerpos inválidos → 400** sin crear key, conversión ni solicitud; `COURIER_ADVANCE`/`USD`/categoría ajena/importe negativo → 400; `goodsValue` omitido, null y positivo aceptados sin mezclarse con el envío |
+| Privacidad | ni referencias de confirmación, ni manifiesto, ni UUID internos, ni proveedor de routing, ni relación cruda en cuatro proyecciones ni en los registros |
+| Flag false | nuevas 503 `PREQUOTE_CONVERSION_DISABLED` sin crear nada; **replay autorizado disponible** |
+| Concurrencia en dos instancias | misma key/cuerpo → un ganador; cuerpo/MPQ/operación distintos → 409; **ocho keys sobre una MPQ → un 201 y siete conflictos** con una sola key persistida; mismo texto de key en dos integraciones → dos 201 independientes |
+| Respuesta perdida | fallo inducido sólo en la carga posterior al commit → 500; la otra instancia recupera por replay sin duplicar |
+| Snapshot y tiempo | tarifa de 999.00 no reprecifica; zona renombrada no altera proyecciones convertidas; zona `INACTIVE` bloquea nueva pero no replay; antes convierte y después 409 `PREQUOTE_EXPIRED` sin renovar `expiresAt`; **el `expiresAt` de una MPQ es inmutable incluso en SQL**; el cruce por espera de lock real termina en 409 con rollback |
+| SQL adversarial | **16 escrituras forjadas, ninguna aceptada** |
+| Preservación no vacía | ocho tablas comparadas por hash antes y después de tres conversiones: idénticas, con el punto de referencia tomado **después de emitir**, porque emitir consume por diseño |
+
+## Límite temporal, conservado y no promovido a garantía
+
+HTTP conserva la evaluación diferida y revalida antes de construir y al final; SQL conserva la integridad estructural sin depender del instante de evaluación; un escritor directo **puede** adelantar la comprobación temporal, pero `expiresAt` nunca se renueva, la MPQ no se reutiliza y no se habilita despacho. El commit tardío directo se reverifica en la suite B3 reejecutada; en B4 no puede construirse acortando la vigencia, precisamente porque la fila MPQ rechaza todo `UPDATE`. No se clasifica como defecto.
+
+## Hallazgos
+
+**Defectos de producto: ninguno.**
+
+**Defectos de las fixtures del propio CHECK: diez**, corregidos y explicados en el informe, sin debilitar aserciones ni deshabilitar guardas. Los más útiles de recordar: emitir sí crea una ejecución durable A3, así que el punto de referencia va después de emitir; el envelope 404 repite el `path` que el llamante pidió; un plan de tarifas con bandas sólo puede nacer `DRAFT` y un plan `INACTIVE` no vuelve a `ACTIVE`; el `expiresAt` de una MPQ no se puede mover ni por SQL; y `migrate diff --to-schema-datasource` resuelve el datasource del archivo de schema, que apunta a la base principal.
+
+**Limitaciones y entorno.** `scripts/verify-prequote-migrations.mjs` quedó **obsoleto**: excluye sólo las dos migraciones de A3, de modo que su base de upgrade recibe las de A5 y B2, que dependen de tablas de A3; la migración que falla es `20260928000400_prequote_conversion` y una reaplicación devuelve `P3009`. No es defecto de producto ni de migraciones —la cadena queda cubierta por los otros tres verificadores, los tres PASS— y **no se corrigió**, porque un CHECK no modifica scripts del repositorio para aprobarse. `tsc -p tsconfig.json` (que incluye pruebas) arroja **9 errores preexistentes** en suites de A6/B2/B3; el gate de producto `tsconfig.build.json` está en 0 y la suite nueva no agrega ninguno. Tres archivos abortaron por la caída nativa de worker en Windows (`exit 3221226505`) y se repitieron completos hasta exit 0; las repeticiones **no** se suman a los casos únicos.
+
+## Base principal y bases del CHECK
+
+La base principal tiene **24 de 28** migraciones y **ninguna** tabla de V1.13; se consultó sólo de lectura para confirmarlo y **no se migró ni se usó como destino**. Todas las escrituras ocurrieron en bases nuevas locales terminadas en `_test`, retenidas, con base integral y base de regresión **separadas** porque las fixtures de upgrade insertan IDs manuales que no avanzan secuencias. No se reseteó, purgó ni borró ninguna base preexistente.
+
+## Pendientes conservados
+
+Capacidad del mutex y volumen, política coordinada, migraciones y entorno de despliegue, observabilidad, responsables y retención; actualizar **todas** las instancias antes de activar B; C aceptación autorizada y D exposición a ejecutores. **Un PASS no habilita emisión ni conversión y no permite despachar recursos convertidos.**
+
+---
+
+# V1.13-B3 — Verificación focalizada (2026-09-28)
+
+**V1.13-B3 (2026-09-28): LISTO PARA CHECK B4.** Verificación nueva: 58/58 focalizadas, 39/39 B2 y 140/140 E2E seleccionadas A/legacy (237 E2E por archivo), más 380/380 unitarias. Dos Nest/pools y revisión B1 compilada: legacy funcional, accept/requote convertido bloqueado por SQL. Manifiesto/rollback/contención/privacidad/preservación no vacía comprobados. SET CONSTRAINTS IMMEDIATE permite commit tardío directo sin renovar expiry ni abrir Dispatch, límite B1/B2 conservado. 256 archivos de producto/contrato idénticos, .env y HEAD intactos. Migraciones limpia/upgrade/status/drift, build/tipos/Prisma/linters/docs:check y escaneo SQL PASS. Sin corrección de producto, versión, commit/push/despliegue/activación. B4 y pendientes operativos A siguen abiertos. Informe: docs/V1.13-B3-CONVERSION-ADVERSARIAL-VERIFICATION.md.
+
+[Informe](docs/V1.13-B3-CONVERSION-ADVERSARIAL-VERIFICATION.md) · [Evidencia nueva](docs/checks/v1.13-b3-evidence.json). No se acredita suite E2E integral: B4 repetirá cierre. Intentos fallidos, límites SQL y dependencias del binario anterior documentados.
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
+# V1.13-B2 — Verificación de implementación (2026-09-28)
+
+**V1.13-B2 (2026-09-28): IMPLEMENTADO, LISTO PARA VERIFICACIÓN B3.** Conversión única y atómica MPQ → MDR PREPAID + MQ OFFERED; manifiesto inmutable de hijos sin xmin/XID, idempotencia existente, snapshot/TTL conservados y barreras SQL/aplicación pre-C. Verificación nueva: 380/380 unitarias y 572/572 E2E consolidadas por archivo completo (39 nuevas); Prisma, migración limpia/upgrade, catálogo/drift, verificadores, tipos/build/linters/OpenAPI/docs:check PASS. Bases locales nuevas _test solamente, limpieza de fixtures y escaneo de invariantes sin violaciones. Flag deshabilitado; sin versión, commit/push/despliegue. B no cerrada: B3 y CHECK B4 pendientes. Pendientes de activación A conservados: capacidad del mutex, política coordinada, migraciones/entorno, observabilidad/responsables. Informe: docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md.
+
+[Informe](docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md) · [Evidencia por archivo](docs/checks/v1.13-b2-evidence.json). Las ejecuciones fallidas/abortadas se documentan en el informe; no se suman como PASS. B2 no es CHECK B4.
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
+# CHECK V1.13-A6 — Verificación integral (2026-09-28)
+
+**CHECK V1.13-A6 (2026-09-28): PASS — V1.13-A IMPLEMENTADA Y VALIDADA LOCALMENTE.** Evidencia nueva: 372/372 unitarias, 497/497 E2E existentes consolidadas por archivo y 36/36 CHECK integral (533 E2E en total). Dos Nest con auth/idempotencia/persistencia/consumo reales; caídas de proceso, SQL/rollback, carga de 10604 permisos y preservación de 10 tablas no vacías. 250 archivos de producto/configuración/contrato/migraciones congelados, .env y HEAD intactos. Bases nuevas aisladas _test; principal sin escrituras. Build/tipos/Prisma/linters/docs:check PASS; abortos Windows y correcciones de fixtures documentados. Activación pendiente de runbook/capacidad/migración del entorno real; flag deshabilitado, sin Google real, B, commit/push/despliegue. Informe: docs/CHECK-V1.13-A6-PREQUOTES.md.
+
+[Informe completo](docs/CHECK-V1.13-A6-PREQUOTES.md) · [Evidencia estructurada](docs/checks/v1.13-a6-evidence.json) · [Carga y caídas](docs/checks/v1.13-a6-load.json). No se acredita una pasada monolítica: cuatro archivos de regresión abortaron, se repitieron completos; requests B2B necesitó forks en segunda repetición. Cada archivo final acreditado terminó con exit 0.
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
+# V1.13-A5 — Prequote Consumption Controls (2026-09-28)
+
+**V1.13-A5 (2026-09-28): LISTO PARA CHECK A6.** Consumo durable PostgreSQL compartido, cuotas y presupuesto global MPQ explícito; start/finish conservadores, fencing y recuperación. Nuevas verificaciones: 372/372 unitarias y 497/497 E2E consolidadas por archivo (21 nuevas); invitaciones repetida completa tras aborto nativo Windows. Prisma, limpia/upgrade, tipos/build/linters/OpenAPI/docs:check PASS. Migración sólo en bases locales _test, principal intacta. Flag false, sin Google real, versión/CHANGELOG, commit/push/despliegue. No cierra V1.13-A. Informe: docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md.
+
+Detalle de comandos, intentos fallidos/abortados, matriz por archivo y garantías: [informe A5](docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md).
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
+# V1.13-A4 — Prequote HTTP Orchestration (2026-09-28)
+
+**LISTO PARA A5, emisión operativa bloqueada.** Verificación nueva sobre HEAD inicial 22cc73e, PostgreSQL local mandaria_test, sin migraciones ni cambios en base principal. 357/357 unitarias y 476/476 E2E consolidadas de 25 archivos completos, incluidos 40 HTTP nuevos. TypeScript/build/Oxlint/ESLint/OpenAPI/docs:check/diff-check PASS. Webhooks y dispatch completaron repeticiones tras abortos nativos; dos fixtures A4 se corrigieron respetando guardas SQL. No se afirma una pasada monolítica exitosa.
+
+Contrato, barrera de producción, comandos, matriz por archivo, intentos fallidos y límites: [informe A4](docs/V1.13-A4-PREQUOTE-HTTP-ORCHESTRATION.md). Routing y admisión permisiva sólo mediante dobles de prueba; flag no habilita emisión de producción. Sin conversión, aceptación, flujo completo de transferencia, commit, push ni despliegue.
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
 # V1.12-G — B2B Public Execution Identity (2026-09-28)
 
 **COMPLETADA Y VALIDADA localmente.** Base QA `4dbc331`, paquete 1.12.0. Informe: [V1.12-G](docs/V1.12-G-B2B-PUBLIC-EXECUTION-IDENTITY.md). Evidencia resumida, sin secretos: [v1.12-g-evidence.json](docs/checks/v1.12-g-evidence.json).

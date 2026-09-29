@@ -1,0 +1,18 @@
+{"at":"2026-09-29T08:03:49.362Z","event":"start","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > seeds the local scenario idempotently with exact memberships"}
+{"at":"2026-09-29T08:03:49.491Z","event":"finish","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > seeds the local scenario idempotently with exact memberships","state":"passed"}
+{"at":"2026-09-29T08:03:49.597Z","event":"start","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > refuses to reuse an email that belongs to another role"}
+{"at":"2026-09-29T08:03:49.700Z","event":"finish","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > refuses to reuse an email that belongs to another role","state":"passed"}
+{"at":"2026-09-29T08:03:49.703Z","event":"start","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > authenticates PROVIDER_ADMIN with real login, /auth/me and refresh rotation"}
+{"at":"2026-09-29T08:03:49.705Z","event":"finish","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > authenticates PROVIDER_ADMIN with real login, /auth/me and refresh rotation","state":"passed"}
+{"at":"2026-09-29T08:03:49.977Z","event":"start","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 1: PROVIDER_ADMIN A with membership → Provider A allowed"}
+{"at":"2026-09-29T08:03:49.980Z","event":"finish","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 1: PROVIDER_ADMIN A with membership → Provider A allowed","state":"passed"}
+{"at":"2026-09-29T08:03:49.983Z","event":"start","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 2: PROVIDER_ADMIN A → Provider B rejected; client-supplied IDs do not escalate"}
+{"at":"2026-09-29T08:03:49.985Z","event":"finish","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 2: PROVIDER_ADMIN A → Provider B rejected; client-supplied IDs do not escalate","state":"passed"}
+{"at":"2026-09-29T08:03:49.988Z","event":"start","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 3: PROVIDER_ADMIN without membership → any provider rejected"}
+{"at":"2026-09-29T08:03:49.990Z","event":"finish","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 3: PROVIDER_ADMIN without membership → any provider rejected","state":"passed"}
+{"at":"2026-09-29T08:03:49.992Z","event":"start","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 4: PROVIDER_ADMIN → SUPER_ADMIN endpoints rejected, including B2B administration"}
+{"at":"2026-09-29T08:03:49.995Z","event":"finish","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 4: PROVIDER_ADMIN → SUPER_ADMIN endpoints rejected, including B2B administration","state":"passed"}
+{"at":"2026-09-29T08:03:50.084Z","event":"start","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 5: SUPER_ADMIN still administers Provider A and B"}
+{"at":"2026-09-29T08:03:50.088Z","event":"finish","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 5: SUPER_ADMIN still administers Provider A and B","state":"passed"}
+{"at":"2026-09-29T08:03:50.092Z","event":"start","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 6: IntegrationClient JWT → Provider Admin endpoints rejected"}
+{"at":"2026-09-29T08:03:50.094Z","event":"finish","name":"PROVIDER_ADMIN → ProviderMembership → DeliveryProvider (real auth) > Case 6: IntegrationClient JWT → Provider Admin endpoints rejected","state":"passed"}

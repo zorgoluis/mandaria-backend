@@ -1,0 +1,221 @@
+[Nest] 27028  - 29/09/2026, 12:46:44 a.m.    WARN [CreditAccountsService] Object(7) {
+  event: 'CREDIT_MOVEMENT_REJECTED',
+  code: 'INSUFFICIENT_CREDITS',
+  creditAccountId: 'acc',
+  type: 'ADMIN_ADJUSTMENT',
+  amount: -8,
+  balance: 2,
+  actorUserId: 'admin'
+}
+[Nest] 27028  - 29/09/2026, 12:46:44 a.m.     LOG [CreditAccountsService] Object(12) {
+  event: 'CREDIT_RECHARGED',
+  creditAccountId: 'acc',
+  ownerType: 'PROVIDER',
+  ownerId: 'p',
+  entryId: 'new',
+  sequence: 1,
+  amount: 5,
+  balanceBefore: 10,
+  balanceAfter: 15,
+  rechargeMethod: 'CASH',
+  externalReference: null,
+  actorUserId: 'admin'
+}
+[Nest] 27028  - 29/09/2026, 12:46:44 a.m.     LOG [CreditAccountsService] Object(3) {
+  event: 'CREDIT_MOVEMENT_REPLAYED',
+  creditAccountId: 'acc',
+  entryId: 'orig'
+}
+[Nest] 27028  - 29/09/2026, 12:46:44 a.m.    WARN [CreditAccountsService] Object(3) {
+  event: 'CREDIT_IDEMPOTENCY_CONFLICT',
+  creditAccountId: 'acc',
+  entryId: 'orig'
+}
+[Nest] 4108  - 29/09/2026, 12:46:44 a.m.    WARN [IntegrationAuthService] Object(1) {
+  event: 'INTEGRATION_AUTH_FAILED'
+}
+[Nest] 4108  - 29/09/2026, 12:46:44 a.m.    WARN [IntegrationAuthService] Object(1) {
+  event: 'INTEGRATION_AUTH_FAILED'
+}
+[Nest] 4108  - 29/09/2026, 12:46:44 a.m.    WARN [IntegrationAuthService] Object(1) {
+  event: 'INTEGRATION_AUTH_FAILED'
+}
+[Nest] 4108  - 29/09/2026, 12:46:44 a.m.    WARN [IntegrationAuthService] Object(1) {
+  event: 'INTEGRATION_AUTH_FAILED'
+}
+[Nest] 4108  - 29/09/2026, 12:46:44 a.m.     LOG [IntegrationAuthService] Object(3) {
+  event: 'INTEGRATION_AUTH_SUCCESS',
+  integrationId: '3c87cb05-b70a-403b-8516-e6c434a71438',
+  credentialId: '0cf56144-944c-42ef-b831-85b1d91ffe79'
+}
+[Nest] 3824  - 29/09/2026, 12:46:45 a.m.     LOG [IdempotencyService] Object(4) {
+  event: 'IDEMPOTENCY_REPLAY',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create',
+  resourceId: 'resource'
+}
+[Nest] 3824  - 29/09/2026, 12:46:45 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create'
+}
+[Nest] 3824  - 29/09/2026, 12:46:45 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'baseline.other'
+}
+[Nest] 3824  - 29/09/2026, 12:46:45 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'baseline.other'
+}
+[Nest] 3824  - 29/09/2026, 12:46:45 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create'
+}
+[Nest] 3824  - 29/09/2026, 12:46:45 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create'
+}
+[Nest] 3824  - 29/09/2026, 12:46:45 a.m.     LOG [IdempotencyService] Object(4) {
+  event: 'IDEMPOTENCY_REPLAY',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create',
+  resourceId: 'resource'
+}
+[Nest] 3824  - 29/09/2026, 12:46:45 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: 'client',
+  operation: 'delivery_requests.create'
+}
+[Nest] 29692  - 29/09/2026, 12:46:45 a.m.     LOG [DeliveryAssignmentsService] Object(7) {
+  event: 'DELIVERY_ASSIGNMENT_CREATED',
+  assignmentId: 'new',
+  dispatchId: 'd1',
+  providerId: 'A',
+  driverId: 'carlos',
+  vehicleId: 'moto03',
+  actorUserId: 'u1'
+}
+[Nest] 29692  - 29/09/2026, 12:46:45 a.m.     LOG [DeliveryAssignmentsService] Object(11) {
+  event: 'DELIVERY_ASSIGNMENT_REASSIGNED',
+  previousAssignmentId: 'a1',
+  assignmentId: 'new',
+  dispatchId: 'd1',
+  providerId: 'A',
+  previousDriverId: 'pedro',
+  previousVehicleId: 'moto07',
+  driverId: 'carlos',
+  vehicleId: 'moto03',
+  actorUserId: 'u1',
+  reason: 'DRIVER_UNAVAILABLE'
+}
+[Nest] 22276  - 29/09/2026, 12:46:45 a.m.     LOG [ProvidersService] Object(3) {
+  event: 'PROVIDER_CREATED',
+  providerId: 'fixture',
+  actorId: 'actor'
+}
+[Nest] 22276  - 29/09/2026, 12:46:45 a.m.     LOG [ProvidersService] Object(3) {
+  event: 'PROVIDER_CREATED',
+  providerId: 'fixture',
+  actorId: 'actor'
+}
+[Nest] 29684  - 29/09/2026, 12:46:45 a.m.    WARN [InvitationsService] Object(2) {
+  event: 'USER_ACTIVATION_REJECTED',
+  reason: 'INVITATION_TOKEN_INVALID'
+}
+[Nest] 9304  - 29/09/2026, 12:46:45 a.m.     LOG [IndependentDispatchesService] Object(7) {
+  event: 'DELIVERY_COMPLETED',
+  dispatchId: 'a3f1c0de-0000-4000-8000-000000000004',
+  assignmentId: 'a3f1c0de-0000-4000-8000-000000000005',
+  mode: 'INDEPENDENT',
+  driverId: 'a3f1c0de-0000-4000-8000-000000000002',
+  actorUserId: 'a3f1c0de-0000-4000-8000-000000000003',
+  deliveredAt: '2026-09-29T06:46:45.426Z'
+}
+[Nest] 9304  - 29/09/2026, 12:46:45 a.m.     LOG [IndependentDispatchesService] Object(5) {
+  event: 'B2B_EVENT_RECORDED',
+  eventId: 'a3f1c0de-0000-4000-8000-000000000008',
+  type: 'delivery.completed',
+  publicId: 'MDR-000123',
+  occurredAt: '2026-09-29T06:46:45.426Z'
+}
+[Nest] 28876  - 29/09/2026, 12:46:45 a.m.     LOG [IndependentDriversService] Object(4) {
+  event: 'INDEPENDENT_DRIVER_ENABLED',
+  profileId: 'p',
+  driverId: 'd',
+  actorUserId: 'admin'
+}
+[Nest] 28876  - 29/09/2026, 12:46:45 a.m.     LOG [IndependentDriversService] Object(4) {
+  event: 'INDEPENDENT_DRIVER_ENABLED',
+  profileId: 'p',
+  driverId: 'd',
+  actorUserId: 'admin'
+}
+[Nest] 28876  - 29/09/2026, 12:46:45 a.m.     LOG [IndependentDriversService] Object(5) {
+  event: 'INDEPENDENT_DRIVER_SUSPENDED',
+  profileId: 'p',
+  driverId: 'd',
+  actorUserId: 'admin',
+  reason: 'documentos vencidos'
+}
+[Nest] 28876  - 29/09/2026, 12:46:45 a.m.     LOG [IndependentDriversService] Object(4) {
+  event: 'INDEPENDENT_VEHICLE_CREATED',
+  driverId: 'd',
+  vehicleId: 'v',
+  actorUserId: 'admin'
+}
+[Nest] 23716  - 29/09/2026, 12:46:45 a.m.     LOG [DriversService] Object(6) {
+  event: 'DRIVER_STATUS_CHANGED',
+  providerId: 'p',
+  driverId: 'd',
+  actorId: 'a',
+  from: 'ACTIVE',
+  to: 'SUSPENDED'
+}
+[Nest] 23716  - 29/09/2026, 12:46:45 a.m.     LOG [DriversService] Object(7) {
+  event: 'DRIVER_AVAILABILITY_CHANGED',
+  providerId: 'p',
+  driverId: 'd',
+  actorId: 'a',
+  from: 'AVAILABLE',
+  to: 'OFFLINE',
+  reason: 'DRIVER_NOT_ACTIVE'
+}
+[Nest] 23716  - 29/09/2026, 12:46:45 a.m.     LOG [DriversService] Object(6) {
+  event: 'DRIVER_AVAILABILITY_CHANGED',
+  providerId: 'p',
+  driverId: 'd',
+  actorId: 'u',
+  from: 'OFFLINE',
+  to: 'AVAILABLE'
+}
+[Nest] 47164  - 29/09/2026, 12:46:45 a.m.    WARN [DeliveryQuotesService] Object(4) {
+  event: 'DELIVERY_QUOTE_FAILED',
+  reasonCode: 'RATE_CONFIGURATION_UNAVAILABLE',
+  deliveryRequestPublicId: 'MDR-000001',
+  integrationClientId: 'client'
+}
+[Nest] 47164  - 28/09/2026, 6:00:08 a.m.     LOG [DeliveryQuotesService] Object(4) {
+  event: 'ROUTING_CALCULATED',
+  routingProvider: 'fake',
+  latencyMs: 8000,
+  deliveryRequestPublicId: 'MDR-000001'
+}
+[Nest] 47164  - 28/09/2026, 6:00:08 a.m.     LOG [DeliveryQuotesService] Object(11) {
+  event: 'DELIVERY_QUOTE_CREATED',
+  quotePublicId: 'MQ-000001',
+  ratePlanId: 'plan',
+  ratePlanVersion: 3,
+  distanceMeters: 4700,
+  amount: '55.00',
+  currency: 'MXN',
+  deliveryRequestPublicId: 'MDR-000001',
+  integrationClientId: 'client',
+  actorType: 'INTEGRATION',
+  actorId: 'client'
+}
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-unit-2.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

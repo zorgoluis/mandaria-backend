@@ -1,0 +1,269 @@
+{
+  "date": "2026-09-28",
+  "baseline": "5978807270c038d9d7e555ad985ee7bfe35718a5",
+  "verdict": "IMPLEMENTADO, LISTO PARA VERIFICACIÓN B3",
+  "unit": {
+    "passed": 380,
+    "files": 32
+  },
+  "e2e": {
+    "passed": 572,
+    "files": 28,
+    "method": "Consolidación por archivo completo exit 0; no pasada monolítica",
+    "results": [
+      {
+        "file": "b2b-delivery-status.e2e-spec.ts",
+        "exit": 0,
+        "passed": 21,
+        "failed": 0,
+        "total": 21,
+        "run": "retry1"
+      },
+      {
+        "file": "b2b-outbox.e2e-spec.ts",
+        "exit": 0,
+        "passed": 17,
+        "failed": 0,
+        "total": 17,
+        "run": "full"
+      },
+      {
+        "file": "b2b-webhooks.e2e-spec.ts",
+        "exit": 0,
+        "passed": 54,
+        "failed": 0,
+        "total": 54,
+        "run": "retry3"
+      },
+      {
+        "file": "b2b.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "run": "retry3"
+      },
+      {
+        "file": "check-a6-prequotes.e2e-spec.ts",
+        "exit": 0,
+        "passed": 36,
+        "failed": 0,
+        "total": 36,
+        "run": "retry2"
+      },
+      {
+        "file": "core.e2e-spec.ts",
+        "exit": 0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "run": "retry2"
+      },
+      {
+        "file": "credit-consumption.e2e-spec.ts",
+        "exit": 0,
+        "passed": 36,
+        "failed": 0,
+        "total": 36,
+        "run": "retry2"
+      },
+      {
+        "file": "credit-policies.e2e-spec.ts",
+        "exit": 0,
+        "passed": 19,
+        "failed": 0,
+        "total": 19,
+        "run": "retry2"
+      },
+      {
+        "file": "credit-refunds.e2e-spec.ts",
+        "exit": 0,
+        "passed": 22,
+        "failed": 0,
+        "total": 22,
+        "run": "full"
+      },
+      {
+        "file": "credits.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "run": "full"
+      },
+      {
+        "file": "delivery-assignments.e2e-spec.ts",
+        "exit": 0,
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "run": "full"
+      },
+      {
+        "file": "delivery-completion.e2e-spec.ts",
+        "exit": 0,
+        "passed": 29,
+        "failed": 0,
+        "total": 29,
+        "run": "full"
+      },
+      {
+        "file": "delivery-quotes.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "run": "full"
+      },
+      {
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "exit": 0,
+        "passed": 15,
+        "failed": 0,
+        "total": 15,
+        "run": "full"
+      },
+      {
+        "file": "delivery-requests-validation.e2e-spec.ts",
+        "exit": 0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "run": "full"
+      },
+      {
+        "file": "dispatch-credit-snapshots.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "run": "full"
+      },
+      {
+        "file": "dispatch.e2e-spec.ts",
+        "exit": 0,
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "run": "retry2"
+      },
+      {
+        "file": "driver-self.e2e-spec.ts",
+        "exit": 0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "run": "full"
+      },
+      {
+        "file": "drivers-vehicles.e2e-spec.ts",
+        "exit": 0,
+        "passed": 11,
+        "failed": 0,
+        "total": 11,
+        "run": "full"
+      },
+      {
+        "file": "independent-drivers.e2e-spec.ts",
+        "exit": 0,
+        "passed": 23,
+        "failed": 0,
+        "total": 23,
+        "run": "full"
+      },
+      {
+        "file": "prequote-consumption.e2e-spec.ts",
+        "exit": 0,
+        "passed": 21,
+        "failed": 0,
+        "total": 21,
+        "run": "full"
+      },
+      {
+        "file": "prequote-conversion.e2e-spec.ts",
+        "exit": 0,
+        "passed": 39,
+        "failed": 0,
+        "total": 39,
+        "run": "b2threads"
+      },
+      {
+        "file": "prequote-persistence.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "run": "retry1"
+      },
+      {
+        "file": "prequotes-http.e2e-spec.ts",
+        "exit": 0,
+        "passed": 40,
+        "failed": 0,
+        "total": 40,
+        "run": "retry1"
+      },
+      {
+        "file": "pricing-admin.e2e-spec.ts",
+        "exit": 0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "run": "full"
+      },
+      {
+        "file": "provider-admin-access.e2e-spec.ts",
+        "exit": 0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "run": "full"
+      },
+      {
+        "file": "providers.e2e-spec.ts",
+        "exit": 0,
+        "passed": 15,
+        "failed": 0,
+        "total": 15,
+        "run": "retry3"
+      },
+      {
+        "file": "user-invitations.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "run": "retry1"
+      }
+    ]
+  },
+  "databaseScan": {
+    "orphans": 0,
+    "premature_dispatches": 0,
+    "invalid_quotes": 0,
+    "invalid_manifests": 0,
+    "fault_triggers": 0,
+    "active_fixture_credentials": 0,
+    "active_fixture_zones": 0
+  },
+  "databases": {
+    "names": [
+      "mandaria_b2_clean_74f1669f9c_test",
+      "mandaria_b2_upgrade_74f1669f9c_test"
+    ],
+    "regression": "mandaria_b2_regression_2ef2401128_test"
+  },
+  "cleanup": {
+    "revokedLeftoverCredentials": 2,
+    "deactivatedLeftoverZones": 1,
+    "removedSyntheticFaultTriggers": 1,
+    "historyRetained": true
+  },
+  "pending": [
+    "B3",
+    "CHECK B4",
+    "Activación A",
+    "Compatibilidad binario antiguo real no ejecutada",
+    "Wraparound XID no ejecutado; diseño no depende de XID"
+  ]
+}

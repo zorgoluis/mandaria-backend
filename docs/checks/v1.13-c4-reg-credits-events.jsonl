@@ -1,0 +1,48 @@
+{"at":"2026-09-29T08:00:27.005Z","event":"start","name":"V1.10-A account ownership > every provider has exactly one empty account from birth, however it was created"}
+{"at":"2026-09-29T08:00:27.009Z","event":"finish","name":"V1.10-A account ownership > every provider has exactly one empty account from birth, however it was created","state":"passed"}
+{"at":"2026-09-29T08:00:27.184Z","event":"start","name":"V1.10-A account ownership > an independent driver gets one account when approved, keeps it, and never a second"}
+{"at":"2026-09-29T08:00:27.186Z","event":"finish","name":"V1.10-A account ownership > an independent driver gets one account when approved, keeps it, and never a second","state":"passed"}
+{"at":"2026-09-29T08:00:27.191Z","event":"start","name":"V1.10-A account ownership > a fleet driver has no personal account and cannot read the provider one as its own"}
+{"at":"2026-09-29T08:00:27.193Z","event":"finish","name":"V1.10-A account ownership > a fleet driver has no personal account and cannot read the provider one as its own","state":"passed"}
+{"at":"2026-09-29T08:00:27.299Z","event":"start","name":"V1.10-A recharge and adjustment > a recharge is one attributable RECHARGE entry and moves the balance"}
+{"at":"2026-09-29T08:00:27.302Z","event":"finish","name":"V1.10-A recharge and adjustment > a recharge is one attributable RECHARGE entry and moves the balance","state":"passed"}
+{"at":"2026-09-29T08:00:27.400Z","event":"start","name":"V1.10-A recharge and adjustment > the same Idempotency-Key replays; a different body with it is refused"}
+{"at":"2026-09-29T08:00:27.403Z","event":"finish","name":"V1.10-A recharge and adjustment > the same Idempotency-Key replays; a different body with it is refused","state":"passed"}
+{"at":"2026-09-29T08:00:27.406Z","event":"start","name":"V1.10-A recharge and adjustment > requires a valid Idempotency-Key and a reason for OTHER"}
+{"at":"2026-09-29T08:00:27.408Z","event":"finish","name":"V1.10-A recharge and adjustment > requires a valid Idempotency-Key and a reason for OTHER","state":"passed"}
+{"at":"2026-09-29T08:00:27.410Z","event":"start","name":"V1.10-A recharge and adjustment > adjusts in both directions but never to a negative balance"}
+{"at":"2026-09-29T08:00:27.412Z","event":"finish","name":"V1.10-A recharge and adjustment > adjusts in both directions but never to a negative balance","state":"passed"}
+{"at":"2026-09-29T08:00:27.415Z","event":"start","name":"V1.10-A recharge and adjustment > rejects zero, decimals, text, absurd amounts and forged ownership fields"}
+{"at":"2026-09-29T08:00:27.574Z","event":"finish","name":"V1.10-A recharge and adjustment > rejects zero, decimals, text, absurd amounts and forged ownership fields","state":"passed"}
+{"at":"2026-09-29T08:00:27.577Z","event":"start","name":"V1.10-A recharge and adjustment > manages the independent account through the /independent route"}
+{"at":"2026-09-29T08:00:27.580Z","event":"finish","name":"V1.10-A recharge and adjustment > manages the independent account through the /independent route","state":"passed"}
+{"at":"2026-09-29T08:00:27.685Z","event":"start","name":"V1.10-A authorization and isolation > PROVIDER_ADMIN reads only its own account and history, and cannot move credits"}
+{"at":"2026-09-29T08:00:27.688Z","event":"finish","name":"V1.10-A authorization and isolation > PROVIDER_ADMIN reads only its own account and history, and cannot move credits","state":"passed"}
+{"at":"2026-09-29T08:00:27.788Z","event":"start","name":"V1.10-A authorization and isolation > never shows one provider the account of another"}
+{"at":"2026-09-29T08:00:27.791Z","event":"finish","name":"V1.10-A authorization and isolation > never shows one provider the account of another","state":"passed"}
+{"at":"2026-09-29T08:00:27.794Z","event":"start","name":"V1.10-A authorization and isolation > an independent driver reads only its own account and cannot move credits"}
+{"at":"2026-09-29T08:00:27.797Z","event":"finish","name":"V1.10-A authorization and isolation > an independent driver reads only its own account and cannot move credits","state":"passed"}
+{"at":"2026-09-29T08:00:27.801Z","event":"start","name":"V1.10-A authorization and isolation > keeps B2B clients and the wrong roles out of every credit route"}
+{"at":"2026-09-29T08:00:27.804Z","event":"finish","name":"V1.10-A authorization and isolation > keeps B2B clients and the wrong roles out of every credit route","state":"passed"}
+{"at":"2026-09-29T08:00:28.011Z","event":"start","name":"V1.10-A ledger > paginates newest first by sequence and bounds the page size"}
+{"at":"2026-09-29T08:00:28.014Z","event":"finish","name":"V1.10-A ledger > paginates newest first by sequence and bounds the page size","state":"passed"}
+{"at":"2026-09-29T08:00:28.017Z","event":"start","name":"V1.10-A ledger > is immutable in PostgreSQL itself, not just in the API"}
+{"at":"2026-09-29T08:00:28.021Z","event":"finish","name":"V1.10-A ledger > is immutable in PostgreSQL itself, not just in the API","state":"passed"}
+{"at":"2026-09-29T08:00:28.335Z","event":"start","name":"V1.10-A database guarantees > refuses every invalid state written directly in SQL"}
+{"at":"2026-09-29T08:00:28.339Z","event":"finish","name":"V1.10-A database guarantees > refuses every invalid state written directly in SQL","state":"passed"}
+{"at":"2026-09-29T08:00:28.525Z","event":"start","name":"V1.10-A concurrency > concurrent recharges all apply, with no lost update"}
+{"at":"2026-09-29T08:00:28.647Z","event":"finish","name":"V1.10-A concurrency > concurrent recharges all apply, with no lost update","state":"passed"}
+{"at":"2026-09-29T08:00:28.651Z","event":"start","name":"V1.10-A concurrency > two debits that fit only once: one applies, the other is refused, balance 2"}
+{"at":"2026-09-29T08:00:28.657Z","event":"finish","name":"V1.10-A concurrency > two debits that fit only once: one applies, the other is refused, balance 2","state":"passed"}
+{"at":"2026-09-29T08:00:28.662Z","event":"start","name":"V1.10-A concurrency > mixed concurrent movements leave a balance equal to the serialized history"}
+{"at":"2026-09-29T08:00:28.763Z","event":"finish","name":"V1.10-A concurrency > mixed concurrent movements leave a balance equal to the serialized history","state":"passed"}
+{"at":"2026-09-29T08:00:28.768Z","event":"start","name":"V1.10-A concurrency > the same Idempotency-Key fired five times at once applies exactly once"}
+{"at":"2026-09-29T08:00:28.774Z","event":"finish","name":"V1.10-A concurrency > the same Idempotency-Key fired five times at once applies exactly once","state":"passed"}
+{"at":"2026-09-29T08:00:29.070Z","event":"start","name":"V1.10-A does not charge credits yet > a provider with zero credits cannot claim, and nothing moves"}
+{"at":"2026-09-29T08:00:29.247Z","event":"finish","name":"V1.10-A does not charge credits yet > a provider with zero credits cannot claim, and nothing moves","state":"passed"}
+{"at":"2026-09-29T08:00:29.252Z","event":"start","name":"V1.10-A does not charge credits yet > an independent driver with zero credits cannot take, and nothing moves"}
+{"at":"2026-09-29T08:00:29.390Z","event":"finish","name":"V1.10-A does not charge credits yet > an independent driver with zero credits cannot take, and nothing moves","state":"passed"}
+{"at":"2026-09-29T08:00:29.394Z","event":"start","name":"V1.10-A does not charge credits yet > suspending an owner keeps its balance and history readable"}
+{"at":"2026-09-29T08:00:29.397Z","event":"finish","name":"V1.10-A does not charge credits yet > suspending an owner keeps its balance and history readable","state":"passed"}
+{"at":"2026-09-29T08:00:29.401Z","event":"start","name":"V1.10-A audit > logs every economic mutation, attributable, with no secret"}
+{"at":"2026-09-29T08:00:29.405Z","event":"finish","name":"V1.10-A audit > logs every economic mutation, attributable, with no secret","state":"passed"}

@@ -1,0 +1,314 @@
+{
+  "node": "v24.15.0",
+  "attempts": [
+    {
+      "label": "build",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/@nestjs/cli/bin/nest.js build",
+      "startedAt": "2026-09-29T15:24:55.514Z",
+      "endedAt": "2026-09-29T15:25:11.543Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-1-build.txt"
+    },
+    {
+      "label": "types",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json --incremental false",
+      "startedAt": "2026-09-29T15:25:11.704Z",
+      "endedAt": "2026-09-29T15:25:26.681Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-2-types.txt"
+    },
+    {
+      "label": "types-build",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json --incremental false",
+      "startedAt": "2026-09-29T15:25:26.824Z",
+      "endedAt": "2026-09-29T15:25:33.402Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-3-types-build.txt"
+    },
+    {
+      "label": "units",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/vitest/vitest.mjs run test/collection-instructions.spec.ts test/dispatch.spec.ts test/delivery-assignments.spec.ts test/independent-drivers.spec.ts --reporter=json --outputFile=docs/checks/v1.13-d-units.json",
+      "startedAt": "2026-09-29T15:25:33.781Z",
+      "endedAt": "2026-09-29T15:25:37.058Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-4-units.txt"
+    },
+    {
+      "label": "converted-e2e",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/collection-instructions.e2e-spec.ts --pool=forks --maxWorkers=1 --reporter=json --outputFile=docs/checks/v1.13-d-converted-e2e.json",
+      "startedAt": "2026-09-29T15:26:06.019Z",
+      "endedAt": "2026-09-29T15:26:16.444Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-5-converted-e2e.txt"
+    },
+    {
+      "label": "converted-e2e-fixture-fixed",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/collection-instructions.e2e-spec.ts --pool=forks --maxWorkers=1 --reporter=json --outputFile=docs/checks/v1.13-d-converted-e2e-fixed.json",
+      "startedAt": "2026-09-29T15:29:49.787Z",
+      "endedAt": "2026-09-29T15:30:00.246Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-6-converted-e2e-fixture-fixed.txt"
+    },
+    {
+      "label": "converted-e2e-valid-fixtures",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/collection-instructions.e2e-spec.ts --pool=forks --maxWorkers=1 --reporter=json --outputFile=docs/checks/v1.13-d-converted-e2e-valid-fixtures.json",
+      "startedAt": "2026-09-29T15:30:48.598Z",
+      "endedAt": "2026-09-29T15:31:00.251Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-7-converted-e2e-valid-fixtures.txt"
+    },
+    {
+      "label": "regression-dispatch",
+      "database": "mandaria_c4_reg_5773962e2a6f_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/dispatch.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-d-regression-dispatch.json",
+      "startedAt": "2026-09-29T15:31:25.628Z",
+      "endedAt": "2026-09-29T15:31:40.595Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-8-regression-dispatch.txt"
+    },
+    {
+      "label": "regression-dispatch-single-diagnostic",
+      "database": "mandaria_c4_reg_5773962e2a6f_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/dispatch.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c3-runner-observer.mjs --outputFile=docs/checks/v1.13-d-regression-dispatch-diagnostic.json",
+      "startedAt": "2026-09-29T15:32:25.473Z",
+      "endedAt": "2026-09-29T15:32:38.547Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-9-regression-dispatch-single-diagnostic.txt"
+    },
+    {
+      "label": "regression-assignments",
+      "database": "mandaria_c4_reg_e6a753559b46_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-assignments.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-d-regression-assignments.json",
+      "startedAt": "2026-09-29T15:33:13.997Z",
+      "endedAt": "2026-09-29T15:33:25.288Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-10-regression-assignments.txt"
+    },
+    {
+      "label": "regression-independent",
+      "database": "mandaria_c4_reg_2ca2fd8bbb78_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/independent-drivers.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-d-regression-independent.json",
+      "startedAt": "2026-09-29T15:33:52.959Z",
+      "endedAt": "2026-09-29T15:34:06.359Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-11-regression-independent.txt"
+    },
+    {
+      "label": "regression-driver-self",
+      "database": "mandaria_c4_reg_6bb56b397578_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/driver-self.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-d-regression-driver-self.json",
+      "startedAt": "2026-09-29T15:34:29.712Z",
+      "endedAt": "2026-09-29T15:34:36.226Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-12-regression-driver-self.txt"
+    },
+    {
+      "label": "converted-e2e-final",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/collection-instructions.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-d-converted-e2e-final.json",
+      "startedAt": "2026-09-29T15:34:56.465Z",
+      "endedAt": "2026-09-29T15:35:05.397Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-13-converted-e2e-final.txt"
+    },
+    {
+      "label": "converted-e2e-release-contract",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/collection-instructions.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-d-converted-e2e-release-contract.json",
+      "startedAt": "2026-09-29T15:35:49.880Z",
+      "endedAt": "2026-09-29T15:35:58.498Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-14-converted-e2e-release-contract.txt"
+    },
+    {
+      "label": "types-final",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json --incremental false",
+      "startedAt": "2026-09-29T15:36:21.980Z",
+      "endedAt": "2026-09-29T15:36:36.790Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-15-types-final.txt"
+    },
+    {
+      "label": "types-build-final",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json --incremental false",
+      "startedAt": "2026-09-29T15:36:36.945Z",
+      "endedAt": "2026-09-29T15:36:43.703Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-16-types-build-final.txt"
+    },
+    {
+      "label": "oxlint",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/oxlint/bin/oxlint src/ test/ scripts/ --ignore-pattern src/generated",
+      "startedAt": "2026-09-29T15:36:43.832Z",
+      "endedAt": "2026-09-29T15:36:47.727Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-17-oxlint.txt"
+    },
+    {
+      "label": "eslint",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/eslint/bin/eslint.js src test prisma",
+      "startedAt": "2026-09-29T15:36:47.898Z",
+      "endedAt": "2026-09-29T15:36:54.110Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-18-eslint.txt"
+    },
+    {
+      "label": "build-openapi",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/@nestjs/cli/bin/nest.js build",
+      "startedAt": "2026-09-29T15:37:12.259Z",
+      "endedAt": "2026-09-29T15:37:28.373Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-19-build-openapi.txt"
+    },
+    {
+      "label": "openapi",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node dist/openapi.cli.js",
+      "startedAt": "2026-09-29T15:37:28.570Z",
+      "endedAt": "2026-09-29T15:37:31.036Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-20-openapi.txt"
+    },
+    {
+      "label": "api-access",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts",
+      "startedAt": "2026-09-29T15:37:31.234Z",
+      "endedAt": "2026-09-29T15:37:33.141Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-21-api-access.txt"
+    },
+    {
+      "label": "docs-check",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts --check",
+      "startedAt": "2026-09-29T15:37:33.354Z",
+      "endedAt": "2026-09-29T15:37:52.571Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-22-docs-check.txt"
+    },
+    {
+      "label": "units-logistics",
+      "database": "mandaria_c4_clean_7ea77a453d_test",
+      "command": "node node_modules/vitest/vitest.mjs run test/logistics.spec.ts --reporter=json --outputFile=docs/checks/v1.13-d-units-logistics.json",
+      "startedAt": "2026-09-29T15:37:52.765Z",
+      "endedAt": "2026-09-29T15:37:55.646Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-d-23-units-logistics.txt"
+    }
+  ],
+  "finalReview": {
+    "at": "2026-09-29T15:43:44.583Z",
+    "head": "9785ee1156f8df084fb96a9ad48895ad68e1f764",
+    "branch": "1.13-Precotización_integración_comida_prepagada",
+    "versions": {
+      "vitest": "4.1.11",
+      "prisma": "6.19.3",
+      "typescript": "6.0.3",
+      "@nestjs/core": "11.2.4"
+    },
+    "verifiedFiles": [
+      {
+        "file": "collection-instructions.spec.ts",
+        "count": 10,
+        "report": "docs/checks/v1.13-d-units.json",
+        "exit": 0
+      },
+      {
+        "file": "delivery-assignments.spec.ts",
+        "count": 10,
+        "report": "docs/checks/v1.13-d-units.json",
+        "exit": 0
+      },
+      {
+        "file": "dispatch.spec.ts",
+        "count": 13,
+        "report": "docs/checks/v1.13-d-units.json",
+        "exit": 0
+      },
+      {
+        "file": "independent-drivers.spec.ts",
+        "count": 22,
+        "report": "docs/checks/v1.13-d-units.json",
+        "exit": 0
+      },
+      {
+        "file": "logistics.spec.ts",
+        "count": 8,
+        "report": "docs/checks/v1.13-d-units-logistics.json",
+        "exit": 0
+      },
+      {
+        "file": "collection-instructions.e2e-spec.ts",
+        "count": 5,
+        "report": "docs/checks/v1.13-d-converted-e2e-release-contract.json",
+        "exit": 0
+      },
+      {
+        "file": "dispatch.e2e-spec.ts",
+        "count": 13,
+        "report": "docs/checks/v1.13-d-regression-dispatch-diagnostic.json",
+        "exit": 0
+      },
+      {
+        "file": "delivery-assignments.e2e-spec.ts",
+        "count": 13,
+        "report": "docs/checks/v1.13-d-regression-assignments.json",
+        "exit": 0
+      },
+      {
+        "file": "independent-drivers.e2e-spec.ts",
+        "count": 23,
+        "report": "docs/checks/v1.13-d-regression-independent.json",
+        "exit": 0
+      },
+      {
+        "file": "driver-self.e2e-spec.ts",
+        "count": 7,
+        "report": "docs/checks/v1.13-d-regression-driver-self.json",
+        "exit": 0
+      }
+    ],
+    "unitCases": 63,
+    "e2eCases": 61,
+    "secretReview": "No known environment secrets, credentialed URLs, JWTs or password hashes in changed/new files; values not printed",
+    "documentationReferences": "PASS",
+    "openApiOptionalFields": "PASS",
+    "scope": "No DB access in this final review; no historical cases counted; no migrations or full suites"
+  }
+}

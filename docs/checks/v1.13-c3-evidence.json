@@ -1,0 +1,687 @@
+{
+  "node": "v24.15.0",
+  "attempts": [
+    {
+      "label": "clean",
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "startedAt": "2026-09-29T07:11:33.220Z",
+      "endedAt": "2026-09-29T07:11:35.747Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-1-clean.txt"
+    },
+    {
+      "label": "types-preflight",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json --incremental false",
+      "startedAt": "2026-09-29T07:12:16.976Z",
+      "endedAt": "2026-09-29T07:12:30.413Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-2-types-preflight.txt"
+    },
+    {
+      "label": "build",
+      "command": "node node_modules/@nestjs/cli/bin/nest.js build",
+      "startedAt": "2026-09-29T07:13:09.871Z",
+      "endedAt": "2026-09-29T07:13:20.134Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-3-build.txt"
+    },
+    {
+      "label": "previous-build",
+      "command": "node scripts/prepare-authorized-acceptance-c3-legacy.mjs",
+      "startedAt": "2026-09-29T07:13:45.088Z",
+      "endedAt": "2026-09-29T07:13:56.491Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-4-previous-build.txt"
+    },
+    {
+      "label": "types-expanded",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json --incremental false",
+      "startedAt": "2026-09-29T07:15:04.871Z",
+      "endedAt": "2026-09-29T07:15:19.427Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-5-types-expanded.txt"
+    },
+    {
+      "label": "focused-1",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-c3-authorized-acceptance.e2e-spec.ts --pool=threads --maxWorkers=1 --reporter=json --outputFile=docs/checks/v1.13-c3-focused-1.json",
+      "startedAt": "2026-09-29T07:16:44.678Z",
+      "endedAt": "2026-09-29T07:17:19.126Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-6-focused-1.txt"
+    },
+    {
+      "label": "upgrade",
+      "command": "node scripts/verify-authorized-acceptance-c3-migrations.mjs",
+      "startedAt": "2026-09-29T07:18:02.599Z",
+      "endedAt": "2026-09-29T07:18:15.737Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-7-upgrade.txt"
+    },
+    {
+      "label": "focused-2",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-c3-authorized-acceptance.e2e-spec.ts --pool=threads --maxWorkers=1 --reporter=json --outputFile=docs/checks/v1.13-c3-focused-2.json",
+      "startedAt": "2026-09-29T07:19:40.492Z",
+      "endedAt": "2026-09-29T07:20:18.148Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-8-focused-2.txt"
+    },
+    {
+      "label": "types-final",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json --incremental false",
+      "startedAt": "2026-09-29T07:21:19.766Z",
+      "endedAt": "2026-09-29T07:21:33.436Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-9-types-final.txt"
+    },
+    {
+      "label": "focused-final",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-c3-authorized-acceptance.e2e-spec.ts --pool=threads --maxWorkers=1 --reporter=json --outputFile=docs/checks/v1.13-c3-focused-final.json",
+      "startedAt": "2026-09-29T07:22:24.459Z",
+      "endedAt": "2026-09-29T07:23:02.066Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-10-focused-final.txt"
+    },
+    {
+      "label": "unit",
+      "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+      "startedAt": "2026-09-29T07:23:31.033Z",
+      "endedAt": "2026-09-29T07:23:39.492Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-11-unit.txt"
+    },
+    {
+      "label": "prisma-validate",
+      "command": "node node_modules/prisma/build/index.js validate",
+      "startedAt": "2026-09-29T07:24:11.031Z",
+      "endedAt": "2026-09-29T07:24:12.736Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-12-prisma-validate.txt"
+    },
+    {
+      "label": "prisma-generate",
+      "command": "node node_modules/prisma/build/index.js generate",
+      "startedAt": "2026-09-29T07:24:12.863Z",
+      "endedAt": "2026-09-29T07:24:15.355Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-13-prisma-generate.txt"
+    },
+    {
+      "label": "types-all",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json --incremental false",
+      "startedAt": "2026-09-29T07:24:15.483Z",
+      "endedAt": "2026-09-29T07:24:29.428Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-14-types-all.txt"
+    },
+    {
+      "label": "types-build",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json --incremental false",
+      "startedAt": "2026-09-29T07:24:29.566Z",
+      "endedAt": "2026-09-29T07:24:35.597Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-15-types-build.txt"
+    },
+    {
+      "label": "build-final",
+      "command": "node node_modules/@nestjs/cli/bin/nest.js build",
+      "startedAt": "2026-09-29T07:24:35.703Z",
+      "endedAt": "2026-09-29T07:24:54.728Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-16-build-final.txt"
+    },
+    {
+      "label": "oxlint",
+      "command": "node node_modules/oxlint/bin/oxlint src/ test/ scripts/ --ignore-pattern src/generated",
+      "startedAt": "2026-09-29T07:24:54.872Z",
+      "endedAt": "2026-09-29T07:24:55.037Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-17-oxlint.txt"
+    },
+    {
+      "label": "eslint",
+      "command": "node node_modules/eslint/bin/eslint.js src test prisma",
+      "startedAt": "2026-09-29T07:24:55.189Z",
+      "endedAt": "2026-09-29T07:25:00.686Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-18-eslint.txt"
+    },
+    {
+      "label": "openapi",
+      "command": "node dist/openapi.cli.js",
+      "startedAt": "2026-09-29T07:25:00.840Z",
+      "endedAt": "2026-09-29T07:25:06.851Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-19-openapi.txt"
+    },
+    {
+      "label": "access-docs",
+      "command": "node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts",
+      "startedAt": "2026-09-29T07:25:06.968Z",
+      "endedAt": "2026-09-29T07:25:08.716Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-20-access-docs.txt"
+    },
+    {
+      "label": "docs-check",
+      "command": "node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts --check",
+      "startedAt": "2026-09-29T07:25:08.837Z",
+      "endedAt": "2026-09-29T07:25:22.340Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-21-docs-check.txt"
+    },
+    {
+      "label": "migration-status-drift",
+      "command": "node scripts/verify-authorized-acceptance-c3-drift.mjs",
+      "startedAt": "2026-09-29T07:25:22.497Z",
+      "endedAt": "2026-09-29T07:25:23.845Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-22-migration-status-drift.txt"
+    },
+    {
+      "label": "migration-drift-corrected",
+      "command": "node scripts/verify-authorized-acceptance-c3-drift.mjs",
+      "startedAt": "2026-09-29T07:26:33.345Z",
+      "endedAt": "2026-09-29T07:26:42.790Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-23-migration-drift-corrected.txt"
+    },
+    {
+      "label": "regression",
+      "command": "node scripts/verify-authorized-acceptance-c3-regression.mjs",
+      "startedAt": "2026-09-29T07:26:59.508Z",
+      "endedAt": "2026-09-29T07:30:47.043Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-24-regression.txt"
+    },
+    {
+      "label": "native-diagnostic",
+      "command": "node scripts/diagnose-authorized-acceptance-c3-runner.mjs",
+      "startedAt": "2026-09-29T07:31:00.131Z",
+      "endedAt": "2026-09-29T07:31:29.869Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-25-native-diagnostic.txt"
+    },
+    {
+      "label": "all-database-scan",
+      "command": "node scripts/scan-authorized-acceptance-c3-all.mjs",
+      "startedAt": "2026-09-29T07:32:18.241Z",
+      "endedAt": "2026-09-29T07:32:19.713Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-26-all-database-scan.txt"
+    },
+    {
+      "label": "oxlint-final",
+      "command": "node node_modules/oxlint/bin/oxlint src/ test/ scripts/ --ignore-pattern src/generated",
+      "startedAt": "2026-09-29T07:33:00.700Z",
+      "endedAt": "2026-09-29T07:33:00.823Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c3-27-oxlint-final.txt"
+    }
+  ],
+  "databases": {
+    "clean": "mandaria_c3_clean_e9c4e4219e_test",
+    "upgrade": "mandaria_c3_upgrade_e9c4e4219e_test"
+  },
+  "versions": {
+    "node": "v24.15.0",
+    "prisma": "6.19.3",
+    "vitest": "4.1.11",
+    "typescript": "6.0.3",
+    "postgres": "18.6"
+  },
+  "consolidated": {
+    "files": [
+      {
+        "file": "test/check-a6-prequotes.e2e-spec.ts",
+        "tests": 36,
+        "report": "docs/checks/v1.13-c3-reg-check-a6-prequotes.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-a6-prequotes.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-check-a6-prequotes.json",
+        "category": "e2e",
+        "sha256": "0ce6319f0492d6f22bcf03cd81397d6b035ea4c1586712e33e25a8db19b719ad"
+      },
+      {
+        "file": "test/prequote-conversion.e2e-spec.ts",
+        "tests": 39,
+        "report": "docs/checks/v1.13-c3-reg-prequote-conversion.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/prequote-conversion.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-prequote-conversion.json",
+        "category": "e2e",
+        "sha256": "3ea57d7056c0ac259b48410b5081e3e3cbe83d2ab895ba30ae1df6ca29457162"
+      },
+      {
+        "file": "test/check-b3-conversion.e2e-spec.ts",
+        "tests": 58,
+        "report": "docs/checks/v1.13-c3-reg-check-b3-conversion.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-b3-conversion.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-check-b3-conversion.json",
+        "category": "e2e",
+        "sha256": "f68c0c46535c0599c9b8126a6f423bb150934df00e9459525d42c2438f15e0d4"
+      },
+      {
+        "file": "test/check-b4-conversion.e2e-spec.ts",
+        "tests": 24,
+        "report": "docs/checks/v1.13-c3-reg-check-b4-conversion.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-b4-conversion.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-check-b4-conversion.json",
+        "category": "e2e",
+        "sha256": "e9aa3af714b907361a97a7b7e6ca664f9c211d084130a755f2d2de3175783d4a"
+      },
+      {
+        "file": "test/dispatch.e2e-spec.ts",
+        "tests": 13,
+        "report": "docs/checks/v1.13-c3-reg-dispatch.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/dispatch.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-dispatch.json",
+        "category": "e2e",
+        "sha256": "a106d3523b4bb996668c61ac8330efd4645cb5498261e8ada6bd0b38e486c7e7"
+      },
+      {
+        "file": "test/dispatch-credit-snapshots.e2e-spec.ts",
+        "tests": 14,
+        "report": "docs/checks/v1.13-c3-reg-dispatch-credit-snapshots.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/dispatch-credit-snapshots.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-dispatch-credit-snapshots.json",
+        "category": "e2e",
+        "sha256": "1023b8709e400d1f78465d2c8fd2f908413ad08432f5d8831dbb1ff2a237e8e2"
+      },
+      {
+        "file": "test/credit-consumption.e2e-spec.ts",
+        "tests": 36,
+        "report": "docs/checks/v1.13-c3-reg-credit-consumption.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/credit-consumption.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-credit-consumption.json",
+        "category": "e2e",
+        "sha256": "f5e2853a75d875e7692965e7f14b09b755ee2e3dbd931d556242a4798946dba1"
+      },
+      {
+        "file": "test/credit-refunds.e2e-spec.ts",
+        "tests": 22,
+        "report": "docs/checks/v1.13-c3-reg-credit-refunds.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/credit-refunds.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-credit-refunds.json",
+        "category": "e2e",
+        "sha256": "bc988fc26191b48ed2153b520bec81fef08127251c3bb7628f19271fca2b1342"
+      },
+      {
+        "file": "test/delivery-completion.e2e-spec.ts",
+        "tests": 29,
+        "report": "docs/checks/v1.13-c3-reg-delivery-completion.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-completion.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-delivery-completion.json",
+        "category": "e2e",
+        "sha256": "86458a68a1b117b5f2775fff612e65e76b9ecfe11c0f6faf87ce63a3d0b2a5cf"
+      },
+      {
+        "file": "test/independent-drivers.e2e-spec.ts",
+        "tests": 23,
+        "report": "docs/checks/v1.13-c3-reg-independent-drivers.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/independent-drivers.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-independent-drivers.json",
+        "category": "e2e",
+        "sha256": "48f9c5252fe7b693c840a189f045ba17ba64f0d9af79b8f4d696a95931af4d26"
+      },
+      {
+        "file": "test/b2b-outbox.e2e-spec.ts",
+        "tests": 17,
+        "report": "docs/checks/v1.13-c3-reg-b2b-outbox.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/b2b-outbox.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-b2b-outbox.json",
+        "category": "e2e",
+        "sha256": "9f6f0f6cb5c04977912c2095d76a0a2e095ea56e516efd3a5d8dffdac94c76d3"
+      },
+      {
+        "file": "test/b2b-delivery-status.e2e-spec.ts",
+        "tests": 21,
+        "report": "docs/checks/v1.13-c3-reg-b2b-delivery-status.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/b2b-delivery-status.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-b2b-delivery-status.json",
+        "category": "e2e",
+        "sha256": "fd588b07e2f0e452b07b902680da868b7bb99910f551038353efa4ceb6635a9d"
+      },
+      {
+        "file": "test/delivery-quotes.e2e-spec.ts",
+        "tests": 14,
+        "report": "docs/checks/v1.13-c3-diag-delivery-quotes.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-quotes.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c3-runner-observer.mjs --outputFile=docs/checks/v1.13-c3-diag-delivery-quotes.json",
+        "category": "e2e",
+        "sha256": "5385719fe2bc4c9ee6d1f6bf2400d298ceb4c922d9d24131f071adc5f065d988"
+      },
+      {
+        "file": "test/delivery-assignments.e2e-spec.ts",
+        "tests": 13,
+        "report": "docs/checks/v1.13-c3-diag-delivery-assignments.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-assignments.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c3-runner-observer.mjs --outputFile=docs/checks/v1.13-c3-diag-delivery-assignments.json",
+        "category": "e2e",
+        "sha256": "2c043114688bf0bd8a96a1f742bcd8005c6b1262e3b3ce407f7962f15ef31b52"
+      },
+      {
+        "file": "test/check-c3-authorized-acceptance.e2e-spec.ts",
+        "tests": 62,
+        "report": "docs/checks/v1.13-c3-focused-final.json",
+        "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-c3-authorized-acceptance.e2e-spec.ts --pool=threads --maxWorkers=1 --reporter=json --outputFile=docs/checks/v1.13-c3-focused-final.json",
+        "category": "e2e",
+        "sha256": "7069719007e1e6fdd0954e85c9b5d4ad97898eefda7f26b02ffb4992834b54cc"
+      },
+      {
+        "file": "test/authorized-acceptance.spec.ts",
+        "tests": 9,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "c9ed6c269e7126a53e61510b10258d294b89ffed76b00bb65147433a9aa35b3a"
+      },
+      {
+        "file": "test/b2b-outbox.spec.ts",
+        "tests": 9,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "70e146891261ab744443badcf4d6ba7544f2c86295c2b0b9c39498a5ba6fc108"
+      },
+      {
+        "file": "test/b2b-webhook-operations.spec.ts",
+        "tests": 8,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "c662e924b8cef59bac9a115d412eb94ae58c70d7e8b31d9a86e578edb32a931b"
+      },
+      {
+        "file": "test/b2b-webhook-reliability.spec.ts",
+        "tests": 17,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "37146adab7f205e426fc581e1ca6bfb0eadd16e20f48bab200a077f588224cec"
+      },
+      {
+        "file": "test/b2b-webhooks.spec.ts",
+        "tests": 19,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "1fb1f80192a6a49ea7fba97946b8aff8fa072750b49c953a71544c896f08b9c2"
+      },
+      {
+        "file": "test/check-c3-authorized-acceptance.spec.ts",
+        "tests": 3,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "1cc9be0a74d893b5d426399f5eeba2fca895ac1806c30902d874ccc4b9756658"
+      },
+      {
+        "file": "test/credit-consumption.spec.ts",
+        "tests": 12,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "95605b9a2ccf4a3084e582d7301423030b49d77737cde04c4971e72e97d4bddd"
+      },
+      {
+        "file": "test/credit-policies.spec.ts",
+        "tests": 16,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "d7699f235387b92d542fdbe84cc088df60538f28508fb0f4266736acd2c06625"
+      },
+      {
+        "file": "test/credit-refunds.spec.ts",
+        "tests": 10,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "805e375fcd555ad158c0a8dcff60f9d9f4b1d7eff57d4e9a7e3d23a256b52922"
+      },
+      {
+        "file": "test/credits.spec.ts",
+        "tests": 17,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "a87b6ca807376bec8868334ca6c2f7cbe445dae44f38e7669b83b7f28b9f31b7"
+      },
+      {
+        "file": "test/delivery-assignments.spec.ts",
+        "tests": 10,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "874447bdc0b7294b5badeb167f5bd6d866a6e658180cd9105c411d8bcb049732"
+      },
+      {
+        "file": "test/delivery-completion.spec.ts",
+        "tests": 23,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "05c041899b666690a530e6ccd405035b4d57ec3dca1cf82471bb260d8c45aeb5"
+      },
+      {
+        "file": "test/delivery-requests.spec.ts",
+        "tests": 11,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "f1c3f07fdb945df2dcff0af5011ce039e72c6091f5304435b4c77ff9c5a6d282"
+      },
+      {
+        "file": "test/delivery-status.spec.ts",
+        "tests": 14,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "3cadb305a4eba27579ed9db6dba684a435efa3ea478cffd8d580299df8ee2803"
+      },
+      {
+        "file": "test/dispatch-credit-snapshots.spec.ts",
+        "tests": 10,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "b43702ee102e84d8a3d6088e2615c72f9ea347ced42821e2f30b9414fa51f62d"
+      },
+      {
+        "file": "test/dispatch.spec.ts",
+        "tests": 13,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "29d6556953aa40b63341c4fbda565bc2d122c6a4fc201a94da4706e91e3a08d0"
+      },
+      {
+        "file": "test/http.spec.ts",
+        "tests": 4,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "696c89585930bee2e00975018352bc7a3d3614a8c0a04b4c38dc599fefa11b99"
+      },
+      {
+        "file": "test/independent-drivers.spec.ts",
+        "tests": 22,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "bb702a25320453ccd87ee89f2283b2e780999d35d7b29259b1cb7f2dc7ec8782"
+      },
+      {
+        "file": "test/integration-auth.spec.ts",
+        "tests": 3,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "50061d08495e629090608613a15524b8ba65d7ad36932b236e17e64f3097c2ed"
+      },
+      {
+        "file": "test/invitations.spec.ts",
+        "tests": 16,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "f544ffbbeffe77eee23594a49d04cf21aea6c7a2d7a51aa92bf7fb4d51a9959a"
+      },
+      {
+        "file": "test/local-provider-admins.spec.ts",
+        "tests": 2,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "e7d9d3d5c18970c9fc5334e5db91e6b6b853fd0abcaffe4cdd890bf44f7a2d3a"
+      },
+      {
+        "file": "test/logistics.spec.ts",
+        "tests": 8,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "7e42e62d5765f9f50f96e9f67207926b285c4cfc53109b7c2214913bd8661963"
+      },
+      {
+        "file": "test/prequote-conditions.spec.ts",
+        "tests": 16,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "674640693b78e2d3d2a21d00c63347b2025bd88421ec77dc56b4f599f650e2ca"
+      },
+      {
+        "file": "test/prequote-consumption.spec.ts",
+        "tests": 15,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "1e484475b8e8378b19dd8e52db8ca7b05ca5296fbd66df3c3955f7a3d6959a43"
+      },
+      {
+        "file": "test/prequote-conversion.spec.ts",
+        "tests": 8,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "99fbab3e60a17e4a4956a5a25d0faa25504f370bef551488c19b5142eaa20538"
+      },
+      {
+        "file": "test/prequote-orchestration.spec.ts",
+        "tests": 10,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "94f708c3929b386f0cf3a8d24428a182549570f471083bfd53d7e214690c7dcc"
+      },
+      {
+        "file": "test/pricing.spec.ts",
+        "tests": 14,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "0580eac030a913d49932ab85292b0fe1a1ff6297c7bbb64066deaf20be6edd12"
+      },
+      {
+        "file": "test/providers.spec.ts",
+        "tests": 3,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "2908a75fe9fbcd2ae5e34634e6e067d8887adb45f5d3a21cd402faa71a399e38"
+      },
+      {
+        "file": "test/public-execution-identity.spec.ts",
+        "tests": 6,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "e0115bc07a89ec70e5a12d5b37a00811b79f319517e707acea183d13047272c9"
+      },
+      {
+        "file": "test/quote-accept-diagnostics.spec.ts",
+        "tests": 15,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "73713d540488a4f77b1ab76eda0aef0a40558aeee51e8f66289e608c2f5fcb6c"
+      },
+      {
+        "file": "test/quote-pricing.spec.ts",
+        "tests": 19,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "3a877f16f4f6319e46b1e80b534e673c4f7748fb7a165e92bf8a1c8a6ee5acbc"
+      },
+      {
+        "file": "test/resend-mail.spec.ts",
+        "tests": 19,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "43313345340cca3589700de85b832a97d4bcc7a7a3e349b69921302f7dd4607c"
+      },
+      {
+        "file": "test/services.spec.ts",
+        "tests": 7,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "c3d8ba1e5a52dfc45a8d6f78d50c0f543bdbbd7b17cd93d693c96a7d447fe0cf"
+      },
+      {
+        "file": "src/config/environment.spec.ts",
+        "tests": 5,
+        "report": "docs/checks/v1.13-c3-unit.json",
+        "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c3-unit.json",
+        "category": "unit",
+        "sha256": "27b788501b9c4941f2c2a89f29ce1222fd83a9ee24ac06b2861f1b217c15c74f"
+      }
+    ],
+    "e2e": 421,
+    "unit": 393,
+    "excluded": "Historical results, failed/aborted attempts, repeats and filtered upgrade seed"
+  },
+  "regressionIndex": "docs/checks/v1.13-c3-regression.json",
+  "diagnosticIndex": "docs/checks/v1.13-c3-diagnostics.json",
+  "cleanup": {
+    "command": "node --input-type=module -e \"import 'dotenv/config'; import {readFileSync} from 'node:fs'; const s=JSON.parse(readFileSync('.tmp/c3/databases.json')); const u=new URL(process.env.TEST_DATABASE_URL||process.env.DATABASE_URL);u.pathname='/'+s.clean;process.env.TEST_DATABASE_URL=u.toString();await import('./scripts/scan-authorized-acceptance-c3.mjs');\"",
+    "exit": 0,
+    "result": "docs/checks/v1.13-c3-scan.json",
+    "historyRetained": true,
+    "log": "docs/checks/v1.13-c3-cleanup-direct.txt",
+    "logProvenance": "stdout captured in tool output; copied to evidence at consolidation"
+  },
+  "finalChecks": {
+    "at": "2026-09-29T07:34:51.884Z",
+    "productFilesUnchanged": 336,
+    "envUnchanged": true,
+    "headUnchanged": true,
+    "versionUnchanged": true,
+    "testFileHashesVerified": 49,
+    "relativeLinks": 40,
+    "evidenceFilesParsed": 93,
+    "knownSecretOrJwtMatches": 0,
+    "gitDiffCheckExit": 0,
+    "scan": "docs/checks/v1.13-c3-all-database-scan.json",
+    "verdict": "LISTO PARA CHECK C4"
+  },
+  "firstDriftFailure": {
+    "message": "Test database must differ from DATABASE_URL",
+    "source": "Observed status child log before rerun; outer failed-attempt log retained. Child status log was overwritten by successful rerun; not represented as original retained log.",
+    "failedAttemptLabel": "migration-status-drift"
+  }
+}

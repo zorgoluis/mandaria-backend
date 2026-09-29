@@ -1,0 +1,22 @@
+[Nest] 14448  - 29/09/2026, 2:03:21 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: '900c19e3-fa31-4ee8-88dd-d730a5d58dff',
+  operation: 'delivery_requests.create'
+}
+[Nest] 14448  - 29/09/2026, 2:03:21 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: '900c19e3-fa31-4ee8-88dd-d730a5d58dff',
+  operation: 'delivery_prequotes.create'
+}
+[Nest] 14448  - 29/09/2026, 2:03:21 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: '900c19e3-fa31-4ee8-88dd-d730a5d58dff',
+  operation: 'delivery_requests.create'
+}
+[Nest] 14448  - 29/09/2026, 2:03:21 a.m.    WARN [IdempotencyService] Object(3) {
+  event: 'IDEMPOTENCY_CONFLICT',
+  integrationClientId: '900c19e3-fa31-4ee8-88dd-d730a5d58dff',
+  operation: 'delivery_requests.create'
+}
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c4-reg-prequote-persistence.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

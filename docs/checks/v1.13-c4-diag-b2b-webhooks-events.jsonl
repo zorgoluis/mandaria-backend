@@ -1,0 +1,109 @@
+{"at":"2026-09-29T08:05:03.600Z","event":"start","name":"V1.12-C a completed delivery reaches the client that asked for it > a provider delivery is POSTed as the recorded event, with its id in a header"}
+{"at":"2026-09-29T08:05:03.807Z","event":"finish","name":"V1.12-C a completed delivery reaches the client that asked for it > a provider delivery is POSTed as the recorded event, with its id in a header","state":"passed"}
+{"at":"2026-09-29T08:05:03.913Z","event":"start","name":"V1.12-C a completed delivery reaches the client that asked for it > an independent delivery arrives the same way, with its own execution mode"}
+{"at":"2026-09-29T08:05:04.053Z","event":"finish","name":"V1.12-C a completed delivery reaches the client that asked for it > an independent delivery arrives the same way, with its own execution mode","state":"passed"}
+{"at":"2026-09-29T08:05:04.281Z","event":"start","name":"V1.12-C a completed delivery reaches the client that asked for it > the body carries no internal identifier and no secret"}
+{"at":"2026-09-29T08:05:04.288Z","event":"finish","name":"V1.12-C a completed delivery reaches the client that asked for it > the body carries no internal identifier and no secret","state":"passed"}
+{"at":"2026-09-29T08:05:04.384Z","event":"start","name":"V1.12-C a completed delivery reaches the client that asked for it > every 2xx counts as delivered"}
+{"at":"2026-09-29T08:05:05.038Z","event":"finish","name":"V1.12-C a completed delivery reaches the client that asked for it > every 2xx counts as delivered","state":"passed"}
+{"at":"2026-09-29T08:05:05.359Z","event":"start","name":"V1.12-C a failing client cannot undo a delivery > every non-2xx is a transport failure and nothing else changes"}
+{"at":"2026-09-29T08:05:06.819Z","event":"finish","name":"V1.12-C a failing client cannot undo a delivery > every non-2xx is a transport failure and nothing else changes","state":"passed"}
+{"at":"2026-09-29T08:05:08.715Z","event":"start","name":"V1.12-C a failing client cannot undo a delivery > a receiver that never answers is cut off by the timeout"}
+{"at":"2026-09-29T08:05:08.722Z","event":"finish","name":"V1.12-C a failing client cannot undo a delivery > a receiver that never answers is cut off by the timeout","state":"passed"}
+{"at":"2026-09-29T08:05:08.816Z","event":"start","name":"V1.12-C a failing client cannot undo a delivery > a permitted destination with nobody listening fails cleanly"}
+{"at":"2026-09-29T08:05:08.961Z","event":"finish","name":"V1.12-C a failing client cannot undo a delivery > a permitted destination with nobody listening fails cleanly","state":"passed"}
+{"at":"2026-09-29T08:05:09.214Z","event":"start","name":"V1.12-C a failing client cannot undo a delivery > a redirect is not followed: it is recorded as a failure"}
+{"at":"2026-09-29T08:05:09.222Z","event":"finish","name":"V1.12-C a failing client cannot undo a delivery > a redirect is not followed: it is recorded as a failure","state":"passed"}
+{"at":"2026-09-29T08:05:09.656Z","event":"start","name":"V1.12-C a failing client cannot undo a delivery > a failed attempt and its event survive a restart"}
+{"at":"2026-09-29T08:05:09.662Z","event":"finish","name":"V1.12-C a failing client cannot undo a delivery > a failed attempt and its event survive a restart","state":"passed"}
+{"at":"2026-09-29T08:05:09.979Z","event":"start","name":"V1.12-C without a destination there is nothing to attempt > a disabled endpoint means no request and no attempt"}
+{"at":"2026-09-29T08:05:10.596Z","event":"finish","name":"V1.12-C without a destination there is nothing to attempt > a disabled endpoint means no request and no attempt","state":"passed"}
+{"at":"2026-09-29T08:05:10.701Z","event":"start","name":"V1.12-C without a destination there is nothing to attempt > no endpoint at all behaves the same way"}
+{"at":"2026-09-29T08:05:11.239Z","event":"finish","name":"V1.12-C without a destination there is nothing to attempt > no endpoint at all behaves the same way","state":"passed"}
+{"at":"2026-09-29T08:05:11.566Z","event":"start","name":"V1.12-C one client, one destination > the event of one client never reaches the receiver of another"}
+{"at":"2026-09-29T08:05:12.117Z","event":"finish","name":"V1.12-C one client, one destination > the event of one client never reaches the receiver of another","state":"passed"}
+{"at":"2026-09-29T08:05:12.447Z","event":"start","name":"V1.12-C configuring a destination is an administrative act > only SUPER_ADMIN may write it"}
+{"at":"2026-09-29T08:05:12.454Z","event":"finish","name":"V1.12-C configuring a destination is an administrative act > only SUPER_ADMIN may write it","state":"passed"}
+{"at":"2026-09-29T08:05:12.463Z","event":"start","name":"V1.12-C configuring a destination is an administrative act > only SUPER_ADMIN may trigger a delivery by hand"}
+{"at":"2026-09-29T08:05:12.713Z","event":"finish","name":"V1.12-C configuring a destination is an administrative act > only SUPER_ADMIN may trigger a delivery by hand","state":"passed"}
+{"at":"2026-09-29T08:05:13.023Z","event":"start","name":"V1.12-C configuring a destination is an administrative act > a destination Mandaria must not call is refused with a reason"}
+{"at":"2026-09-29T08:05:13.031Z","event":"finish","name":"V1.12-C configuring a destination is an administrative act > a destination Mandaria must not call is refused with a reason","state":"passed"}
+{"at":"2026-09-29T08:05:13.039Z","event":"start","name":"V1.12-C configuring a destination is an administrative act > a manual delivery makes exactly one more attempt and leaves the event alone"}
+{"at":"2026-09-29T08:05:13.047Z","event":"finish","name":"V1.12-C configuring a destination is an administrative act > a manual delivery makes exactly one more attempt and leaves the event alone","state":"passed"}
+{"at":"2026-09-29T08:05:13.561Z","event":"start","name":"V1.12-C attempts are history > SQL cannot turn a failure into a success or move it to another endpoint"}
+{"at":"2026-09-29T08:05:13.572Z","event":"finish","name":"V1.12-C attempts are history > SQL cannot turn a failure into a success or move it to another endpoint","state":"passed"}
+{"at":"2026-09-29T08:05:13.662Z","event":"start","name":"V1.12-C attempts are history > SQL cannot move an endpoint to another client, nor invent one"}
+{"at":"2026-09-29T08:05:13.672Z","event":"finish","name":"V1.12-C attempts are history > SQL cannot move an endpoint to another client, nor invent one","state":"passed"}
+{"at":"2026-09-29T08:05:13.678Z","event":"start","name":"V1.12-C attempts are history > an attempt cannot be attached to an event of another client"}
+{"at":"2026-09-29T08:05:13.810Z","event":"finish","name":"V1.12-C attempts are history > an attempt cannot be attached to an event of another client","state":"passed"}
+{"at":"2026-09-29T08:05:14.344Z","event":"start","name":"V1.12-D reliable delivery > a provider delivery is signed, delivered on the first attempt and closed"}
+{"at":"2026-09-29T08:05:14.356Z","event":"finish","name":"V1.12-D reliable delivery > a provider delivery is signed, delivered on the first attempt and closed","state":"passed"}
+{"at":"2026-09-29T08:05:14.599Z","event":"start","name":"V1.12-D reliable delivery > an independent delivery travels the same way"}
+{"at":"2026-09-29T08:05:14.607Z","event":"finish","name":"V1.12-D reliable delivery > an independent delivery travels the same way","state":"passed"}
+{"at":"2026-09-29T08:05:14.844Z","event":"start","name":"V1.12-D reliable delivery > a failure is rescheduled, and the retry that succeeds carries the same event"}
+{"at":"2026-09-29T08:05:14.854Z","event":"finish","name":"V1.12-D reliable delivery > a failure is rescheduled, and the retry that succeeds carries the same event","state":"passed"}
+{"at":"2026-09-29T08:05:15.092Z","event":"start","name":"V1.12-D reliable delivery > five failures exhaust it, and nothing is deleted"}
+{"at":"2026-09-29T08:05:15.100Z","event":"finish","name":"V1.12-D reliable delivery > five failures exhaust it, and nothing is deleted","state":"passed"}
+{"at":"2026-09-29T08:05:15.192Z","event":"start","name":"V1.12-D reliable delivery > a terminal answer stops it at once, without spending the schedule"}
+{"at":"2026-09-29T08:05:15.299Z","event":"finish","name":"V1.12-D reliable delivery > a terminal answer stops it at once, without spending the schedule","state":"passed"}
+{"at":"2026-09-29T08:05:15.400Z","event":"start","name":"V1.12-D reliable delivery > an administrator can rescue an exhausted handover"}
+{"at":"2026-09-29T08:05:15.528Z","event":"finish","name":"V1.12-D reliable delivery > an administrator can rescue an exhausted handover","state":"passed"}
+{"at":"2026-09-29T08:05:15.862Z","event":"start","name":"V1.12-D the work survives the process > an event committed while nothing could send it is found after a restart"}
+{"at":"2026-09-29T08:05:16.485Z","event":"finish","name":"V1.12-D the work survives the process > an event committed while nothing could send it is found after a restart","state":"passed"}
+{"at":"2026-09-29T08:05:16.590Z","event":"start","name":"V1.12-D the work survives the process > an abandoned lease expires and another worker takes the work over"}
+{"at":"2026-09-29T08:05:16.791Z","event":"finish","name":"V1.12-D the work survives the process > an abandoned lease expires and another worker takes the work over","state":"passed"}
+{"at":"2026-09-29T08:05:16.898Z","event":"start","name":"V1.12-D the work survives the process > two workers against the same database do not do the same work twice"}
+{"at":"2026-09-29T08:05:17.761Z","event":"finish","name":"V1.12-D the work survives the process > two workers against the same database do not do the same work twice","state":"passed"}
+{"at":"2026-09-29T08:05:18.095Z","event":"start","name":"V1.12-D the secret and its rotation > is shown once and never again"}
+{"at":"2026-09-29T08:05:18.102Z","event":"finish","name":"V1.12-D the secret and its rotation > is shown once and never again","state":"passed"}
+{"at":"2026-09-29T08:05:18.111Z","event":"start","name":"V1.12-D the secret and its rotation > is stored encrypted, never in plain text, and never leaks anywhere else"}
+{"at":"2026-09-29T08:05:18.316Z","event":"finish","name":"V1.12-D the secret and its rotation > is stored encrypted, never in plain text, and never leaks anywhere else","state":"passed"}
+{"at":"2026-09-29T08:05:18.424Z","event":"start","name":"V1.12-D the secret and its rotation > rotating changes what new attempts sign, and rewrites no history"}
+{"at":"2026-09-29T08:05:18.618Z","event":"finish","name":"V1.12-D the secret and its rotation > rotating changes what new attempts sign, and rewrites no history","state":"passed"}
+{"at":"2026-09-29T08:05:19.007Z","event":"start","name":"V1.12-D the secret and its rotation > without a secret nothing is sent, and it resumes once there is one"}
+{"at":"2026-09-29T08:05:19.017Z","event":"finish","name":"V1.12-D the secret and its rotation > without a secret nothing is sent, and it resumes once there is one","state":"passed"}
+{"at":"2026-09-29T08:05:19.329Z","event":"start","name":"V1.12-D the boundary and the admin view > an event older than the boundary is never taken by the worker"}
+{"at":"2026-09-29T08:05:19.514Z","event":"finish","name":"V1.12-D the boundary and the admin view > an event older than the boundary is never taken by the worker","state":"passed"}
+{"at":"2026-09-29T08:05:19.808Z","event":"start","name":"V1.12-D the boundary and the admin view > a disabled endpoint pauses the work and re-enabling resumes it, losing nothing"}
+{"at":"2026-09-29T08:05:19.816Z","event":"finish","name":"V1.12-D the boundary and the admin view > a disabled endpoint pauses the work and re-enabling resumes it, losing nothing","state":"passed"}
+{"at":"2026-09-29T08:05:20.026Z","event":"start","name":"V1.12-D the boundary and the admin view > changing the endpoint sends the retry to the new URL without rewriting history"}
+{"at":"2026-09-29T08:05:20.035Z","event":"finish","name":"V1.12-D the boundary and the admin view > changing the endpoint sends the retry to the new URL without rewriting history","state":"passed"}
+{"at":"2026-09-29T08:05:20.256Z","event":"start","name":"V1.12-D the boundary and the admin view > an administrator can see what is owed without ever seeing a secret"}
+{"at":"2026-09-29T08:05:20.264Z","event":"finish","name":"V1.12-D the boundary and the admin view > an administrator can see what is owed without ever seeing a secret","state":"passed"}
+{"at":"2026-09-29T08:05:20.371Z","event":"start","name":"V1.12-D the boundary and the admin view > only SUPER_ADMIN may issue a secret or read the delivery state"}
+{"at":"2026-09-29T08:05:20.378Z","event":"finish","name":"V1.12-D the boundary and the admin view > only SUPER_ADMIN may issue a secret or read the delivery state","state":"passed"}
+{"at":"2026-09-29T08:05:20.951Z","event":"start","name":"V1.12-E answering «what happened with my order» > the reference the client already has is enough to find the event and read its transport"}
+{"at":"2026-09-29T08:05:20.963Z","event":"finish","name":"V1.12-E answering «what happened with my order» > the reference the client already has is enough to find the event and read its transport","state":"passed"}
+{"at":"2026-09-29T08:05:21.051Z","event":"start","name":"V1.12-E answering «what happened with my order» > the detail gathers the envelope, the frozen payload, the destination and every attempt"}
+{"at":"2026-09-29T08:05:21.278Z","event":"finish","name":"V1.12-E answering «what happened with my order» > the detail gathers the envelope, the frozen payload, the destination and every attempt","state":"passed"}
+{"at":"2026-09-29T08:05:21.379Z","event":"start","name":"V1.12-E answering «what happened with my order» > an event outside reliable delivery is NO_DELIVERY with a reason, and no reason is a fault"}
+{"at":"2026-09-29T08:05:21.548Z","event":"finish","name":"V1.12-E answering «what happened with my order» > an event outside reliable delivery is NO_DELIVERY with a reason, and no reason is a fault","state":"passed"}
+{"at":"2026-09-29T08:05:21.651Z","event":"start","name":"V1.12-E answering «what happened with my order» > filters and pages agree with each other, without repeating or skipping a row"}
+{"at":"2026-09-29T08:05:22.394Z","event":"finish","name":"V1.12-E answering «what happened with my order» > filters and pages agree with each other, without repeating or skipping a row","state":"passed"}
+{"at":"2026-09-29T08:05:23.011Z","event":"start","name":"V1.12-E acting on a handover that is stuck > a rescue queues work and says so; it never claims the event was delivered"}
+{"at":"2026-09-29T08:05:23.021Z","event":"finish","name":"V1.12-E acting on a handover that is stuck > a rescue queues work and says so; it never claims the event was delivered","state":"passed"}
+{"at":"2026-09-29T08:05:23.112Z","event":"start","name":"V1.12-E acting on a handover that is stuck > a handover that fails again returns to EXHAUSTED and can be rescued once more"}
+{"at":"2026-09-29T08:05:23.371Z","event":"finish","name":"V1.12-E acting on a handover that is stuck > a handover that fails again returns to EXHAUSTED and can be rescued once more","state":"passed"}
+{"at":"2026-09-29T08:05:23.625Z","event":"start","name":"V1.12-E acting on a handover that is stuck > two simultaneous rescues do not queue the same work twice"}
+{"at":"2026-09-29T08:05:23.635Z","event":"finish","name":"V1.12-E acting on a handover that is stuck > two simultaneous rescues do not queue the same work twice","state":"passed"}
+{"at":"2026-09-29T08:05:23.865Z","event":"start","name":"V1.12-E acting on a handover that is stuck > a rescue refuses what it has no business touching, and says which is which"}
+{"at":"2026-09-29T08:05:23.880Z","event":"finish","name":"V1.12-E acting on a handover that is stuck > a rescue refuses what it has no business touching, and says which is which","state":"passed"}
+{"at":"2026-09-29T08:05:24.080Z","event":"start","name":"V1.12-E acting on a handover that is stuck > a manual redelivery reports what actually happened, not that the call returned 200"}
+{"at":"2026-09-29T08:05:24.091Z","event":"finish","name":"V1.12-E acting on a handover that is stuck > a manual redelivery reports what actually happened, not that the call returned 200","state":"passed"}
+{"at":"2026-09-29T08:05:24.296Z","event":"start","name":"V1.12-E acting on a handover that is stuck > a manual redelivery with nowhere to send says SKIPPED instead of pretending"}
+{"at":"2026-09-29T08:05:24.306Z","event":"finish","name":"V1.12-E acting on a handover that is stuck > a manual redelivery with nowhere to send says SKIPPED instead of pretending","state":"passed"}
+{"at":"2026-09-29T08:05:25.202Z","event":"start","name":"V1.12-E acting on a handover that is stuck > two simultaneous redeliveries never put the same event on the wire twice"}
+{"at":"2026-09-29T08:05:25.210Z","event":"finish","name":"V1.12-E acting on a handover that is stuck > two simultaneous redeliveries never put the same event on the wire twice","state":"passed"}
+{"at":"2026-09-29T08:05:25.417Z","event":"start","name":"V1.12-E acting on a handover that is stuck > a redelivery while a worker holds the lease is refused rather than run alongside it"}
+{"at":"2026-09-29T08:05:25.426Z","event":"finish","name":"V1.12-E acting on a handover that is stuck > a redelivery while a worker holds the lease is refused rather than run alongside it","state":"passed"}
+{"at":"2026-09-29T08:05:26.117Z","event":"start","name":"V1.12-E the operational surface is administrative, and keeps its secrets > separates what the database knows from what only the answering instance knows"}
+{"at":"2026-09-29T08:05:26.128Z","event":"finish","name":"V1.12-E the operational surface is administrative, and keeps its secrets > separates what the database knows from what only the answering instance knows","state":"passed"}
+{"at":"2026-09-29T08:05:26.223Z","event":"start","name":"V1.12-E the operational surface is administrative, and keeps its secrets > no secret reaches any of it, in any form"}
+{"at":"2026-09-29T08:05:26.421Z","event":"finish","name":"V1.12-E the operational surface is administrative, and keeps its secrets > no secret reaches any of it, in any form","state":"passed"}
+{"at":"2026-09-29T08:05:26.616Z","event":"start","name":"V1.12-E the operational surface is administrative, and keeps its secrets > reading or acting on it requires SUPER_ADMIN"}
+{"at":"2026-09-29T08:05:26.628Z","event":"finish","name":"V1.12-E the operational surface is administrative, and keeps its secrets > reading or acting on it requires SUPER_ADMIN","state":"passed"}
+{"at":"2026-09-29T08:05:26.724Z","event":"start","name":"V1.12-E the operational surface is administrative, and keeps its secrets > reading the operational view changes nothing: not the event, not the credits"}
+{"at":"2026-09-29T08:05:26.921Z","event":"finish","name":"V1.12-E the operational surface is administrative, and keeps its secrets > reading the operational view changes nothing: not the event, not the credits","state":"passed"}
+{"at":"2026-09-29T08:05:27.023Z","event":"start","name":"V1.12-E the operational surface is administrative, and keeps its secrets > SQL cannot rewrite the outbox to make the operational view lie"}
+{"at":"2026-09-29T08:05:27.215Z","event":"finish","name":"V1.12-E the operational surface is administrative, and keeps its secrets > SQL cannot rewrite the outbox to make the operational view lie","state":"passed"}
+{"at":"2026-09-29T08:05:27.301Z","event":"run-end","reason":"passed","unhandledErrors":[]}

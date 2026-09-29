@@ -1,4 +1,8 @@
 import {
+  collectionInstructionFields,
+  collectionSourceSelect,
+} from '../delivery-assignments/collection-instructions.js';
+import {
   BadRequestException,
   ConflictException,
   Injectable,
@@ -225,11 +229,26 @@ export class DriversService {
     const { independentProfile, ...rest } = driver;
     const activeAssignment = await this.prisma.deliveryAssignment.findFirst({
       where: { driverId: driver.id, status: 'ACTIVE' },
-      select: { id: true, mode: true, dispatchId: true },
+      select: {
+        id: true,
+        mode: true,
+        dispatchId: true,
+        dispatch: { select: collectionSourceSelect },
+      },
     });
     return {
       ...withCurrentAssignment(rest),
-      activeDeliveryAssignment: activeAssignment,
+      activeDeliveryAssignment: activeAssignment
+        ? {
+            id: activeAssignment.id,
+            mode: activeAssignment.mode,
+            dispatchId: activeAssignment.dispatchId,
+            ...collectionInstructionFields(
+              activeAssignment.dispatch,
+              'EXECUTOR',
+            ),
+          }
+        : null,
       independent: independentProfile
         ? {
             ...independentProfile,

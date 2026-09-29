@@ -1,0 +1,72 @@
+{"at":"2026-09-29T07:59:48.985Z","event":"start","name":"V1.10-D award and debit are one operation > provider CLAIM debits exactly the cost shown and writes one SERVICE_AWARD"}
+{"at":"2026-09-29T07:59:49.154Z","event":"finish","name":"V1.10-D award and debit are one operation > provider CLAIM debits exactly the cost shown and writes one SERVICE_AWARD","state":"passed"}
+{"at":"2026-09-29T07:59:49.157Z","event":"start","name":"V1.10-D award and debit are one operation > independent TAKE debits its own account and keeps the assignment in the same operation"}
+{"at":"2026-09-29T07:59:49.277Z","event":"finish","name":"V1.10-D award and debit are one operation > independent TAKE debits its own account and keeps the assignment in the same operation","state":"passed"}
+{"at":"2026-09-29T07:59:49.281Z","event":"start","name":"V1.10-D award and debit are one operation > an exact balance is enough and leaves zero; one credit less is refused and moves nothing"}
+{"at":"2026-09-29T07:59:49.443Z","event":"finish","name":"V1.10-D award and debit are one operation > an exact balance is enough and leaves zero; one credit less is refused and moves nothing","state":"passed"}
+{"at":"2026-09-29T07:59:49.446Z","event":"start","name":"V1.10-D award and debit are one operation > charges the cost frozen when the dispatch opened, not the policy in force now"}
+{"at":"2026-09-29T07:59:49.581Z","event":"finish","name":"V1.10-D award and debit are one operation > charges the cost frozen when the dispatch opened, not the policy in force now","state":"passed"}
+{"at":"2026-09-29T07:59:49.584Z","event":"start","name":"V1.10-D award and debit are one operation > a fleet reassignment or an assignment cancellation never charges again"}
+{"at":"2026-09-29T07:59:49.710Z","event":"finish","name":"V1.10-D award and debit are one operation > a fleet reassignment or an assignment cancellation never charges again","state":"passed"}
+{"at":"2026-09-29T07:59:49.818Z","event":"start","name":"V1.10-D award and debit are one operation > a failed CLAIM or TAKE never charges"}
+{"at":"2026-09-29T07:59:49.823Z","event":"finish","name":"V1.10-D award and debit are one operation > a failed CLAIM or TAKE never charges","state":"passed"}
+{"at":"2026-09-29T07:59:49.997Z","event":"start","name":"V1.10-D award and debit are one operation > repeating the same CLAIM does not charge twice"}
+{"at":"2026-09-29T07:59:50.000Z","event":"finish","name":"V1.10-D award and debit are one operation > repeating the same CLAIM does not charge twice","state":"passed"}
+{"at":"2026-09-29T07:59:50.192Z","event":"start","name":"V1.10-D concurrency > 10 simultaneous claims on one dispatch: one winner, exactly one charge"}
+{"at":"2026-09-29T07:59:50.412Z","event":"finish","name":"V1.10-D concurrency > 10 simultaneous claims on one dispatch: one winner, exactly one charge","state":"passed"}
+{"at":"2026-09-29T07:59:50.513Z","event":"start","name":"V1.10-D concurrency > provider CLAIM against independent TAKE: one winner, exactly one actor pays"}
+{"at":"2026-09-29T07:59:50.668Z","event":"finish","name":"V1.10-D concurrency > provider CLAIM against independent TAKE: one winner, exactly one actor pays","state":"passed"}
+{"at":"2026-09-29T07:59:50.671Z","event":"start","name":"V1.10-D concurrency > two claims paid from one balance: only what the balance covers is charged"}
+{"at":"2026-09-29T07:59:50.822Z","event":"finish","name":"V1.10-D concurrency > two claims paid from one balance: only what the balance covers is charged","state":"passed"}
+{"at":"2026-09-29T07:59:50.827Z","event":"start","name":"V1.10-D concurrency > a balance that covers both services pays both and ends at zero"}
+{"at":"2026-09-29T07:59:50.933Z","event":"finish","name":"V1.10-D concurrency > a balance that covers both services pays both and ends at zero","state":"passed"}
+{"at":"2026-09-29T07:59:50.937Z","event":"start","name":"V1.10-D concurrency > a recharge racing a claim serializes: never corruption"}
+{"at":"2026-09-29T07:59:50.940Z","event":"finish","name":"V1.10-D concurrency > a recharge racing a claim serializes: never corruption","state":"passed"}
+{"at":"2026-09-29T07:59:51.127Z","event":"start","name":"V1.10-D concurrency > an administrative adjustment racing a claim keeps the balance consistent"}
+{"at":"2026-09-29T07:59:51.131Z","event":"finish","name":"V1.10-D concurrency > an administrative adjustment racing a claim keeps the balance consistent","state":"passed"}
+{"at":"2026-09-29T07:59:51.345Z","event":"start","name":"V1.10-D legacy, corruption and database guarantees > a legacy dispatch is awarded without any charge and says so in the log"}
+{"at":"2026-09-29T07:59:51.502Z","event":"finish","name":"V1.10-D legacy, corruption and database guarantees > a legacy dispatch is awarded without any charge and says so in the log","state":"passed"}
+{"at":"2026-09-29T07:59:51.507Z","event":"start","name":"V1.10-D legacy, corruption and database guarantees > a monetized dispatch whose snapshot disappeared fails closed instead of being free"}
+{"at":"2026-09-29T07:59:51.603Z","event":"finish","name":"V1.10-D legacy, corruption and database guarantees > a monetized dispatch whose snapshot disappeared fails closed instead of being free","state":"passed"}
+{"at":"2026-09-29T07:59:51.607Z","event":"start","name":"V1.10-D legacy, corruption and database guarantees > refuses every forged award written directly in SQL"}
+{"at":"2026-09-29T07:59:51.739Z","event":"finish","name":"V1.10-D legacy, corruption and database guarantees > refuses every forged award written directly in SQL","state":"passed"}
+{"at":"2026-09-29T07:59:51.915Z","event":"start","name":"V1.10-D legacy, corruption and database guarantees > the client cannot choose what it pays: forged fields are ignored or rejected"}
+{"at":"2026-09-29T07:59:51.920Z","event":"finish","name":"V1.10-D legacy, corruption and database guarantees > the client cannot choose what it pays: forged fields are ignored or rejected","state":"passed"}
+{"at":"2026-09-29T07:59:51.925Z","event":"start","name":"V1.10-D legacy, corruption and database guarantees > keeps the payment context and the recharge history untouched"}
+{"at":"2026-09-29T07:59:51.929Z","event":"finish","name":"V1.10-D legacy, corruption and database guarantees > keeps the payment context and the recharge history untouched","state":"passed"}
+{"at":"2026-09-29T07:59:52.043Z","event":"start","name":"V1.10-D legacy, corruption and database guarantees > no secret reaches the logs of a charged award"}
+{"at":"2026-09-29T07:59:52.046Z","event":"finish","name":"V1.10-D legacy, corruption and database guarantees > no secret reaches the logs of a charged award","state":"passed"}
+{"at":"2026-09-29T07:59:52.256Z","event":"start","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL missing"}
+{"at":"2026-09-29T07:59:52.382Z","event":"finish","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL missing","state":"passed"}
+{"at":"2026-09-29T07:59:52.386Z","event":"start","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL amount"}
+{"at":"2026-09-29T07:59:52.390Z","event":"finish","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL amount","state":"passed"}
+{"at":"2026-09-29T07:59:52.538Z","event":"start","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL payer"}
+{"at":"2026-09-29T07:59:52.542Z","event":"finish","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL payer","state":"passed"}
+{"at":"2026-09-29T07:59:52.546Z","event":"start","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL actor"}
+{"at":"2026-09-29T07:59:52.551Z","event":"finish","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL actor","state":"passed"}
+{"at":"2026-09-29T07:59:52.640Z","event":"start","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL duplicate"}
+{"at":"2026-09-29T07:59:52.643Z","event":"finish","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL duplicate","state":"passed"}
+{"at":"2026-09-29T07:59:52.646Z","event":"start","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL orphan"}
+{"at":"2026-09-29T07:59:52.755Z","event":"finish","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL orphan","state":"passed"}
+{"at":"2026-09-29T07:59:52.761Z","event":"start","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL valid"}
+{"at":"2026-09-29T07:59:52.765Z","event":"finish","name":"V1.10-D deferred SQL award integrity > PROVIDER SQL valid","state":"passed"}
+{"at":"2026-09-29T07:59:52.855Z","event":"start","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL missing"}
+{"at":"2026-09-29T07:59:52.859Z","event":"finish","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL missing","state":"passed"}
+{"at":"2026-09-29T07:59:52.863Z","event":"start","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL amount"}
+{"at":"2026-09-29T07:59:52.973Z","event":"finish","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL amount","state":"passed"}
+{"at":"2026-09-29T07:59:52.978Z","event":"start","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL payer"}
+{"at":"2026-09-29T07:59:52.981Z","event":"finish","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL payer","state":"passed"}
+{"at":"2026-09-29T07:59:53.074Z","event":"start","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL actor"}
+{"at":"2026-09-29T07:59:53.078Z","event":"finish","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL actor","state":"passed"}
+{"at":"2026-09-29T07:59:53.082Z","event":"start","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL duplicate"}
+{"at":"2026-09-29T07:59:53.177Z","event":"finish","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL duplicate","state":"passed"}
+{"at":"2026-09-29T07:59:53.181Z","event":"start","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL orphan"}
+{"at":"2026-09-29T07:59:53.184Z","event":"finish","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL orphan","state":"passed"}
+{"at":"2026-09-29T07:59:53.352Z","event":"start","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL valid"}
+{"at":"2026-09-29T07:59:53.356Z","event":"finish","name":"V1.10-D deferred SQL award integrity > INDEPENDENT_DRIVER SQL valid","state":"passed"}
+{"at":"2026-09-29T07:59:53.567Z","event":"start","name":"V1.10-D reverse history protection > claim and release inside one SQL transaction cannot erase the required debit"}
+{"at":"2026-09-29T07:59:53.685Z","event":"finish","name":"V1.10-D reverse history protection > claim and release inside one SQL transaction cannot erase the required debit","state":"passed"}
+{"at":"2026-09-29T07:59:53.689Z","event":"start","name":"V1.10-D reverse history protection > an enforced debit cannot lose its durable winner history"}
+{"at":"2026-09-29T07:59:53.815Z","event":"finish","name":"V1.10-D reverse history protection > an enforced debit cannot lose its durable winner history","state":"passed"}
+{"at":"2026-09-29T07:59:53.819Z","event":"start","name":"V1.10-D reverse history protection > runtime SQL cannot fabricate a historical exemption"}
+{"at":"2026-09-29T07:59:53.823Z","event":"finish","name":"V1.10-D reverse history protection > runtime SQL cannot fabricate a historical exemption","state":"passed"}

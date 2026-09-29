@@ -191,6 +191,54 @@ describe('IdempotencyService', () => {
     expect(create).not.toHaveBeenCalled();
   });
 
+  it.each(['operation', 'resourceType'] as const)(
+    'A1: the same integration/key cannot cross %s, including a concurrent winner',
+    async (field) => {
+      const competingScope = { ...scope, [field]: 'baseline.other' };
+      for (const race of [false, true]) {
+        const find = race
+          ? vi
+              .fn()
+              .mockResolvedValueOnce(null)
+              .mockResolvedValue(record({ a: 1 }))
+          : vi.fn().mockResolvedValue(record({ a: 1 }));
+        const transaction = vi.fn().mockRejectedValue(
+          new Prisma.PrismaClientKnownRequestError('duplicate', {
+            code: 'P2002',
+            clientVersion: 'test',
+          }),
+        );
+        const create = vi.fn();
+        const load = vi.fn();
+        await expect(
+          service(find, transaction).execute(
+            competingScope,
+            { a: 1 },
+            create,
+            load,
+          ),
+        ).rejects.toMatchObject({ status: 409 });
+        expect(create).not.toHaveBeenCalled();
+        expect(load).not.toHaveBeenCalled();
+        expect(find).toHaveBeenCalledWith({
+          where: {
+            integrationClientId_key: {
+              integrationClientId: scope.integrationClientId,
+              key: scope.key,
+            },
+          },
+          select: {
+            requestHash: true,
+            resourceId: true,
+            resourceType: true,
+            execution: { select: { recordId: true } },
+          },
+        });
+        if (!race) expect(transaction).not.toHaveBeenCalled();
+      }
+    },
+  );
+
   it('inserts the ledger row before creating, inside one transaction', async () => {
     const order: string[] = [];
     const tx = {

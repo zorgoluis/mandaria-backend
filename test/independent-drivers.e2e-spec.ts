@@ -614,6 +614,7 @@ describe('V1.9 taking a service', () => {
     // Enough to decide: route, addresses, coordinates and the money involved.
     expect(offer.service.pickup.address).toContain(run);
     expect(offer.service.route.distanceMeters).toBe(4200);
+    expect(offer).not.toHaveProperty('collectionInstructions');
     expect(offer.paymentContext).toMatchObject({
       deliveryFee: { amount: '60.00', currency: 'MXN' },
       driverAdvancesGoods: true,
