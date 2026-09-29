@@ -4,6 +4,12 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación de readiness V1.13 (2026-09-29):** commit/push autorizados de la lista operativa y continuidad documental. Sin nuevas pruebas ni cambios de producto; C4 PARTIAL, A3 aparcado y flujo sin activar permanecen intactos.
+
+- **Coordinación operativa (2026-09-29):** readiness leído; pendientes de respuesta del usuario: tamaño/demanda del piloto, responsable operativo y custodia/atención financiera. Sin nueva verificación técnica ni autorización de activación.
+
+- **Preparación operativa V1.13 (2026-09-29):** lista accionable en [V1.13-ACTIVATION-READINESS](docs/V1.13-ACTIVATION-READINESS.md): capacidad A6 frente a demanda aún desconocida, flags/defaults/scopes exactos, despliegue coordinado y rollback compatible, observabilidad y responsabilidades Mandaria/Coita/negocio. Máximo dos bloques Mandaria (operación Backend y Frontend), integración externa separada. Sólo documentación e inspección acotada; sin nuevas pruebas ni acceso al entorno operativo. C4 PARTIAL y verificador A3 aparcados; flujo sin activar, sin aceptación de riesgos.
+
 - **Comprobación de publicación D (2026-09-29):** `f722f50` confirmado en origin; sin cambios nuevos de código. Nueva solicitud de commit/push atendida con este registro documental exigido por AGENTS.md. `nul` continúa excluido; sin nuevas pruebas ni activación.
 
 - **Publicación V1.13-D (2026-09-29):** commit y push autorizados a la rama actual para publicar backend, pruebas, contrato y evidencia D. Se conservan la validación proporcional de la tarea anterior, C4 PARTIAL, interfaces pendientes y flujo sin activar. Esta publicación no ejecuta nuevas suites ni modifica datos.
@@ -1469,3 +1475,25 @@ Preparación del commit: el chequeo staged incluyó por primera vez los logs nue
 - Verificación actual: estado Git sin cambios de código, HEAD f722f50 y mismo commit en la rama remota comprobado con ls-remote; nul preexistente excluido.
 - Cambios: únicamente este registro de continuidad y estado actual. Diff documental comprobado antes de publicar; no se repitieron suites.
 - Resultado técnico conservado: D validada proporcionalmente en la tarea anterior, C4 PARTIAL e interfaces pendientes. Sin despliegue ni activación.
+
+## 2026-09-29 — Preparación operativa para activar V1.13
+
+- Solicitud: concretar requisitos operativos, decisiones pendientes y responsabilidades externas, sin repetir auditoría técnica ni diagnóstico aparcado.
+- Cambios: docs/V1.13-ACTIVATION-READINESS.md con tabla de requisitos/acciones/responsables/bloqueos; alcance real de capacidad A6, configuración y permisos contrastados con código, secuencia futura de despliegue/desactivación, señales existentes y carencias, coordinación por pedido/consentimiento/retención y atención financiera externa. Dos bloques Mandaria como máximo; preguntas agrupadas al final.
+- Verificación actual: lectura acotada de secciones vigentes y apartados relevantes A6/C1/C2/C3/D, controllers y configuración/logging de producto; git diff --check documental. Evidencia de carga/pruebas citada sólo como histórica. No lectura de .env/secretos, pruebas, benchmarks, consultas DB, migraciones, servicios externos ni cambios de producto/configuración/versión.
+- Resultado: checklist operativo documentado; no acredita capacidad del entorno ni integración Coita. Pendientes: volumen/objetivos/presupuesto, responsables/ventana/retención, interfaces e integración externa. C4 PARTIAL y A3 siguen aparcados; sin aceptar riesgos, commit, push, despliegue, activación ni nueva etapa CHECK.
+
+
+### 2026-09-29 — Lectura de readiness y decisiones del piloto
+
+- Solicitud: continuar desde la lista operativa entregada.
+- Trabajo: lectura de estado y readiness; síntesis de decisiones para el usuario. Sólo BITACORA modificada.
+- Verificación: revisión documental y git diff --check; sin pruebas, consultas de bases ni comprobación del entorno.
+- Resultado y pendientes: decisiones operativas pendientes; C4/A3 aparcados, frontend e integración Coita pendientes. Sin implementación, configuración, commit, push ni activación.
+
+## 2026-09-29 — Publicación de readiness V1.13
+
+- Solicitud: commit y push a la rama actual.
+- Cambios: publicar docs/V1.13-ACTIVATION-READINESS.md y las entradas de BITACORA de preparación/coordinación operativa, conservando historial. Nul preexistente excluido.
+- Verificaciones de publicación: revisar contenido documental, estado/rama/remoto y diff preparado con --check; comprobar sincronización tras el push. Sin suites, bases de datos ni nuevas comprobaciones técnicas.
+- Resultado técnico conservado: requisitos operativos documentados, decisiones del usuario e integración externa pendientes. No resuelve C4/A3, no acepta riesgos ni activa o despliega el flujo.
