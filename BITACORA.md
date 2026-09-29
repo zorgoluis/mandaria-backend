@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación C1 (2026-09-29):** commit y push autorizados a la rama actual para publicar el diseño documental. D2 (recuperación tras vencimiento) continúa pendiente; publicar no autoriza implementación ni activación.
+
+- **V1.13-C1 (2026-09-29): DISEÑO CON DECISIONES BLOQUEANTES.** Sólo análisis/documentación de aceptación autorizada, reutilizando accept/Dispatch/idempotencia y proponiendo evidencia inmutable del consentimiento ligada a MQ exacta. El usuario eligió atestación de Coita Eats con evidencia conservada allí. Pendiente decidir recuperación tras vencimiento: nueva secuencia después de cancelar o sustitución enlazada/atómica. Conserva snapshot/TTL, barreras SQL, CASH/COURIER_ADVANCE y refunds de créditos existentes; sin implementar C/D ni activar. Revisión de código/OpenAPI/migraciones y referencias, ejemplos JSON y diff --check; no pruebas nuevas ni acceso DB. B4 es evidencia histórica, causa de abortos no confirmada. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
+
 - **Publicación de subsanación B4 (2026-09-29):** commit y push autorizados a la rama actual. Se publica el cierre PASS local y la corrección de tipos de pruebas; permanece documentada la causa no confirmada de abortos del runner. Sin activación ni despliegue.
 
 - **Subsanación final B4 (2026-09-29): PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE.** Nuevas: 380 unitarias y 248 E2E en seis archivos completos; 406 casos E2E históricos en 24 archivos con hashes/procedencia verificados. Total consolidado 654/654, 30/30 archivos. Webhooks pasó completo dos veces sin cambios (bases nueva e histórica); causa raíz de abortos anteriores no confirmada. Un aborto nuevo de B3 forks excluido; único ensayo diagnóstico threads 58/58. Nueve errores de tipos corregidos en seis pruebas; ambos tsconfig, Oxlint y ESLint pasan. Producto/.env/HEAD/versión intactos; escaneo final sin violaciones. No certifica estabilidad absoluta del runner ni activación. C/D y pendientes A siguen abiertos. Informe: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia: docs/checks/v1.13-b4-final-evidence.json.
@@ -1311,3 +1315,17 @@ Cambios: parámetros objeto de helpers HTTP y firma del mock de transacción; in
 ## 2026-09-29 — Publicación de subsanación final B4
 
 Solicitud: commitear y subir a la rama actual. Cambios publicados: seis pruebas corregidas, informe, evidencia final y continuidad. Verificaciones de publicación: revisión de diff, diff --check y auditoría privada de secretos conocidos; suites no reejecutadas en esta tarea. Resultado conservado: PASS local con riesgo de intermitencia del runner documentado; C/D y pendientes operativos A abiertos. Se excluye nul preexistente. Sin despliegue ni activación.
+
+
+## 2026-09-29 — Diseño C1 de aceptación autorizada
+
+Solicitud: reconstruir contratos y diseñar aceptación de cotizaciones convertidas, sólo documentación.
+
+**V1.13-C1 (2026-09-29): DISEÑO CON DECISIONES BLOQUEANTES.** Sólo análisis/documentación de aceptación autorizada, reutilizando accept/Dispatch/idempotencia y proponiendo evidencia inmutable del consentimiento ligada a MQ exacta. El usuario eligió atestación de Coita Eats con evidencia conservada allí. Pendiente decidir recuperación tras vencimiento: nueva secuencia después de cancelar o sustitución enlazada/atómica. Conserva snapshot/TTL, barreras SQL, CASH/COURIER_ADVANCE y refunds de créditos existentes; sin implementar C/D ni activar. Revisión de código/OpenAPI/migraciones y referencias, ejemplos JSON y diff --check; no pruebas nuevas ni acceso DB. B4 es evidencia histórica, causa de abortos no confirmada. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
+
+Cambios: nuevo documento C1 y continuidad en esta bitácora; historial conservado. Verificaciones: 26 referencias locales existentes, ejemplos JSON parseables y git diff --check. Resultado: propuesta completa para revisión, no lista para implementar mientras D2 esté pendiente. Pendientes operativos A y verificador A3 separados. Sin código/pruebas/configuración/datos/migraciones/.env/versión, Docker, servicios externos, Coita Eats, commit/push/despliegue/activación.
+
+
+## 2026-09-29 — Publicación del diseño C1
+
+Solicitud: commit y push a la rama actual. Cambios: diseño C1 y bitácora; sin producto ni pruebas. Verificación de publicación: estado Git, diff --check y auditoría privada de secretos conocidos; no suites ejecutadas. Resultado: diseño con decisión bloqueante D2 conservada; atestación de Coita Eats aprobada previamente. nul preexistente excluido. Sin despliegue ni activación.
