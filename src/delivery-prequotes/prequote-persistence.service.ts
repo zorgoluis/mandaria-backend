@@ -51,6 +51,62 @@ export class PrequotePersistenceService {
     private readonly plans: RatePlansService,
   ) {}
 
+  /** Read-only coherent observation; never acquires work or consumes an attempt. */
+  async inspect(integrationClientId: string, key: string, input: unknown) {
+    const conditions = normalizePrequoteConditions(input);
+    const requestHash = fingerprint(PREQUOTE_OPERATION, conditions);
+    return this.prisma.$transaction(
+      async (tx) => {
+        const record = await tx.apiIdempotencyRecord.findUnique({
+          where: { integrationClientId_key: { integrationClientId, key } },
+          include: { execution: true },
+        });
+        if (!record) return { kind: 'available' as const };
+        if (
+          record.operation !== PREQUOTE_OPERATION ||
+          record.resourceType !== PREQUOTE_RESOURCE ||
+          record.requestHash !== requestHash ||
+          !record.execution
+        )
+          throw conflict();
+        const execution = record.execution;
+        if (execution.state === 'SUCCEEDED')
+          return {
+            kind: 'succeeded' as const,
+            prequote: await tx.deliveryPrequote.findUniqueOrThrow({
+              where: { id: record.resourceId },
+            }),
+          };
+        if (execution.state === 'FAILED')
+          return { kind: 'failed' as const, errorCode: execution.errorCode! };
+        if (
+          execution.state === 'PROCESSING' &&
+          execution.leaseExpiresAt > (await dbNow(tx))
+        )
+          return {
+            kind: 'in_progress' as const,
+            retryAt: execution.leaseExpiresAt,
+          };
+        if (execution.attempts >= execution.maxAttempts)
+          return { kind: 'failed' as const, errorCode: 'ATTEMPTS_EXHAUSTED' };
+        return { kind: 'available' as const };
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
+    );
+  }
+
+  async requireRoutingBudget(lease: PrequoteLease, remainingMs: number) {
+    await this.prisma.$transaction(async (tx) => {
+      const { execution, now } = await this.owned(tx, lease);
+      if (execution.leaseExpiresAt.getTime() - now.getTime() < remainingMs)
+        throw new DomainException(
+          'PREQUOTE_LEASE_BUDGET_INSUFFICIENT',
+          409,
+          'Retry this intention after its current execution finishes',
+        );
+    });
+  }
+
   async reserve(
     integrationClientId: string,
     key: string,

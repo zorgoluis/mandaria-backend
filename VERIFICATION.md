@@ -1,3 +1,11 @@
+# V1.13-A4 — Prequote HTTP Orchestration (2026-09-28)
+
+**LISTO PARA A5, emisión operativa bloqueada.** Verificación nueva sobre HEAD inicial 22cc73e, PostgreSQL local mandaria_test, sin migraciones ni cambios en base principal. 357/357 unitarias y 476/476 E2E consolidadas de 25 archivos completos, incluidos 40 HTTP nuevos. TypeScript/build/Oxlint/ESLint/OpenAPI/docs:check/diff-check PASS. Webhooks y dispatch completaron repeticiones tras abortos nativos; dos fixtures A4 se corrigieron respetando guardas SQL. No se afirma una pasada monolítica exitosa.
+
+Contrato, barrera de producción, comandos, matriz por archivo, intentos fallidos y límites: [informe A4](docs/V1.13-A4-PREQUOTE-HTTP-ORCHESTRATION.md). Routing y admisión permisiva sólo mediante dobles de prueba; flag no habilita emisión de producción. Sin conversión, aceptación, flujo completo de transferencia, commit, push ni despliegue.
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
 # V1.12-G — B2B Public Execution Identity (2026-09-28)
 
 **COMPLETADA Y VALIDADA localmente.** Base QA `4dbc331`, paquete 1.12.0. Informe: [V1.12-G](docs/V1.12-G-B2B-PUBLIC-EXECUTION-IDENTITY.md). Evidencia resumida, sin secretos: [v1.12-g-evidence.json](docs/checks/v1.12-g-evidence.json).

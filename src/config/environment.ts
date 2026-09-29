@@ -30,6 +30,19 @@ const schema = z.object({
     .max(2592000)
     .default(604800),
   CORS_ORIGINS: z.string().default(''),
+  // A4 flag is necessary but never sufficient: production admission remains closed until A5.
+  PREQUOTE_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  PREQUOTE_VALIDITY_MS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(86400000)
+    .default(900000),
+  PREQUOTE_LEASE_MS: z.coerce.number().int().min(1).max(300000).default(90000),
+  PREQUOTE_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(5).default(3),
   // V1.6 routing. local_fake is LOCAL/TEST ONLY and rejected in production.
   ROUTING_PROVIDER: z.enum(['google', 'local_fake']).default('google'),
   GOOGLE_ROUTES_API_KEY: z.preprocess(
@@ -156,6 +169,13 @@ export function validateEnvironment(input: Record<string, unknown>) {
       `Invalid environment: ${result.error.issues.map((i) => i.path.join('.') + ': ' + i.message).join('; ')}`,
     );
   const env = result.data;
+  const routingBudget =
+    env.GOOGLE_ROUTES_TIMEOUT_MS * (env.GOOGLE_ROUTES_MAX_RETRIES + 1) +
+    100 * env.GOOGLE_ROUTES_MAX_RETRIES * (env.GOOGLE_ROUTES_MAX_RETRIES + 1);
+  if (env.PREQUOTE_LEASE_MS < routingBudget + 15000)
+    throw new Error(
+      'PREQUOTE_LEASE_MS must cover routing timeout/retries/backoff plus 15000 ms publication margin',
+    );
   if (
     new Set([
       env.JWT_ACCESS_SECRET,

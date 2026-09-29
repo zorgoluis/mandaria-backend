@@ -9,13 +9,13 @@ import {
 import { DomainException } from '../common/domain-error.js';
 import { canonicalJson } from '../idempotency/idempotency.service.js';
 
-class PrequoteStop extends PickType(DeliveryStopDto, [
+export class PrequoteStop extends PickType(DeliveryStopDto, [
   'type',
   'sequence',
   'latitude',
   'longitude',
 ] as const) {}
-class PrequotePackage extends PickType(DeliveryPackageDto, [
+export class PrequotePackage extends PickType(DeliveryPackageDto, [
   'category',
   'quantity',
   'weightKg',

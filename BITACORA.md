@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.13-A4 (2026-09-28):** commit y push autorizados a la rama actual; se publica el contrato HTTP y la orquestación validados en la tarea anterior. La emisión operativa sigue bloqueada hasta A5. Sin despliegue.
+
+- **V1.13-A4 — contrato HTTP y orquestación (2026-09-28):** LISTO PARA A5. POST/GET delivery-prequotes con scopes explícitos, ownership, replay durable y routing fuera de transacciones. Producción deniega emisión incluso con flag habilitado; GET/replay disponibles. 357/357 unitarias y 476/476 E2E consolidadas por archivo ejecutadas en esta tarea; tipos/build/linters/OpenAPI/docs:check PASS. Sin migraciones nuevas ni principal migrada; no conversión/accept, versión, commit/push/despliegue. Informe: docs/V1.13-A4-PREQUOTE-HTTP-ORCHESTRATION.md.
+
 - **Publicación V1.13-A3 (2026-09-28):** commit y push autorizados a la rama actual; se publica la persistencia e idempotencia durable validada en la tarea anterior. Sin despliegue ni migración de la base principal.
 
 - **V1.13-A3 — persistencia e idempotencia durable (2026-09-28):** LISTO PARA A4. DeliveryPrequote independiente e inmutable; metadata 1:1 bajo la única autoridad ApiIdempotencyRecord, leases con fencing y publicación atómica. 347/347 unitarias y 436/436 E2E consolidadas por archivo; migración limpia/upgrade, Prisma, tipos/build/linters/docs:check PASS. Dos migraciones aplicadas sólo a bases locales de pruebas; principal sin migrar. Sin endpoints/routing nuevo/cuotas/conversión, versión, commit/push/despliegue. Informe: docs/V1.13-A3-PREQUOTE-PERSISTENCE-IDEMPOTENCY.md.
@@ -262,6 +266,23 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-09-28 — Publicación de V1.13-A4
+
+- Solicitud: commit y push a la rama actual.
+- Cambios: publicación del conjunto A4, pruebas, configuración de ejemplo y documentación; nul preexistente excluido.
+- Verificaciones actuales: revisión de rama/remoto/conjunto y git diff --check; comprobación del commit y sincronización remota al publicar. Las 357 unitarias y 476 E2E son resultados de la implementación anterior, no pruebas repetidas en esta tarea.
+- Resultado: conjunto preparado para commit y push autorizados; confirmación remota al ejecutar la publicación. Sin despliegue, migración ni activación operativa.
+- Pendientes: protección compartida A5 y etapas posteriores, conforme al informe A4.
+
+### 2026-09-28 — V1.13-A4, HTTP de precotizaciones sin activación operativa
+
+- Solicitud: implementar contrato HTTP/emisión/consulta sobre A2/A3, sin activar routing operativo antes de protección compartida A5.
+- Base: rama actual, HEAD 22cc73e; tracked limpio; nul preexistente conservado. A3 era evidencia histórica; verificación nueva separada.
+- Cambios: módulo, controlador, DTOs, proyección segura, scopes, orquestación y permiso DI de producción denegado; lectura durable sin reserva y presupuesto restante de lease; configuración validada y .env.example; OpenAPI/matriz, README, VERIFICATION e informe detallado. No reglas legacy, schema, migraciones aplicadas, .env ni versión modificados.
+- Verificaciones actuales: PostgreSQL localhost mandaria_test (26 migraciones, sólo lectura de catálogo); 357/357 unitarias; 476/476 E2E consolidadas de 25 archivos, incluidos 40 HTTP A4 y 24 A3; build/TypeScript/Oxlint/ESLint/OpenAPI/docs:check y diff-check PASS. Webhooks/dispatch repitieron archivos completos tras abortos Windows. Dos fixtures nuevos corregidos (lease demasiado breve, deactivatedAt requerido), no reglas relajadas. Intentos fallidos/incompletos documentados en el informe.
+- Resultado: LISTO PARA A5. Contrato de emisión y consulta implementado y probado con routing controlado. Emisión operativa bloqueada hasta completar A5. No existe conversión, aceptación ni flujo completo de transferencia.
+- Pendientes/límites: protección compartida y reconciliación de consumo A5; revocación concurrente no atómica con red/COMMIT; runner Windows inestable. Evidencia test inmutable retenida, zonas de fixtures desactivadas y credenciales nuevas revocadas al terminar. Base principal sin migrar; sin Docker, APIs pagadas, Web/Coita Eats, commit, push ni despliegue.
 
 ### 2026-09-28 — Publicación de V1.13-A3
 
