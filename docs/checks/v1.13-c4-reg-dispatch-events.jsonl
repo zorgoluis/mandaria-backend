@@ -1,0 +1,26 @@
+{"at":"2026-09-29T08:01:45.749Z","event":"start","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > accepting a quote opens its dispatch automatically with the configured TTL"}
+{"at":"2026-09-29T08:01:45.920Z","event":"finish","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > accepting a quote opens its dispatch automatically with the configured TTL","state":"passed"}
+{"at":"2026-09-29T08:01:45.923Z","event":"start","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > offers only ACTIVE providers with ACTIVE coverage for the zone and service type"}
+{"at":"2026-09-29T08:01:46.092Z","event":"finish","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > offers only ACTIVE providers with ACTIVE coverage for the zone and service type","state":"passed"}
+{"at":"2026-09-29T08:01:46.095Z","event":"start","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > keeps the acceptance when nobody is eligible: OPEN dispatch without candidates, flagged noProviderAvailable"}
+{"at":"2026-09-29T08:01:46.199Z","event":"finish","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > keeps the acceptance when nobody is eligible: OPEN dispatch without candidates, flagged noProviderAvailable","state":"passed"}
+{"at":"2026-09-29T08:01:46.203Z","event":"start","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > repeated and concurrent acceptances keep 1 ACCEPTED quote and 1 dispatch"}
+{"at":"2026-09-29T08:01:46.422Z","event":"finish","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > repeated and concurrent acceptances keep 1 ACCEPTED quote and 1 dispatch","state":"passed"}
+{"at":"2026-09-29T08:01:46.555Z","event":"start","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > is atomic: if the dispatch cannot be created the quote is not accepted"}
+{"at":"2026-09-29T08:01:46.559Z","event":"finish","name":"Quote ACCEPTED → Dispatch OPEN with a candidate snapshot > is atomic: if the dispatch cannot be created the quote is not accepted","state":"passed"}
+{"at":"2026-09-29T08:01:46.882Z","event":"start","name":"Provider claiming > Provider Admin A lists available work (OFFER view without contacts) and claims it"}
+{"at":"2026-09-29T08:01:47.015Z","event":"finish","name":"Provider claiming > Provider Admin A lists available work (OFFER view without contacts) and claims it","state":"passed"}
+{"at":"2026-09-29T08:01:47.234Z","event":"start","name":"Provider claiming > blocks non-candidates, wrong memberships, SUPER_ADMIN, DRIVER and IntegrationClient"}
+{"at":"2026-09-29T08:01:47.238Z","event":"finish","name":"Provider claiming > blocks non-candidates, wrong memberships, SUPER_ADMIN, DRIVER and IntegrationClient","state":"passed"}
+{"at":"2026-09-29T08:01:47.516Z","event":"start","name":"Provider claiming > release: A claims → A releases → A cannot reclaim → B claims; only the owner releases"}
+{"at":"2026-09-29T08:01:47.520Z","event":"finish","name":"Provider claiming > release: A claims → A releases → A cannot reclaim → B claims; only the owner releases","state":"passed"}
+{"at":"2026-09-29T08:01:47.821Z","event":"start","name":"Claim concurrency > several providers claiming at once: exactly one winner, consistent database"}
+{"at":"2026-09-29T08:01:48.565Z","event":"finish","name":"Claim concurrency > several providers claiming at once: exactly one winner, consistent database","state":"passed"}
+{"at":"2026-09-29T08:01:48.871Z","event":"start","name":"Expiration and cancellation > an expired dispatch cannot be claimed and is persisted as EXPIRED"}
+{"at":"2026-09-29T08:01:49.105Z","event":"finish","name":"Expiration and cancellation > an expired dispatch cannot be claimed and is persisted as EXPIRED","state":"passed"}
+{"at":"2026-09-29T08:01:49.206Z","event":"start","name":"Expiration and cancellation > cancelling the delivery request cancels OPEN and CLAIMED dispatches, keeping the claim owner"}
+{"at":"2026-09-29T08:01:49.375Z","event":"finish","name":"Expiration and cancellation > cancelling the delivery request cancels OPEN and CLAIMED dispatches, keeping the claim owner","state":"passed"}
+{"at":"2026-09-29T08:01:49.525Z","event":"start","name":"Expiration and cancellation > enforces dispatch invariants in PostgreSQL"}
+{"at":"2026-09-29T08:01:49.528Z","event":"finish","name":"Expiration and cancellation > enforces dispatch invariants in PostgreSQL","state":"passed"}
+{"at":"2026-09-29T08:01:49.593Z","event":"start","name":"Audit > records dispatch events without tokens, secrets or customer contact data"}
+{"at":"2026-09-29T08:01:49.597Z","event":"finish","name":"Audit > records dispatch events without tokens, secrets or customer contact data","state":"passed"}

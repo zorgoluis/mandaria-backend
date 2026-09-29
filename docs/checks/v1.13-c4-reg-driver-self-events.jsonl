@@ -1,0 +1,14 @@
+{"at":"2026-09-29T08:02:09.903Z","event":"start","name":"V1.4 Driver self-service and IntegrationClient isolation > DRIVER without a Driver profile gets 404; other roles cannot use /driver"}
+{"at":"2026-09-29T08:02:09.909Z","event":"finish","name":"V1.4 Driver self-service and IntegrationClient isolation > DRIVER without a Driver profile gets 404; other roles cannot use /driver","state":"passed"}
+{"at":"2026-09-29T08:02:09.912Z","event":"start","name":"V1.4 Driver self-service and IntegrationClient isolation > resolves User → Driver → Provider → current vehicle with safe fields only"}
+{"at":"2026-09-29T08:02:10.027Z","event":"finish","name":"V1.4 Driver self-service and IntegrationClient isolation > resolves User → Driver → Provider → current vehicle with safe fields only","state":"passed"}
+{"at":"2026-09-29T08:02:10.031Z","event":"start","name":"V1.4 Driver self-service and IntegrationClient isolation > changes only its own availability and respects driver status"}
+{"at":"2026-09-29T08:02:10.149Z","event":"finish","name":"V1.4 Driver self-service and IntegrationClient isolation > changes only its own availability and respects driver status","state":"passed"}
+{"at":"2026-09-29T08:02:10.152Z","event":"start","name":"V1.4 Driver self-service and IntegrationClient isolation > suspended provider forces drivers OFFLINE and rejects AVAILABLE until reactivated"}
+{"at":"2026-09-29T08:02:10.155Z","event":"finish","name":"V1.4 Driver self-service and IntegrationClient isolation > suspended provider forces drivers OFFLINE and rejects AVAILABLE until reactivated","state":"passed"}
+{"at":"2026-09-29T08:02:10.157Z","event":"start","name":"V1.4 Driver self-service and IntegrationClient isolation > DRIVER cannot administer providers, drivers or vehicles"}
+{"at":"2026-09-29T08:02:10.260Z","event":"finish","name":"V1.4 Driver self-service and IntegrationClient isolation > DRIVER cannot administer providers, drivers or vehicles","state":"passed"}
+{"at":"2026-09-29T08:02:10.263Z","event":"start","name":"V1.4 Driver self-service and IntegrationClient isolation > IntegrationClient JWT cannot create, modify or assign Drivers/Vehicles (401)"}
+{"at":"2026-09-29T08:02:10.266Z","event":"finish","name":"V1.4 Driver self-service and IntegrationClient isolation > IntegrationClient JWT cannot create, modify or assign Drivers/Vehicles (401)","state":"passed"}
+{"at":"2026-09-29T08:02:10.268Z","event":"start","name":"V1.4 Driver self-service and IntegrationClient isolation > documents V1.4 schemas, permissions and errors, and logs events without secrets"}
+{"at":"2026-09-29T08:02:10.272Z","event":"finish","name":"V1.4 Driver self-service and IntegrationClient isolation > documents V1.4 schemas, permissions and errors, and logs events without secrets","state":"passed"}

@@ -1,0 +1,291 @@
+{
+  "node": "v24.15.0",
+  "attempts": [
+    {
+      "label": "build",
+      "command": "node node_modules/@nestjs/cli/bin/nest.js build",
+      "startedAt": "2026-09-29T07:51:44.783Z",
+      "endedAt": "2026-09-29T07:51:54.44Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-1-build.txt"
+    },
+    {
+      "label": "clean",
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "startedAt": "2026-09-29T07:52:18.718Z",
+      "endedAt": "2026-09-29T07:52:21.208Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-2-clean.txt"
+    },
+    {
+      "label": "validate",
+      "command": "node node_modules/prisma/build/index.js validate",
+      "startedAt": "2026-09-29T07:52:21.332Z",
+      "endedAt": "2026-09-29T07:52:22.847Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-3-validate.txt"
+    },
+    {
+      "label": "generate",
+      "command": "node node_modules/prisma/build/index.js generate",
+      "startedAt": "2026-09-29T07:52:22.956Z",
+      "endedAt": "2026-09-29T07:52:24.876Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-4-generate.txt"
+    },
+    {
+      "label": "types-all",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json --incremental false",
+      "startedAt": "2026-09-29T07:52:24.985Z",
+      "endedAt": "2026-09-29T07:52:36.683Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-5-types-all.txt"
+    },
+    {
+      "label": "types-build",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json --incremental false",
+      "startedAt": "2026-09-29T07:52:36.793Z",
+      "endedAt": "2026-09-29T07:52:41.816Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-6-types-build.txt"
+    },
+    {
+      "label": "lint",
+      "command": "node node_modules/oxlint/bin/oxlint src/ test/ scripts/ --ignore-pattern src/generated",
+      "startedAt": "2026-09-29T07:52:41.929Z",
+      "endedAt": "2026-09-29T07:52:42.053Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-7-lint.txt"
+    },
+    {
+      "label": "eslint",
+      "command": "node node_modules/eslint/bin/eslint.js src test prisma",
+      "startedAt": "2026-09-29T07:52:42.157Z",
+      "endedAt": "2026-09-29T07:52:46.44Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-8-eslint.txt"
+    },
+    {
+      "label": "openapi",
+      "command": "node dist/openapi.cli.js",
+      "startedAt": "2026-09-29T07:52:46.551Z",
+      "endedAt": "2026-09-29T07:52:51.652Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-9-openapi.txt"
+    },
+    {
+      "label": "access-docs",
+      "command": "node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts",
+      "startedAt": "2026-09-29T07:52:51.763Z",
+      "endedAt": "2026-09-29T07:52:53.236Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-10-access-docs.txt"
+    },
+    {
+      "label": "access-docs-retry",
+      "command": "node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts",
+      "startedAt": "2026-09-29T07:53:17.529Z",
+      "endedAt": "2026-09-29T07:53:18.968Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-11-access-docs-retry.txt"
+    },
+    {
+      "label": "docs-check",
+      "command": "node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts --check",
+      "startedAt": "2026-09-29T07:53:19.076Z",
+      "endedAt": "2026-09-29T07:53:33.327Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-12-docs-check.txt"
+    },
+    {
+      "label": "unit",
+      "command": "node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=docs/checks/v1.13-c4-unit.json",
+      "startedAt": "2026-09-29T07:53:33.435Z",
+      "endedAt": "2026-09-29T07:53:41.689Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-13-unit.txt"
+    },
+    {
+      "label": "old-build",
+      "command": "node scripts/prepare-authorized-acceptance-c3-legacy.mjs",
+      "startedAt": "2026-09-29T07:53:41.804Z",
+      "endedAt": "2026-09-29T07:53:45.116Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-14-old-build.txt"
+    },
+    {
+      "label": "full-suite",
+      "command": "node scripts/check-authorized-acceptance-c4-full-suite.mjs",
+      "startedAt": "2026-09-29T07:56:25.275Z",
+      "endedAt": "2026-09-29T08:04:16.655Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-15-full-suite.txt"
+    },
+    {
+      "label": "diagnostic",
+      "command": "node scripts/diagnose-authorized-acceptance-c4-runner.mjs",
+      "startedAt": "2026-09-29T08:04:48.431Z",
+      "endedAt": "2026-09-29T08:05:36.74Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-16-diagnostic.txt"
+    },
+    {
+      "label": "upgrade",
+      "command": "node scripts/check-authorized-acceptance-c4-migrations.mjs",
+      "startedAt": "2026-09-29T08:05:56.769Z",
+      "endedAt": "2026-09-29T08:06:08.506Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-17-upgrade.txt"
+    },
+    {
+      "label": "drift",
+      "command": "node scripts/check-authorized-acceptance-c4-drift.mjs",
+      "startedAt": "2026-09-29T08:06:08.642Z",
+      "endedAt": "2026-09-29T08:06:18.202Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-18-drift.txt"
+    },
+    {
+      "label": "database-scan",
+      "command": "node scripts/scan-authorized-acceptance-c4-all.mjs",
+      "startedAt": "2026-09-29T08:06:49.554Z",
+      "endedAt": "2026-09-29T08:06:54.61Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-19-database-scan.txt"
+    },
+    {
+      "label": "consolidate",
+      "command": "node scripts/consolidate-authorized-acceptance-c4.mjs",
+      "startedAt": "2026-09-29T08:06:54.748Z",
+      "endedAt": "2026-09-29T08:06:54.874Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-20-consolidate.txt"
+    },
+    {
+      "label": "cleanup",
+      "command": "node scripts/cleanup-authorized-acceptance-c4.mjs",
+      "startedAt": "2026-09-29T08:07:14.833Z",
+      "endedAt": "2026-09-29T08:07:17.783Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-21-cleanup.txt"
+    },
+    {
+      "label": "final-scan",
+      "command": "node scripts/scan-authorized-acceptance-c4-all.mjs",
+      "startedAt": "2026-09-29T08:07:17.931Z",
+      "endedAt": "2026-09-29T08:07:22.632Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-22-final-scan.txt"
+    },
+    {
+      "label": "final-lint",
+      "command": "node node_modules/oxlint/bin/oxlint src/ test/ scripts/ --ignore-pattern src/generated",
+      "startedAt": "2026-09-29T08:07:22.782Z",
+      "endedAt": "2026-09-29T08:07:22.954Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-23-final-lint.txt"
+    },
+    {
+      "label": "artifacts",
+      "command": "node scripts/verify-authorized-acceptance-c4-artifacts.mjs",
+      "startedAt": "2026-09-29T08:07:41.328Z",
+      "endedAt": "2026-09-29T08:07:41.334Z",
+      "exit": null,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-24-artifacts.txt"
+    },
+    {
+      "label": "artifacts-permitted",
+      "command": "node scripts/verify-authorized-acceptance-c4-artifacts.mjs",
+      "startedAt": "2026-09-29T08:07:52.091Z",
+      "endedAt": "2026-09-29T08:07:52.654Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-25-artifacts-permitted.txt"
+    },
+    {
+      "label": "final-artifacts",
+      "command": "node scripts/verify-authorized-acceptance-c4-artifacts.mjs",
+      "startedAt": "2026-09-29T08:11:59.877Z",
+      "endedAt": "2026-09-29T08:12:00.395Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-26-final-artifacts.txt"
+    },
+    {
+      "label": "final-runner-lint",
+      "command": "node node_modules/oxlint/bin/oxlint src/ test/ scripts/ --ignore-pattern src/generated",
+      "startedAt": "2026-09-29T08:12:00.527Z",
+      "endedAt": "2026-09-29T08:12:00.687Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/v1.13-c4-27-final-runner-lint.txt"
+    }
+  ],
+  "databases": {
+    "clean": "mandaria_c4_clean_7ea77a453d_test",
+    "upgrade": "mandaria_c4_upgrade_7ea77a453d_test"
+  },
+  "verdict": "PARTIAL",
+  "summary": {
+    "unitPassed": 393,
+    "unitFiles": 34,
+    "e2ePassed": 738,
+    "e2eAccreditedFiles": 32,
+    "e2eInventoryFiles": 33,
+    "e2eDiscoveredCases": 753,
+    "pendingFile": "test/delivery-requests-b2b.e2e-spec.ts",
+    "pendingCases": 15,
+    "productChanges": 0,
+    "commitPushActivation": false
+  },
+  "reports": [
+    "docs/checks/v1.13-c4-baseline.json",
+    "docs/checks/v1.13-c4-inventory.json",
+    "docs/checks/v1.13-c4-regression.json",
+    "docs/checks/v1.13-c4-diagnostics.json",
+    "docs/checks/v1.13-c4-consolidated.json",
+    "docs/checks/v1.13-c4-upgrade.json",
+    "docs/checks/v1.13-c4-migrations-final.json",
+    "docs/checks/v1.13-c4-all-database-scan.json",
+    "docs/checks/v1.13-c4-cleanup.json",
+    "docs/checks/v1.13-c4-artifact-check.json",
+    "docs/checks/v1.13-c4-native-events.json"
+  ],
+  "notes": [
+    "Historical C3 counts are not included; all reported passing files ran anew.",
+    "One alternate-pool attempt per incomplete file, no further reruns.",
+    "Initial direct consolidation command: node scripts/consolidate-authorized-acceptance-c4.mjs exited 1 because eight parametrized cases shared one display name; fixed file+ordinal identity without changing tests. Original terminal output captured ERR_ASSERTION 33 !== 40; no standalone log was saved for this first verifier attempt.",
+    "Native signals are null on these Windows child process results; exit 3221226505 is 0xC0000409. No causal stack/dump."
+  ],
+  "versions": {
+    "node": "v24.15.0",
+    "vitest": "4.1.11",
+    "prisma": "6.19.3",
+    "typescript": "6.0.3",
+    "postgresql": "18.6 (see migrations-final report)"
+  }
+}

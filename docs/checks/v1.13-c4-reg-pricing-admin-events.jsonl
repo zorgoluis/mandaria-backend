@@ -1,0 +1,8 @@
+{"at":"2026-09-29T08:03:39.733Z","event":"start","name":"V1.6 ServiceZones and RatePlans administration > validates, creates, lists, renames and activates service zones with overlap protection"}
+{"at":"2026-09-29T08:03:39.907Z","event":"finish","name":"V1.6 ServiceZones and RatePlans administration > validates, creates, lists, renames and activates service zones with overlap protection","state":"passed"}
+{"at":"2026-09-29T08:03:39.911Z","event":"start","name":"V1.6 ServiceZones and RatePlans administration > versions DRAFT plans, validates bands and TTL, and keeps ACTIVE/INACTIVE immutable"}
+{"at":"2026-09-29T08:03:40.074Z","event":"finish","name":"V1.6 ServiceZones and RatePlans administration > versions DRAFT plans, validates bands and TTL, and keeps ACTIVE/INACTIVE immutable","state":"passed"}
+{"at":"2026-09-29T08:03:40.176Z","event":"start","name":"V1.6 ServiceZones and RatePlans administration > keeps exactly one ACTIVE plan and unique versions under concurrency, enforced in PostgreSQL"}
+{"at":"2026-09-29T08:03:40.301Z","event":"finish","name":"V1.6 ServiceZones and RatePlans administration > keeps exactly one ACTIVE plan and unique versions under concurrency, enforced in PostgreSQL","state":"passed"}
+{"at":"2026-09-29T08:03:40.303Z","event":"start","name":"V1.6 ServiceZones and RatePlans administration > restricts zone, plan and quote administration to SUPER_ADMIN"}
+{"at":"2026-09-29T08:03:40.307Z","event":"finish","name":"V1.6 ServiceZones and RatePlans administration > restricts zone, plan and quote administration to SUPER_ADMIN","state":"passed"}

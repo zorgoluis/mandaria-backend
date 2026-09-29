@@ -1,0 +1,15 @@
+node:internal/fs/promises:640
+  return new FileHandle(await PromisePrototypeThen(
+                        ^
+
+Error: UNKNOWN: unknown error, open 'C:\Users\zorgl\Documents\mandaria-backend\docs\openapi.json'
+    at async open (node:internal/fs/promises:640:25)
+    at async writeFile (node:internal/fs/promises:1257:14)
+    at async <anonymous> (C:\Users\zorgl\Documents\mandaria-backend\scripts\generate-api-access.ts:74:5) {
+  errno: -4094,
+  code: 'UNKNOWN',
+  syscall: 'open',
+  path: 'C:\\Users\\zorgl\\Documents\\mandaria-backend\\docs\\openapi.json'
+}
+
+Node.js v24.15.0

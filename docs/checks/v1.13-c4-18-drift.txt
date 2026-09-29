@@ -1,0 +1,1 @@
+[{"database":"mandaria_c4_clean_7ea77a453d_test","triggerCount":70,"catalogHash":"a2f262685806cdad02c315c07eca1484308e129eeacfc1e1b5a27abe37f841a5"},{"database":"mandaria_c4_upgrade_7ea77a453d_test","triggerCount":70,"catalogHash":"a2f262685806cdad02c315c07eca1484308e129eeacfc1e1b5a27abe37f841a5"}]

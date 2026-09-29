@@ -1,3 +1,13 @@
+# CHECK V1.13-C4 — Verificación integral local (2026-09-29)
+
+**PARTIAL.** Nuevas **393/393 unitarias en 34 archivos** y **738 E2E en 32/33 archivos** completos exit 0. Quince casos de `delivery-requests-b2b.e2e-spec.ts` quedan sin acreditar: primer intento incompleto exit 1 y único diagnóstico alternativo abortado `0xC0000409`, sin reporte final. No se cuentan fragmentos ni se reemplazan con historia. Webhooks 54/54 y estado B2B 21/21 sí completaron el diagnóstico; no acredita solución causal del runner.
+
+Prisma validate/generate, ambos tsconfig noEmit, build, Oxlint, ESLint, OpenAPI/docs:check pasan. Limpia y upgrade B con nueve tablas históricas intactas, 29 migraciones, reaplicación/drift y catálogo igual de 70 triggers activos. Escaneo de 35 bases nuevas: 23 contadores en cero más integridad económica; limpieza conserva historia, deshabilita accesos sintéticos. 348 archivos existentes, .env/HEAD/versión sin cambios. Sólo pruebas/runners/documentación C4; no producto, migraciones ni configuración operativa.
+
+[Informe C4](docs/CHECK-V1.13-C4-AUTHORIZED-ACCEPTANCE.md), [índice por intento](docs/checks/v1.13-c4-evidence.json), [consolidación por archivo/caso](docs/checks/v1.13-c4-consolidated.json). A6/B2/B3/B4/C2/C3 ejecutados ahora completos; resultados anteriores siguientes permanecen históricos. Pendiente diagnóstico causal y ejecución íntegra del archivo bloqueante. No declarar V1.13-C cerrada ni activar; D y pendientes A externos a esta tarea. Sin commit/push/despliegue.
+
+---
+
 # V1.13-C3 — Verificación local (2026-09-29)
 
 **V1.13-C3 (2026-09-29): LISTO PARA CHECK C4.** Verificación nueva: 62 E2E adversariales con dos Nest/pools y A5 durable real, 359 E2E de regresión en 14 archivos, total 421/421 E2E únicos y 393/393 unitarias. Migración limpia/upgrade B no vacío/status/reaplicación/drift, tipos/build/Prisma/linters/docs PASS; 336 archivos existentes y .env idénticos. Escaneo de 16 bases aisladas sin violaciones; historia preservada. Dos abortos nativos excluidos; único ensayo forks por archivo completó Quotes/Assignments, causa raíz pendiente. Binario pre-C lee/cancela historia C pero rechaza accept/replay: no despliegue mixto acreditado. Sin cambios de producto, commit/push/activación; C4/D no iniciados. Informe: docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md.

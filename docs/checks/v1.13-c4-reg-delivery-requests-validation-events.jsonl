@@ -1,0 +1,14 @@
+{"at":"2026-09-29T08:01:33.896Z","event":"start","name":"V1.5 DeliveryRequest creation contract and validation > creates CREATED with MDR publicId, snapshots, packages and decimal money; hides internal ids"}
+{"at":"2026-09-29T08:01:34.136Z","event":"finish","name":"V1.5 DeliveryRequest creation contract and validation > creates CREATED with MDR publicId, snapshots, packages and decimal money; hides internal ids","state":"passed"}
+{"at":"2026-09-29T08:01:34.141Z","event":"start","name":"V1.5 DeliveryRequest creation contract and validation > requires a valid Idempotency-Key and never accepts ownership or server fields from the body"}
+{"at":"2026-09-29T08:01:34.400Z","event":"finish","name":"V1.5 DeliveryRequest creation contract and validation > requires a valid Idempotency-Key and never accepts ownership or server fields from the body","state":"passed"}
+{"at":"2026-09-29T08:01:34.403Z","event":"start","name":"V1.5 DeliveryRequest creation contract and validation > requires exactly one PICKUP (1) and one DROPOFF (2) with valid coordinates and contact data"}
+{"at":"2026-09-29T08:01:34.679Z","event":"finish","name":"V1.5 DeliveryRequest creation contract and validation > requires exactly one PICKUP (1) and one DROPOFF (2) with valid coordinates and contact data","state":"passed"}
+{"at":"2026-09-29T08:01:34.682Z","event":"start","name":"V1.5 DeliveryRequest creation contract and validation > requires at least one generic package with positive quantity, weight and dimensions"}
+{"at":"2026-09-29T08:01:34.945Z","event":"finish","name":"V1.5 DeliveryRequest creation contract and validation > requires at least one generic package with positive quantity, weight and dimensions","state":"passed"}
+{"at":"2026-09-29T08:01:34.948Z","event":"start","name":"V1.5 DeliveryRequest creation contract and validation > validates PREPAID and COURIER_ADVANCE goods value with safe decimal money and ISO currency"}
+{"at":"2026-09-29T08:01:35.273Z","event":"finish","name":"V1.5 DeliveryRequest creation contract and validation > validates PREPAID and COURIER_ADVANCE goods value with safe decimal money and ISO currency","state":"passed"}
+{"at":"2026-09-29T08:01:35.276Z","event":"start","name":"V1.5 DeliveryRequest creation contract and validation > creates everything atomically: a failure while inserting packages leaves no rows and no consumed key"}
+{"at":"2026-09-29T08:01:35.523Z","event":"finish","name":"V1.5 DeliveryRequest creation contract and validation > creates everything atomically: a failure while inserting packages leaves no rows and no consumed key","state":"passed"}
+{"at":"2026-09-29T08:01:35.527Z","event":"start","name":"V1.5 DeliveryRequest creation contract and validation > never logs contact data, addresses or payloads"}
+{"at":"2026-09-29T08:01:35.646Z","event":"finish","name":"V1.5 DeliveryRequest creation contract and validation > never logs contact data, addresses or payloads","state":"passed"}

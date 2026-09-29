@@ -50,7 +50,7 @@ La ruta existente `POST /api/v1/delivery-quotes/:publicId/accept` admite una MQ 
 
 `PREQUOTE_AUTHORIZED_ACCEPT_ENABLED=false` por defecto; no se activa ni se modifica .env. Un cancel200/MDR CANCELLED puede coexistir con entrega DELIVERED: antes de nueva secuencia confirmar además status CANCELLED/EXPIRED y deliveredAt null. No avanzar con resultado incierto. Nueva MPQ→conversión→consentimiento sobre MQ→accept; nunca renovar TTL. Coita coordina generaciones por pedido; externalReference no es único. Reiniciar envío no exige otro pago de comida ni implica reembolso; accept/DELIVERED no acreditan cobro del envío. D queda fuera.
 
-Contrato, cambios SQL, despliegue/rollback compatible y evidencia C2: [implementación](docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md). C3/C4 y autorización operativa siguen pendientes.
+Contrato, cambios SQL, despliegue/rollback compatible y evidencia C2: [implementación](docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md). C3 verificado; **CHECK C4 PARTIAL**: 393 unitarias y 738 E2E en 32/33 archivos acreditados; `delivery-requests-b2b` sigue sin corrida completa por aborto del runner. [Informe C4](docs/CHECK-V1.13-C4-AUTHORIZED-ACCEPTANCE.md). No cierre integral, activación ni D; autorización operativa pendiente.
 
 ## Estado y arquitectura
 

@@ -1,0 +1,28 @@
+{"at":"2026-09-29T07:56:47.049Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > preserves legacy administrative aliases and maps INACTIVE to SUSPENDED"}
+{"at":"2026-09-29T07:56:51.099Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > preserves legacy administrative aliases and maps INACTIVE to SUSPENDED","state":"passed"}
+{"at":"2026-09-29T07:56:51.103Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > issues a bounded token with identity, credential and scopes; persists only hash and lastUsedAt"}
+{"at":"2026-09-29T07:56:51.335Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > issues a bounded token with identity, credential and scopes; persists only hash and lastUsedAt","state":"passed"}
+{"at":"2026-09-29T07:56:51.338Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > uses identical generic errors for unknown IDs, bad secrets, revoked credentials and suspended clients"}
+{"at":"2026-09-29T07:56:51.569Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > uses identical generic errors for unknown IDs, bad secrets, revoked credentials and suspended clients","state":"passed"}
+{"at":"2026-09-29T07:56:51.572Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > rejects expired tokens and tokens with wrong audience, key or principal type"}
+{"at":"2026-09-29T07:56:51.787Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > rejects expired tokens and tokens with wrong audience, key or principal type","state":"passed"}
+{"at":"2026-09-29T07:56:51.791Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > strictly separates human and integration authorization"}
+{"at":"2026-09-29T07:56:52.005Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > strictly separates human and integration authorization","state":"passed"}
+{"at":"2026-09-29T07:56:52.008Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > lists safe credential metadata and has no secret recovery endpoint"}
+{"at":"2026-09-29T07:56:52.222Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > lists safe credential metadata and has no secret recovery endpoint","state":"passed"}
+{"at":"2026-09-29T07:56:52.225Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > suspends already-issued tokens immediately and permits reactivation"}
+{"at":"2026-09-29T07:56:52.457Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > suspends already-issued tokens immediately and permits reactivation","state":"passed"}
+{"at":"2026-09-29T07:56:52.461Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > rotates with overlap; revocation rejects both old credentials and old tokens"}
+{"at":"2026-09-29T07:56:52.705Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > rotates with overlap; revocation rejects both old credentials and old tokens","state":"passed"}
+{"at":"2026-09-29T07:56:52.709Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > makes integration revocation terminal and denies all tokens and issuance"}
+{"at":"2026-09-29T07:56:52.941Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > makes integration revocation terminal and denies all tokens and issuance","state":"passed"}
+{"at":"2026-09-29T07:56:52.945Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > rejects expired credentials for token issuance and previously emitted tokens"}
+{"at":"2026-09-29T07:56:53.172Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > rejects expired credentials for token issuance and previously emitted tokens","state":"passed"}
+{"at":"2026-09-29T07:56:53.179Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > enforces scopes and rejects unsupported scopes or past expiration"}
+{"at":"2026-09-29T07:56:53.421Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > enforces scopes and rejects unsupported scopes or past expiration","state":"passed"}
+{"at":"2026-09-29T07:56:53.424Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > binds credential mutations to their owning integration"}
+{"at":"2026-09-29T07:56:53.654Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > binds credential mutations to their owning integration","state":"passed"}
+{"at":"2026-09-29T07:56:53.658Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > throttles token exchange and does not disclose secrets in errors"}
+{"at":"2026-09-29T07:56:53.903Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > throttles token exchange and does not disclose secrets in errors","state":"passed"}
+{"at":"2026-09-29T07:56:53.907Z","event":"start","name":"B2B Client Credentials with real PostgreSQL > documents separate schemes and never logs generated secrets"}
+{"at":"2026-09-29T07:56:54.041Z","event":"finish","name":"B2B Client Credentials with real PostgreSQL > documents separate schemes and never logs generated secrets","state":"passed"}

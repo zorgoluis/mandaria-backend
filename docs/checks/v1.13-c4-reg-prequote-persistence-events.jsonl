@@ -1,0 +1,48 @@
+{"at":"2026-09-29T08:03:21.252Z","event":"start","name":"A3 internal protocol with real PostgreSQL > reserves once concurrently, performs simulated work without holding locks, publishes and replays after lost response"}
+{"at":"2026-09-29T08:03:21.419Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > reserves once concurrently, performs simulated work without holding locks, publishes and replays after lost response","state":"passed"}
+{"at":"2026-09-29T08:03:21.424Z","event":"start","name":"A3 internal protocol with real PostgreSQL > conflicts with changed body, legacy keys, in-progress/failed/succeeded durable keys; never calls incompatible loader"}
+{"at":"2026-09-29T08:03:21.427Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > conflicts with changed body, legacy keys, in-progress/failed/succeeded durable keys; never calls incompatible loader","state":"passed"}
+{"at":"2026-09-29T08:03:21.520Z","event":"start","name":"A3 internal protocol with real PostgreSQL > isolates integrations and refuses a forged tenant on lease mutation"}
+{"at":"2026-09-29T08:03:21.523Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > isolates integrations and refuses a forged tenant on lease mutation","state":"passed"}
+{"at":"2026-09-29T08:03:21.525Z","event":"start","name":"A3 internal protocol with real PostgreSQL > recovers an expired lease once under two concurrent recoverers and fences every old-owner mutation"}
+{"at":"2026-09-29T08:03:21.640Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > recovers an expired lease once under two concurrent recoverers and fences every old-owner mutation","state":"passed"}
+{"at":"2026-09-29T08:03:21.752Z","event":"start","name":"A3 internal protocol with real PostgreSQL > bounds retries, keeps terminal failures and exhausts expired attempts without reopening"}
+{"at":"2026-09-29T08:03:21.861Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > bounds retries, keeps terminal failures and exhausts expired attempts without reopening","state":"passed"}
+{"at":"2026-09-29T08:03:21.969Z","event":"start","name":"A3 internal protocol with real PostgreSQL > rolls back insertion when success recording fails, then allows the same current owner to publish"}
+{"at":"2026-09-29T08:03:21.973Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > rolls back insertion when success recording fails, then allows the same current owner to publish","state":"passed"}
+{"at":"2026-09-29T08:03:21.975Z","event":"start","name":"A3 internal protocol with real PostgreSQL > failure before publication creates no offer and can be recovered"}
+{"at":"2026-09-29T08:03:21.977Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > failure before publication creates no offer and can be recovered","state":"passed"}
+{"at":"2026-09-29T08:03:21.980Z","event":"start","name":"A3 internal protocol with real PostgreSQL > rechecks lease after waiting for publication locks and uses DB issuance time"}
+{"at":"2026-09-29T08:03:22.160Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > rechecks lease after waiting for publication locks and uses DB issuance time","state":"passed"}
+{"at":"2026-09-29T08:03:22.262Z","event":"start","name":"A3 internal protocol with real PostgreSQL > database rejects a failure without an error code and cross-plan band references"}
+{"at":"2026-09-29T08:03:22.265Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > database rejects a failure without an error code and cross-plan band references","state":"passed"}
+{"at":"2026-09-29T08:03:22.269Z","event":"start","name":"A3 internal protocol with real PostgreSQL > refuses a changed publication payload without losing its reservation"}
+{"at":"2026-09-29T08:03:22.273Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > refuses a changed publication payload without losing its reservation","state":"passed"}
+{"at":"2026-09-29T08:03:22.276Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects success without its resource and guards terminal execution and key identity"}
+{"at":"2026-09-29T08:03:22.279Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects success without its resource and guards terminal execution and key identity","state":"passed"}
+{"at":"2026-09-29T08:03:22.283Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 0"}
+{"at":"2026-09-29T08:03:22.286Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 0","state":"passed"}
+{"at":"2026-09-29T08:03:22.289Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 1"}
+{"at":"2026-09-29T08:03:22.291Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 1","state":"passed"}
+{"at":"2026-09-29T08:03:22.294Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 2"}
+{"at":"2026-09-29T08:03:22.363Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 2","state":"passed"}
+{"at":"2026-09-29T08:03:22.367Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 3"}
+{"at":"2026-09-29T08:03:22.370Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 3","state":"passed"}
+{"at":"2026-09-29T08:03:22.373Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 4"}
+{"at":"2026-09-29T08:03:22.377Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 4","state":"passed"}
+{"at":"2026-09-29T08:03:22.382Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 5"}
+{"at":"2026-09-29T08:03:22.391Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 5","state":"passed"}
+{"at":"2026-09-29T08:03:22.394Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 6"}
+{"at":"2026-09-29T08:03:22.397Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 6","state":"passed"}
+{"at":"2026-09-29T08:03:22.400Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 7"}
+{"at":"2026-09-29T08:03:22.404Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 7","state":"passed"}
+{"at":"2026-09-29T08:03:22.406Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 8"}
+{"at":"2026-09-29T08:03:22.408Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 8","state":"passed"}
+{"at":"2026-09-29T08:03:22.410Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 9"}
+{"at":"2026-09-29T08:03:22.413Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 9","state":"passed"}
+{"at":"2026-09-29T08:03:22.415Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 10"}
+{"at":"2026-09-29T08:03:22.417Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects forged snapshot 10","state":"passed"}
+{"at":"2026-09-29T08:03:22.420Z","event":"start","name":"A3 internal protocol with real PostgreSQL > SQL rejects uncanonical/sensitive conditions and agrees with the single normalizer on valid conditions"}
+{"at":"2026-09-29T08:03:22.423Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > SQL rejects uncanonical/sensitive conditions and agrees with the single normalizer on valid conditions","state":"passed"}
+{"at":"2026-09-29T08:03:22.425Z","event":"start","name":"A3 internal protocol with real PostgreSQL > immutability preserves historical zone evidence and replay never recalculates or renews"}
+{"at":"2026-09-29T08:03:22.428Z","event":"finish","name":"A3 internal protocol with real PostgreSQL > immutability preserves historical zone evidence and replay never recalculates or renews","state":"passed"}

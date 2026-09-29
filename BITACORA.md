@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación CHECK C4 (2026-09-29):** commit y push autorizados a la rama actual. Se publica la verificación con dictamen PARTIAL; queda pendiente acreditar `delivery-requests-b2b` y diagnosticar el aborto del runner. Publicación sin activación ni inicio de D; resultados de pruebas corresponden al CHECK anterior.
+
+- **CHECK V1.13-C4 (2026-09-29): PARTIAL.** Nuevas 393/393 unitarias (34 archivos) y 738 E2E acreditadas en 32/33 archivos; incluye A6/B2/B3/B4/C2/C3 completos y dos recuperaciones C4 a precio igual/menor. `delivery-requests-b2b` (15 casos) no acreditado: forks incompleto y único diagnóstico threads aborta 0xC0000409; causa nativa pendiente, sin más repeticiones. Webhooks/status completaron el único diagnóstico. Prisma/build/ambos tipos/linters/docs, limpia/upgrade B conservado/drift y 23 invariantes en 35 bases pasan. Producto congelado 348/348, .env/HEAD/versión intactos; historia conservada y accesos sintéticos retirados. Sin defecto de producto reproducido; sin commit/push/activación ni D. Informe: docs/CHECK-V1.13-C4-AUTHORIZED-ACCEPTANCE.md; evidencia: docs/checks/v1.13-c4-evidence.json.
+
 - **Publicación C2/C3 (2026-09-29):** commit y push autorizados a la rama actual para publicar implementación C2 y verificación C3. Resultado técnico: LISTO PARA CHECK C4; sin activación ni inicio automático de C4/D.
 
 - **V1.13-C3 (2026-09-29): LISTO PARA CHECK C4.** Verificación nueva: 62 E2E adversariales con dos Nest/pools y A5 durable real, 359 E2E de regresión en 14 archivos, total 421/421 E2E únicos y 393/393 unitarias. Migración limpia/upgrade B no vacío/status/reaplicación/drift, tipos/build/Prisma/linters/docs PASS; 336 archivos existentes y .env idénticos. Escaneo de 16 bases aisladas sin violaciones; historia preservada. Dos abortos nativos excluidos; único ensayo forks por archivo completó Quotes/Assignments, causa raíz pendiente. Binario pre-C lee/cancela historia C pero rechaza accept/replay: no despliegue mixto acreditado. Sin cambios de producto, commit/push/activación; C4/D no iniciados. Informe: docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md.
@@ -1400,3 +1404,20 @@ Los 390 unitarios/372 E2E de C2 son históricos y no se suman. Fallos de fixture
 Solicitud: commitear y subir a la rama actual. Se incluyen implementación, migración incremental, pruebas, documentación y evidencia C2/C3 pendientes. Se conserva nul preexistente fuera del commit. Verificaciones de esta tarea: revisión del alcance Git, diff --check y búsqueda de secretos conocidos/JWT antes de publicar. Las 393 unitarias y 421 E2E son resultados de C3, no pruebas reejecutadas durante este commit. Se mantiene LISTO PARA CHECK C4; causa nativa del runner y validación integral/operativa pendientes. Publicación solicitada sin despliegue ni activación.
 
 Preparación del commit: el chequeo staged incluyó por primera vez los logs nuevos y detectó whitespace final. Se normalizaron espacios y líneas vacías finales de logs C2/C3, sin alterar mensajes, códigos o resultados; git diff --cached --check se vuelve a comprobar antes del commit.
+
+## 2026-09-29 — CHECK V1.13-C4 integral local
+
+- Solicitud: cerrar localmente aceptación autorizada contra inventario completo, auditar C1, preservar producto y distinguir nueva evidencia de historia, sin activación ni siguiente etapa.
+- Cambios: prueba C4 de recuperación con nueva MQ a precio igual/menor; runners de inventario/regresión aislada, diagnóstico acotado, migración, escaneo, limpieza, consolidación y artefactos; informe C4 e índices/logs. README/VERIFICATION/estado actual de esta bitácora actualizados; entradas previas conservadas. No pruebas existentes ni producto modificados.
+- Verificaciones nuevas: 393 unitarias/34 archivos y 738 E2E/32 de 33 archivos completos. A6/B2/B3/B4/C2/C3 y recuperación C4 pasan. Prisma validate/generate, build, tsconfig general/build, Oxlint/ESLint, OpenAPI/docs:check; limpia/upgrade con nueve tablas B intactas, status/reaplicación/drift, 70 triggers activos. Escaneo de 35 bases nuevas sin violaciones; accesos sintéticos retirados, historia preservada. Comparación 348 archivos/.env/HEAD/versión y referencias/JSON/diff/secretos.
+- Intentos excluidos: estado B2B, webhooks y solicitudes B2B terminaron incompletos en forks; único diagnóstico threads completó los dos primeros y abortó solicitudes B2B con 0xC0000409. No hubo tercera ejecución. Error inicial de lectura OpenAPI, bloqueo de subproceso del verificador y corrección de identidad de casos parametrizados del consolidador documentados separadamente.
+- Resultado: PARTIAL. Ningún defecto de producto reproducido; falta acreditar íntegramente delivery-requests-b2b (15 casos). Sin causa nativa acreditada ni promesa de estabilidad. Historia C3 revisada; cifras anteriores no sumadas al CHECK.
+- Pendientes: diagnóstico causal y corrida completa del archivo bloqueante; coordinación/consentimiento Coita/Web y actualización coordinada de instancias antes de cualquier futura activación. A operativo/A3 y D fuera del alcance. Sin commit, push, despliegue ni activación.
+
+## 2026-09-29 — Publicación de CHECK V1.13-C4
+
+- Solicitud: realizar commit y push a la rama actual.
+- Cambios: publicar pruebas, runners, documentación y evidencia C4; registrar esta publicación conservando el dictamen PARTIAL y el historial. Excluir el archivo nul preexistente.
+- Verificaciones de esta tarea: revisión del estado Git, rama/remoto, alcance de archivos, diff y contenido preparado; comprobar commit y sincronización remota después del push. No se reejecutaron suites: 393 unitarias y 738 E2E/32 de 33 archivos son evidencia de la tarea CHECK anterior.
+- Resultado técnico conservado: C4 PARTIAL; sin cambios de producto ni activación. La publicación no acredita los 15 casos pendientes ni resuelve la causa nativa.
+- Pendientes: diagnóstico y ejecución íntegra de delivery-requests-b2b, dependencias operativas y autorización de activación; D no iniciado.

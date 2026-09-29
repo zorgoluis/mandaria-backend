@@ -1,0 +1,58 @@
+{"at":"2026-09-29T08:00:51.801Z","event":"start","name":"V1.11-A provider completion > closes CLAIM -> ASSIGN -> DELIVERED in one call, and records who and when"}
+{"at":"2026-09-29T08:00:52.009Z","event":"finish","name":"V1.11-A provider completion > closes CLAIM -> ASSIGN -> DELIVERED in one call, and records who and when","state":"passed"}
+{"at":"2026-09-29T08:00:52.212Z","event":"start","name":"V1.11-A provider completion > ends the assignment as COMPLETED, with no failure motive and the same instant"}
+{"at":"2026-09-29T08:00:52.219Z","event":"finish","name":"V1.11-A provider completion > ends the assignment as COMPLETED, with no failure motive and the same instant","state":"passed"}
+{"at":"2026-09-29T08:00:52.482Z","event":"start","name":"V1.11-A provider completion > frees the driver and the vehicle for the next service"}
+{"at":"2026-09-29T08:00:52.491Z","event":"finish","name":"V1.11-A provider completion > frees the driver and the vehicle for the next service","state":"passed"}
+{"at":"2026-09-29T08:00:52.639Z","event":"start","name":"V1.11-A provider completion > repeats the same answer without writing again"}
+{"at":"2026-09-29T08:00:52.647Z","event":"finish","name":"V1.11-A provider completion > repeats the same answer without writing again","state":"passed"}
+{"at":"2026-09-29T08:00:52.742Z","event":"start","name":"V1.11-A provider completion > refuses a claim with no driver and vehicle assigned yet"}
+{"at":"2026-09-29T08:00:52.751Z","event":"finish","name":"V1.11-A provider completion > refuses a claim with no driver and vehicle assigned yet","state":"passed"}
+{"at":"2026-09-29T08:00:52.843Z","event":"start","name":"V1.11-A provider completion > rejects any body: the client decides nothing about the delivery"}
+{"at":"2026-09-29T08:00:53.001Z","event":"finish","name":"V1.11-A provider completion > rejects any body: the client decides nothing about the delivery","state":"passed"}
+{"at":"2026-09-29T08:00:53.373Z","event":"start","name":"V1.11-A only the actor that holds the service can close it > refuses every other principal"}
+{"at":"2026-09-29T08:00:53.382Z","event":"finish","name":"V1.11-A only the actor that holds the service can close it > refuses every other principal","state":"passed"}
+{"at":"2026-09-29T08:00:53.559Z","event":"start","name":"V1.11-A only the actor that holds the service can close it > refuses the provider that released the service"}
+{"at":"2026-09-29T08:00:53.569Z","event":"finish","name":"V1.11-A only the actor that holds the service can close it > refuses the provider that released the service","state":"passed"}
+{"at":"2026-09-29T08:00:53.660Z","event":"start","name":"V1.11-A only the actor that holds the service can close it > refuses a cancelled service even to the provider that had it"}
+{"at":"2026-09-29T08:00:53.836Z","event":"finish","name":"V1.11-A only the actor that holds the service can close it > refuses a cancelled service even to the provider that had it","state":"passed"}
+{"at":"2026-09-29T08:00:54.058Z","event":"start","name":"V1.11-A DELIVERED is terminal and irreversible > admits no release, no reassignment, no cancellation and no new claim"}
+{"at":"2026-09-29T08:00:54.346Z","event":"finish","name":"V1.11-A DELIVERED is terminal and irreversible > admits no release, no reassignment, no cancellation and no new claim","state":"passed"}
+{"at":"2026-09-29T08:00:54.448Z","event":"start","name":"V1.11-A DELIVERED is terminal and irreversible > survives a later cancellation of its DeliveryRequest"}
+{"at":"2026-09-29T08:00:54.579Z","event":"finish","name":"V1.11-A DELIVERED is terminal and irreversible > survives a later cancellation of its DeliveryRequest","state":"passed"}
+{"at":"2026-09-29T08:00:54.682Z","event":"start","name":"V1.11-A DELIVERED is terminal and irreversible > is not offered again to an independent driver"}
+{"at":"2026-09-29T08:00:54.857Z","event":"finish","name":"V1.11-A DELIVERED is terminal and irreversible > is not offered again to an independent driver","state":"passed"}
+{"at":"2026-09-29T08:00:55.047Z","event":"start","name":"V1.11-A independent completion > closes TAKE -> DELIVERED and frees the driver and the vehicle"}
+{"at":"2026-09-29T08:00:55.447Z","event":"finish","name":"V1.11-A independent completion > closes TAKE -> DELIVERED and frees the driver and the vehicle","state":"passed"}
+{"at":"2026-09-29T08:00:55.599Z","event":"start","name":"V1.11-A independent completion > refuses a driver that does not hold the service, and a provider admin"}
+{"at":"2026-09-29T08:00:55.609Z","event":"finish","name":"V1.11-A independent completion > refuses a driver that does not hold the service, and a provider admin","state":"passed"}
+{"at":"2026-09-29T08:00:55.882Z","event":"start","name":"V1.11-A independent completion > cannot be suspended while carrying a service, and can be once it is delivered"}
+{"at":"2026-09-29T08:00:55.892Z","event":"finish","name":"V1.11-A independent completion > cannot be suspended while carrying a service, and can be once it is delivered","state":"passed"}
+{"at":"2026-09-29T08:00:56.027Z","event":"start","name":"V1.11-A independent completion > refuses a released service"}
+{"at":"2026-09-29T08:00:56.037Z","event":"finish","name":"V1.11-A independent completion > refuses a released service","state":"passed"}
+{"at":"2026-09-29T08:00:56.359Z","event":"start","name":"V1.11-A completion is not an economic event > consumes 0 credits and returns 0 to the provider"}
+{"at":"2026-09-29T08:00:56.571Z","event":"finish","name":"V1.11-A completion is not an economic event > consumes 0 credits and returns 0 to the provider","state":"passed"}
+{"at":"2026-09-29T08:00:56.677Z","event":"start","name":"V1.11-A completion is not an economic event > consumes 0 credits and returns 0 to the independent driver"}
+{"at":"2026-09-29T08:00:56.781Z","event":"finish","name":"V1.11-A completion is not an economic event > consumes 0 credits and returns 0 to the independent driver","state":"passed"}
+{"at":"2026-09-29T08:00:56.882Z","event":"start","name":"V1.11-A completion is not an economic event > does not recalculate the price, the route or the frozen credit cost"}
+{"at":"2026-09-29T08:00:57.041Z","event":"finish","name":"V1.11-A completion is not an economic event > does not recalculate the price, the route or the frozen credit cost","state":"passed"}
+{"at":"2026-09-29T08:00:57.049Z","event":"start","name":"V1.11-A completion is not an economic event > logs the delivery without exposing tokens or personal data"}
+{"at":"2026-09-29T08:00:57.218Z","event":"finish","name":"V1.11-A completion is not an economic event > logs the delivery without exposing tokens or personal data","state":"passed"}
+{"at":"2026-09-29T08:00:57.426Z","event":"start","name":"V1.11-A the database enforces completion on its own > refuses a DELIVERED dispatch whose assignment is still ACTIVE"}
+{"at":"2026-09-29T08:00:57.559Z","event":"finish","name":"V1.11-A the database enforces completion on its own > refuses a DELIVERED dispatch whose assignment is still ACTIVE","state":"passed"}
+{"at":"2026-09-29T08:00:57.687Z","event":"start","name":"V1.11-A the database enforces completion on its own > refuses a delivery without a stamp, and a stamp without a delivery"}
+{"at":"2026-09-29T08:00:57.696Z","event":"finish","name":"V1.11-A the database enforces completion on its own > refuses a delivery without a stamp, and a stamp without a delivery","state":"passed"}
+{"at":"2026-09-29T08:00:57.788Z","event":"start","name":"V1.11-A the database enforces completion on its own > refuses to reopen, re-stamp or un-stamp a delivered dispatch"}
+{"at":"2026-09-29T08:00:57.942Z","event":"finish","name":"V1.11-A the database enforces completion on its own > refuses to reopen, re-stamp or un-stamp a delivered dispatch","state":"passed"}
+{"at":"2026-09-29T08:00:58.050Z","event":"start","name":"V1.11-A the database enforces completion on its own > refuses to rewrite a COMPLETED assignment"}
+{"at":"2026-09-29T08:00:58.173Z","event":"finish","name":"V1.11-A the database enforces completion on its own > refuses to rewrite a COMPLETED assignment","state":"passed"}
+{"at":"2026-09-29T08:00:58.305Z","event":"start","name":"V1.11-A the database enforces completion on its own > refuses a COMPLETED assignment that claims a failure motive"}
+{"at":"2026-09-29T08:00:58.315Z","event":"finish","name":"V1.11-A the database enforces completion on its own > refuses a COMPLETED assignment that claims a failure motive","state":"passed"}
+{"at":"2026-09-29T08:00:58.466Z","event":"start","name":"V1.11-A the database enforces completion on its own > never lets a delivered service be refunded"}
+{"at":"2026-09-29T08:00:58.477Z","event":"finish","name":"V1.11-A the database enforces completion on its own > never lets a delivered service be refunded","state":"passed"}
+{"at":"2026-09-29T08:00:58.799Z","event":"start","name":"V1.11-A concurrency > completes exactly once under simultaneous confirmations"}
+{"at":"2026-09-29T08:00:59.050Z","event":"finish","name":"V1.11-A concurrency > completes exactly once under simultaneous confirmations","state":"passed"}
+{"at":"2026-09-29T08:00:59.154Z","event":"start","name":"V1.11-A concurrency > never both delivers and releases the same service"}
+{"at":"2026-09-29T08:00:59.318Z","event":"finish","name":"V1.11-A concurrency > never both delivers and releases the same service","state":"passed"}
+{"at":"2026-09-29T08:00:59.424Z","event":"start","name":"V1.11-A concurrency > never both delivers and takes the same independent service"}
+{"at":"2026-09-29T08:00:59.531Z","event":"finish","name":"V1.11-A concurrency > never both delivers and takes the same independent service","state":"passed"}

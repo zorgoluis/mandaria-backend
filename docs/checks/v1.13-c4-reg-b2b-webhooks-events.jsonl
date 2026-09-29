@@ -1,0 +1,12 @@
+{"at":"2026-09-29T07:57:31.357Z","event":"start","name":"V1.12-C a completed delivery reaches the client that asked for it > a provider delivery is POSTed as the recorded event, with its id in a header"}
+{"at":"2026-09-29T07:57:31.548Z","event":"finish","name":"V1.12-C a completed delivery reaches the client that asked for it > a provider delivery is POSTed as the recorded event, with its id in a header","state":"passed"}
+{"at":"2026-09-29T07:57:31.650Z","event":"start","name":"V1.12-C a completed delivery reaches the client that asked for it > an independent delivery arrives the same way, with its own execution mode"}
+{"at":"2026-09-29T07:57:31.781Z","event":"finish","name":"V1.12-C a completed delivery reaches the client that asked for it > an independent delivery arrives the same way, with its own execution mode","state":"passed"}
+{"at":"2026-09-29T07:57:31.882Z","event":"start","name":"V1.12-C a completed delivery reaches the client that asked for it > the body carries no internal identifier and no secret"}
+{"at":"2026-09-29T07:57:31.983Z","event":"finish","name":"V1.12-C a completed delivery reaches the client that asked for it > the body carries no internal identifier and no secret","state":"passed"}
+{"at":"2026-09-29T07:57:32.085Z","event":"start","name":"V1.12-C a completed delivery reaches the client that asked for it > every 2xx counts as delivered"}
+{"at":"2026-09-29T07:57:32.682Z","event":"finish","name":"V1.12-C a completed delivery reaches the client that asked for it > every 2xx counts as delivered","state":"passed"}
+{"at":"2026-09-29T07:57:33.021Z","event":"start","name":"V1.12-C a failing client cannot undo a delivery > every non-2xx is a transport failure and nothing else changes"}
+{"at":"2026-09-29T07:57:34.427Z","event":"finish","name":"V1.12-C a failing client cannot undo a delivery > every non-2xx is a transport failure and nothing else changes","state":"passed"}
+{"at":"2026-09-29T07:57:34.528Z","event":"start","name":"V1.12-C a failing client cannot undo a delivery > a receiver that never answers is cut off by the timeout"}
+{"at":"2026-09-29T07:57:36.308Z","event":"finish","name":"V1.12-C a failing client cannot undo a delivery > a receiver that never answers is cut off by the timeout","state":"passed"}
