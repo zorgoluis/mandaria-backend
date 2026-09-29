@@ -4,6 +4,12 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación del cierre C1 (2026-09-29):** commit y push autorizados a la rama actual. Se publica el diseño listo para revisión con las cuatro decisiones aprobadas; C2 e implementación/activación permanecen pendientes.
+
+- **Cierre documental V1.13-C1 (2026-09-29): DISEÑO LISTO PARA REVISIÓN.** Decisiones aprobadas: atestación de Coita sobre MQ exacta; cancelar y confirmar antes de nueva secuencia/consentimiento; sustitución enlazada fuera de C; reiniciar envío no exige otro pago de comida ni implica reembolso. Inspección estática confirma cancelación admisible con MQ convertida vencida, pero cancel200/MDR CANCELLED puede coexistir con DELIVERED: se requiere también GET status CANCELLED/EXPIRED y deliveredAt null. Coita debe serializar generaciones por pedido; externalReference no es único. Matriz de fallos, invariantes y etapas C2/C3/C4 actualizadas. Sólo documentación, referencias/JSON/diff comprobados; no suites ni DB. C2 no iniciado; implementación/activación y validación externa pendientes. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
+
+Las entradas siguientes conservan estados históricos; el cierre anterior con D2 pendiente queda superado por la decisión explícita de esta tarea.
+
 - **Publicación C1 (2026-09-29):** commit y push autorizados a la rama actual para publicar el diseño documental. D2 (recuperación tras vencimiento) continúa pendiente; publicar no autoriza implementación ni activación.
 
 - **V1.13-C1 (2026-09-29): DISEÑO CON DECISIONES BLOQUEANTES.** Sólo análisis/documentación de aceptación autorizada, reutilizando accept/Dispatch/idempotencia y proponiendo evidencia inmutable del consentimiento ligada a MQ exacta. El usuario eligió atestación de Coita Eats con evidencia conservada allí. Pendiente decidir recuperación tras vencimiento: nueva secuencia después de cancelar o sustitución enlazada/atómica. Conserva snapshot/TTL, barreras SQL, CASH/COURIER_ADVANCE y refunds de créditos existentes; sin implementar C/D ni activar. Revisión de código/OpenAPI/migraciones y referencias, ejemplos JSON y diff --check; no pruebas nuevas ni acceso DB. B4 es evidencia histórica, causa de abortos no confirmada. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
@@ -1329,3 +1335,21 @@ Cambios: nuevo documento C1 y continuidad en esta bitácora; historial conservad
 ## 2026-09-29 — Publicación del diseño C1
 
 Solicitud: commit y push a la rama actual. Cambios: diseño C1 y bitácora; sin producto ni pruebas. Verificación de publicación: estado Git, diff --check y auditoría privada de secretos conocidos; no suites ejecutadas. Resultado: diseño con decisión bloqueante D2 conservada; atestación de Coita Eats aprobada previamente. nul preexistente excluido. Sin despliegue ni activación.
+
+
+## 2026-09-29 — Cierre del diseño C1 con decisiones de negocio aprobadas
+
+Solicitud: cerrar el diseño documental y contrastar garantías de cancelación/reinicio con código y contrato, sin implementar C2.
+
+**Cierre documental V1.13-C1 (2026-09-29): DISEÑO LISTO PARA REVISIÓN.** Decisiones aprobadas: atestación de Coita sobre MQ exacta; cancelar y confirmar antes de nueva secuencia/consentimiento; sustitución enlazada fuera de C; reiniciar envío no exige otro pago de comida ni implica reembolso. Inspección estática confirma cancelación admisible con MQ convertida vencida, pero cancel200/MDR CANCELLED puede coexistir con DELIVERED: se requiere también GET status CANCELLED/EXPIRED y deliveredAt null. Coita debe serializar generaciones por pedido; externalReference no es único. Matriz de fallos, invariantes y etapas C2/C3/C4 actualizadas. Sólo documentación, referencias/JSON/diff comprobados; no suites ni DB. C2 no iniciado; implementación/activación y validación externa pendientes. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
+
+Cambios: diseño C1 y esta bitácora, conservando historial. Definidos cancel/accept/completion concurrentes, respuesta perdida y reintentos, barrera de confirmación con detalle y estado público, nueva MPQ→conversión→consentimiento MQ→aceptación sin renovar TTL, separación financiera y responsabilidades de Coita/Web. El consentimiento final se obtiene después de convertir para quedar vinculado a MQ exacta; la presentación previa de MPQ no lo sustituye. No se propone nueva ruta de sustitución/cancelación ni unicidad por pedido en Mandaria.
+
+Verificación actual: lectura local de AGENTS/README/VERIFICATION/diseño, servicios/controllers/DTO, OpenAPI, schema y guardas SQL; referencias Markdown existentes y ejemplos JSON parseables; git diff --check. No pruebas de ejecución, migraciones, HTTP ni servicios. B4 y verificaciones de C1 inicial se citan exclusivamente como históricas. Baseline HEAD ed2072e6411958742c7ed503615d00c102e548cc; nul preexistente intacto. Sin producto, tests, configuración, .env, versión, datos, commit, push, despliegue o activación.
+
+Resultado: DISEÑO LISTO PARA REVISIÓN; no quedan decisiones de negocio bloqueantes. Pendientes: revisión e implementación C2 bajo solicitud nueva, pruebas de carreras/SQL/compatibilidad C3 y CHECK C4; acreditar coordinación por pedido, consentimiento y conciliación de Coita antes de operar, e instrucciones a ejecutores según D. Mantenimiento A3 y pendientes A permanecen separados.
+
+
+## 2026-09-29 — Publicación del cierre documental C1
+
+Solicitud: commitear y subir a la rama actual. Cambios: diseño C1 y bitácora, sin producto ni pruebas. Verificación de publicación: revisión de diff, estado Git y git diff --check; no suites reejecutadas. Resultado documental: DISEÑO LISTO PARA REVISIÓN, con decisiones de negocio resueltas y dependencias externas explícitas. nul preexistente excluido. Sin implementación de C2, despliegue ni activación.
