@@ -4,6 +4,8 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Comprobación de publicación D (2026-09-29):** `f722f50` confirmado en origin; sin cambios nuevos de código. Nueva solicitud de commit/push atendida con este registro documental exigido por AGENTS.md. `nul` continúa excluido; sin nuevas pruebas ni activación.
+
 - **Publicación V1.13-D (2026-09-29):** commit y push autorizados a la rama actual para publicar backend, pruebas, contrato y evidencia D. Se conservan la validación proporcional de la tarea anterior, C4 PARTIAL, interfaces pendientes y flujo sin activar. Esta publicación no ejecuta nuevas suites ni modifica datos.
 
 - **V1.13-D (2026-09-29): BACKEND IMPLEMENTADO, VALIDACIÓN LOCAL PROPORCIONAL COMPLETA.** Campo aditivo `collectionInstructions` en proyecciones existentes de proveedor/independiente/asignación y `driver/me`; importe/moneda de MQ aceptada e instrucción persistida, sin adelanto ni cobro de comida. OFFER/CURRENT/HISTORICAL separan oferta, ejecución e historia; cancelación/entrega no confirman cobro. Nuevas ejecuciones: 63 unitarias/5 archivos y 61 E2E únicos/5 archivos completos, tipos raíz/build, build, Oxlint/ESLint y OpenAPI/docs:check exit 0. Una interrupción de dispatch forks excluida; único diagnóstico threads completo, causa no acreditada. Fixtures inválidos corregidos sin cambiar reglas. Frontend pendiente; flujo sin activar; C4 PARTIAL y pendientes A intactos. Sin migraciones, .env, versión, principal, commit/push/despliegue. [Informe y guía](docs/V1.13-D-EXECUTOR-COLLECTION-INSTRUCTIONS.md), [evidencia nueva](docs/checks/v1.13-d-evidence.json).
@@ -1460,3 +1462,10 @@ Preparación del commit: el chequeo staged incluyó por primera vez los logs nue
 - Cambios: publicar implementación, pruebas, OpenAPI, documentación y evidencia de instrucciones financieras; actualizar esta bitácora y excluir nul preexistente.
 - Verificaciones de publicación: estado/rama/remoto, diff --check, revisión de archivos y secretos antes del commit; comprobar sincronización remota después del push. Sin nuevas suites: 63 unitarias y 61 E2E son resultados de la tarea de implementación anterior.
 - Resultado técnico conservado: backend D implementado y validado proporcionalmente; C4 PARTIAL, intermitencia sin causa acreditada, interfaces y pendientes operativos A abiertos. Publicar no activa el flujo ni constituye despliegue.
+
+## 2026-09-29 — Comprobación de publicación D
+
+- Solicitud: repetir commit y push a la rama actual.
+- Verificación actual: estado Git sin cambios de código, HEAD f722f50 y mismo commit en la rama remota comprobado con ls-remote; nul preexistente excluido.
+- Cambios: únicamente este registro de continuidad y estado actual. Diff documental comprobado antes de publicar; no se repitieron suites.
+- Resultado técnico conservado: D validada proporcionalmente en la tarea anterior, C4 PARTIAL e interfaces pendientes. Sin despliegue ni activación.
