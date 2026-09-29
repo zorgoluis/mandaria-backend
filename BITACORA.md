@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.13-B1 (2026-09-28):** commit y push autorizados a la rama actual para publicar el diseño y su continuidad. B sigue pendiente de implementación; sin activación ni despliegue.
+
+- **V1.13-B1 (2026-09-28): LISTO PARA IMPLEMENTAR B2 — sólo diseño.** Informe `docs/V1.13-B1-PREQUOTE-CONVERSION-DESIGN.md`: conversión inmutable con hechos propios, transacción local e idempotencia existente, snapshot sin recálculo y barreras de aplicación/SQL pre-C. Revisión estática y documental; sin pruebas de producto ni operaciones de datos. B no implementada. Pendientes de activación A conservados: capacidad del mutex, política coordinada, migraciones/validación del despliegue y observabilidad/responsables. Sin versión, configuración, commit/push o activación.
+
 - **Publicación CHECK V1.13-A6 (2026-09-28):** commit y push autorizados a la rama actual para publicar pruebas, verificador y evidencia del CHECK validado en la tarea anterior. Sin activación ni despliegue.
 
 - **CHECK V1.13-A6 (2026-09-28): PASS — V1.13-A IMPLEMENTADA Y VALIDADA LOCALMENTE.** Evidencia nueva: 372/372 unitarias, 497/497 E2E existentes consolidadas por archivo y 36/36 CHECK integral (533 E2E en total). Dos Nest con auth/idempotencia/persistencia/consumo reales; caídas de proceso, SQL/rollback, carga de 10604 permisos y preservación de 10 tablas no vacías. 250 archivos de producto/configuración/contrato/migraciones congelados, .env y HEAD intactos. Bases nuevas aisladas _test; principal sin escrituras. Build/tipos/Prisma/linters/docs:check PASS; abortos Windows y correcciones de fixtures documentados. Activación pendiente de runbook/capacidad/migración del entorno real; flag deshabilitado, sin Google real, B, commit/push/despliegue. Informe: docs/CHECK-V1.13-A6-PREQUOTES.md.
@@ -1189,3 +1193,17 @@ Pendientes: aprobar/ensayar operación coordinada de política, dimensionar pilo
 ## 2026-09-28 — Publicación Git del CHECK V1.13-A6
 
 Solicitud: commitear y hacer push a la rama actual. Cambios: publicación de pruebas y evidencia A6, con actualización de continuidad. Verificaciones actuales: estado/rama/remoto y git diff --check; las 372 unitarias y 533 E2E son resultados de la tarea anterior, no se repitieron en esta publicación. Resultado: conjunto preparado para commit y push; confirmación remota en la respuesta de esta tarea. Pendientes: activación coordinada, capacidad y diseño de V1.13-B. Sin despliegue ni cambios de producto; nul preexistente excluido.
+
+## 2026-09-28 — V1.13-B1 diseño de conversión única
+
+Solicitud: diseñar conversión MPQ→MDR/MQ, exclusivamente mediante documentación y contrastando A3–A6 con código real.
+
+Cambios: informe B1 con alternativas, mapa de reutilización, contrato propuesto, condiciones/snapshot, transacción/locks/replay, esquema y guardas SQL, bloqueo de accept/quotes/Dispatch legacy, intención comercial inmutable, cancelación, migración/despliegue y matriz B2/B3/B4. Actualización del estado actual; historial conservado.
+
+Verificaciones actuales: lectura estática de documentación obligatoria, servicios/DTOs/modelos/triggers; revisión de campos de ejemplos, referencias locales, alcance Git y `git diff --check`. No se ejecutaron unitarias/E2E, build, DB ni operaciones externas; los resultados A6 siguen siendo evidencia histórica. Resultado: **LISTO PARA IMPLEMENTAR B2**, no B implementada. Sólo documentación; `nul` preexistente intacto.
+
+Pendientes: implementar y verificar barreras/constraints/transacción en B2/B3, CHECK B4; C autorizará aceptación y D expondrá cobro a ejecutores. Se conservan abiertos capacidad del mutex A, política coordinada, migración/validación de entorno y observabilidad/responsables. Sin cambios de producto, OpenAPI operativo, configuración, datos, versión/CHANGELOG, commit/push/despliegue/activación.
+
+## 2026-09-28 — Publicación Git de V1.13-B1
+
+Solicitud: commitear y hacer push a la rama actual. Cambios: publicación del diseño B1 y registro de continuidad. Verificaciones actuales: estado/rama, alcance documental y git diff --check; no se repitieron pruebas de producto. Resultado: documentación preparada para commit y push; confirmación del remoto en la respuesta de esta tarea. Pendientes: implementación B2 y verificación B3/B4, además de los pendientes operativos A conservados. Sin despliegue ni activación; nul preexistente excluido.
