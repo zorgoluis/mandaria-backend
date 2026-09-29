@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación de configuración segura (2026-09-29):** commit/push autorizados de .env.example, .gitignore y continuidad, incluyendo retirar .env del repositorio sin eliminar el archivo local. Sin publicar nuevos valores privados ni reescribir historia; V1.13 permanece sin activar.
+
+- **Sincronización local de entorno (2026-09-29):** .env completado con claves faltantes de .env.example, conservando valores existentes; plantilla actualizada con flag de aceptación autorizada deshabilitado. Validación de configuración en memoria aprobada; presupuesto operativo no inventado, V1.13 sin activar. Se detectó .env versionado: exclusión local del índice y regla .gitignore para prevenir publicaciones futuras, sin borrar archivo ni reescribir historia.
+
 - **Publicación de readiness V1.13 (2026-09-29):** commit/push autorizados de la lista operativa y continuidad documental. Sin nuevas pruebas ni cambios de producto; C4 PARTIAL, A3 aparcado y flujo sin activar permanecen intactos.
 
 - **Coordinación operativa (2026-09-29):** readiness leído; pendientes de respuesta del usuario: tamaño/demanda del piloto, responsable operativo y custodia/atención financiera. Sin nueva verificación técnica ni autorización de activación.
@@ -1497,3 +1501,17 @@ Preparación del commit: el chequeo staged incluyó por primera vez los logs nue
 - Cambios: publicar docs/V1.13-ACTIVATION-READINESS.md y las entradas de BITACORA de preparación/coordinación operativa, conservando historial. Nul preexistente excluido.
 - Verificaciones de publicación: revisar contenido documental, estado/rama/remoto y diff preparado con --check; comprobar sincronización tras el push. Sin suites, bases de datos ni nuevas comprobaciones técnicas.
 - Resultado técnico conservado: requisitos operativos documentados, decisiones del usuario e integración externa pendientes. No resuelve C4/A3, no acepta riesgos ni activa o despliega el flujo.
+
+## 2026-09-29 — Ajuste de .env frente a plantilla
+
+- Solicitud: completar la configuración local requerida según .env.example.
+- Cambios: añadir 25 claves ausentes sin modificar valores existentes; incluir en la plantilla el flag de aceptación autorizada con default deshabilitado. Sin publicar valores locales, secretos o contenido del archivo. Presupuesto global pendiente de decisión, sin valor operativo inventado.
+- Verificaciones actuales: comparación privada de claves, preservación de valores existentes y validateEnvironment sobre configuración candidata y guardada: PASS. Todos los campos de plantilla presentes, flags V1.13 deshabilitados. Archivo local preservado; se detectó seguimiento Git de .env y se retiró sólo del índice, con regla .gitignore. No se inspeccionó ni reescribió historia de secretos.
+- Resultado: configuración local alineada y válida en memoria; no acredita conexiones, credenciales o disponibilidad de servicios. Sin iniciar backend, DB, Docker, migraciones o pruebas integrales; sin commit/push/activación. C4/A3 y decisiones operativas siguen pendientes. Si hubo credenciales reales en historia Git, su revisión/rotación requiere tratamiento separado; no se realizó aquí.
+
+## 2026-09-29 — Publicación de plantilla y exclusión de .env
+
+- Solicitud: commit y push de los ajustes de entorno a la rama actual.
+- Cambios: publicar flag de aceptación autorizada deshabilitado en plantilla y regla .gitignore; registrar retirada de .env del seguimiento, conservando archivo local. Nul preexistente excluido.
+- Verificaciones de publicación: revisión del diff de archivos públicos y nombres/estado del índice sin imprimir contenido privado; diff --check, comprobación de archivo local e ignorado y sincronización tras push. Validación de entorno corresponde a la tarea anterior; sin nuevas pruebas ni servicios.
+- Resultado técnico conservado: configuración local alineada, flujo sin activar. La retirada no elimina posibles secretos del historial; revisión/rotación separada pendiente cuando corresponda. Sin despliegue ni cambios de datos.
