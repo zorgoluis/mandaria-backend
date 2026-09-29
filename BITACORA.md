@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación CHECK V1.13-A6 (2026-09-28):** commit y push autorizados a la rama actual para publicar pruebas, verificador y evidencia del CHECK validado en la tarea anterior. Sin activación ni despliegue.
+
+- **CHECK V1.13-A6 (2026-09-28): PASS — V1.13-A IMPLEMENTADA Y VALIDADA LOCALMENTE.** Evidencia nueva: 372/372 unitarias, 497/497 E2E existentes consolidadas por archivo y 36/36 CHECK integral (533 E2E en total). Dos Nest con auth/idempotencia/persistencia/consumo reales; caídas de proceso, SQL/rollback, carga de 10604 permisos y preservación de 10 tablas no vacías. 250 archivos de producto/configuración/contrato/migraciones congelados, .env y HEAD intactos. Bases nuevas aisladas _test; principal sin escrituras. Build/tipos/Prisma/linters/docs:check PASS; abortos Windows y correcciones de fixtures documentados. Activación pendiente de runbook/capacidad/migración del entorno real; flag deshabilitado, sin Google real, B, commit/push/despliegue. Informe: docs/CHECK-V1.13-A6-PREQUOTES.md.
+
 - **Publicación V1.13-A5 (2026-09-28):** commit y push autorizados a la rama actual; se publica el conjunto validado en la tarea anterior. Emisión deshabilitada, sin despliegue ni migración principal.
 
 - **V1.13-A5 (2026-09-28): LISTO PARA CHECK A6.** Consumo durable PostgreSQL compartido, cuotas y presupuesto global MPQ explícito; start/finish conservadores, fencing y recuperación. Nuevas verificaciones: 372/372 unitarias y 497/497 E2E consolidadas por archivo (21 nuevas); invitaciones repetida completa tras aborto nativo Windows. Prisma, limpia/upgrade, tipos/build/linters/OpenAPI/docs:check PASS. Migración sólo en bases locales _test, principal intacta. Flag false, sin Google real, versión/CHANGELOG, commit/push/despliegue. No cierra V1.13-A. Informe: docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md.
@@ -1171,3 +1175,17 @@ Pendientes: CHECK A6 independiente, coordinación operativa de cambios de polít
 ## 2026-09-28 — Publicación Git de V1.13-A5
 
 Solicitud: commitear y subir a la rama actual. Cambios: publicación de A5 y registro de continuidad. Verificaciones actuales: estado/rama/remoto y git diff --check; las 372 unitarias y 497 E2E corresponden a la tarea anterior y no se repitieron en esta publicación. Resultado: conjunto preparado para commit y push; confirmación del remoto en la respuesta de esta tarea. Pendiente funcional: CHECK A6. Sin despliegue; nul preexistente excluido.
+
+## 2026-09-28 — CHECK V1.13-A6 integral y adversarial
+
+Solicitud: verificar A1–A5 con producto congelado y evidencia nueva; no corregir producto ni activar.
+
+Cambios: nuevo CHECK HTTP de 36 casos, verificador de carga/caídas, informe y evidencia sanitizada. Ningún cambio a servicios, DTOs, reglas SQL, migraciones, paquetes o contrato.
+
+Verificaciones y resultado: **CHECK V1.13-A6 (2026-09-28): PASS — V1.13-A IMPLEMENTADA Y VALIDADA LOCALMENTE.** Evidencia nueva: 372/372 unitarias, 497/497 E2E existentes consolidadas por archivo y 36/36 CHECK integral (533 E2E en total). Dos Nest con auth/idempotencia/persistencia/consumo reales; caídas de proceso, SQL/rollback, carga de 10604 permisos y preservación de 10 tablas no vacías. 250 archivos de producto/configuración/contrato/migraciones congelados, .env y HEAD intactos. Bases nuevas aisladas _test; principal sin escrituras. Build/tipos/Prisma/linters/docs:check PASS; abortos Windows y correcciones de fixtures documentados. Activación pendiente de runbook/capacidad/migración del entorno real; flag deshabilitado, sin Google real, B, commit/push/despliegue. Informe: docs/CHECK-V1.13-A6-PREQUOTES.md.
+
+Pendientes: aprobar/ensayar operación coordinada de política, dimensionar piloto (p99 admisión ~1260 ms con concurrencia 8 y 10604 filas), sincronización de relojes y límites de red; diseñar V1.13-B sin implementarla aquí. Bases conservadas; credenciales CHECK revocadas y zonas desactivadas; nul previo sin tocar. Las cifras A5 previas permanecen como historia.
+
+## 2026-09-28 — Publicación Git del CHECK V1.13-A6
+
+Solicitud: commitear y hacer push a la rama actual. Cambios: publicación de pruebas y evidencia A6, con actualización de continuidad. Verificaciones actuales: estado/rama/remoto y git diff --check; las 372 unitarias y 533 E2E son resultados de la tarea anterior, no se repitieron en esta publicación. Resultado: conjunto preparado para commit y push; confirmación remota en la respuesta de esta tarea. Pendientes: activación coordinada, capacidad y diseño de V1.13-B. Sin despliegue ni cambios de producto; nul preexistente excluido.

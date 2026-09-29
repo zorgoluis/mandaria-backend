@@ -1,3 +1,11 @@
+# CHECK V1.13-A6 — Verificación integral (2026-09-28)
+
+**CHECK V1.13-A6 (2026-09-28): PASS — V1.13-A IMPLEMENTADA Y VALIDADA LOCALMENTE.** Evidencia nueva: 372/372 unitarias, 497/497 E2E existentes consolidadas por archivo y 36/36 CHECK integral (533 E2E en total). Dos Nest con auth/idempotencia/persistencia/consumo reales; caídas de proceso, SQL/rollback, carga de 10604 permisos y preservación de 10 tablas no vacías. 250 archivos de producto/configuración/contrato/migraciones congelados, .env y HEAD intactos. Bases nuevas aisladas _test; principal sin escrituras. Build/tipos/Prisma/linters/docs:check PASS; abortos Windows y correcciones de fixtures documentados. Activación pendiente de runbook/capacidad/migración del entorno real; flag deshabilitado, sin Google real, B, commit/push/despliegue. Informe: docs/CHECK-V1.13-A6-PREQUOTES.md.
+
+[Informe completo](docs/CHECK-V1.13-A6-PREQUOTES.md) · [Evidencia estructurada](docs/checks/v1.13-a6-evidence.json) · [Carga y caídas](docs/checks/v1.13-a6-load.json). No se acredita una pasada monolítica: cuatro archivos de regresión abortaron, se repitieron completos; requests B2B necesitó forks en segunda repetición. Cada archivo final acreditado terminó con exit 0.
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
 # V1.13-A5 — Prequote Consumption Controls (2026-09-28)
 
 **V1.13-A5 (2026-09-28): LISTO PARA CHECK A6.** Consumo durable PostgreSQL compartido, cuotas y presupuesto global MPQ explícito; start/finish conservadores, fencing y recuperación. Nuevas verificaciones: 372/372 unitarias y 497/497 E2E consolidadas por archivo (21 nuevas); invitaciones repetida completa tras aborto nativo Windows. Prisma, limpia/upgrade, tipos/build/linters/OpenAPI/docs:check PASS. Migración sólo en bases locales _test, principal intacta. Flag false, sin Google real, versión/CHANGELOG, commit/push/despliegue. No cierra V1.13-A. Informe: docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md.
