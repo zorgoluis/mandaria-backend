@@ -50,7 +50,15 @@ La ruta existente `POST /api/v1/delivery-quotes/:publicId/accept` admite una MQ 
 
 `PREQUOTE_AUTHORIZED_ACCEPT_ENABLED=false` por defecto; no se activa ni se modifica .env. Un cancel200/MDR CANCELLED puede coexistir con entrega DELIVERED: antes de nueva secuencia confirmar además status CANCELLED/EXPIRED y deliveredAt null. No avanzar con resultado incierto. Nueva MPQ→conversión→consentimiento sobre MQ→accept; nunca renovar TTL. Coita coordina generaciones por pedido; externalReference no es único. Reiniciar envío no exige otro pago de comida ni implica reembolso; accept/DELIVERED no acreditan cobro del envío. D queda fuera.
 
-Contrato, cambios SQL, despliegue/rollback compatible y evidencia C2: [implementación](docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md). C3 verificado; **CHECK C4 PARTIAL**: 393 unitarias y 738 E2E en 32/33 archivos acreditados; `delivery-requests-b2b` sigue sin corrida completa por aborto del runner. [Informe C4](docs/CHECK-V1.13-C4-AUTHORIZED-ACCEPTANCE.md). No cierre integral, activación ni D; autorización operativa pendiente.
+Contrato, cambios SQL, despliegue/rollback compatible y evidencia C2: [implementación](docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md). C3 verificado; **CHECK C4 PARTIAL**: 393 unitarias y 738 E2E en 32/33 archivos acreditados históricamente; `delivery-requests-b2b` sigue sin corrida completa por aborto del runner. [Informe C4](docs/CHECK-V1.13-C4-AUTHORIZED-ACCEPTANCE.md). No cierre integral ni activación; autorización operativa pendiente. D se implementa separadamente a continuación y no cierra C4.
+
+## V1.13-D — instrucciones financieras para proveedores y repartidores
+
+Las respuestas existentes de oferta/ejecución incorporan `collectionInstructions` sólo para conversiones PREPAID autorizadas. Comida pagada al restaurante según declaración del integrador, sin adelanto ni cobro de comida; cobrar únicamente el envío por importe/moneda de la MQ aceptada, al destinatario en efectivo al entregar. PREPAID no significa envío pagado. Aceptación y entrega física no confirman cobro.
+
+Consumir el campo en listados/detalles y acciones de `/provider/dispatches` y `/driver/dispatches`, y en las respuestas de asignación de flotilla. Para el Driver de flotilla o independiente, usar `activeDeliveryAssignment.collectionInstructions` en `/driver/me` y PATCH `/driver/availability`. `OFFER` es informativo; `CURRENT` instruye al ejecutor a cobrar al entregar; `HISTORICAL` conserva condiciones sin acción de cobro. Al cancelar/terminar no mostrar «cobrar». Campo ausente: conservar contrato legacy CASH/COURIER_ADVANCE/PREPAID sin inferir estas reglas.
+
+Backend D implementado y verificado proporcionalmente: 63 unitarias y 61 E2E en archivos completos. Interfaces pendientes, flujo sin activar; C4 PARTIAL y pendientes de A intactos. [Contrato, ejemplo real y guía para Mandaria Frontend](docs/V1.13-D-EXECUTOR-COLLECTION-INSTRUCTIONS.md). Sin migraciones, precio paralelo, recibos, conciliación o reembolsos monetarios; refunds de créditos existentes conservados.
 
 ## Estado y arquitectura
 

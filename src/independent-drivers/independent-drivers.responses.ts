@@ -1,4 +1,8 @@
 import {
+  CollectionInstructionsResponse,
+  collectionInstructionsDoc,
+} from '../delivery-assignments/collection-instructions.responses.js';
+import {
   creditEnforcementDoc,
   creditEnforcementModes,
 } from '../credits/award-boundary.js';
@@ -178,6 +182,11 @@ class DriverDispatchZoneResponse {
   @ApiProperty({ example: 'Ocozocoautla de Espinosa' }) name!: string;
 }
 export class DriverDispatchResponse {
+  @ApiPropertyOptional({
+    type: CollectionInstructionsResponse,
+    description: collectionInstructionsDoc,
+  })
+  collectionInstructions?: CollectionInstructionsResponse;
   @ApiProperty({
     enum: creditEnforcementModes,
     description: creditEnforcementDoc,

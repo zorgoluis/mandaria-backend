@@ -1,3 +1,22 @@
+# V1.13-D — Verificación proporcional de instrucciones financieras (2026-09-29)
+
+**Backend D implementado y validado localmente; interfaces pendientes, flujo sin activar.** C4 permanece PARTIAL, no se retoma su diagnóstico ni se ejecuta su archivo pendiente. No se abre otro CHECK.
+
+Resultados **nuevos de esta tarea** sobre `9785ee1` más cambios D:
+
+- **63/63 unitarias**, cinco archivos completos: collection-instructions (10), dispatch (13), delivery-assignments (10), independent-drivers (22), logistics (8).
+- **61/61 E2E únicos**, cinco archivos completos: collection-instructions (5), dispatch (13), delivery-assignments (13), independent-drivers (23), driver-self (7). Nest y PostgreSQL locales en bases C4 de pruebas existentes; routing controlado. No toda la suite.
+- Build; TypeScript sin emisión para tsconfig.json y tsconfig.build.json; Oxlint; ESLint; generación OpenAPI/API_ACCESS y docs:check: exit 0. Oxlint: advertencia preexistente de import no usado en el runner histórico C3.
+- Sólo selects/proyecciones/DTOs de respuesta; sin precio paralelo, migraciones, flags, versión o cambios financieros. Archivo legacy agrega ausencia explícita de instrucciones conservando aserciones de dinero/adelanto. Permisos y privacidad comprobados en ambas superficies.
+- Los intentos fallidos de fixtures (passwordHash, identifier de vehículo y DTO release) se conservan, no se acreditan. Dispatch forks terminó incompleto, 7/13, exit 1; único diagnóstico adicional threads terminó 13/13 exit 0. Causa de la interrupción **no acreditada**; éxito posterior no demuestra su resolución. Sin omitir casos ni cambiar configuración compartida.
+- Sin principal/.env/Docker/servicios externos/despachos reales/commit/push/despliegue/activación; sin migraciones o escaneos masivos. Historia sintética conservada en bases aisladas; accesos propios retirados por hooks finales exitosos, sin certificar limpieza global de intentos interrumpidos.
+
+[Informe, contrato y guía Frontend](docs/V1.13-D-EXECUTOR-COLLECTION-INSTRUCTIONS.md) · [Comandos/exits/logs/reportes](docs/checks/v1.13-d-evidence.json) · [Ejemplo HTTP real sintético](docs/checks/v1.13-d-response-example.json).
+
+Las verificaciones históricas siguientes no se suman a D ni se presentan como ejecutadas ahora. C4 PARTIAL y pendientes operativos de A intactos.
+
+---
+
 # CHECK V1.13-C4 — Verificación integral local (2026-09-29)
 
 ## Seguimiento acotado del único archivo pendiente — 2026-09-29, 15:04–15:06 UTC

@@ -1,4 +1,8 @@
 import {
+  CollectionInstructionsResponse,
+  collectionInstructionsDoc,
+} from '../delivery-assignments/collection-instructions.responses.js';
+import {
   creditEnforcementDoc,
   creditEnforcementModes,
 } from '../credits/award-boundary.js';
@@ -111,6 +115,11 @@ class ServiceDetailResponse {
   externalReference?: string | null;
 }
 export class ProviderDispatchResponse {
+  @ApiPropertyOptional({
+    type: CollectionInstructionsResponse,
+    description: collectionInstructionsDoc,
+  })
+  collectionInstructions?: CollectionInstructionsResponse;
   @ApiProperty({
     enum: creditEnforcementModes,
     description: creditEnforcementDoc,

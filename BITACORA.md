@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.13-D (2026-09-29):** commit y push autorizados a la rama actual para publicar backend, pruebas, contrato y evidencia D. Se conservan la validación proporcional de la tarea anterior, C4 PARTIAL, interfaces pendientes y flujo sin activar. Esta publicación no ejecuta nuevas suites ni modifica datos.
+
+- **V1.13-D (2026-09-29): BACKEND IMPLEMENTADO, VALIDACIÓN LOCAL PROPORCIONAL COMPLETA.** Campo aditivo `collectionInstructions` en proyecciones existentes de proveedor/independiente/asignación y `driver/me`; importe/moneda de MQ aceptada e instrucción persistida, sin adelanto ni cobro de comida. OFFER/CURRENT/HISTORICAL separan oferta, ejecución e historia; cancelación/entrega no confirman cobro. Nuevas ejecuciones: 63 unitarias/5 archivos y 61 E2E únicos/5 archivos completos, tipos raíz/build, build, Oxlint/ESLint y OpenAPI/docs:check exit 0. Una interrupción de dispatch forks excluida; único diagnóstico threads completo, causa no acreditada. Fixtures inválidos corregidos sin cambiar reglas. Frontend pendiente; flujo sin activar; C4 PARTIAL y pendientes A intactos. Sin migraciones, .env, versión, principal, commit/push/despliegue. [Informe y guía](docs/V1.13-D-EXECUTOR-COLLECTION-INSTRUCTIONS.md), [evidencia nueva](docs/checks/v1.13-d-evidence.json).
+
 - **Publicación del seguimiento C4 (2026-09-29):** commit y push autorizados a la rama actual para conservar evidencia de los dos intentos acotados. Dictamen PARTIAL y bloqueo de `delivery-requests-b2b` intactos; sin nuevas pruebas ni activación en esta publicación.
 
 - **Pendiente C4, ejecución acotada (2026-09-29): PARTIAL conservado.** Sólo `delivery-requests-b2b` en su base C4 existente: forks termina incompleto 13/15, exit 1, error de worker; único diagnóstico adicional threads aborta 0xC0000409 sin reporte completo. No hay nuevos casos acreditados ni más ejecuciones. Se reutilizan 393 unitarias y 738 E2E/32 archivos de C4 anterior; sin repetir suites, migraciones o escaneos. Producto/pruebas/configuración sin ajustes; evidencia e informes actualizados. Sin commit/push/activación; causa nativa pendiente.
@@ -1441,3 +1445,18 @@ Preparación del commit: el chequeo staged incluyó por primera vez los logs nue
 - Verificaciones de publicación: estado Git, rama/remoto, diff preparado y revisión de secretos; comprobar sincronización después del push. No ejecutar suites, migraciones ni escaneos de bases. Resultados de los intentos pertenecen a la tarea anterior.
 - Resultado técnico conservado: PARTIAL, 393 unitarias y 738 E2E/32 archivos previamente acreditados; ningún caso adicional acreditado.
 - Pendientes: ejecución íntegra de delivery-requests-b2b y causa del aborto. Sin cambios de producto, despliegue, activación ni inicio de otra etapa.
+
+## 2026-09-29 — V1.13-D: instrucciones financieras para ejecutores
+
+- Solicitud: exponer comida pagada, sin adelanto/cobro de comida y cobro exclusivo de envío persistido para conversiones autorizadas; validación proporcional sin retomar C4.
+- Cambios: helper/Swagger compartidos collectionInstructions y campos opcionales en provider/driver dispatch, mutaciones de asignación y activeDeliveryAssignment de driver/me/availability. Importe/moneda de MQ aceptada, instrucción de PrequoteConversion; OFFER/CURRENT/HISTORICAL, privacidad por selección explícita. CASH/COURIER_ADVANCE, TTL, autorizaciones y refunds existentes conservados. Documentación/OpenAPI/README/VERIFICATION actualizados; no interfaces.
+- Verificaciones nuevas: 63 unitarias en cinco archivos y 61 E2E únicos en cinco archivos completos exit 0; build, ambos tsconfig sin emisión, Oxlint/ESLint, OpenAPI/docs:check. Oxlint conserva advertencia preexistente del runner C3. Regresión directa, sin suites completas, migraciones ni escaneos. Evidencia: docs/checks/v1.13-d-evidence.json.
+- Intentos excluidos: fixtures iniciales incompatibles con constraints de usuario/vehículo y con DTO release independiente, corregidos sólo en pruebas. Dispatch forks interrumpido 7/13, exit 1; único diagnóstico threads completo 13/13. Causa no acreditada, no se afirma resuelta. Restantes archivos completos; ninguna repetición suma casos.
+- Resultado: backend D terminado y validado dentro del alcance local solicitado. Pendientes: interfaces consumidoras, C4 PARTIAL, causa de intermitencia y pendientes operativos A. Flujo sin activar; sin .env/versión/principal/Coita/Docker/servicios externos, commit/push/despliegue. Nul preexistente conservado. No CHECK adicional.
+
+## 2026-09-29 — Publicación V1.13-D
+
+- Solicitud: commitear y subir los cambios a la rama actual.
+- Cambios: publicar implementación, pruebas, OpenAPI, documentación y evidencia de instrucciones financieras; actualizar esta bitácora y excluir nul preexistente.
+- Verificaciones de publicación: estado/rama/remoto, diff --check, revisión de archivos y secretos antes del commit; comprobar sincronización remota después del push. Sin nuevas suites: 63 unitarias y 61 E2E son resultados de la tarea de implementación anterior.
+- Resultado técnico conservado: backend D implementado y validado proporcionalmente; C4 PARTIAL, intermitencia sin causa acreditada, interfaces y pendientes operativos A abiertos. Publicar no activa el flujo ni constituye despliegue.

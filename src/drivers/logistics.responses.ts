@@ -1,3 +1,7 @@
+import {
+  CollectionInstructionsResponse,
+  collectionInstructionsDoc,
+} from '../delivery-assignments/collection-instructions.responses.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   DeliveryAssignmentMode,
@@ -187,6 +191,11 @@ class DriverSelfIndependentResponse {
 }
 /** Exactly the three fields drivers.service selects; there is no assignedAt here. */
 export class DriverSelfActiveDeliveryAssignmentResponse {
+  @ApiPropertyOptional({
+    type: CollectionInstructionsResponse,
+    description: collectionInstructionsDoc,
+  })
+  collectionInstructions?: CollectionInstructionsResponse;
   @ApiProperty(uuid) id!: string;
   @ApiProperty({ enum: DeliveryAssignmentMode })
   mode!: DeliveryAssignmentMode;

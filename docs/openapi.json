@@ -57777,9 +57777,110 @@
           "vehicle"
         ]
       },
+      "CollectionDeliveryFeeResponse": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "25.00",
+            "description": "Importe exacto de la MQ aceptada; decimal con dos posiciones. Nunca incluye comida o créditos."
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN",
+            "description": "Moneda de la MQ aceptada."
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ]
+      },
+      "CollectionInstructionsResponse": {
+        "type": "object",
+        "properties": {
+          "applicability": {
+            "type": "string",
+            "enum": [
+              "OFFER",
+              "CURRENT",
+              "HISTORICAL"
+            ],
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura."
+          },
+          "goodsPaidToRestaurant": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Comida pagada al restaurante según la declaración persistida del integrador. Mandaria no verifica el banco."
+          },
+          "advanceToRestaurant": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "No adelantar dinero al restaurante."
+          },
+          "collectGoodsFromRecipient": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "No cobrar comida al destinatario."
+          },
+          "deliveryFee": {
+            "$ref": "#/components/schemas/CollectionDeliveryFeeResponse"
+          },
+          "payer": {
+            "type": "string",
+            "enum": [
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ],
+            "description": "Cobro exclusivo del envío; nunca del valor de comida ni de créditos del ejecutor."
+          }
+        },
+        "required": [
+          "applicability",
+          "goodsPaidToRestaurant",
+          "advanceToRestaurant",
+          "collectGoodsFromRecipient",
+          "deliveryFee",
+          "payer",
+          "method",
+          "dueAt",
+          "component"
+        ]
+      },
       "DriverSelfActiveDeliveryAssignmentResponse": {
         "type": "object",
         "properties": {
+          "collectionInstructions": {
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -60870,6 +60971,14 @@
       "ProviderDispatchResponse": {
         "type": "object",
         "properties": {
+          "collectionInstructions": {
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
           "creditEnforcementMode": {
             "type": "string",
             "enum": [
@@ -62344,6 +62453,14 @@
             "type": "string",
             "nullable": true
           },
+          "collectionInstructions": {
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
           "paymentContext": {
             "$ref": "#/components/schemas/PaymentContextResponse"
           }
@@ -63419,6 +63536,14 @@
       "DriverDispatchResponse": {
         "type": "object",
         "properties": {
+          "collectionInstructions": {
+            "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
           "creditEnforcementMode": {
             "type": "string",
             "enum": [
