@@ -1,0 +1,512 @@
+{
+  "check": "CHECK V1.13-B4 — conversión única de precotizaciones",
+  "generatedAt": "2026-09-29T04:37:58.761Z",
+  "alcance": "Cierre de V1.13-B limitado a conversión MPQ → MDR PREPAID + MQ OFFERED con barreras pre-C. No acredita aceptación autorizada, despacho de convertidas, cobro efectivo, interfaces ni activación.",
+  "baseline": {
+    "rama": "1.13-Precotización_integración_comida_prepagada",
+    "head": "7660f1392e1af6d8aae880381e3a271da0e69aa3",
+    "headAlCierre": "7660f1392e1af6d8aae880381e3a271da0e69aa3",
+    "paquete": "1.12.0",
+    "cambiosPreexistentes": [
+      "archivo untracked `nul`, conservado intacto"
+    ],
+    "documentacionLeida": [
+      "AGENTS.md",
+      "BITACORA.md",
+      "README.md",
+      "VERIFICATION.md",
+      "docs/V1.13-B1-PREQUOTE-CONVERSION-DESIGN.md",
+      "docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md",
+      "docs/V1.13-B3-CONVERSION-ADVERSARIAL-VERIFICATION.md",
+      "docs/CHECK-V1.13-A6-PREQUOTES.md",
+      "docs/PROPOSAL-PREQUOTE-PREPAID-RECIPIENT-CASH.md",
+      "docs/PREQUOTE-REUSE-ASSESSMENT.md"
+    ]
+  },
+  "entorno": {
+    "node": "v24.15.0",
+    "postgresql": "local, 18.x",
+    "docker": "no ejecutado",
+    "routing": "controlado por doble en las suites; ninguna llamada pagada",
+    "basesCreadas": "sólo bases nuevas locales terminadas en _test, retenidas; sin reset, purga ni borrado de bases preexistentes",
+    "basePrincipal": {
+      "migracionesAplicadas": 24,
+      "tablasV113": [],
+      "nota": "la base principal no se migró ni se usó como destino; se consultó sólo de lectura para confirmar su estado"
+    },
+    "basesSeparadas": "base integral para el recorrido y las suites de precotización; base de regresión limpia distinta para los 30 archivos E2E, porque las fixtures de upgrade con IDs manuales no avanzan secuencias"
+  },
+  "inventarioDescubierto": {
+    "archivosE2E": 30,
+    "archivosUnitarios": 32
+  },
+  "suites": {
+    "unitarias": {
+      "archivos": 32,
+      "total": 380,
+      "aprobadas": 380,
+      "fallidas": 0
+    },
+    "e2e": {
+      "archivosConCorridaLimpia": 30,
+      "casosUnicos": 654,
+      "sinCorridaLimpia": [],
+      "porArchivo": {
+        "b2b-delivery-status.e2e-spec.ts": 21,
+        "b2b-outbox.e2e-spec.ts": 17,
+        "b2b-webhooks.e2e-spec.ts": 54,
+        "b2b.e2e-spec.ts": 14,
+        "check-a6-prequotes.e2e-spec.ts": 36,
+        "check-b3-conversion.e2e-spec.ts": 58,
+        "check-b4-conversion.e2e-spec.ts": 24,
+        "core.e2e-spec.ts": 7,
+        "credit-consumption.e2e-spec.ts": 36,
+        "credit-policies.e2e-spec.ts": 19,
+        "credit-refunds.e2e-spec.ts": 22,
+        "credits.e2e-spec.ts": 24,
+        "delivery-assignments.e2e-spec.ts": 13,
+        "delivery-completion.e2e-spec.ts": 29,
+        "delivery-quotes.e2e-spec.ts": 14,
+        "delivery-requests-b2b.e2e-spec.ts": 15,
+        "delivery-requests-validation.e2e-spec.ts": 7,
+        "dispatch-credit-snapshots.e2e-spec.ts": 14,
+        "dispatch.e2e-spec.ts": 13,
+        "driver-self.e2e-spec.ts": 7,
+        "drivers-vehicles.e2e-spec.ts": 11,
+        "independent-drivers.e2e-spec.ts": 23,
+        "prequote-consumption.e2e-spec.ts": 21,
+        "prequote-conversion.e2e-spec.ts": 39,
+        "prequote-persistence.e2e-spec.ts": 24,
+        "prequotes-http.e2e-spec.ts": 40,
+        "pricing-admin.e2e-spec.ts": 4,
+        "provider-admin-access.e2e-spec.ts": 9,
+        "providers.e2e-spec.ts": 15,
+        "user-invitations.e2e-spec.ts": 24
+      }
+    },
+    "nota": "Totales descubiertos en esta tarea; las cifras 380/572 de B2 y 380/237 de B3 no se reutilizan como evidencia actual. Los reintentos no se suman a los casos únicos."
+  },
+  "abortosYRepeticiones": [
+    {
+      "mode": "e2e",
+      "file": "delivery-quotes.e2e-spec.ts",
+      "exit": 3221226505
+    },
+    {
+      "mode": "e2e",
+      "file": "user-invitations.e2e-spec.ts",
+      "exit": 3221226505
+    },
+    {
+      "mode": "conversion",
+      "file": "prequote-conversion.e2e-spec.ts",
+      "exit": 3221226505
+    }
+  ],
+  "productoCongelado": {
+    "archivosProtegidos": {
+      "antes": 261,
+      "despues": 261
+    },
+    "hashCombinado": {
+      "identico": true,
+      "valor": "6b16d0eb8fdb91a10d6d902f3cf2017050e22509d20e757b8d71aef748b7732c"
+    },
+    "archivosConDiferencia": [],
+    "env": {
+      "comparacionPrivada": "idéntica",
+      "nota": "huella no publicada"
+    }
+  },
+  "migraciones": {
+    "prismaValidate": "exit 0",
+    "verifyMigrations": "PASS (cadena histórica completa)",
+    "verifyPrequoteConsumptionMigrations": "PASS, 28 migraciones, 14 tablas históricas",
+    "verifyPrequoteConversionMigrations": "PASS, 28 migraciones, 14 tablas históricas, catálogo FK",
+    "verifyPrequoteMigrations": "FALLA — verificador obsoleto de la época A3; ver limitaciones",
+    "statusYReaplicacion": {
+      "integral": {
+        "statusExit": 0,
+        "upToDate": true,
+        "driftExit": 2,
+        "noDifference": false,
+        "reapplyExit": 0,
+        "reapplyNoPending": true,
+        "appliedMigrations": 28,
+        "failedMigrations": 0,
+        "prequotes": 313,
+        "conversions": 199
+      },
+      "regression": {
+        "statusExit": 0,
+        "upToDate": true,
+        "driftExit": 2,
+        "noDifference": false,
+        "reapplyExit": 0,
+        "reapplyNoPending": true,
+        "appliedMigrations": 28,
+        "failedMigrations": 0,
+        "prequotes": 252,
+        "conversions": 127
+      }
+    },
+    "drift": {
+      "integral": {
+        "exit": 0,
+        "noDifference": true,
+        "extracto": [
+          "No difference detected.",
+          "Loaded Prisma config from prisma.config.ts."
+        ]
+      },
+      "regression": {
+        "exit": 0,
+        "noDifference": true,
+        "extracto": [
+          "No difference detected.",
+          "Loaded Prisma config from prisma.config.ts."
+        ]
+      }
+    }
+  },
+  "escaneoSql": {
+    "integral": {
+      "antes": {
+        "vinculos_invalidos": 0,
+        "keys_huerfanas": 0,
+        "ejecuciones_de_conversion": 0,
+        "dispatch_por_mq_convertida": 0,
+        "dispatch_por_mdr_convertida": 0,
+        "mq_invalidas": 0,
+        "manifiestos_invalidos": 0,
+        "intenciones_invalidas": 0,
+        "mpq_con_dos_conversiones": 0,
+        "triggers_de_fallo": 0,
+        "triggers_deshabilitados": 0,
+        "credenciales_de_fixture_activas": 2,
+        "zonas_de_fixture_activas": 5
+      },
+      "despues": {
+        "vinculos_invalidos": 0,
+        "keys_huerfanas": 0,
+        "ejecuciones_de_conversion": 0,
+        "dispatch_por_mq_convertida": 0,
+        "dispatch_por_mdr_convertida": 0,
+        "mq_invalidas": 0,
+        "manifiestos_invalidos": 0,
+        "intenciones_invalidas": 0,
+        "mpq_con_dos_conversiones": 0,
+        "triggers_de_fallo": 0,
+        "triggers_deshabilitados": 0,
+        "credenciales_de_fixture_activas": 0,
+        "zonas_de_fixture_activas": 0
+      },
+      "revocado": {
+        "credenciales": 2,
+        "zonas": 5
+      },
+      "triggersDeIntegridad": 17,
+      "triggersActivos": 17,
+      "fksDiferidas": [
+        "PrequoteConversion_deliveryQuoteId_deliveryRequestId_fkey",
+        "PrequoteConversion_deliveryRequestId_integrationClientId_fkey"
+      ]
+    },
+    "regression": {
+      "antes": {
+        "vinculos_invalidos": 0,
+        "keys_huerfanas": 0,
+        "ejecuciones_de_conversion": 0,
+        "dispatch_por_mq_convertida": 0,
+        "dispatch_por_mdr_convertida": 0,
+        "mq_invalidas": 0,
+        "manifiestos_invalidos": 0,
+        "intenciones_invalidas": 0,
+        "mpq_con_dos_conversiones": 0,
+        "triggers_de_fallo": 0,
+        "triggers_deshabilitados": 0,
+        "credenciales_de_fixture_activas": 0,
+        "zonas_de_fixture_activas": 1
+      },
+      "despues": {
+        "vinculos_invalidos": 0,
+        "keys_huerfanas": 0,
+        "ejecuciones_de_conversion": 0,
+        "dispatch_por_mq_convertida": 0,
+        "dispatch_por_mdr_convertida": 0,
+        "mq_invalidas": 0,
+        "manifiestos_invalidos": 0,
+        "intenciones_invalidas": 0,
+        "mpq_con_dos_conversiones": 0,
+        "triggers_de_fallo": 0,
+        "triggers_deshabilitados": 0,
+        "credenciales_de_fixture_activas": 0,
+        "zonas_de_fixture_activas": 0
+      },
+      "revocado": {
+        "credenciales": 0,
+        "zonas": 1
+      },
+      "triggersDeIntegridad": 17,
+      "triggersActivos": 17,
+      "fksDiferidas": [
+        "PrequoteConversion_deliveryQuoteId_deliveryRequestId_fkey",
+        "PrequoteConversion_deliveryRequestId_integrationClientId_fkey"
+      ]
+    }
+  },
+  "recorridoIntegral": {
+    "barriers": [
+      {
+        "id": "§2",
+        "title": "recorrido integral con consumo durable real",
+        "detail": [
+          "emitir crea exactamente un permiso FINISHED y una llamada de routing",
+          "emitir crea su ejecución durable A3; convertir no crea permisos, ni ejecución, ni llamada de routing",
+          "snapshot idéntico a la MPQ; fechas de MDR/MQ son convertedAt",
+          "accept 409 AUTHORIZED_ACCEPT_REQUIRED y requote 409 PREQUOTE_REQUOTE_NOT_ALLOWED",
+          "cancelar no libera la MPQ; replay devuelve estados actuales y otra key 409",
+          "Dispatch/asignación/ledger/Outbox/snapshots sin cambio: {\"dispatches\":5,\"assignments\":5,\"ledger\":10,\"outbox\":5,\"snapshots\":10}"
+        ]
+      },
+      {
+        "id": "§2",
+        "title": "replay de emisión no duplica consumo",
+        "detail": [
+          "una sola llamada de routing y un solo permiso durable para la misma key"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "tres scopes obligatorios",
+        "detail": [
+          "quitar cualquiera de los tres responde 403; con los tres, 201"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "ownership: ajena e inexistente son indistinguibles",
+        "detail": [
+          "ambos 404 con envelope idéntico salvo requestId/timestamp/path"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "autenticación y autorización del replay",
+        "detail": [
+          "token humano 401; credencial revocada, integración suspendida y credencial vencida cierran el replay con 401",
+          "restablecido el principal, el replay devuelve el mismo ganador"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "validación anidada estricta",
+        "detail": [
+          "12 cuerpos inválidos rechazados con 400 antes de crear la key",
+          "campoDesconocido, confirmacionExtra, versionIncorrecta, estadoInventado, referenciaVacia, referenciaLarga, fechaSinZona, fechaInvalida, fechaFutura, cobroAjeno, componenteAjeno, importeDeCobro"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "contexto financiero restringido",
+        "detail": [
+          "COURIER_ADVANCE, USD, categoría distinta de FOOD e importe negativo → 400",
+          "goodsValue omitido/null/positivo aceptados; el importe de mercancía no se suma al envío"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "referencias opacas y proyecciones explícitas",
+        "detail": [
+          "4 superficies y los logs revisados: 0 fugas",
+          "sin manifiesto, confirmaciones, UUID internos, proveedor de routing ni relación cruda"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "flag independiente de conversión",
+        "detail": [
+          "apagado: nuevas conversiones 503 PREQUOTE_CONVERSION_DISABLED y ningún recurso creado",
+          "el replay de una conversión existente sigue devolviendo 200 con sus mismos vínculos"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "misma key y cuerpo desde dos instancias",
+        "detail": [
+          "respuestas [201,200]: una conversión, una key y una MQ"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "la key pertenece a una intención",
+        "detail": [
+          "cuerpo distinto, MPQ distinta y operación distinta con la misma key: 409 en los tres"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "ocho keys sobre una MPQ",
+        "detail": [
+          "un 201 y 7 conflictos; una sola key persistida y sin huérfanas",
+          "códigos: [201,409,409,409,409,409,409,409]"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "namespace por integración",
+        "detail": [
+          "el mismo texto de key en dos integraciones produce dos resultados propios"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "respuesta perdida después del commit",
+        "detail": [
+          "el fallo se induce sólo en la carga de la respuesta: 500 y un resultado ya durable",
+          "la otra instancia recupera el mismo ganador por replay, sin duplicar recursos",
+          "no se afirma un corte TCP real"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "cancelación y lecturas concurrentes",
+        "detail": [
+          "par observado [\"CREATED\",\"OFFERED\"]; nunca una combinación imposible",
+          "la MPQ queda consumida de forma permanente aun cancelada"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "tarifa reemplazada o inactivada no reprecifica",
+        "detail": [
+          "la tarifa vigente se retira y otra de 999.00 la reemplaza antes de convertir",
+          "importe conservado 31.50; plan y banda siguen siendo los de la MPQ"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "metadata congelada en proyecciones convertidas",
+        "detail": [
+          "renombrar zona y cambiar su código no altera lo que publican MQ convertida ni MPQ"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "zona INACTIVE",
+        "detail": [
+          "bloquea una conversión nueva con 409 PREQUOTE_SERVICE_UNAVAILABLE y no crea nada",
+          "el replay autorizado sigue devolviendo su mismo resultado"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "el vencimiento de una MPQ es inmutable incluso en SQL",
+        "detail": [
+          "acortar, ampliar y borrar rechazados con PREQUOTE_IMMUTABLE; expiresAt sin cambio",
+          "por eso la frontera temporal se prueba acortando la vigencia por configuración antes de emitir"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "frontera de vencimiento por HTTP",
+        "detail": [
+          "antes convierte; después 409 PREQUOTE_EXPIRED sin crear recursos ni renovar expiresAt",
+          "la vigencia se acorta por configuración antes de emitir; no se manipulan relojes ni filas"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "cruce del vencimiento durante la espera de lock",
+        "detail": [
+          "la conversión espera un lock real de 2,6 s sobre una MPQ de 1,5 s de vigencia",
+          "al obtenerlo responde 409 PREQUOTE_EXPIRED con rollback completo: sin conversión y sin key"
+        ]
+      },
+      {
+        "id": "§6",
+        "title": "catálogo de guardas",
+        "detail": [
+          "24 triggers de integridad activos en 9 tablas, ninguno deshabilitado",
+          "2 FKs DEFERRABLE INITIALLY DEFERRED en PrequoteConversion",
+          "sin triggers de fallo residuales de B2/B3/B4"
+        ]
+      },
+      {
+        "id": "§6",
+        "title": "escritor directo en SQL",
+        "detail": [
+          "16 escrituras forjadas, ninguna aceptada",
+          "segunda conversión de la misma MPQ → CONVERSION_KEY_INVALID; mover la conversión a otro dueño → CONVERSION_IMMUTABLE; reescribir el manifiesto → CONVERSION_IMMUTABLE; adelantar convertedAt → CONVERSION_IMMUTABLE; borrar la conversión → CONVERSION_IMMUTABLE; modificar la MPQ consumida → PREQUOTE_IMMUTABLE; borrar la MPQ consumida → PREQUOTE_IMMUTABLE; reprecificar la MQ convertida → DELIVERY_QUOTE_IMMUTABLE; ampliar el expiry de la MQ convertida → DELIVERY_QUOTE_IMMUTABLE; forjar ACCEPTED sin autorización → AUTHORIZED_ACCEPT_REQUIRED; segunda MQ para la MDR convertida → PREQUOTE_REQUOTE_NOT_ALLOWED; hijo extra después del commit → CONVERSION_CONTENT_IMMUTABLE; reparentar un hijo autorizado → CONVERSION_CONTENT_IMMUTABLE; borrar el contexto financiero → CONVERSION_CONTENT_IMMUTABLE; abrir Dispatch para la MQ convertida → RECHAZADO; dejar la key huérfana → CONVERSION_KEY_IMMUTABLE",
+          "con SET CONSTRAINTS ALL IMMEDIATE el conjunto comprometido sigue siendo válido y los ataques posteriores siguen fallando",
+          "el vencimiento de la MPQ no se puede ampliar ni en SQL; el commit tardío directo se reverifica en la suite B3"
+        ]
+      },
+      {
+        "id": "§8",
+        "title": "preservación con fixtures no vacíos",
+        "detail": [
+          "ocho tablas comparadas por hash antes y después de tres conversiones: idénticas",
+          "las MPQ se emitieron antes de la fotografía, porque emitir sí consume y convertir no",
+          "conteos de referencia: {\"CreditAccount\":6,\"CreditLedgerEntry\":12,\"Dispatch\":6,\"DeliveryAssignment\":6,\"B2bOutboxEvent\":6,\"DispatchCreditSnapshot\":12,\"ApiIdempotencyExecution\":364,\"PrequoteConsumptionPermit\":401}",
+          "MDR/MQ legacy PREPAID y COURIER_ADVANCE intactas; accept idempotente, recotización y cancelación legacy conservados",
+          "las MDR convertidas siguen bloqueadas para accept y recotización"
+        ]
+      }
+    ],
+    "logLines": 742
+  },
+  "escritorAnterior": {
+    "revision": "5978807270c038d9d7e555ad985ee7bfe35718a5",
+    "localHistory": true,
+    "isolatedOutput": ".tmp/b4/old/dist",
+    "note": "git archive + tsc local; sin checkout, sin reset, sin descargas y sin sustituir el dist activo",
+    "dependencies": "dependencias y Prisma Client instalados actualmente; no es un artefacto histórico de producción"
+  },
+  "hallazgos": {
+    "defectosDeProducto": [],
+    "defectosDeFixturesDelCheck": [
+      "punto de referencia de ejecuciones A3 tomado antes de emitir, cuando emitir consume por diseño",
+      "aserción sobre el envelope 404 que exigía no repetir el path solicitado por el propio llamante",
+      "replay construido con un cuerpo nuevo en cada intento, que es legítimamente un conflicto de key",
+      "ordenación lexicográfica de códigos HTTP al comprobar el ganador de una carrera",
+      "plan de tarifas creado ACTIVE con bandas, que la guarda RATE_PLAN_IMMUTABLE rechaza",
+      "intento de restaurar un plan INACTIVE a ACTIVE, transición que el dominio prohíbe",
+      "frontera temporal construida por UPDATE del expiry de la MPQ, que es inmutable",
+      "fotografía de preservación que encerraba también la emisión de las MPQ",
+      "drift medido con --to-schema-datasource, que resuelve el datasource del archivo de schema y apunta a la base principal",
+      "variable de fixture sin uso que rompía el linter"
+    ],
+    "limitacionesYEntorno": [
+      "scripts/verify-prequote-migrations.mjs quedó obsoleto: excluye sólo las migraciones de A3, así que su base de upgrade recibe las de A5 y B2, que dependen de tablas de A3",
+      "tsc con tsconfig.json (que incluye pruebas) arroja 9 errores preexistentes en suites de A6/B2/B3; el gate de producto tsconfig.build.json está en 0",
+      "abortos nativos de worker en Windows (exit 3221226505) en tres archivos; repetidos completos hasta exit 0 sin cambiar aserciones"
+    ],
+    "a3VerifierObsoleto": {
+      "script": "scripts/verify-prequote-migrations.mjs",
+      "observed": "exit 1; «Migration failed in mandaria_a3_upgrade_<sufijo>_test; connection data withheld»",
+      "reproduced": "dos veces con sufijos distintos, y una tercera replicando su lógica en un script del CHECK",
+      "cause": "excluye sólo las dos migraciones de A3, así que su base de upgrade recibe también 20260928000300_prequote_consumption y 20260928000400_prequote_conversion, que dependen de las tablas que A3 crea",
+      "failingMigration": "20260928000400_prequote_conversion",
+      "prismaError": "P3009 al reaplicar sobre la base con la migración fallida",
+      "impact": "ninguno en producto ni en migraciones; es un verificador versionado de la época A3 que quedó obsoleto al añadirse A5 y B2",
+      "coverage": "la cadena queda verificada por verify-migrations.mjs, verify-prequote-consumption-migrations.mjs y verify-prequote-conversion-migrations.mjs, los tres PASS en esta tarea",
+      "action": "documentado, no corregido: un CHECK no modifica scripts del repositorio para aprobarse",
+      "databases": "bases nuevas _test retenidas; cadenas de conexión no publicadas"
+    }
+  },
+  "limitesConservados": [
+    "un escritor directo con SET CONSTRAINTS IMMEDIATE puede adelantar la evaluación temporal; no amplía expiresAt, no reutiliza la MPQ y no habilita despacho",
+    "la confirmación es una declaración del integrador; Mandaria no verifica banco",
+    "las referencias son cadenas opacas validadas por forma y longitud; no hay clasificador de PII en texto libre",
+    "el ensayo del escritor anterior usa dependencias y Prisma Client actuales: no es un artefacto histórico completo ni acredita un despliegue mixto"
+  ],
+  "pendientesDeActivacion": [
+    "capacidad del mutex y volumen",
+    "política coordinada de consumo",
+    "migraciones y entorno de despliegue",
+    "observabilidad, responsables y retención",
+    "actualizar todas las instancias antes de activar B",
+    "C: aceptación autorizada; D: exposición de instrucciones a ejecutores"
+  ]
+}

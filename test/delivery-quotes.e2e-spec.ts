@@ -652,23 +652,36 @@ describe.sequential(
           'RATE_CONFIGURATION_INVALID',
         );
       } finally {
-        await prisma.$transaction([
-          prisma.$executeRawUnsafe(
-            'ALTER TABLE "RateBand" DISABLE TRIGGER "RateBand_draft_only"',
-          ),
-          prisma.rateBand.create({
+        // Restore usable fixture configuration through a new version, keeping every guard active.
+        await prisma.$transaction(async (tx) => {
+          const replacement = await tx.ratePlan.create({
             data: {
-              ratePlanId: middle.ratePlanId,
-              minDistanceMeters: middle.minDistanceMeters,
-              maxDistanceMeters: middle.maxDistanceMeters,
-              amount: middle.amount,
-              currency: middle.currency,
+              serviceZoneId: active.serviceZoneId,
+              serviceType: active.serviceType,
+              version: active.version + 1,
+              status: 'DRAFT',
+              calculationType: active.calculationType,
+              quoteValidityMinutes: active.quoteValidityMinutes,
+              currency: active.currency,
+              bands: {
+                create: active.bands.map((band) => ({
+                  minDistanceMeters: band.minDistanceMeters,
+                  maxDistanceMeters: band.maxDistanceMeters,
+                  amount: band.amount,
+                  currency: band.currency,
+                })),
+              },
             },
-          }),
-          prisma.$executeRawUnsafe(
-            'ALTER TABLE "RateBand" ENABLE TRIGGER "RateBand_draft_only"',
-          ),
-        ]);
+          });
+          await tx.ratePlan.update({
+            where: { id: active.id },
+            data: { status: 'INACTIVE', deactivatedAt: new Date() },
+          });
+          await tx.ratePlan.update({
+            where: { id: replacement.id },
+            data: { status: 'ACTIVE', activatedAt: new Date() },
+          });
+        });
       }
       const failures = logs
         .filter((l) => l.includes('DELIVERY_QUOTE_FAILED'))

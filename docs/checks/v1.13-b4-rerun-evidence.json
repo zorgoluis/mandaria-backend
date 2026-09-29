@@ -1,0 +1,1910 @@
+{
+  "verdict": "PARTIAL",
+  "reason": "b2b-webhooks E2E has no successful complete process; full test typecheck has nine preexisting errors",
+  "baseline": {
+    "branch": "1.13-Precotización_integración_comida_prepagada",
+    "preexisting": [
+      "BITACORA.md",
+      "VERIFICATION.md",
+      "docs/CHECK-V1.13-B4-CONVERSION.md",
+      "docs/REVIEW-V1.13-B4-CHECK.md",
+      "docs/checks/v1.13-b4-evidence.json",
+      "test/check-b4-conversion.e2e-spec.ts",
+      "nul"
+    ]
+  },
+  "freeze": {
+    "originalFiles": 261,
+    "changed": [],
+    "originalCombined": "6b16d0eb8fdb91a10d6d902f3cf2017050e22509d20e757b8d71aef748b7732c",
+    "envUnchanged": true,
+    "addedVerifier": [
+      "scripts/consolidate-conversion-check.mjs"
+    ],
+    "head": "7660f1392e1af6d8aae880381e3a271da0e69aa3",
+    "version": "1.12.0"
+  },
+  "databases": {
+    "integral": "mandaria_b4_integral_150bdb98b9_test",
+    "regression": "mandaria_b4_reg_150bdb98b9_test"
+  },
+  "suites": {
+    "complete": false,
+    "missing": [
+      "b2b-webhooks.e2e-spec.ts"
+    ],
+    "inventory": {
+      "e2e": [
+        "b2b-delivery-status.e2e-spec.ts",
+        "b2b-outbox.e2e-spec.ts",
+        "b2b-webhooks.e2e-spec.ts",
+        "b2b.e2e-spec.ts",
+        "check-a6-prequotes.e2e-spec.ts",
+        "check-b3-conversion.e2e-spec.ts",
+        "check-b4-conversion.e2e-spec.ts",
+        "core.e2e-spec.ts",
+        "credit-consumption.e2e-spec.ts",
+        "credit-policies.e2e-spec.ts",
+        "credit-refunds.e2e-spec.ts",
+        "credits.e2e-spec.ts",
+        "delivery-assignments.e2e-spec.ts",
+        "delivery-completion.e2e-spec.ts",
+        "delivery-quotes.e2e-spec.ts",
+        "delivery-requests-b2b.e2e-spec.ts",
+        "delivery-requests-validation.e2e-spec.ts",
+        "dispatch-credit-snapshots.e2e-spec.ts",
+        "dispatch.e2e-spec.ts",
+        "driver-self.e2e-spec.ts",
+        "drivers-vehicles.e2e-spec.ts",
+        "independent-drivers.e2e-spec.ts",
+        "prequote-consumption.e2e-spec.ts",
+        "prequote-conversion.e2e-spec.ts",
+        "prequote-persistence.e2e-spec.ts",
+        "prequotes-http.e2e-spec.ts",
+        "pricing-admin.e2e-spec.ts",
+        "provider-admin-access.e2e-spec.ts",
+        "providers.e2e-spec.ts",
+        "user-invitations.e2e-spec.ts"
+      ],
+      "unit": [
+        "b2b-outbox.spec.ts",
+        "b2b-webhook-operations.spec.ts",
+        "b2b-webhook-reliability.spec.ts",
+        "b2b-webhooks.spec.ts",
+        "credit-consumption.spec.ts",
+        "credit-policies.spec.ts",
+        "credit-refunds.spec.ts",
+        "credits.spec.ts",
+        "delivery-assignments.spec.ts",
+        "delivery-completion.spec.ts",
+        "delivery-requests.spec.ts",
+        "delivery-status.spec.ts",
+        "dispatch-credit-snapshots.spec.ts",
+        "dispatch.spec.ts",
+        "environment.spec.ts",
+        "http.spec.ts",
+        "independent-drivers.spec.ts",
+        "integration-auth.spec.ts",
+        "invitations.spec.ts",
+        "local-provider-admins.spec.ts",
+        "logistics.spec.ts",
+        "prequote-conditions.spec.ts",
+        "prequote-consumption.spec.ts",
+        "prequote-conversion.spec.ts",
+        "prequote-orchestration.spec.ts",
+        "pricing.spec.ts",
+        "providers.spec.ts",
+        "public-execution-identity.spec.ts",
+        "quote-accept-diagnostics.spec.ts",
+        "quote-pricing.spec.ts",
+        "resend-mail.spec.ts",
+        "services.spec.ts"
+      ]
+    },
+    "unit": {
+      "id": "a8f445a2-2841-48da-a98e-baa7dc8dd66e",
+      "file": "unit",
+      "mode": "unit",
+      "startedAt": "2026-09-29T04:58:18.843Z",
+      "endedAt": "2026-09-29T04:59:07.986Z",
+      "exit": 0,
+      "signal": null,
+      "error": null,
+      "passed": 380,
+      "failed": 0,
+      "total": 380,
+      "report": ".tmp/b4r/attempts/a8f445a2-2841-48da-a98e-baa7dc8dd66e/report.json",
+      "reportSha256": "c85803679e6b20af23bb54878cbb4a5d187ccd2b8d46d4d058c434ad8fd4df46",
+      "pool": "threads",
+      "database": "mandaria_b4_reg_150bdb98b9_test"
+    },
+    "e2e": [
+      {
+        "id": "07fd0f54-7c27-48db-b8f9-51d0749d7d1d",
+        "file": "b2b-delivery-status.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:55:42.019Z",
+        "endedAt": "2026-09-29T04:55:52.663Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 21,
+        "failed": 0,
+        "total": 21,
+        "report": ".tmp/b4r/attempts/07fd0f54-7c27-48db-b8f9-51d0749d7d1d/report.json",
+        "reportSha256": "bd3caf8ac57808d93b2f6735a21e8cc1a09066e3d1b1034f43cc3845d07c1bb0",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "73a651d5-0f10-4b7c-90d3-a59b242808bd",
+        "file": "b2b-outbox.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:55:52.674Z",
+        "endedAt": "2026-09-29T04:56:02.966Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 17,
+        "failed": 0,
+        "total": 17,
+        "report": ".tmp/b4r/attempts/73a651d5-0f10-4b7c-90d3-a59b242808bd/report.json",
+        "reportSha256": "597ca2feaa8b36505785b6bd7c51ccd804768ee9d3b77286394fd2d7e07e07b1",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "64ec2af6-6342-4080-95f5-eb27d6b64410",
+        "file": "b2b.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:56:29.581Z",
+        "endedAt": "2026-09-29T04:56:38.878Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "report": ".tmp/b4r/attempts/64ec2af6-6342-4080-95f5-eb27d6b64410/report.json",
+        "reportSha256": "c469431faa7d23d0ac09bc62ca58032440fe797f36edb690d1f9d84d05d4e913",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "eca466f6-4154-4a87-bc88-3e6406e3dd42",
+        "file": "check-a6-prequotes.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:56:38.883Z",
+        "endedAt": "2026-09-29T04:56:53.092Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 36,
+        "failed": 0,
+        "total": 36,
+        "report": ".tmp/b4r/attempts/eca466f6-4154-4a87-bc88-3e6406e3dd42/report.json",
+        "reportSha256": "6ced2ed0321c8e50837b499541f23f8c6390647c8733b4f23f4101888a06aefe",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "1f1c0298-6f1f-4790-9ce1-9d266b7f6542",
+        "file": "check-b3-conversion.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:56:53.098Z",
+        "endedAt": "2026-09-29T04:57:16.430Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 58,
+        "failed": 0,
+        "total": 58,
+        "report": ".tmp/b4r/attempts/1f1c0298-6f1f-4790-9ce1-9d266b7f6542/report.json",
+        "reportSha256": "2e9666513f417d0598bf8fe42a94740821fc804bc827ec22fec4d3444db96343",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "7e77e113-89f0-4f46-90ad-50a962a043d5",
+        "file": "check-b4-conversion.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:16.434Z",
+        "endedAt": "2026-09-29T04:57:28.426Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "report": ".tmp/b4r/attempts/7e77e113-89f0-4f46-90ad-50a962a043d5/report.json",
+        "reportSha256": "f92117e028adf67eedd3849f8e55079661ed6bb9e56462572e6bfb27b5890d19",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "ec1c5c73-4c33-49d4-9f38-95857a5e6025",
+        "file": "core.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:28.430Z",
+        "endedAt": "2026-09-29T04:57:33.067Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "report": ".tmp/b4r/attempts/ec1c5c73-4c33-49d4-9f38-95857a5e6025/report.json",
+        "reportSha256": "366763f8ab5327a3a61475802d92b8c3829ba0368dfe3b5d553e17b983000a1d",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "ad671b8f-d4e8-4482-9f3f-cc0dfc7caa3d",
+        "file": "credit-consumption.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:33.071Z",
+        "endedAt": "2026-09-29T04:57:43.348Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 36,
+        "failed": 0,
+        "total": 36,
+        "report": ".tmp/b4r/attempts/ad671b8f-d4e8-4482-9f3f-cc0dfc7caa3d/report.json",
+        "reportSha256": "c8fc00a4ef74df77486776e65631c6e2781f9b44e67d636714e7e56ec55db333",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "f0d6008a-df0f-4756-8af6-22e4dd20b844",
+        "file": "credit-policies.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:43.354Z",
+        "endedAt": "2026-09-29T04:57:50.764Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 19,
+        "failed": 0,
+        "total": 19,
+        "report": ".tmp/b4r/attempts/f0d6008a-df0f-4756-8af6-22e4dd20b844/report.json",
+        "reportSha256": "e4210eb9cf7a1cf1f47ded2baafe56231de28b86d6b463bbe42277c8e0403f52",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "b6404f90-bf78-43b2-9f3d-3bad55ec772a",
+        "file": "credit-refunds.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:50.768Z",
+        "endedAt": "2026-09-29T04:58:00.394Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 22,
+        "failed": 0,
+        "total": 22,
+        "report": ".tmp/b4r/attempts/b6404f90-bf78-43b2-9f3d-3bad55ec772a/report.json",
+        "reportSha256": "410019dec5d897e8b63d01937d5193e77c5ce4ef1e5501aacc33a986c4797f00",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "980434bc-fbd0-45d2-9eec-88d258e0fc7d",
+        "file": "credits.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:01:58.562Z",
+        "endedAt": "2026-09-29T05:02:08.369Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "report": ".tmp/b4r/attempts/980434bc-fbd0-45d2-9eec-88d258e0fc7d/report.json",
+        "reportSha256": "da44a73e949fe112c88f4211cbdd0b3646d9815358d535f54a78053691a1cb33",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "14f1dfbb-83d0-487d-aad6-9434c0ab8222",
+        "file": "delivery-assignments.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:08.088Z",
+        "endedAt": "2026-09-29T04:58:17.058Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "report": ".tmp/b4r/attempts/14f1dfbb-83d0-487d-aad6-9434c0ab8222/report.json",
+        "reportSha256": "cfba1404b46bf6695070d00a46746eebd6865c5a37f7d5b1d78cd8b14a014c21",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "637a429b-ae8d-4115-9da2-fed1073523eb",
+        "file": "delivery-completion.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:02:08.375Z",
+        "endedAt": "2026-09-29T05:02:22.256Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 29,
+        "failed": 0,
+        "total": 29,
+        "report": ".tmp/b4r/attempts/637a429b-ae8d-4115-9da2-fed1073523eb/report.json",
+        "reportSha256": "acb9ba5d779316de76afa45f017111dd63a0d47ba2ead0ade0939a3ecac7d20d",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "99f4a2be-8cb3-4d6c-b248-8b54ded19100",
+        "file": "delivery-quotes.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:02:22.263Z",
+        "endedAt": "2026-09-29T05:02:34.018Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "report": ".tmp/b4r/attempts/99f4a2be-8cb3-4d6c-b248-8b54ded19100/report.json",
+        "reportSha256": "0949e69f5ebbe8e115bd55c5a7a8d74827faeed679f8b78b94d3edbe9c8c9fa9",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "cc7fb08e-2ec4-4027-bb5b-94ae87238a59",
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:02:34.023Z",
+        "endedAt": "2026-09-29T05:02:47.875Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 15,
+        "failed": 0,
+        "total": 15,
+        "report": ".tmp/b4r/attempts/cc7fb08e-2ec4-4027-bb5b-94ae87238a59/report.json",
+        "reportSha256": "7527d2b9008be47b6ec8502ef4fafa468a0a228e32bf6e4fbf84062e48ca2f01",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "0193b993-a931-4b5d-8ce9-fab0002abd92",
+        "file": "delivery-requests-validation.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:47.793Z",
+        "endedAt": "2026-09-29T04:58:55.315Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "report": ".tmp/b4r/attempts/0193b993-a931-4b5d-8ce9-fab0002abd92/report.json",
+        "reportSha256": "fdd78bdad688cb89c9736a93a0cf2bad1274b025d9630d86237c05d37e237b05",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "122a1498-6397-4f38-83b8-dd5c21bd3e66",
+        "file": "dispatch-credit-snapshots.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:55.321Z",
+        "endedAt": "2026-09-29T04:59:03.738Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "report": ".tmp/b4r/attempts/122a1498-6397-4f38-83b8-dd5c21bd3e66/report.json",
+        "reportSha256": "404084ba1d86b27fcab8f2450e725caa3f7fbc08aed07f3b74db194b3e9a95e5",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "e7306faf-5b75-4518-b1d3-1c4d83e896e8",
+        "file": "dispatch.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:03.743Z",
+        "endedAt": "2026-09-29T04:59:15.254Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "report": ".tmp/b4r/attempts/e7306faf-5b75-4518-b1d3-1c4d83e896e8/report.json",
+        "reportSha256": "4c61ae77bcc1d85166ebc73cb1d22d745dcb59dd5ace0bec850a8ad4840255d7",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "626c3408-9125-4e5e-a443-5bcb14583607",
+        "file": "driver-self.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:15.260Z",
+        "endedAt": "2026-09-29T04:59:20.362Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "report": ".tmp/b4r/attempts/626c3408-9125-4e5e-a443-5bcb14583607/report.json",
+        "reportSha256": "a5058b70059441fde2737e6126136f44c4a7c80c8a9ab18c6487326c1032f1a7",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "8ad6edab-bbd7-47d1-a6df-02eccbec5ee6",
+        "file": "drivers-vehicles.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:20.366Z",
+        "endedAt": "2026-09-29T04:59:27.250Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 11,
+        "failed": 0,
+        "total": 11,
+        "report": ".tmp/b4r/attempts/8ad6edab-bbd7-47d1-a6df-02eccbec5ee6/report.json",
+        "reportSha256": "5b2069d19dc7e13675aba8659eb95c723bc9c7af84579df770debdf25613f93d",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "389a5e67-e94e-4737-aad8-5c8996e5643b",
+        "file": "independent-drivers.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:27.254Z",
+        "endedAt": "2026-09-29T04:59:37.782Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 23,
+        "failed": 0,
+        "total": 23,
+        "report": ".tmp/b4r/attempts/389a5e67-e94e-4737-aad8-5c8996e5643b/report.json",
+        "reportSha256": "f991cdcd1817b37556316614e9fda8f673695ac47886eb3ef011f8004cac4c50",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "248451c3-e642-4486-a91a-f57e51e94cbc",
+        "file": "prequote-consumption.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:37.788Z",
+        "endedAt": "2026-09-29T05:00:00.973Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 21,
+        "failed": 0,
+        "total": 21,
+        "report": ".tmp/b4r/attempts/248451c3-e642-4486-a91a-f57e51e94cbc/report.json",
+        "reportSha256": "da70a8ccccdb1a1a279314914871bae6baf7cfb498f1798bfab97677013ea40e",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "38f779ff-e884-4af9-8ae7-d36618a2d064",
+        "file": "prequote-conversion.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:00.978Z",
+        "endedAt": "2026-09-29T05:00:15.391Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 39,
+        "failed": 0,
+        "total": 39,
+        "report": ".tmp/b4r/attempts/38f779ff-e884-4af9-8ae7-d36618a2d064/report.json",
+        "reportSha256": "44f5e40733f5eef8232c580ec0fa13ece52d6482b61ff7691f8b3b149af9e00d",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "583ff3f5-3eb8-4c10-a24a-a663ddda9f45",
+        "file": "prequote-persistence.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:15.397Z",
+        "endedAt": "2026-09-29T05:00:18.951Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "report": ".tmp/b4r/attempts/583ff3f5-3eb8-4c10-a24a-a663ddda9f45/report.json",
+        "reportSha256": "7b61e019e406855274800f026630e52e9195056d12477ad3a8854b07953c8504",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "a9ffd899-af45-4156-9dab-6e9f412a2177",
+        "file": "prequotes-http.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:18.957Z",
+        "endedAt": "2026-09-29T05:00:25.528Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 40,
+        "failed": 0,
+        "total": 40,
+        "report": ".tmp/b4r/attempts/a9ffd899-af45-4156-9dab-6e9f412a2177/report.json",
+        "reportSha256": "bac83852a3535a3d12e91d5a8d8d6615e8cf2c1b0b820447cc784445c77a76e8",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "6a5fcb32-cdaf-482d-b19c-5e3b48b4f114",
+        "file": "pricing-admin.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:25.534Z",
+        "endedAt": "2026-09-29T05:00:30.955Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "report": ".tmp/b4r/attempts/6a5fcb32-cdaf-482d-b19c-5e3b48b4f114/report.json",
+        "reportSha256": "ef09af47b21247fd8e0f6b05306b730865637e3f6366d02e68d2b285e6ff842c",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "54df7cf2-d76c-4241-b474-e1778ccf5d2a",
+        "file": "provider-admin-access.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:30.960Z",
+        "endedAt": "2026-09-29T05:00:37.048Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "report": ".tmp/b4r/attempts/54df7cf2-d76c-4241-b474-e1778ccf5d2a/report.json",
+        "reportSha256": "89da40d05df376011f6a66415c4ad91ce96552b972d001f89ff03debe1d1787e",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "e43824a4-0428-4274-8eae-7d69c08c1a7a",
+        "file": "providers.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:37.053Z",
+        "endedAt": "2026-09-29T05:00:48.644Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 15,
+        "failed": 0,
+        "total": 15,
+        "report": ".tmp/b4r/attempts/e43824a4-0428-4274-8eae-7d69c08c1a7a/report.json",
+        "reportSha256": "3df9339b96c75577a2c085afeed49e226cb2799c9d1a4bfc700a0d292e44a83e",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "65e62106-ada6-4e5e-9132-894e2f42767c",
+        "file": "user-invitations.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:48.648Z",
+        "endedAt": "2026-09-29T05:00:57.020Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "report": ".tmp/b4r/attempts/65e62106-ada6-4e5e-9132-894e2f42767c/report.json",
+        "reportSha256": "daafa2414ad884a9648fe8a472ceef58949561adf324667e386461fef3cc5dd4",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      }
+    ],
+    "e2eCases": 600,
+    "attempts": [
+      {
+        "id": "e206ffc8-b760-412a-9220-eab3bf5f3c44",
+        "file": "check-b4-conversion.e2e-spec.ts",
+        "mode": "focused",
+        "startedAt": "2026-09-29T04:55:28.159Z",
+        "endedAt": "2026-09-29T04:55:42.351Z",
+        "exit": 3221226505,
+        "signal": null,
+        "error": null,
+        "passed": null,
+        "failed": null,
+        "total": null,
+        "report": ".tmp/b4r/attempts/e206ffc8-b760-412a-9220-eab3bf5f3c44/report.json",
+        "reportSha256": null,
+        "pool": "threads",
+        "database": "mandaria_b4_integral_150bdb98b9_test"
+      },
+      {
+        "id": "07fd0f54-7c27-48db-b8f9-51d0749d7d1d",
+        "file": "b2b-delivery-status.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:55:42.019Z",
+        "endedAt": "2026-09-29T04:55:52.663Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 21,
+        "failed": 0,
+        "total": 21,
+        "report": ".tmp/b4r/attempts/07fd0f54-7c27-48db-b8f9-51d0749d7d1d/report.json",
+        "reportSha256": "bd3caf8ac57808d93b2f6735a21e8cc1a09066e3d1b1034f43cc3845d07c1bb0",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "73a651d5-0f10-4b7c-90d3-a59b242808bd",
+        "file": "b2b-outbox.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:55:52.674Z",
+        "endedAt": "2026-09-29T04:56:02.966Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 17,
+        "failed": 0,
+        "total": 17,
+        "report": ".tmp/b4r/attempts/73a651d5-0f10-4b7c-90d3-a59b242808bd/report.json",
+        "reportSha256": "597ca2feaa8b36505785b6bd7c51ccd804768ee9d3b77286394fd2d7e07e07b1",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "5858b6cb-6332-4ead-8b6c-8603956099af",
+        "file": "b2b-webhooks.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:56:02.972Z",
+        "endedAt": "2026-09-29T04:56:29.577Z",
+        "exit": 3221226505,
+        "signal": null,
+        "error": null,
+        "passed": null,
+        "failed": null,
+        "total": null,
+        "report": ".tmp/b4r/attempts/5858b6cb-6332-4ead-8b6c-8603956099af/report.json",
+        "reportSha256": null,
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "64ec2af6-6342-4080-95f5-eb27d6b64410",
+        "file": "b2b.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:56:29.581Z",
+        "endedAt": "2026-09-29T04:56:38.878Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "report": ".tmp/b4r/attempts/64ec2af6-6342-4080-95f5-eb27d6b64410/report.json",
+        "reportSha256": "c469431faa7d23d0ac09bc62ca58032440fe797f36edb690d1f9d84d05d4e913",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "eca466f6-4154-4a87-bc88-3e6406e3dd42",
+        "file": "check-a6-prequotes.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:56:38.883Z",
+        "endedAt": "2026-09-29T04:56:53.092Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 36,
+        "failed": 0,
+        "total": 36,
+        "report": ".tmp/b4r/attempts/eca466f6-4154-4a87-bc88-3e6406e3dd42/report.json",
+        "reportSha256": "6ced2ed0321c8e50837b499541f23f8c6390647c8733b4f23f4101888a06aefe",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "c9ccfc4b-46c1-42c9-a692-486d28defd8a",
+        "file": "check-b4-conversion.e2e-spec.ts",
+        "mode": "focused",
+        "startedAt": "2026-09-29T04:56:57.321Z",
+        "endedAt": "2026-09-29T04:57:12.364Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "report": ".tmp/b4r/attempts/c9ccfc4b-46c1-42c9-a692-486d28defd8a/report.json",
+        "reportSha256": "e9355acc3c6d4946877c480115a2ac5739bf51dd803aa1b000bbc72bb0ef3b95",
+        "pool": "forks",
+        "database": "mandaria_b4_integral_150bdb98b9_test"
+      },
+      {
+        "id": "1f1c0298-6f1f-4790-9ce1-9d266b7f6542",
+        "file": "check-b3-conversion.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:56:53.098Z",
+        "endedAt": "2026-09-29T04:57:16.430Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 58,
+        "failed": 0,
+        "total": 58,
+        "report": ".tmp/b4r/attempts/1f1c0298-6f1f-4790-9ce1-9d266b7f6542/report.json",
+        "reportSha256": "2e9666513f417d0598bf8fe42a94740821fc804bc827ec22fec4d3444db96343",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "7e77e113-89f0-4f46-90ad-50a962a043d5",
+        "file": "check-b4-conversion.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:16.434Z",
+        "endedAt": "2026-09-29T04:57:28.426Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "report": ".tmp/b4r/attempts/7e77e113-89f0-4f46-90ad-50a962a043d5/report.json",
+        "reportSha256": "f92117e028adf67eedd3849f8e55079661ed6bb9e56462572e6bfb27b5890d19",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "ec1c5c73-4c33-49d4-9f38-95857a5e6025",
+        "file": "core.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:28.430Z",
+        "endedAt": "2026-09-29T04:57:33.067Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "report": ".tmp/b4r/attempts/ec1c5c73-4c33-49d4-9f38-95857a5e6025/report.json",
+        "reportSha256": "366763f8ab5327a3a61475802d92b8c3829ba0368dfe3b5d553e17b983000a1d",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "ad671b8f-d4e8-4482-9f3f-cc0dfc7caa3d",
+        "file": "credit-consumption.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:33.071Z",
+        "endedAt": "2026-09-29T04:57:43.348Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 36,
+        "failed": 0,
+        "total": 36,
+        "report": ".tmp/b4r/attempts/ad671b8f-d4e8-4482-9f3f-cc0dfc7caa3d/report.json",
+        "reportSha256": "c8fc00a4ef74df77486776e65631c6e2781f9b44e67d636714e7e56ec55db333",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "f0d6008a-df0f-4756-8af6-22e4dd20b844",
+        "file": "credit-policies.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:43.354Z",
+        "endedAt": "2026-09-29T04:57:50.764Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 19,
+        "failed": 0,
+        "total": 19,
+        "report": ".tmp/b4r/attempts/f0d6008a-df0f-4756-8af6-22e4dd20b844/report.json",
+        "reportSha256": "e4210eb9cf7a1cf1f47ded2baafe56231de28b86d6b463bbe42277c8e0403f52",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "b6404f90-bf78-43b2-9f3d-3bad55ec772a",
+        "file": "credit-refunds.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:57:50.768Z",
+        "endedAt": "2026-09-29T04:58:00.394Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 22,
+        "failed": 0,
+        "total": 22,
+        "report": ".tmp/b4r/attempts/b6404f90-bf78-43b2-9f3d-3bad55ec772a/report.json",
+        "reportSha256": "410019dec5d897e8b63d01937d5193e77c5ce4ef1e5501aacc33a986c4797f00",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "522c193a-e3e2-48a7-a02b-1c5340c45c25",
+        "file": "credits.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:00.398Z",
+        "endedAt": "2026-09-29T04:58:08.084Z",
+        "exit": 3221226505,
+        "signal": null,
+        "error": null,
+        "passed": null,
+        "failed": null,
+        "total": null,
+        "report": ".tmp/b4r/attempts/522c193a-e3e2-48a7-a02b-1c5340c45c25/report.json",
+        "reportSha256": null,
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "14f1dfbb-83d0-487d-aad6-9434c0ab8222",
+        "file": "delivery-assignments.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:08.088Z",
+        "endedAt": "2026-09-29T04:58:17.058Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "report": ".tmp/b4r/attempts/14f1dfbb-83d0-487d-aad6-9434c0ab8222/report.json",
+        "reportSha256": "cfba1404b46bf6695070d00a46746eebd6865c5a37f7d5b1d78cd8b14a014c21",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "697580dc-8eae-45cf-ab8e-04a37cd12033",
+        "file": "delivery-completion.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:17.062Z",
+        "endedAt": "2026-09-29T04:58:30.016Z",
+        "exit": 3221226505,
+        "signal": null,
+        "error": null,
+        "passed": null,
+        "failed": null,
+        "total": null,
+        "report": ".tmp/b4r/attempts/697580dc-8eae-45cf-ab8e-04a37cd12033/report.json",
+        "reportSha256": null,
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "3d388ac0-d081-4dba-b70d-619ac1c81a78",
+        "file": "delivery-quotes.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:30.019Z",
+        "endedAt": "2026-09-29T04:58:37.340Z",
+        "exit": 3221226505,
+        "signal": null,
+        "error": null,
+        "passed": null,
+        "failed": null,
+        "total": null,
+        "report": ".tmp/b4r/attempts/3d388ac0-d081-4dba-b70d-619ac1c81a78/report.json",
+        "reportSha256": null,
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "36fb7391-2188-4e7c-9028-cfdc8f61c9ff",
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:37.345Z",
+        "endedAt": "2026-09-29T04:58:47.788Z",
+        "exit": 3221226505,
+        "signal": null,
+        "error": null,
+        "passed": null,
+        "failed": null,
+        "total": null,
+        "report": ".tmp/b4r/attempts/36fb7391-2188-4e7c-9028-cfdc8f61c9ff/report.json",
+        "reportSha256": null,
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "0193b993-a931-4b5d-8ce9-fab0002abd92",
+        "file": "delivery-requests-validation.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:47.793Z",
+        "endedAt": "2026-09-29T04:58:55.315Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "report": ".tmp/b4r/attempts/0193b993-a931-4b5d-8ce9-fab0002abd92/report.json",
+        "reportSha256": "fdd78bdad688cb89c9736a93a0cf2bad1274b025d9630d86237c05d37e237b05",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "122a1498-6397-4f38-83b8-dd5c21bd3e66",
+        "file": "dispatch-credit-snapshots.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:58:55.321Z",
+        "endedAt": "2026-09-29T04:59:03.738Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "report": ".tmp/b4r/attempts/122a1498-6397-4f38-83b8-dd5c21bd3e66/report.json",
+        "reportSha256": "404084ba1d86b27fcab8f2450e725caa3f7fbc08aed07f3b74db194b3e9a95e5",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "a8f445a2-2841-48da-a98e-baa7dc8dd66e",
+        "file": "unit",
+        "mode": "unit",
+        "startedAt": "2026-09-29T04:58:18.843Z",
+        "endedAt": "2026-09-29T04:59:07.986Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 380,
+        "failed": 0,
+        "total": 380,
+        "report": ".tmp/b4r/attempts/a8f445a2-2841-48da-a98e-baa7dc8dd66e/report.json",
+        "reportSha256": "c85803679e6b20af23bb54878cbb4a5d187ccd2b8d46d4d058c434ad8fd4df46",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "e7306faf-5b75-4518-b1d3-1c4d83e896e8",
+        "file": "dispatch.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:03.743Z",
+        "endedAt": "2026-09-29T04:59:15.254Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "report": ".tmp/b4r/attempts/e7306faf-5b75-4518-b1d3-1c4d83e896e8/report.json",
+        "reportSha256": "4c61ae77bcc1d85166ebc73cb1d22d745dcb59dd5ace0bec850a8ad4840255d7",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "626c3408-9125-4e5e-a443-5bcb14583607",
+        "file": "driver-self.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:15.260Z",
+        "endedAt": "2026-09-29T04:59:20.362Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "report": ".tmp/b4r/attempts/626c3408-9125-4e5e-a443-5bcb14583607/report.json",
+        "reportSha256": "a5058b70059441fde2737e6126136f44c4a7c80c8a9ab18c6487326c1032f1a7",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "8ad6edab-bbd7-47d1-a6df-02eccbec5ee6",
+        "file": "drivers-vehicles.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:20.366Z",
+        "endedAt": "2026-09-29T04:59:27.250Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 11,
+        "failed": 0,
+        "total": 11,
+        "report": ".tmp/b4r/attempts/8ad6edab-bbd7-47d1-a6df-02eccbec5ee6/report.json",
+        "reportSha256": "5b2069d19dc7e13675aba8659eb95c723bc9c7af84579df770debdf25613f93d",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "389a5e67-e94e-4737-aad8-5c8996e5643b",
+        "file": "independent-drivers.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:27.254Z",
+        "endedAt": "2026-09-29T04:59:37.782Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 23,
+        "failed": 0,
+        "total": 23,
+        "report": ".tmp/b4r/attempts/389a5e67-e94e-4737-aad8-5c8996e5643b/report.json",
+        "reportSha256": "f991cdcd1817b37556316614e9fda8f673695ac47886eb3ef011f8004cac4c50",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "248451c3-e642-4486-a91a-f57e51e94cbc",
+        "file": "prequote-consumption.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T04:59:37.788Z",
+        "endedAt": "2026-09-29T05:00:00.973Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 21,
+        "failed": 0,
+        "total": 21,
+        "report": ".tmp/b4r/attempts/248451c3-e642-4486-a91a-f57e51e94cbc/report.json",
+        "reportSha256": "da70a8ccccdb1a1a279314914871bae6baf7cfb498f1798bfab97677013ea40e",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "38f779ff-e884-4af9-8ae7-d36618a2d064",
+        "file": "prequote-conversion.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:00.978Z",
+        "endedAt": "2026-09-29T05:00:15.391Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 39,
+        "failed": 0,
+        "total": 39,
+        "report": ".tmp/b4r/attempts/38f779ff-e884-4af9-8ae7-d36618a2d064/report.json",
+        "reportSha256": "44f5e40733f5eef8232c580ec0fa13ece52d6482b61ff7691f8b3b149af9e00d",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "583ff3f5-3eb8-4c10-a24a-a663ddda9f45",
+        "file": "prequote-persistence.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:15.397Z",
+        "endedAt": "2026-09-29T05:00:18.951Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "report": ".tmp/b4r/attempts/583ff3f5-3eb8-4c10-a24a-a663ddda9f45/report.json",
+        "reportSha256": "7b61e019e406855274800f026630e52e9195056d12477ad3a8854b07953c8504",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "a9ffd899-af45-4156-9dab-6e9f412a2177",
+        "file": "prequotes-http.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:18.957Z",
+        "endedAt": "2026-09-29T05:00:25.528Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 40,
+        "failed": 0,
+        "total": 40,
+        "report": ".tmp/b4r/attempts/a9ffd899-af45-4156-9dab-6e9f412a2177/report.json",
+        "reportSha256": "bac83852a3535a3d12e91d5a8d8d6615e8cf2c1b0b820447cc784445c77a76e8",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "6a5fcb32-cdaf-482d-b19c-5e3b48b4f114",
+        "file": "pricing-admin.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:25.534Z",
+        "endedAt": "2026-09-29T05:00:30.955Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "report": ".tmp/b4r/attempts/6a5fcb32-cdaf-482d-b19c-5e3b48b4f114/report.json",
+        "reportSha256": "ef09af47b21247fd8e0f6b05306b730865637e3f6366d02e68d2b285e6ff842c",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "54df7cf2-d76c-4241-b474-e1778ccf5d2a",
+        "file": "provider-admin-access.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:30.960Z",
+        "endedAt": "2026-09-29T05:00:37.048Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "report": ".tmp/b4r/attempts/54df7cf2-d76c-4241-b474-e1778ccf5d2a/report.json",
+        "reportSha256": "89da40d05df376011f6a66415c4ad91ce96552b972d001f89ff03debe1d1787e",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "e43824a4-0428-4274-8eae-7d69c08c1a7a",
+        "file": "providers.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:37.053Z",
+        "endedAt": "2026-09-29T05:00:48.644Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 15,
+        "failed": 0,
+        "total": 15,
+        "report": ".tmp/b4r/attempts/e43824a4-0428-4274-8eae-7d69c08c1a7a/report.json",
+        "reportSha256": "3df9339b96c75577a2c085afeed49e226cb2799c9d1a4bfc700a0d292e44a83e",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "65e62106-ada6-4e5e-9132-894e2f42767c",
+        "file": "user-invitations.e2e-spec.ts",
+        "mode": "all",
+        "startedAt": "2026-09-29T05:00:48.648Z",
+        "endedAt": "2026-09-29T05:00:57.020Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "report": ".tmp/b4r/attempts/65e62106-ada6-4e5e-9132-894e2f42767c/report.json",
+        "reportSha256": "daafa2414ad884a9648fe8a472ceef58949561adf324667e386461fef3cc5dd4",
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "5ebe691e-2a6c-440c-95de-de4a4f167def",
+        "file": "b2b-webhooks.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:01:44.826Z",
+        "endedAt": "2026-09-29T05:01:58.555Z",
+        "exit": 1,
+        "signal": null,
+        "error": null,
+        "passed": 7,
+        "failed": 0,
+        "total": 54,
+        "report": ".tmp/b4r/attempts/5ebe691e-2a6c-440c-95de-de4a4f167def/report.json",
+        "reportSha256": "b69c97d9f61a1b34fc2b4c5d27d124aa0363307c1edcd11e13fe3e4d20fd59d3",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "980434bc-fbd0-45d2-9eec-88d258e0fc7d",
+        "file": "credits.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:01:58.562Z",
+        "endedAt": "2026-09-29T05:02:08.369Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "report": ".tmp/b4r/attempts/980434bc-fbd0-45d2-9eec-88d258e0fc7d/report.json",
+        "reportSha256": "da44a73e949fe112c88f4211cbdd0b3646d9815358d535f54a78053691a1cb33",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "637a429b-ae8d-4115-9da2-fed1073523eb",
+        "file": "delivery-completion.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:02:08.375Z",
+        "endedAt": "2026-09-29T05:02:22.256Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 29,
+        "failed": 0,
+        "total": 29,
+        "report": ".tmp/b4r/attempts/637a429b-ae8d-4115-9da2-fed1073523eb/report.json",
+        "reportSha256": "acb9ba5d779316de76afa45f017111dd63a0d47ba2ead0ade0939a3ecac7d20d",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "99f4a2be-8cb3-4d6c-b248-8b54ded19100",
+        "file": "delivery-quotes.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:02:22.263Z",
+        "endedAt": "2026-09-29T05:02:34.018Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 14,
+        "failed": 0,
+        "total": 14,
+        "report": ".tmp/b4r/attempts/99f4a2be-8cb3-4d6c-b248-8b54ded19100/report.json",
+        "reportSha256": "0949e69f5ebbe8e115bd55c5a7a8d74827faeed679f8b78b94d3edbe9c8c9fa9",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "cc7fb08e-2ec4-4027-bb5b-94ae87238a59",
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:02:34.023Z",
+        "endedAt": "2026-09-29T05:02:47.875Z",
+        "exit": 0,
+        "signal": null,
+        "error": null,
+        "passed": 15,
+        "failed": 0,
+        "total": 15,
+        "report": ".tmp/b4r/attempts/cc7fb08e-2ec4-4027-bb5b-94ae87238a59/report.json",
+        "reportSha256": "7527d2b9008be47b6ec8502ef4fafa468a0a228e32bf6e4fbf84062e48ca2f01",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "e3cd63d3-c440-4fe5-a276-2dde942b14eb",
+        "file": "b2b-webhooks.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:03:21.384Z",
+        "endedAt": "2026-09-29T05:03:36.964Z",
+        "exit": 1,
+        "signal": null,
+        "error": null,
+        "passed": 14,
+        "failed": 0,
+        "total": 54,
+        "report": ".tmp/b4r/attempts/e3cd63d3-c440-4fe5-a276-2dde942b14eb/report.json",
+        "reportSha256": "1951cd50341e89ef80c53263de8b797838cb326b0ef5c2ab7405442d0851caa7",
+        "pool": "forks",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      },
+      {
+        "id": "701fa9d4-393b-41e0-99db-eb138cb58b05",
+        "file": "b2b-webhooks.e2e-spec.ts",
+        "mode": "retry",
+        "startedAt": "2026-09-29T05:06:22.394Z",
+        "endedAt": "2026-09-29T05:06:36.743Z",
+        "exit": 3221226505,
+        "signal": null,
+        "error": null,
+        "passed": null,
+        "failed": null,
+        "total": null,
+        "report": ".tmp/b4r/attempts/701fa9d4-393b-41e0-99db-eb138cb58b05/report.json",
+        "reportSha256": null,
+        "pool": "threads",
+        "database": "mandaria_b4_reg_150bdb98b9_test"
+      }
+    ]
+  },
+  "b4": {
+    "barriers": [
+      {
+        "id": "§2",
+        "title": "recorrido integral con consumo durable real",
+        "detail": [
+          "emitir crea exactamente un permiso FINISHED y una llamada de routing",
+          "emitir crea su ejecución durable A3; convertir no crea permisos, ni ejecución, ni llamada de routing",
+          "snapshot idéntico a la MPQ; fechas de MDR/MQ son convertedAt",
+          "accept 409 AUTHORIZED_ACCEPT_REQUIRED y requote 409 PREQUOTE_REQUOTE_NOT_ALLOWED",
+          "cancelar no libera la MPQ; replay devuelve estados actuales y otra key 409",
+          "Dispatch/asignación/ledger/Outbox/snapshots sin cambio: {\"dispatches\":54,\"assignments\":54,\"ledger\":212,\"outbox\":54,\"snapshots\":108}"
+        ]
+      },
+      {
+        "id": "§2",
+        "title": "replay de emisión no duplica consumo",
+        "detail": [
+          "una sola llamada de routing y un solo permiso durable para la misma key"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "tres scopes obligatorios",
+        "detail": [
+          "quitar cualquiera de los tres responde 403; con los tres, 201"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "ownership: ajena e inexistente son indistinguibles",
+        "detail": [
+          "ambos 404 con envelope idéntico salvo requestId/timestamp/path"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "autenticación y autorización del replay",
+        "detail": [
+          "token humano 401; credencial revocada, integración suspendida y credencial vencida cierran el replay con 401",
+          "restablecido el principal, el replay devuelve el mismo ganador"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "validación anidada estricta",
+        "detail": [
+          "12 cuerpos inválidos rechazados con 400 antes de crear la key",
+          "campoDesconocido, confirmacionExtra, versionIncorrecta, estadoInventado, referenciaVacia, referenciaLarga, fechaSinZona, fechaInvalida, fechaFutura, cobroAjeno, componenteAjeno, importeDeCobro"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "contexto financiero restringido",
+        "detail": [
+          "COURIER_ADVANCE, USD, categoría distinta de FOOD e importe negativo → 400",
+          "goodsValue omitido/null/positivo aceptados; el importe de mercancía no se suma al envío"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "referencias opacas y proyecciones explícitas",
+        "detail": [
+          "4 superficies y los logs revisados: 0 fugas",
+          "sin manifiesto, confirmaciones, UUID internos, proveedor de routing ni relación cruda"
+        ]
+      },
+      {
+        "id": "§3",
+        "title": "flag independiente de conversión",
+        "detail": [
+          "apagado: nuevas conversiones 503 PREQUOTE_CONVERSION_DISABLED y ningún recurso creado",
+          "el replay de una conversión existente sigue devolviendo 200 con sus mismos vínculos"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "misma key y cuerpo desde dos instancias",
+        "detail": [
+          "respuestas [201,200]: una conversión, una key y una MQ"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "la key pertenece a una intención",
+        "detail": [
+          "cuerpo distinto, MPQ distinta y operación distinta con la misma key: 409 en los tres"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "ocho keys sobre una MPQ",
+        "detail": [
+          "un 201 y 7 conflictos; una sola key persistida y sin huérfanas",
+          "códigos: [201,409,409,409,409,409,409,409]"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "namespace por integración",
+        "detail": [
+          "el mismo texto de key en dos integraciones produce dos resultados propios"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "respuesta perdida después del commit",
+        "detail": [
+          "el fallo se induce sólo en la carga de la respuesta: 500 y un resultado ya durable",
+          "la otra instancia recupera el mismo ganador por replay, sin duplicar recursos",
+          "no se afirma un corte TCP real"
+        ]
+      },
+      {
+        "id": "§4",
+        "title": "cancelación y lecturas concurrentes",
+        "detail": [
+          "par observado [\"CREATED\",\"OFFERED\"]; nunca una combinación imposible",
+          "la MPQ queda consumida de forma permanente aun cancelada"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "tarifa reemplazada o inactivada no reprecifica",
+        "detail": [
+          "la tarifa vigente se retira y otra de 999.00 la reemplaza antes de convertir",
+          "importe conservado 31.50; plan y banda siguen siendo los de la MPQ"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "metadata congelada en proyecciones convertidas",
+        "detail": [
+          "renombrar zona y cambiar su código no altera lo que publican MQ convertida ni MPQ"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "zona INACTIVE",
+        "detail": [
+          "bloquea una conversión nueva con 409 PREQUOTE_SERVICE_UNAVAILABLE y no crea nada",
+          "el replay autorizado sigue devolviendo su mismo resultado"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "el vencimiento de una MPQ es inmutable incluso en SQL",
+        "detail": [
+          "acortar, ampliar y borrar rechazados con PREQUOTE_IMMUTABLE; expiresAt sin cambio",
+          "por eso la frontera temporal se prueba acortando la vigencia por configuración antes de emitir"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "frontera de vencimiento por HTTP",
+        "detail": [
+          "antes convierte; después 409 PREQUOTE_EXPIRED sin crear recursos ni renovar expiresAt",
+          "la vigencia se acorta por configuración antes de emitir; no se manipulan relojes ni filas"
+        ]
+      },
+      {
+        "id": "§5",
+        "title": "cruce del vencimiento durante la espera de lock",
+        "detail": [
+          "la conversión espera un lock real de 2,6 s sobre una MPQ de 1,5 s de vigencia",
+          "al obtenerlo responde 409 PREQUOTE_EXPIRED con rollback completo: sin conversión y sin key"
+        ]
+      },
+      {
+        "id": "§6",
+        "title": "catálogo de guardas",
+        "detail": [
+          "24 triggers de integridad activos en 9 tablas, ninguno deshabilitado",
+          "2 FKs DEFERRABLE INITIALLY DEFERRED en PrequoteConversion",
+          "sin triggers de fallo residuales de B2/B3/B4"
+        ]
+      },
+      {
+        "id": "§6",
+        "title": "escritor directo en SQL",
+        "detail": [
+          "16 escrituras forjadas, ninguna aceptada",
+          "segunda conversión con key de resultado anterior (key incompatible) → CONVERSION_KEY_INVALID; mover la conversión a otro dueño → CONVERSION_IMMUTABLE; reescribir el manifiesto → CONVERSION_IMMUTABLE; adelantar convertedAt → CONVERSION_IMMUTABLE; borrar la conversión → CONVERSION_IMMUTABLE; modificar la MPQ consumida → PREQUOTE_IMMUTABLE; borrar la MPQ consumida → PREQUOTE_IMMUTABLE; reprecificar la MQ convertida → DELIVERY_QUOTE_IMMUTABLE; ampliar el expiry de la MQ convertida → DELIVERY_QUOTE_IMMUTABLE; forjar ACCEPTED sin autorización → AUTHORIZED_ACCEPT_REQUIRED; segunda MQ para la MDR convertida → PREQUOTE_REQUOTE_NOT_ALLOWED; hijo extra después del commit → CONVERSION_CONTENT_IMMUTABLE; reparentar un hijo autorizado → CONVERSION_CONTENT_IMMUTABLE; borrar el contexto financiero → CONVERSION_CONTENT_IMMUTABLE; abrir Dispatch para la MQ convertida → AUTHORIZED_ACCEPT_REQUIRED; dejar la key huérfana → CONVERSION_KEY_IMMUTABLE",
+          "con SET CONSTRAINTS ALL IMMEDIATE el conjunto comprometido sigue siendo válido y los ataques posteriores siguen fallando",
+          "el vencimiento de la MPQ no se puede ampliar ni en SQL; el commit tardío directo se reverifica en la suite B3"
+        ]
+      },
+      {
+        "id": "§8",
+        "title": "preservación con fixtures no vacíos",
+        "detail": [
+          "ocho tablas comparadas por hash antes y después de tres conversiones: idénticas",
+          "las MPQ se emitieron antes de la fotografía, porque emitir sí consume y convertir no",
+          "conteos de referencia: {\"CreditAccount\":7,\"CreditLedgerEntry\":214,\"Dispatch\":55,\"DeliveryAssignment\":55,\"B2bOutboxEvent\":55,\"DispatchCreditSnapshot\":110,\"ApiIdempotencyExecution\":133,\"PrequoteConsumptionPermit\":174}",
+          "MDR/MQ legacy PREPAID y COURIER_ADVANCE intactas; accept idempotente, recotización y cancelación legacy conservados",
+          "las MDR convertidas siguen bloqueadas para accept y recotización"
+        ]
+      }
+    ],
+    "logLines": 742
+  },
+  "b3": {
+    "same": {
+      "statuses": [
+        201,
+        200
+      ],
+      "winner": true
+    },
+    "different-body": {
+      "statuses": [
+        201,
+        409
+      ],
+      "winner": true
+    },
+    "different-keys": {
+      "statuses": [
+        201,
+        409
+      ],
+      "winner": true
+    },
+    "contention": {
+      "competitors": 16,
+      "winners": 1,
+      "conflicts": 15,
+      "competingMs": 230.1157000000003,
+      "independent": 8,
+      "independentMs": 121.1994999999988
+    },
+    "immediateTemporal": {
+      "commitAfterExpiry": true,
+      "expiryUnchanged": true,
+      "dispatchBlocked": true,
+      "serviceUsesDeferred": true
+    },
+    "oldBinary": {
+      "revision": "5978807270c038d9d7e555ad985ee7bfe35718a5",
+      "compiled": true,
+      "legacyCreateQuoteAccept": true
+    },
+    "oldConverted": {
+      "acceptStatus": 500,
+      "requoteStatus": 500,
+      "noDispatch": true,
+      "quoteRollback": true
+    },
+    "preservation": {
+      "before": {
+        "CreditAccount": {
+          "count": 6,
+          "hash": "3115829487591b9658d7990acbb94e514e0a05ad43fe2f6497ea45046e9eb7e7"
+        },
+        "CreditLedgerEntry": {
+          "count": 212,
+          "hash": "957a94a9e8a697acc9c4c3aff83c023d0a790f322a14cc24c9f63b7f440b2d59"
+        },
+        "Dispatch": {
+          "count": 54,
+          "hash": "54e09ea4c1e982a89ffd60cff003e49ea8e7ecd337af0ff762a625a7a6a08da6"
+        },
+        "DeliveryAssignment": {
+          "count": 54,
+          "hash": "eb29abe64704e2819df7e353b7bd35bd2ecda177c997bc401dfce212fd623e26"
+        },
+        "B2bOutboxEvent": {
+          "count": 54,
+          "hash": "62cf9ad36fdbe2ceed028c080d8ee6d2dceb570f826aa8c254ddcbf76cf22f55"
+        },
+        "ApiIdempotencyExecution": {
+          "count": 78,
+          "hash": "396ccea3ed82e40c628c2c0fc990692f048b927edd2c96b763f04c31518e2d7c"
+        },
+        "PrequoteConsumptionPermit": {
+          "count": 138,
+          "hash": "bd3e2e76ccb5bb740a1af2348512c4c05b66d7b0c400074d70b97f47b0b5312e"
+        },
+        "DeliveryRequest": {
+          "count": 1,
+          "hash": "0a84a4cd70cc4ee75ce36b0e5e25b579ee55ccc7897213c3dfca973c63b69992"
+        },
+        "DeliveryQuote": {
+          "count": 1,
+          "hash": "1e6f774976965d515c736bb7c643848cf6512c975f1fd6421678a361103067cc"
+        }
+      },
+      "after": {
+        "CreditAccount": {
+          "count": 6,
+          "hash": "3115829487591b9658d7990acbb94e514e0a05ad43fe2f6497ea45046e9eb7e7"
+        },
+        "CreditLedgerEntry": {
+          "count": 212,
+          "hash": "957a94a9e8a697acc9c4c3aff83c023d0a790f322a14cc24c9f63b7f440b2d59"
+        },
+        "Dispatch": {
+          "count": 54,
+          "hash": "54e09ea4c1e982a89ffd60cff003e49ea8e7ecd337af0ff762a625a7a6a08da6"
+        },
+        "DeliveryAssignment": {
+          "count": 54,
+          "hash": "eb29abe64704e2819df7e353b7bd35bd2ecda177c997bc401dfce212fd623e26"
+        },
+        "B2bOutboxEvent": {
+          "count": 54,
+          "hash": "62cf9ad36fdbe2ceed028c080d8ee6d2dceb570f826aa8c254ddcbf76cf22f55"
+        },
+        "ApiIdempotencyExecution": {
+          "count": 78,
+          "hash": "396ccea3ed82e40c628c2c0fc990692f048b927edd2c96b763f04c31518e2d7c"
+        },
+        "PrequoteConsumptionPermit": {
+          "count": 138,
+          "hash": "bd3e2e76ccb5bb740a1af2348512c4c05b66d7b0c400074d70b97f47b0b5312e"
+        },
+        "DeliveryRequest": {
+          "count": 1,
+          "hash": "0a84a4cd70cc4ee75ce36b0e5e25b579ee55ccc7897213c3dfca973c63b69992"
+        },
+        "DeliveryQuote": {
+          "count": 1,
+          "hash": "1e6f774976965d515c736bb7c643848cf6512c975f1fd6421678a361103067cc"
+        }
+      },
+      "equal": true
+    },
+    "logs": {
+      "privacyAssertions": true,
+      "fullLogsPublished": false
+    },
+    "finalLogs": {
+      "entries": 989,
+      "privacyAssertions": true,
+      "includesOldToken": true
+    }
+  },
+  "quality": [
+    {
+      "name": "prisma-validate",
+      "exit": 0
+    },
+    {
+      "name": "types-product",
+      "exit": 0
+    },
+    {
+      "name": "types-all",
+      "exit": 2
+    },
+    {
+      "name": "oxlint",
+      "exit": 0
+    },
+    {
+      "name": "eslint",
+      "exit": 0
+    }
+  ],
+  "migrations": {
+    "upgrade": {
+      "names": [
+        "mandaria_b2_clean_ab00c4ccc3_test",
+        "mandaria_b2_upgrade_ab00c4ccc3_test"
+      ]
+    },
+    "statusDriftReapply": {
+      "integral": {
+        "preservation": {
+          "before": {
+            "PrequoteConversion": {
+              "count": 46,
+              "hash": "a1e52703439d04b11b0288b99117f0e1"
+            },
+            "DeliveryPrequote": {
+              "count": 72,
+              "hash": "df206e731ce01cbfa0005574ffa29cf6"
+            },
+            "ApiIdempotencyRecord": {
+              "count": 122,
+              "hash": "ede1dcbf6356467a289ae1e59878ebd7"
+            },
+            "ApiIdempotencyExecution": {
+              "count": 72,
+              "hash": "bc2cb2e0f03c44035503e52b4ab0acb7"
+            },
+            "PrequoteConsumptionPermit": {
+              "count": 72,
+              "hash": "396f1060eb3c7dced81322fad479e3f6"
+            },
+            "DeliveryRequest": {
+              "count": 50,
+              "hash": "ce1fcbfb4770b4a328ab99c64760fcea"
+            },
+            "DeliveryQuote": {
+              "count": 50,
+              "hash": "14fd3962199b01900da5a2b075d55cb7"
+            },
+            "DeliveryStop": {
+              "count": 100,
+              "hash": "6c7f544d533eb59be48005bba2088acb"
+            },
+            "DeliveryPackage": {
+              "count": 50,
+              "hash": "870b58d3659d8a630e0888056cea77bf"
+            },
+            "DeliveryFinancialContext": {
+              "count": 50,
+              "hash": "6fd7a949cce875e944fae0311818fdf4"
+            },
+            "CreditAccount": {
+              "count": 2,
+              "hash": "a3a8644a4ccfdd5013560a14cf16f345"
+            },
+            "CreditLedgerEntry": {
+              "count": 4,
+              "hash": "27d33d1b529cb8b215f9b3cc952a724c"
+            },
+            "Dispatch": {
+              "count": 2,
+              "hash": "72b89b72bc49d35c6411d7fffc72e55b"
+            },
+            "DeliveryAssignment": {
+              "count": 2,
+              "hash": "21a7a6ad817ab5fe171e4f6dbadca50e"
+            },
+            "B2bOutboxEvent": {
+              "count": 2,
+              "hash": "be2ff447fa2b924b220fff424043e330"
+            }
+          },
+          "after": {
+            "PrequoteConversion": {
+              "count": 46,
+              "hash": "a1e52703439d04b11b0288b99117f0e1"
+            },
+            "DeliveryPrequote": {
+              "count": 72,
+              "hash": "df206e731ce01cbfa0005574ffa29cf6"
+            },
+            "ApiIdempotencyRecord": {
+              "count": 122,
+              "hash": "ede1dcbf6356467a289ae1e59878ebd7"
+            },
+            "ApiIdempotencyExecution": {
+              "count": 72,
+              "hash": "bc2cb2e0f03c44035503e52b4ab0acb7"
+            },
+            "PrequoteConsumptionPermit": {
+              "count": 72,
+              "hash": "396f1060eb3c7dced81322fad479e3f6"
+            },
+            "DeliveryRequest": {
+              "count": 50,
+              "hash": "ce1fcbfb4770b4a328ab99c64760fcea"
+            },
+            "DeliveryQuote": {
+              "count": 50,
+              "hash": "14fd3962199b01900da5a2b075d55cb7"
+            },
+            "DeliveryStop": {
+              "count": 100,
+              "hash": "6c7f544d533eb59be48005bba2088acb"
+            },
+            "DeliveryPackage": {
+              "count": 50,
+              "hash": "870b58d3659d8a630e0888056cea77bf"
+            },
+            "DeliveryFinancialContext": {
+              "count": 50,
+              "hash": "6fd7a949cce875e944fae0311818fdf4"
+            },
+            "CreditAccount": {
+              "count": 2,
+              "hash": "a3a8644a4ccfdd5013560a14cf16f345"
+            },
+            "CreditLedgerEntry": {
+              "count": 4,
+              "hash": "27d33d1b529cb8b215f9b3cc952a724c"
+            },
+            "Dispatch": {
+              "count": 2,
+              "hash": "72b89b72bc49d35c6411d7fffc72e55b"
+            },
+            "DeliveryAssignment": {
+              "count": 2,
+              "hash": "21a7a6ad817ab5fe171e4f6dbadca50e"
+            },
+            "B2bOutboxEvent": {
+              "count": 2,
+              "hash": "be2ff447fa2b924b220fff424043e330"
+            }
+          },
+          "equal": true
+        },
+        "statusExit": 0,
+        "upToDate": true,
+        "driftExit": 0,
+        "noDifference": true,
+        "reapplyExit": 0,
+        "reapplyNoPending": true,
+        "appliedMigrations": 28,
+        "failedMigrations": 0,
+        "prequotes": 72,
+        "conversions": 46
+      }
+    }
+  },
+  "cleanup": {
+    "integral": {
+      "antes": {
+        "vinculos_invalidos": 0,
+        "keys_huerfanas": 0,
+        "ejecuciones_de_conversion": 0,
+        "dispatch_por_mq_convertida": 0,
+        "dispatch_por_mdr_convertida": 0,
+        "mq_invalidas": 0,
+        "manifiestos_invalidos": 0,
+        "intenciones_invalidas": 0,
+        "mpq_con_dos_conversiones": 0,
+        "triggers_de_fallo": 0,
+        "triggers_deshabilitados": 0,
+        "credenciales_de_fixture_activas": 2,
+        "zonas_de_fixture_activas": 3
+      },
+      "despues": {
+        "vinculos_invalidos": 0,
+        "keys_huerfanas": 0,
+        "ejecuciones_de_conversion": 0,
+        "dispatch_por_mq_convertida": 0,
+        "dispatch_por_mdr_convertida": 0,
+        "mq_invalidas": 0,
+        "manifiestos_invalidos": 0,
+        "intenciones_invalidas": 0,
+        "mpq_con_dos_conversiones": 0,
+        "triggers_de_fallo": 0,
+        "triggers_deshabilitados": 0,
+        "credenciales_de_fixture_activas": 0,
+        "zonas_de_fixture_activas": 0
+      },
+      "revocado": {
+        "credenciales": 2,
+        "zonas": 3
+      },
+      "triggersDeIntegridad": 17,
+      "triggersActivos": 17,
+      "fksDiferidas": [
+        "PrequoteConversion_deliveryQuoteId_deliveryRequestId_fkey",
+        "PrequoteConversion_deliveryRequestId_integrationClientId_fkey"
+      ]
+    },
+    "regression": {
+      "antes": {
+        "vinculos_invalidos": 0,
+        "keys_huerfanas": 0,
+        "ejecuciones_de_conversion": 0,
+        "dispatch_por_mq_convertida": 0,
+        "dispatch_por_mdr_convertida": 0,
+        "mq_invalidas": 0,
+        "manifiestos_invalidos": 0,
+        "intenciones_invalidas": 0,
+        "mpq_con_dos_conversiones": 0,
+        "triggers_de_fallo": 0,
+        "triggers_deshabilitados": 0,
+        "credenciales_de_fixture_activas": 0,
+        "zonas_de_fixture_activas": 1
+      },
+      "despues": {
+        "vinculos_invalidos": 0,
+        "keys_huerfanas": 0,
+        "ejecuciones_de_conversion": 0,
+        "dispatch_por_mq_convertida": 0,
+        "dispatch_por_mdr_convertida": 0,
+        "mq_invalidas": 0,
+        "manifiestos_invalidos": 0,
+        "intenciones_invalidas": 0,
+        "mpq_con_dos_conversiones": 0,
+        "triggers_de_fallo": 0,
+        "triggers_deshabilitados": 0,
+        "credenciales_de_fixture_activas": 0,
+        "zonas_de_fixture_activas": 0
+      },
+      "revocado": {
+        "credenciales": 0,
+        "zonas": 1
+      },
+      "triggersDeIntegridad": 17,
+      "triggersActivos": 17,
+      "fksDiferidas": [
+        "PrequoteConversion_deliveryQuoteId_deliveryRequestId_fkey",
+        "PrequoteConversion_deliveryRequestId_integrationClientId_fkey"
+      ]
+    }
+  },
+  "consolidatorNegativeTests": {
+    "nonzeroExitExcluded": true,
+    "signalledExcluded": true,
+    "failedReporterExcluded": true,
+    "incompleteReporterExcluded": true,
+    "tamperedHashRejected": true
+  },
+  "finalAudit": {
+    "trackedChanges": 3,
+    "newFiles": 6,
+    "secretMatches": [],
+    "packageUnchanged": true,
+    "historicalMigrationsUnchanged": true,
+    "gitDiffCheckExit": 0,
+    "noDisableTriggerInChangedTests": true
+  }
+}
