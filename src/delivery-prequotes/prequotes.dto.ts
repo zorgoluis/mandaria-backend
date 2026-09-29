@@ -42,7 +42,7 @@ class PrequoteZoneResponse {
 export class PrequoteResponse {
   @ApiProperty({ example: 'MPQ-000123' }) publicId!: string;
   @ApiProperty({
-    enum: ['OFFERED', 'EXPIRED'],
+    enum: ['OFFERED', 'EXPIRED', 'CONVERTED'],
     description:
       'EXPIRED cuando now >= expiresAt. No se persiste ni renueva por replay.',
   })
@@ -81,14 +81,14 @@ export class PrequoteResponse {
   @ApiProperty({
     type: String,
     nullable: true,
-    enum: [null],
-    description: 'Siempre null; conversión no implementada.',
+
+    description: 'Fecha de conversión inmutable; null si no consumida.',
   })
-  convertedAt!: null;
+  convertedAt!: string | null;
+  @ApiProperty({ type: String, nullable: true })
+  deliveryRequestPublicId!: string | null;
   @ApiProperty({ type: String, nullable: true, enum: [null] })
-  deliveryRequestPublicId!: null;
-  @ApiProperty({ type: String, nullable: true, enum: [null] })
-  deliveryQuotePublicId!: null;
+  deliveryQuotePublicId!: string | null;
   @ApiProperty({
     enum: [false],
     type: Boolean,

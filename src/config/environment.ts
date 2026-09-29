@@ -31,6 +31,10 @@ const schema = z.object({
     .default(604800),
   CORS_ORIGINS: z.string().default(''),
   // A5 remains disabled by default; enabling also requires explicit shared routing budget.
+  PREQUOTE_CONVERSION_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
   PREQUOTE_ENABLED: z
     .enum(['true', 'false'])
     .default('false')

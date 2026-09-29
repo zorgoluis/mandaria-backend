@@ -445,6 +445,7 @@ describe('Quote transaction runs every lookup on its own connection', () => {
   const D = (n: number) => new Prisma.Decimal(n);
   const build = (plan: unknown) => {
     const tx = {
+      prequoteConversion: { findUnique: vi.fn().mockResolvedValue(null) },
       $queryRaw: vi
         .fn()
         .mockResolvedValue([
@@ -507,6 +508,7 @@ describe('Quote transaction runs every lookup on its own connection', () => {
       currency: 'MXN',
     };
     const tx = {
+      prequoteConversion: { findUnique: vi.fn().mockResolvedValue(null) },
       $queryRaw: vi
         .fn()
         .mockResolvedValue([
@@ -543,16 +545,14 @@ describe('Quote transaction runs every lookup on its own connection', () => {
         .mockResolvedValue([{ id: 'zone', currency: 'MXN' }]),
     };
     const plans = {
-      findActive: vi
-        .fn()
-        .mockResolvedValue({
-          id: 'plan',
-          version: 3,
-          currency: 'MXN',
-          calculationType: 'DISTANCE_BANDS',
-          quoteValidityMinutes: 15,
-          bands: [band],
-        }),
+      findActive: vi.fn().mockResolvedValue({
+        id: 'plan',
+        version: 3,
+        currency: 'MXN',
+        calculationType: 'DISTANCE_BANDS',
+        quoteValidityMinutes: 15,
+        bands: [band],
+      }),
     };
     const routing = {
       name: 'fake',

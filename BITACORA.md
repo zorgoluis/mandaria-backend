@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.13-B2 (2026-09-28):** commit y push autorizados a la rama actual. Se publica la implementación verificada en la tarea anterior; B3 y CHECK B4 siguen pendientes. Sin activación ni despliegue.
+
+- **V1.13-B2 (2026-09-28): IMPLEMENTADO, LISTO PARA VERIFICACIÓN B3.** Conversión única y atómica MPQ → MDR PREPAID + MQ OFFERED; manifiesto inmutable de hijos sin xmin/XID, idempotencia existente, snapshot/TTL conservados y barreras SQL/aplicación pre-C. Verificación nueva: 380/380 unitarias y 572/572 E2E consolidadas por archivo completo (39 nuevas); Prisma, migración limpia/upgrade, catálogo/drift, verificadores, tipos/build/linters/OpenAPI/docs:check PASS. Bases locales nuevas _test solamente, limpieza de fixtures y escaneo de invariantes sin violaciones. Flag deshabilitado; sin versión, commit/push/despliegue. B no cerrada: B3 y CHECK B4 pendientes. Pendientes de activación A conservados: capacidad del mutex, política coordinada, migraciones/entorno, observabilidad/responsables. Informe: docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md.
+
 - **Publicación V1.13-B1 (2026-09-28):** commit y push autorizados a la rama actual para publicar el diseño y su continuidad. B sigue pendiente de implementación; sin activación ni despliegue.
 
 - **V1.13-B1 (2026-09-28): LISTO PARA IMPLEMENTAR B2 — sólo diseño.** Informe `docs/V1.13-B1-PREQUOTE-CONVERSION-DESIGN.md`: conversión inmutable con hechos propios, transacción local e idempotencia existente, snapshot sin recálculo y barreras de aplicación/SQL pre-C. Revisión estática y documental; sin pruebas de producto ni operaciones de datos. B no implementada. Pendientes de activación A conservados: capacidad del mutex, política coordinada, migraciones/validación del despliegue y observabilidad/responsables. Sin versión, configuración, commit/push o activación.
@@ -1207,3 +1211,21 @@ Pendientes: implementar y verificar barreras/constraints/transacción en B2/B3, 
 ## 2026-09-28 — Publicación Git de V1.13-B1
 
 Solicitud: commitear y hacer push a la rama actual. Cambios: publicación del diseño B1 y registro de continuidad. Verificaciones actuales: estado/rama, alcance documental y git diff --check; no se repitieron pruebas de producto. Resultado: documentación preparada para commit y push; confirmación del remoto en la respuesta de esta tarea. Pendientes: implementación B2 y verificación B3/B4, además de los pendientes operativos A conservados. Sin despliegue ni activación; nul preexistente excluido.
+
+
+## 2026-09-28 — V1.13-B2: conversión única y atómica
+
+- Solicitud: implementar B2 sobre B1, sin cierre de B, activación ni publicación.
+- Cambios: modelo/migración incremental PrequoteConversion, contrato HTTP/scopes/flag, construcción transaccional mediante manifiesto, proyecciones CONVERTED y defensas pre-C; documentación y pruebas. Header corregido a Idempotent-Replayed.
+- Verificaciones actuales: 380 unitarias, 572 E2E en 28 archivos completos, Prisma/generate, limpia/upgrade (14 tablas históricas), drift/status, verificadores, tsc/build, Oxlint/ESLint, OpenAPI/docs:check y escaneo SQL PASS. Intentos abortados/no completos excluidos; evidencia por archivo en docs/checks/v1.13-b2-evidence.json.
+- Resultado: IMPLEMENTADO, LISTO PARA VERIFICACIÓN B3. Limpieza sólo en bases creadas para esta tarea, sin borrar historia.
+- Pendientes: B3, CHECK B4, compatibilidad con binario antiguo real, límites temporales/aislamiento/carga y pendientes operativos A. Sin commit/push, versión, cambios .env, principal migrada o despliegue.
+
+
+## 2026-09-28 — Publicación Git de V1.13-B2
+
+- Solicitud: realizar commit y push a la rama actual.
+- Cambios: publicación de implementación, migración, pruebas, contrato y documentación B2; actualización de continuidad.
+- Verificaciones de esta tarea: revisión de rama/remoto y conjunto de archivos, diff --check y revisión de secretos conocidos. Las 380 unitarias y 572 E2E corresponden a la tarea anterior; no se repiten para esta publicación.
+- Resultado previsto: commit y push normal a origin en la rama actual; confirmación del resultado Git en la respuesta de esta tarea. Archivo preexistente nul excluido.
+- Pendientes: B3, CHECK B4 y pendientes operativos A; sin despliegue ni activación.

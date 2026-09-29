@@ -28,7 +28,19 @@ La capacidad permanece deshabilitada por defecto. A5 implementa admisión durabl
 
 Permisos, ventanas, recuperación, límites de concurrencia externa, configuración y pruebas: [V1.13-A5](docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md). LISTO PARA CHECK A6; no cierra V1.13-A.
 
-Contrato HTTP, errores/Retry-After y límites de revocación concurrente: [V1.13-A4](docs/V1.13-A4-PREQUOTE-HTTP-ORCHESTRATION.md). No existe conversión, aceptación ni flujo completo de transferencia. Base principal sin migrar en esta etapa.
+Contrato HTTP, errores/Retry-After y límites de revocación concurrente: [V1.13-A4](docs/V1.13-A4-PREQUOTE-HTTP-ORCHESTRATION.md). El alcance A no incluía conversión; B2 la incorpora separadamente como se describe abajo. Base principal sin migrar en estas tareas.
+
+## V1.13-B2 — conversión única de precotización
+
+`POST /api/v1/delivery-prequotes/:publicId/convert` requiere Integration Bearer, `Idempotency-Key` y **todos** los scopes `prequotes:convert`, `deliveries:create`, `quotes:create`. No se otorgan automáticamente. `PREQUOTE_CONVERSION_ENABLED=false` por defecto es independiente de emisión; no se activa en esta entrega.
+
+Una transacción consume MPQ propia/vigente y crea MDR PREPAID/MXN/FOOD y MQ OFFERED con precio, ruta, tarifa y vencimiento originales. Registra la declaración del integrador sobre ingreso confirmado y pedido aceptado por el restaurante; no verifica banco ni acepta comprobantes del cliente como sustituto. Stops/contactos/paquetes definitivos deben coincidir en sus condiciones físicas con MPQ. Mercancía y envío permanecen separados.
+
+Respuesta inicial 201, `Idempotent-Replayed: false`, `Location` hacia MDR; replay 200/true con mismos vínculos y estados actuales incluso cancelados/vencidos o flag apagado. `Cache-Control: no-store` y `X-Request-Id` siguen el contrato general. GET MPQ informa CONVERTED y enlaces permanentes; cancelar MDR nunca libera MPQ. La intención inmutable es RECIPIENT/CASH/DELIVERY/DELIVERY_FEE, sin monto paralelo ni registro de cobro.
+
+**Durante B no se puede despachar este origen:** accept legacy devuelve `AUTHORIZED_ACCEPT_REQUIRED`; POST quotes devuelve `PREQUOTE_REQUOTE_NOT_ALLOWED`, sin renovar precio. SQL bloquea también escritores antiguos. GET sigue permitido. C incorporará aceptación autorizada y D exposición a ejecutores. No routing, consumo A5, créditos ni Dispatch en conversión; tarifa reemplazada conserva snapshot, zona INACTIVE bloquea sólo conversiones nuevas.
+
+Contrato, manifiesto SQL, pruebas, diferencias frente a B1 y pendientes B3: [implementación B2](docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md). Ejemplo completo de body y respuesta: [diseño B1](docs/V1.13-B1-PREQUOTE-CONVERSION-DESIGN.md). B2 no cierra V1.13-B: requiere verificación B3 y CHECK B4. Migración incremental primero en un despliegue futuro, todas las instancias compatibles y flag apagado; no deshacer evidencia para hacer rollback.
 
 ## Estado y arquitectura
 

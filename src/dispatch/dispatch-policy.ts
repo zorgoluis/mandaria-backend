@@ -1,3 +1,4 @@
+import { rejectConvertedRequest } from '../delivery-prequotes/prequote-origin.js';
 import type { DispatchStatus, Prisma, ServiceType } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
 import { cancelActiveAssignments } from '../delivery-assignments/delivery-assignments.service.js';
@@ -143,6 +144,7 @@ export async function openDispatch(
   ttlMinutes: number,
   now: Date,
 ) {
+  await rejectConvertedRequest(tx, quote.deliveryRequestId);
   const providerIds = await eligibleProviderIds(
     tx,
     quote.serviceZoneId,

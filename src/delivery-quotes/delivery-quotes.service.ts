@@ -1,3 +1,4 @@
+import { rejectConvertedRequest } from '../delivery-prequotes/prequote-origin.js';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
@@ -27,6 +28,9 @@ import {
 export { QUOTE_FAILURES } from '../pricing/quote-pricing.js';
 
 export const quoteSelect = {
+  prequoteConversion: {
+    select: { prequote: { select: { zoneCode: true, zoneName: true } } },
+  },
   id: true,
   publicId: true,
   deliveryRequestId: true,
@@ -66,7 +70,16 @@ type QuoteRow = Prisma.DeliveryQuoteGetPayload<{ select: typeof quoteSelect }>;
 export function quoteView(row: QuoteRow, now = new Date()) {
   const effective: DeliveryQuoteStatus =
     row.status === 'OFFERED' && row.expiresAt <= now ? 'EXPIRED' : row.status;
-  return { ...row, status: effective, amount: row.amount.toFixed(2) };
+  const { prequoteConversion, ...safe } = row;
+  const source = prequoteConversion?.prequote;
+  return {
+    ...safe,
+    serviceZone: source
+      ? { ...row.serviceZone, code: source.zoneCode, name: source.zoneName }
+      : row.serviceZone,
+    status: effective,
+    amount: row.amount.toFixed(2),
+  };
 }
 /** B2B contract: no internal UUIDs, rate plan internals or routing vendor details. */
 export function integrationQuoteView(row: QuoteRow, now = new Date()) {
@@ -123,6 +136,11 @@ export class DeliveryQuotesService {
           >`SELECT id, status, "serviceType" FROM "DeliveryRequest" WHERE "publicId" = ${deliveryRequestPublicId} AND "integrationClientId" = ${integrationClientId}::uuid FOR UPDATE`;
           if (!request)
             throw new NotFoundException('Delivery request not found');
+          await rejectConvertedRequest(
+            tx,
+            request.id,
+            'PREQUOTE_REQUOTE_NOT_ALLOWED',
+          );
           if (request.status !== 'CREATED')
             throw fail(
               'DELIVERY_REQUEST_NOT_QUOTABLE',
@@ -284,6 +302,7 @@ export class DeliveryQuotesService {
       const [request] = await tx.$queryRaw<
         { status: string }[]
       >`SELECT status FROM "DeliveryRequest" WHERE id = ${owned.deliveryRequestId}::uuid FOR UPDATE`;
+      await rejectConvertedRequest(tx, owned.deliveryRequestId);
       const quote = await tx.deliveryQuote.findUniqueOrThrow({
         where: { id: owned.id },
         select: quoteSelect,

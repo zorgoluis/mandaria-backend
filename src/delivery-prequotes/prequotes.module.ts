@@ -1,3 +1,6 @@
+import { PrequoteConversionController } from './prequote-conversion.controller.js';
+import { IdempotencyService } from '../idempotency/idempotency.service.js';
+import { PrequoteConversionService } from './prequote-conversion.service.js';
 import { Module } from '@nestjs/common';
 import { IntegrationsModule } from '../integrations/integrations.module.js';
 import { RoutingModule } from '../routing/routing.module.js';
@@ -15,8 +18,10 @@ import { DurablePrequoteConsumption } from './durable-prequote-consumption.js';
     ServiceZonesModule,
     RatePlansModule,
   ],
-  controllers: [PrequotesController],
+  controllers: [PrequotesController, PrequoteConversionController],
   providers: [
+    IdempotencyService,
+    PrequoteConversionService,
     PrequotesService,
     PrequotePersistenceService,
     { provide: PREQUOTE_CONSUMPTION, useClass: DurablePrequoteConsumption },

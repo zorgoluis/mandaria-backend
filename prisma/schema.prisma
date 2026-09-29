@@ -298,6 +298,7 @@ enum GoodsPaymentMode {
 /// Demand received from an IntegrationClient: what must be transported. Immutable except
 /// for cancellation. No provider/driver/vehicle relation until Dispatch.
 model DeliveryRequest {
+  prequoteConversion PrequoteConversion?
   id String @id @default(uuid()) @db.Uuid
   /// MDR-000001; generated from sequence "DeliveryRequest_publicId_seq" inside the creation transaction.
   publicId String @unique
@@ -373,6 +374,7 @@ model DeliveryFinancialContext {
 }
 /// Reusable B2B idempotency ledger. Stores only a payload hash, never the payload.
 model ApiIdempotencyRecord {
+  prequoteConversion PrequoteConversion?
   execution ApiIdempotencyExecution?
   prequote DeliveryPrequote?
   id String @id @default(uuid()) @db.Uuid
@@ -471,6 +473,8 @@ model RateBand {
 }
 /// Immutable price snapshot for a DeliveryRequest. Only status and its timestamps change.
 model DeliveryQuote {
+  @@unique([id, deliveryRequestId])
+  prequoteConversion PrequoteConversion?
   id String @id @default(uuid()) @db.Uuid
   /// MQ-000001; generated from sequence "DeliveryQuote_publicId_seq".
   publicId String @unique
@@ -1138,6 +1142,8 @@ model ApiIdempotencyExecution {
 }
 /// Published immutable offer. Expiration is derived; no conversion state in A3.
 model DeliveryPrequote {
+  @@unique([id, integrationClientId])
+  prequoteConversion PrequoteConversion?
   id String @id @db.Uuid
   publicId String @unique
   idempotencyRecordId String @unique @db.Uuid
@@ -1202,4 +1208,35 @@ model PrequoteConsumptionPermit {
   @@index([startedAt])
   @@index([state, reserveExpiresAt])
   @@index([protectedUntil])
+}
+
+/// Immutable commercial facts and complete child identity manifest. Destination FKs deferred in SQL.
+model PrequoteConversion {
+  @@unique([prequoteId, integrationClientId])
+  @@unique([deliveryRequestId, integrationClientId])
+  @@unique([deliveryQuoteId, deliveryRequestId])
+  id String @id @db.Uuid
+  prequoteId String @unique @db.Uuid
+  deliveryRequestId String @unique @db.Uuid
+  deliveryQuoteId String @unique @db.Uuid
+  idempotencyRecordId String @unique @db.Uuid
+  integrationClientId String @db.Uuid
+  convertedAt DateTime @default(dbgenerated("clock_timestamp()"))
+  goodsPaymentStatus String
+  goodsPaymentReference String
+  goodsPaymentConfirmedAt DateTime
+  orderAcceptanceStatus String
+  orderAcceptanceReference String
+  orderAcceptedAt DateTime
+  collectionPayer String
+  collectionMethod String
+  collectionDueAt String
+  collectionComponent String
+  stopIds String[] @db.Uuid
+  packageIds String[] @db.Uuid
+  financialContextId String @db.Uuid
+  prequote DeliveryPrequote @relation(fields: [prequoteId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
+  deliveryQuote DeliveryQuote @relation(fields: [deliveryQuoteId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
+  record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 }

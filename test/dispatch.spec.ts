@@ -203,6 +203,7 @@ describe('opening and cancellation inside the caller transaction', () => {
     ranges: [],
   });
   const tx = (eligible: string[], policies = true) => ({
+    prequoteConversion: { findUnique: vi.fn().mockResolvedValue(null) },
     $queryRaw: vi.fn().mockResolvedValue(eligible.map((id) => ({ id }))),
     dispatch: {
       create: vi.fn(async ({ data }) => ({

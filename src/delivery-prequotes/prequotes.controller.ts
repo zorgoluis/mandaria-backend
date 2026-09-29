@@ -82,7 +82,7 @@ export class PrequotesController {
   @ApiOperation({
     summary: 'Emitir o recuperar mi precotización',
     description:
-      'Requiere prequotes:create. Contrato A4: FOOD, MXN, inmediato y conditionsVersion=1 obligatorio. Autentica y normaliza antes de consultar la clave. Replay disponible aun deshabilitado. Nuevas emisiones requieren flag y permiso compartido; requieren configuración global explícita y coherente entre instancias; cuotas 10/min, 500/24h y 2 slots por integración por defecto. Consumo potencial conservador MAX_RETRIES+1 unidades por inicio, aun sin publicación. Routing fuera de transacciones; publicación con fencing y revalidación de configuración y autenticación. Una llamada al adaptador por intento, hasta presupuesto persistido. No crea solicitud, Quote, Dispatch ni movimientos. No hay conversión/aceptación.',
+      'Requiere prequotes:create. Contrato A4: FOOD, MXN, inmediato y conditionsVersion=1 obligatorio. Autentica y normaliza antes de consultar la clave. Replay disponible aun deshabilitado. Nuevas emisiones requieren flag y permiso compartido; requieren configuración global explícita y coherente entre instancias; cuotas 10/min, 500/24h y 2 slots por integración por defecto. Consumo potencial conservador MAX_RETRIES+1 unidades por inicio, aun sin publicación. Routing fuera de transacciones; publicación con fencing y revalidación de configuración y autenticación. Una llamada al adaptador por intento, hasta presupuesto persistido. No crea solicitud, Quote, Dispatch ni movimientos. Conversión separada mediante /:publicId/convert; no aceptación autorizada.',
   })
   async create(
     @Req() req: IntegrationRequest,
@@ -141,7 +141,7 @@ export class PrequotesController {
   @ApiOperation({
     summary: 'Consultar mi precotización',
     description:
-      'Requiere prequotes:read y ownership. Disponible aun con emisión bloqueada. Estado efectivo OFFERED/EXPIRED; igualdad con expiresAt ya está vencida. Precio y zona congelados; sin datos internos, rutas de conversión o aceptación.',
+      'Requiere prequotes:read y ownership. Disponible aun con emisión bloqueada. Estado efectivo OFFERED/EXPIRED/CONVERTED; igualdad con expiresAt ya está vencida. Precio y zona congelados; sin datos internos; vínculos permanentes tras cancelar o vencer.',
   })
   get(@Req() req: IntegrationRequest, @Param('publicId') id: string) {
     if (!/^MPQ-\d{6,12}$/i.test(id))

@@ -924,9 +924,15 @@ describe.sequential(
       await post(k).expect(201);
       expect((await execution(k))!.execution!.attempts).toBe(2);
     });
-    it('no conversion or authorized accept routes exist', async () => {
+    it('A-only scopes cannot convert; MPQ accept routes remain absent', async () => {
       const r = await post().expect(201);
-      for (const action of ['convert', 'accept', 'accept-authorized'])
+      // B2 introduces conversion with its own explicit scopes; A's credentials gain none.
+      await api()
+        .post('/api/v1/delivery-prequotes/' + r.body.publicId + '/convert')
+        .auth(tokens[0], { type: 'bearer' })
+        .send({})
+        .expect(403);
+      for (const action of ['accept', 'accept-authorized'])
         await api()
           .post('/api/v1/delivery-prequotes/' + r.body.publicId + '/' + action)
           .auth(tokens[0], { type: 'bearer' })

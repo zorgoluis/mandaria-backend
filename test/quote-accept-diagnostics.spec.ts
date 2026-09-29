@@ -79,6 +79,7 @@ const db = {
       acceptedAt: draft.status === 'ACCEPTED' ? instant : null,
     });
     const tx = {
+      prequoteConversion: { findUnique: vi.fn().mockResolvedValue(null) },
       $queryRaw: async (parts: TemplateStringsArray, ...values: unknown[]) => {
         const sql = parts.join('?');
         if (sql.includes('FROM "DeliveryQuote"')) {

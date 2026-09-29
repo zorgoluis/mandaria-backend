@@ -788,13 +788,13 @@ describe('A4 HTTP prequotes with PostgreSQL and controlled routing', () => {
     expect(await execution(k)).toBeNull();
     expect(routing.calculateRoute).not.toHaveBeenCalled();
   });
-  it('no operational/financial effects, conversion/accept routes absent, logs contain no secrets/conditions', async () => {
+  it('no emission side effects; A-only scopes cannot convert and MPQ accept stays absent; safe logs', async () => {
     expect(await counts()).toEqual(baseline);
     await api()
       .post('/api/v1/delivery-prequotes/MPQ-000001/convert')
       .auth(tokens[0], { type: 'bearer' })
       .send({})
-      .expect(404);
+      .expect(403);
     await api()
       .post('/api/v1/delivery-prequotes/MPQ-000001/accept')
       .auth(tokens[0], { type: 'bearer' })

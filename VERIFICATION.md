@@ -1,3 +1,11 @@
+# V1.13-B2 — Verificación de implementación (2026-09-28)
+
+**V1.13-B2 (2026-09-28): IMPLEMENTADO, LISTO PARA VERIFICACIÓN B3.** Conversión única y atómica MPQ → MDR PREPAID + MQ OFFERED; manifiesto inmutable de hijos sin xmin/XID, idempotencia existente, snapshot/TTL conservados y barreras SQL/aplicación pre-C. Verificación nueva: 380/380 unitarias y 572/572 E2E consolidadas por archivo completo (39 nuevas); Prisma, migración limpia/upgrade, catálogo/drift, verificadores, tipos/build/linters/OpenAPI/docs:check PASS. Bases locales nuevas _test solamente, limpieza de fixtures y escaneo de invariantes sin violaciones. Flag deshabilitado; sin versión, commit/push/despliegue. B no cerrada: B3 y CHECK B4 pendientes. Pendientes de activación A conservados: capacidad del mutex, política coordinada, migraciones/entorno, observabilidad/responsables. Informe: docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md.
+
+[Informe](docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md) · [Evidencia por archivo](docs/checks/v1.13-b2-evidence.json). Las ejecuciones fallidas/abortadas se documentan en el informe; no se suman como PASS. B2 no es CHECK B4.
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
 # CHECK V1.13-A6 — Verificación integral (2026-09-28)
 
 **CHECK V1.13-A6 (2026-09-28): PASS — V1.13-A IMPLEMENTADA Y VALIDADA LOCALMENTE.** Evidencia nueva: 372/372 unitarias, 497/497 E2E existentes consolidadas por archivo y 36/36 CHECK integral (533 E2E en total). Dos Nest con auth/idempotencia/persistencia/consumo reales; caídas de proceso, SQL/rollback, carga de 10604 permisos y preservación de 10 tablas no vacías. 250 archivos de producto/configuración/contrato/migraciones congelados, .env y HEAD intactos. Bases nuevas aisladas _test; principal sin escrituras. Build/tipos/Prisma/linters/docs:check PASS; abortos Windows y correcciones de fixtures documentados. Activación pendiente de runbook/capacidad/migración del entorno real; flag deshabilitado, sin Google real, B, commit/push/despliegue. Informe: docs/CHECK-V1.13-A6-PREQUOTES.md.

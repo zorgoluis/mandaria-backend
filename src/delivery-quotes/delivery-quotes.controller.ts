@@ -88,14 +88,14 @@ export class DeliveryQuotesController {
   })
   @ApiErrorDescriptions({
     ...b2bErrors,
-    409: 'DELIVERY_REQUEST_NOT_QUOTABLE: la solicitud no está CREATED.',
+    409: 'PREQUOTE_REQUOTE_NOT_ALLOWED: origen MPQ no admite recotización/reutilización por POST. DELIVERY_REQUEST_NOT_QUOTABLE: la solicitud no está CREATED.',
     422: 'OUT_OF_SERVICE_AREA | CROSS_ZONE_NOT_SUPPORTED | ROUTE_NOT_FOUND | DISTANCE_NOT_SUPPORTED. No se crea Quote; la solicitud sigue CREATED.',
     503: 'ROUTING_UNAVAILABLE | RATE_CONFIGURATION_UNAVAILABLE | RATE_CONFIGURATION_INVALID | SERVICE_ZONE_AMBIGUOUS. Reintentable; nunca se devuelve precio aproximado.',
   })
   @ApiOperation({
     summary: 'Cotizar mi DeliveryRequest',
     description:
-      'Requiere quotes:create. Resuelve ServiceType (LOCAL_DELIVERY), zona ACTIVE de pickup y dropoff (misma zona), RatePlan ACTIVE, ruta real con el RoutingProvider y banda de distancia [min, max). Crea una Quote OFFERED inmutable con vigencia del plan. Si ya hay una OFFERED vigente o una ACCEPTED, la devuelve. Idempotente por DeliveryRequest (bloqueo de fila): peticiones simultáneas producen una sola Quote y una sola llamada de routing. 30/min por IP.',
+      'Requiere quotes:create. Origen MPQ rechazado antes de cualquier recálculo/reutilización; GET sigue permitido. Resuelve ServiceType (LOCAL_DELIVERY), zona ACTIVE de pickup y dropoff (misma zona), RatePlan ACTIVE, ruta real con el RoutingProvider y banda de distancia [min, max). Crea una Quote OFFERED inmutable con vigencia del plan. Si ya hay una OFFERED vigente o una ACCEPTED, la devuelve. Idempotente por DeliveryRequest (bloqueo de fila): peticiones simultáneas producen una sola Quote y una sola llamada de routing. 30/min por IP.',
   })
   async create(
     @Req() req: IntegrationRequest,
@@ -119,7 +119,7 @@ export class DeliveryQuotesController {
   @ApiOperation({
     summary: 'Historial de Quotes de mi DeliveryRequest',
     description:
-      'Requiere quotes:read. Quotes de una solicitud propia, más recientes primero; snapshots persistidos sin recalcular.',
+      'Requiere quotes:read. Quotes de una solicitud propia, más recientes primero; snapshots persistidos sin recalcular; zona de origen MPQ usa código/nombre congelados.',
   })
   async listForRequest(
     @Req() req: IntegrationRequest,
@@ -163,13 +163,13 @@ export class DeliveryQuotesController {
   @ApiOkResponse({ type: DeliveryQuoteResponse })
   @ApiErrorDescriptions({
     ...b2bErrors,
-    409: 'QUOTE_EXPIRED (expiresAt alcanzado; solicitar nueva Quote) | QUOTE_NOT_ACCEPTABLE (cancelada o solicitud cancelada) | CREDIT_POLICY_UNAVAILABLE (falta política ACTIVE o configuración válida para uno de los actores requeridos; accept y apertura de Dispatch se revierten). Leer code del JSON, no inferir la causa del HTTP 409.',
+    409: 'AUTHORIZED_ACCEPT_REQUIRED: origen MPQ bloqueado durante B, incluso ante retry. QUOTE_EXPIRED (expiresAt alcanzado; solicitar nueva Quote) | QUOTE_NOT_ACCEPTABLE (cancelada o solicitud cancelada) | CREDIT_POLICY_UNAVAILABLE (falta política ACTIVE o configuración válida para uno de los actores requeridos; accept y apertura de Dispatch se revierten). Leer code del JSON, no inferir la causa del HTTP 409.',
     422: 'CREDIT_COST_OUT_OF_RANGE | CREDIT_DISTANCE_INVALID: no puede congelarse un costo válido; aceptación revertida.',
   })
   @ApiOperation({
     summary: 'Aceptar mi Quote',
     description:
-      'Requiere quotes:accept. OFFERED vigente → ACCEPTED y abre Dispatch con snapshots de créditos en una sola transacción. LOCAL_DELIVERY requiere políticas ACTIVE de PROVIDER e INDEPENDENT_DRIVER, incluso sin candidatos. No consulta saldos ni debita créditos. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver. En errores conservar statusCode, code y requestId (también X-Request-Id); no sustituir code por REMOTE_ERROR.',
+      'Requiere quotes:accept. Quotes convertidas desde MPQ rechazan esta ruta hasta aceptación autorizada C. OFFERED vigente → ACCEPTED y abre Dispatch con snapshots de créditos en una sola transacción. LOCAL_DELIVERY requiere políticas ACTIVE de PROVIDER e INDEPENDENT_DRIVER, incluso sin candidatos. No consulta saldos ni debita créditos. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver. En errores conservar statusCode, code y requestId (también X-Request-Id); no sustituir code por REMOTE_ERROR.',
   })
   async accept(
     @Req() req: IntegrationRequest,

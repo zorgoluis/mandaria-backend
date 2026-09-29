@@ -30,10 +30,21 @@ import {
 } from './prequote-consumption.js';
 import { PrequotePublicError } from './prequote-errors.js';
 
-export function prequoteView(q: DeliveryPrequote, now = new Date()) {
+export function prequoteView(
+  q: DeliveryPrequote & {
+    prequoteConversion?: {
+      convertedAt: Date;
+      deliveryRequest: { publicId: string };
+      deliveryQuote: { publicId: string };
+    } | null;
+  },
+  now = new Date(),
+) {
   return {
     publicId: q.publicId,
-    status: prequoteEffectiveStatus(q, now),
+    status: q.prequoteConversion
+      ? 'CONVERTED'
+      : prequoteEffectiveStatus(q, now),
     conditionsVersion: q.conditionsVersion,
     conditions: q.conditions,
     serviceZone: { code: q.zoneCode, name: q.zoneName },
@@ -43,9 +54,10 @@ export function prequoteView(q: DeliveryPrequote, now = new Date()) {
     currency: q.currency,
     createdAt: q.issuedAt,
     expiresAt: q.expiresAt,
-    convertedAt: null,
-    deliveryRequestPublicId: null,
-    deliveryQuotePublicId: null,
+    convertedAt: q.prequoteConversion?.convertedAt ?? null,
+    deliveryRequestPublicId:
+      q.prequoteConversion?.deliveryRequest.publicId ?? null,
+    deliveryQuotePublicId: q.prequoteConversion?.deliveryQuote.publicId ?? null,
     availabilityGuaranteed: false,
   };
 }
@@ -68,6 +80,15 @@ export class PrequotesService {
   async get(publicId: string, integrationClientId: string) {
     const q = await this.prisma.deliveryPrequote.findFirst({
       where: { publicId, integrationClientId },
+      include: {
+        prequoteConversion: {
+          select: {
+            convertedAt: true,
+            deliveryRequest: { select: { publicId: true } },
+            deliveryQuote: { select: { publicId: true } },
+          },
+        },
+      },
     });
     if (!q) throw new NotFoundException('Prequote not found');
     return prequoteView(q);
@@ -85,13 +106,19 @@ export class PrequotesService {
     )
       throw new ForbiddenException('Insufficient integration scopes');
   }
-  private resolve(
+  private async resolve(
     result:
       | Awaited<ReturnType<PrequotePersistenceService['inspect']>>
       | Awaited<ReturnType<PrequotePersistenceService['reserve']>>,
   ) {
     if (result.kind === 'succeeded')
-      return { prequote: prequoteView(result.prequote), replayed: true };
+      return {
+        prequote: await this.get(
+          result.prequote.publicId,
+          result.prequote.integrationClientId,
+        ),
+        replayed: true,
+      };
     if (result.kind === 'in_progress')
       throw new PrequotePublicError('PREQUOTE_IN_PROGRESS', result.retryAt);
     if (result.kind === 'failed')
@@ -112,7 +139,7 @@ export class PrequotesService {
         400,
         'Idempotency-Key must contain 8–255 visible ASCII characters',
       );
-    const existing = this.resolve(
+    const existing = await this.resolve(
       await this.persistence.inspect(integrationClientId, key, conditions),
     );
     if (existing) return existing;
@@ -143,7 +170,7 @@ export class PrequotesService {
           maxAttempts: this.config.getOrThrow<number>('PREQUOTE_MAX_ATTEMPTS'),
         },
       );
-      const resolved = this.resolve(result);
+      const resolved = await this.resolve(result);
       if (resolved) return resolved;
       if (result.kind !== 'acquired')
         throw new PrequotePublicError('PREQUOTE_EXECUTION_FAILED');
@@ -249,7 +276,7 @@ export class PrequotesService {
         } catch (failureError) {
           if (failureError instanceof PrequotePublicError) throw failureError;
           // A COMMIT response can be lost. Success is returned only after verifying durable evidence.
-          const current = this.resolve(
+          const current = await this.resolve(
             await this.persistence.inspect(
               integrationClientId,
               key,
