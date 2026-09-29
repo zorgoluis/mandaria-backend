@@ -1,0 +1,15 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/b2b.e2e-spec.ts (14 tests) 6226ms
+     ✓ preserves legacy administrative aliases and maps INACTIVE to SUSPENDED  2608ms
+     ✓ rotates with overlap; revocation rejects both old credentials and old tokens  305ms
+     ✓ binds credential mutations to their owning integration  364ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  00:53:33
+   Duration  7.24s (transform 1.14s, setup 0ms, import 822ms, tests 6.23s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-b2b.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

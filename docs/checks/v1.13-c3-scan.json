@@ -1,0 +1,28 @@
+{
+  "mandaria_c3_clean_e9c4e4219e_test": {
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "negativeBalances": 0,
+      "temporaryTriggers": 0
+    },
+    "cancelledFixtures": 185,
+    "remainingActiveCredentials": 0,
+    "retainedEvidence": 81
+  },
+  "mandaria_c3_upgrade_e9c4e4219e_test": {
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "negativeBalances": 0,
+      "temporaryTriggers": 0
+    },
+    "cancelledFixtures": 0,
+    "remainingActiveCredentials": 0,
+    "retainedEvidence": 0
+  }
+}

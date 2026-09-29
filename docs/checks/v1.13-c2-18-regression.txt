@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/check-b3-conversion.e2e-spec.ts (58 tests) 27579ms
+     ✓ same key/body, changed body and competing keys have one durable winner  925ms
+     ✓ real transaction timeout rolls back; another instance retries same intent  6340ms
+     ✓ bounded contention: 16 keys on one MPQ and 8 independent MPQs  737ms
+     ✓ direct SQL early validation can cross expiry; no renewal, reuse or dispatch  1802ms
+     ✓ B1 accept cannot dispatch converted quote; expired requote also rolls back  2215ms
+     ✓ nonempty credits ledger assignments dispatch outbox and legacy records preserved  391ms
+     ✓ uncommitted winner is invisible to GET; concurrent reader sees complete links after commit  443ms
+ ✓ test/prequote-conversion.e2e-spec.ts (39 tests) 9894ms
+     ✓ expired MPQ fails; committed conversion survives expiry  2252ms
+     ✓ expiry while waiting for MPQ lock rejects without destination  1348ms
+     ✓ expiry during construction rejected by real deferred constraint  1367ms
+     ✓ independent Nest instances share one conversion result  325ms
+ ✓ test/delivery-completion.e2e-spec.ts (29 tests) 9922ms
+     ✓ closes CLAIM -> ASSIGN -> DELIVERED in one call, and records who and when  301ms
+     ✓ closes TAKE -> DELIVERED and frees the driver and the vehicle  408ms
+     ✓ completes exactly once under simultaneous confirmations  351ms
+ ✓ test/check-b4-conversion.e2e-spec.ts (24 tests) 9060ms
+     ✓ emite con consumo durable real, convierte una vez y nada más se mueve  312ms
+     ✓ exige PREPAID, MXN, FOOD y LOCAL_DELIVERY y trata goodsValue como opcional  433ms
+     ✓ antes del vencimiento convierte y después lo rechaza sin renovar el expiry  1573ms
+     ✓ una espera de lock que cruza el vencimiento termina en rechazo y rollback  2673ms
+     ✓ convertir sólo agrega sus propios recursos y no toca créditos, despacho ni legacy  615ms
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

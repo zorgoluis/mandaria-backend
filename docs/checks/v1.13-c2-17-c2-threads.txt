@@ -1,0 +1,172 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ❯ test/authorized-acceptance.e2e-spec.ts (32 tests | 2 failed) 9867ms
+     ✓ upgrade B history fixture remains a converted OFFERED resource 167ms
+     ✓ atomic exact attestation opens one dispatch and snapshots without routing, A5 or debit; private data never exposed 160ms
+     ✓ rejects mismatched amount with no key/economic effects 91ms
+     ✓ rejects mismatched currency with no key/economic effects 74ms
+     ✓ rejects mismatched expiresAt with no key/economic effects 83ms
+     ✓ rejects mismatched quotePublicId with no key/economic effects 86ms
+     ✓ validates missing authorization 75ms
+     ✓ validates null authorization 71ms
+     ✓ validates extra authorization 63ms
+     ✓ validates future authorization 78ms
+     ✓ validates before authorization 76ms
+     ✓ validates no-key authorization 60ms
+     ✓ requires owner and scope and valid token on new acceptance and replay 115ms
+     ✓ flag off blocks first acceptance; lost response replay remains available after cancel and never reopens 160ms
+     ✓ same key concurrent attempts replay one result; incompatible body and namespace conflict 215ms
+     ✓ different keys concurrent: one winner, other keys rolled back 179ms
+     ✓ cancel wins MDR lock: acceptance fails, repeated cancellation retains original timestamp 185ms
+     ✓ both live accept/cancel requests serialize without leaving dispatch operational 141ms
+     ✓ TTL is rechecked after MDR lock; expired converted request can be cancelled  1916ms
+     ✓ replay after natural expiry returns same accepted result  1878ms
+     ✓ revocation committed before credential lock rejects without effects 71ms
+     ✓ missing credit policy rolls back evidence, key, quote and dispatch 94ms
+     ✓ SQL denies direct accept and forged dispatch without authorized evidence with exact error 64ms
+     ✓ SQL rejects orphan C key, and immutable record/key edits/deletes after acceptance 93ms
+     × completion wins concurrent completion/cancel: no reopened dispatch and delivered state prevails 377ms
+     × cancel wins concurrent completion/cancel: no reopened dispatch and delivered state prevails 329ms
+     ✓ controlled failure after evidence/MQ/Dispatch mutation rolls back everything 128ms
+     ✓ credential scope removed while request waits is rejected on revalidation 129ms
+     ✓ rejects wrong-owner in structurally valid statements, exact guard failure 76ms
+     ✓ rejects wrong-quote in structurally valid statements, exact guard failure 129ms
+     ✓ rejects wrong-amount in structurally valid statements, exact guard failure 68ms
+     ✓ rejects no-dispatch in structurally valid statements, exact guard failure 71ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 30 passed (32)
+   Start at  00:49:10
+   Duration  10.98s (transform 1.16s, setup 0ms, import 890ms, tests 9.87s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-e2e-threads.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/authorized-acceptance.e2e-spec.ts > C2 controlled operational and transactional barriers > completion wins concurrent completion/cancel: no reopened dispatch and delivered state prevails
+PrismaClientValidationError:
+Invalid `p.creditLedgerEntry.count()` invocation in
+C:/Users/zorgl/Documents/mandaria-backend/test/authorized-acceptance.e2e-spec.ts:1002:35
+
+   999 });
+  1000 expect(a.dispatchId).toBe(x.dispatch.id);
+  1001 expect(
+→ 1002   await p.creditLedgerEntry.count({
+           select: {
+             _count: {
+               select: {
+                 _all: true
+               }
+             }
+           },
+           where: {
+             dispatchId: "d20edb49-c9e7-4bbd-ae19-1367f15df135",
+             ~~~~~~~~~~
+             type: "SERVICE_AWARD",
+         ?   AND?: CreditLedgerEntryWhereInput | CreditLedgerEntryWhereInput[],
+         ?   OR?: CreditLedgerEntryWhereInput[],
+         ?   NOT?: CreditLedgerEntryWhereInput | CreditLedgerEntryWhereInput[],
+         ?   id?: UuidFilter | String,
+         ?   sequence?: IntFilter | Int,
+         ?   creditAccountId?: UuidFilter | String,
+         ?   amount?: IntFilter | Int,
+         ?   balanceBefore?: IntFilter | Int,
+         ?   balanceAfter?: IntFilter | Int,
+         ?   rechargeMethod?: EnumCreditRechargeMethodNullableFilter | CreditRechargeMethod | Null,
+         ?   externalReference?: StringNullableFilter | String | Null,
+         ?   reason?: StringNullableFilter | String | Null,
+         ?   referenceType?: StringNullableFilter | String | Null,
+         ?   referenceId?: UuidNullableFilter | String | Null,
+         ?   reversesEntryId?: UuidNullableFilter | String | Null,
+         ?   refundReason?: EnumCreditRefundReasonNullableFilter | CreditRefundReason | Null,
+         ?   createdByUserId?: UuidNullableFilter | String | Null,
+         ?   idempotencyKey?: StringNullableFilter | String | Null,
+         ?   requestHash?: StringNullableFilter | String | Null,
+         ?   createdAt?: DateTimeFilter | DateTime,
+         ?   creditAccount?: CreditAccountScalarRelationFilter | CreditAccountWhereInput,
+         ?   createdBy?: UserNullableScalarRelationFilter | UserWhereInput | Null,
+         ?   reverses?: CreditLedgerEntryNullableScalarRelationFilter | CreditLedgerEntryWhereInput | Null,
+         ?   reversedBy?: CreditLedgerEntryListRelationFilter
+           }
+         })
+
+Unknown argument `dispatchId`. Available options are marked with ?.
+ ❯ Nn node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:45:8
+ ❯ throwValidationException node_modules/@prisma/client/src/runtime/RequestHandler.ts:202:6
+ ❯ ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:11
+ ❯ ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:11
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:833:23
+ ❯ test/authorized-acceptance.e2e-spec.ts:1002:9
+    1000|       expect(a.dispatchId).toBe(x.dispatch.id);
+    1001|       expect(
+    1002|         await p.creditLedgerEntry.count({
+       |         ^
+    1003|           where: { dispatchId: x.dispatch.id, type: 'SERVICE_AWARD' },
+    1004|         }),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/authorized-acceptance.e2e-spec.ts > C2 controlled operational and transactional barriers > cancel wins concurrent completion/cancel: no reopened dispatch and delivered state prevails
+PrismaClientValidationError:
+Invalid `p.creditLedgerEntry.count()` invocation in
+C:/Users/zorgl/Documents/mandaria-backend/test/authorized-acceptance.e2e-spec.ts:1002:35
+
+   999 });
+  1000 expect(a.dispatchId).toBe(x.dispatch.id);
+  1001 expect(
+→ 1002   await p.creditLedgerEntry.count({
+           select: {
+             _count: {
+               select: {
+                 _all: true
+               }
+             }
+           },
+           where: {
+             dispatchId: "ea70a805-807e-410e-9a9a-350bc42cc5ab",
+             ~~~~~~~~~~
+             type: "SERVICE_AWARD",
+         ?   AND?: CreditLedgerEntryWhereInput | CreditLedgerEntryWhereInput[],
+         ?   OR?: CreditLedgerEntryWhereInput[],
+         ?   NOT?: CreditLedgerEntryWhereInput | CreditLedgerEntryWhereInput[],
+         ?   id?: UuidFilter | String,
+         ?   sequence?: IntFilter | Int,
+         ?   creditAccountId?: UuidFilter | String,
+         ?   amount?: IntFilter | Int,
+         ?   balanceBefore?: IntFilter | Int,
+         ?   balanceAfter?: IntFilter | Int,
+         ?   rechargeMethod?: EnumCreditRechargeMethodNullableFilter | CreditRechargeMethod | Null,
+         ?   externalReference?: StringNullableFilter | String | Null,
+         ?   reason?: StringNullableFilter | String | Null,
+         ?   referenceType?: StringNullableFilter | String | Null,
+         ?   referenceId?: UuidNullableFilter | String | Null,
+         ?   reversesEntryId?: UuidNullableFilter | String | Null,
+         ?   refundReason?: EnumCreditRefundReasonNullableFilter | CreditRefundReason | Null,
+         ?   createdByUserId?: UuidNullableFilter | String | Null,
+         ?   idempotencyKey?: StringNullableFilter | String | Null,
+         ?   requestHash?: StringNullableFilter | String | Null,
+         ?   createdAt?: DateTimeFilter | DateTime,
+         ?   creditAccount?: CreditAccountScalarRelationFilter | CreditAccountWhereInput,
+         ?   createdBy?: UserNullableScalarRelationFilter | UserWhereInput | Null,
+         ?   reverses?: CreditLedgerEntryNullableScalarRelationFilter | CreditLedgerEntryWhereInput | Null,
+         ?   reversedBy?: CreditLedgerEntryListRelationFilter
+           }
+         })
+
+Unknown argument `dispatchId`. Available options are marked with ?.
+ ❯ Nn node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:45:8
+ ❯ throwValidationException node_modules/@prisma/client/src/runtime/RequestHandler.ts:202:6
+ ❯ ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:11
+ ❯ ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:11
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:833:23
+ ❯ test/authorized-acceptance.e2e-spec.ts:1002:9
+    1000|       expect(a.dispatchId).toBe(x.dispatch.id);
+    1001|       expect(
+    1002|         await p.creditLedgerEntry.count({
+       |         ^
+    1003|           where: { dispatchId: x.dispatch.id, type: 'SERVICE_AWARD' },
+    1004|         }),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯

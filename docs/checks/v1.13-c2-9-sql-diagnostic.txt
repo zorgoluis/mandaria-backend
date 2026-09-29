@@ -1,0 +1,99 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+stdout | test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects wrong-owner in structurally valid statements, exact guard failure
+C2_SQL_DIAGNOSTIC wrong-owner {"code":"P0001","message":"ERROR: AUTHORIZED_ACCEPT_KEY_INVALID"}
+
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > upgrade B history fixture remains a converted OFFERED resource
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > atomic exact attestation opens one dispatch and snapshots without routing, A5 or debit; private data never exposed
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched amount with no key/economic effects
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched currency with no key/economic effects
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched expiresAt with no key/economic effects
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched quotePublicId with no key/economic effects
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > validates missing authorization
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > validates null authorization
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > validates extra authorization
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > validates future authorization
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > validates before authorization
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > validates no-key authorization
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > requires owner and scope and valid token on new acceptance and replay
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > flag off blocks first acceptance; lost response replay remains available after cancel and never reopens
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > same key concurrent attempts replay one result; incompatible body and namespace conflict
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > different keys concurrent: one winner, other keys rolled back
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > cancel wins MDR lock: acceptance fails, repeated cancellation retains original timestamp
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > both live accept/cancel requests serialize without leaving dispatch operational
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > TTL is rechecked after MDR lock; expired converted request can be cancelled
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > replay after natural expiry returns same accepted result
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > revocation committed before credential lock rejects without effects
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > missing credit policy rolls back evidence, key, quote and dispatch
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > SQL denies direct accept and forged dispatch without authorized evidence with exact error
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 authorized acceptance, real isolated PostgreSQL > SQL rejects orphan C key, and immutable record/key edits/deletes after acceptance
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 controlled operational and transactional barriers > completion wins concurrent completion/cancel: no reopened dispatch and delivered state prevails
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 controlled operational and transactional barriers > cancel wins concurrent completion/cancel: no reopened dispatch and delivered state prevails
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 controlled operational and transactional barriers > controlled failure after evidence/MQ/Dispatch mutation rolls back everything
+ ↓ test/authorized-acceptance.e2e-spec.ts > C2 controlled operational and transactional barriers > credential scope removed while request waits is rejected on revalidation
+ ✓ test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects wrong-owner in structurally valid statements, exact guard failure 202ms
+stdout | test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects wrong-quote in structurally valid statements, exact guard failure
+C2_SQL_DIAGNOSTIC wrong-quote {"code":"P0001","message":"ERROR: AUTHORIZED_ACCEPT_OWNER_INVALID"}
+
+ ✓ test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects wrong-quote in structurally valid statements, exact guard failure 181ms
+stdout | test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects wrong-amount in structurally valid statements, exact guard failure
+C2_SQL_DIAGNOSTIC wrong-amount {"code":"P0001","message":"ERROR: AUTHORIZED_ACCEPT_AUTH_INVALID"}
+
+stdout | test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects no-dispatch in structurally valid statements, exact guard failure
+C2_SQL_DIAGNOSTIC no-dispatch {"code":"P0001","message":"ERROR: AUTHORIZED_ACCEPT_AUTH_INVALID"}
+
+ × test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects wrong-amount in structurally valid statements, exact guard failure 102ms
+   → expected PrismaClientKnownRequestError{ …(7) } to match object { code: 'P2010', meta: { …(2) } }
+(2 matching properties omitted from actual)
+ × test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects no-dispatch in structurally valid statements, exact guard failure 87ms
+   → expected [Function] to throw error matching /AUTHORIZED_ACCEPT_ATOMIC_RESULT/ but got '\nInvalid `prisma.$executeRaw()` invo…'
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed | 28 skipped (32)
+   Start at  00:45:22
+   Duration  5.75s (transform 2.62s, setup 0ms, import 1.01s, tests 4.51s, environment 0ms)
+
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects wrong-amount in structurally valid statements, exact guard failure
+AssertionError: expected PrismaClientKnownRequestError{ …(7) } to match object { code: 'P2010', meta: { …(2) } }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+- {
++ PrismaClientKnownRequestError {
+    "code": "P2010",
+    "meta": {
+      "code": "P0001",
+-     "message": "ERROR: CUSTOMER_AUTHORIZATION_MISMATCH",
++     "message": "ERROR: AUTHORIZED_ACCEPT_AUTH_INVALID",
+    },
+  }
+
+ ❯ test/authorized-acceptance.e2e-spec.ts:1087:34
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/authorized-acceptance.e2e-spec.ts > C2 SQL structural forgeries > rejects no-dispatch in structurally valid statements, exact guard failure
+AssertionError: expected [Function] to throw error matching /AUTHORIZED_ACCEPT_ATOMIC_RESULT/ but got '\nInvalid `prisma.$executeRaw()` invo…'
+
+- Expected:
+/AUTHORIZED_ACCEPT_ATOMIC_RESULT/
+
++ Received:
+"
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `ERROR: AUTHORIZED_ACCEPT_AUTH_INVALID`"
+
+ ❯ test/authorized-acceptance.e2e-spec.ts:1086:54
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯

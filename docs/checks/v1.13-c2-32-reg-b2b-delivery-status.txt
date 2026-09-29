@@ -1,0 +1,18 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/b2b-delivery-status.e2e-spec.ts (21 tests) 9136ms
+     ✓ reports every public state of a provider service, ending in DELIVERED  390ms
+     ✓ repeated reads change nothing: no economy, no dispatch, no assignment, no routing  364ms
+     ✓ many simultaneous reads are safe and agree with each other  381ms
+     ✓ a read racing the delivery is coherent: never DELIVERED without its timestamp  304ms
+     ✓ claim, assignment, reassignment, completion and later profile changes preserve the right identity  418ms
+     ✓ release removes identity; reads racing release never publish the old actor as OPEN  301ms
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  00:53:42
+   Duration  10.27s (transform 1.24s, setup 0ms, import 886ms, tests 9.14s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-b2b-delivery-status.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

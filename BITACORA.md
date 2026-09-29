@@ -4,6 +4,14 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación C2/C3 (2026-09-29):** commit y push autorizados a la rama actual para publicar implementación C2 y verificación C3. Resultado técnico: LISTO PARA CHECK C4; sin activación ni inicio automático de C4/D.
+
+- **V1.13-C3 (2026-09-29): LISTO PARA CHECK C4.** Verificación nueva: 62 E2E adversariales con dos Nest/pools y A5 durable real, 359 E2E de regresión en 14 archivos, total 421/421 E2E únicos y 393/393 unitarias. Migración limpia/upgrade B no vacío/status/reaplicación/drift, tipos/build/Prisma/linters/docs PASS; 336 archivos existentes y .env idénticos. Escaneo de 16 bases aisladas sin violaciones; historia preservada. Dos abortos nativos excluidos; único ensayo forks por archivo completó Quotes/Assignments, causa raíz pendiente. Binario pre-C lee/cancela historia C pero rechaza accept/replay: no despliegue mixto acreditado. Sin cambios de producto, commit/push/activación; C4/D no iniciados. Informe: docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md.
+
+- **V1.13-C2 (2026-09-29): IMPLEMENTADO, LISTO PARA VERIFICACIÓN C3.** Accept convertido con atestación exacta, evidencia inmutable/constraints SQL, IdempotencyService y Dispatch/snapshots atómicos; contexto interno B2B y flag false por defecto. Conserva TTL, cancel/completion, CASH/COURIER_ADVANCE y refunds existentes; no D ni activación. Nuevas: 390 unitarias/33 archivos y 372 E2E únicos/15 archivos (35 C2 + 337 regresión), todos completos exit 0. Prisma, migración limpia/upgrade con historia B intacta, ambos tsconfig, build, linters y docs pasan; scan final cero violaciones. Intentos abortados/fallidos excluidos, causa nativa pendiente; Independent necesitó base propia por paginación global. Historia conservada y fixtures C2 deshabilitados/cancelados sólo en bases nuevas locales. Informe: docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md; índice: docs/checks/v1.13-c2-evidence.json.
+
+- **Revisión de coordinación C1 (2026-09-29):** diseño leído y alineado con las decisiones aprobadas; siguiente paso propuesto: prompt de implementación C2. Revisión documental, sin nueva comprobación de carreras/SQL ni pruebas de producto. No acredita C implementada ni autoriza activación.
+
 - **Publicación del cierre C1 (2026-09-29):** commit y push autorizados a la rama actual. Se publica el diseño listo para revisión con las cuatro decisiones aprobadas; C2 e implementación/activación permanecen pendientes.
 
 - **Cierre documental V1.13-C1 (2026-09-29): DISEÑO LISTO PARA REVISIÓN.** Decisiones aprobadas: atestación de Coita sobre MQ exacta; cancelar y confirmar antes de nueva secuencia/consentimiento; sustitución enlazada fuera de C; reiniciar envío no exige otro pago de comida ni implica reembolso. Inspección estática confirma cancelación admisible con MQ convertida vencida, pero cancel200/MDR CANCELLED puede coexistir con DELIVERED: se requiere también GET status CANCELLED/EXPIRED y deliveredAt null. Coita debe serializar generaciones por pedido; externalReference no es único. Matriz de fallos, invariantes y etapas C2/C3/C4 actualizadas. Sólo documentación, referencias/JSON/diff comprobados; no suites ni DB. C2 no iniciado; implementación/activación y validación externa pendientes. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
@@ -1353,3 +1361,42 @@ Resultado: DISEÑO LISTO PARA REVISIÓN; no quedan decisiones de negocio bloquea
 ## 2026-09-29 — Publicación del cierre documental C1
 
 Solicitud: commitear y subir a la rama actual. Cambios: diseño C1 y bitácora, sin producto ni pruebas. Verificación de publicación: revisión de diff, estado Git y git diff --check; no suites reejecutadas. Resultado documental: DISEÑO LISTO PARA REVISIÓN, con decisiones de negocio resueltas y dependencias externas explícitas. nul preexistente excluido. Sin implementación de C2, despliegue ni activación.
+
+
+### 2026-09-29 — Revisión de coordinación C1 y preparación de C2
+
+- Solicitud/contexto: revisar el cierre documental C1 para continuar la secuencia de prompts de Mandaria Backend.
+- Trabajo: lectura de BITACORA, README, VERIFICATION y diseño C1; preparación del prompt C2 reutilizando accept, Dispatch e idempotencia y preservando la barrera de recuperación tras cancelación.
+- Verificación: revisión documental únicamente; sin suites, servicios, DB ni migraciones. Las propiedades de código citadas por C1 no se volvieron a verificar independientemente en esta tarea.
+- Resultado: diseño alineado con decisiones aprobadas; C2 queda para ejecución en el otro chat, sin implementación aquí.
+- Pendientes: implementación C2, verificación C3 y CHECK C4; D y pendientes operativos A separados. Sin cambios de producto, configuración, versión, commit, push, despliegue ni activación.
+
+## 2026-09-29 — Implementación y verificación focalizada C2
+
+Solicitud: implementar C2 conforme a C1 aprobado, sin activar ni iniciar C3.
+
+**V1.13-C2 (2026-09-29): IMPLEMENTADO, LISTO PARA VERIFICACIÓN C3.** Accept convertido con atestación exacta, evidencia inmutable/constraints SQL, IdempotencyService y Dispatch/snapshots atómicos; contexto interno B2B y flag false por defecto. Conserva TTL, cancel/completion, CASH/COURIER_ADVANCE y refunds existentes; no D ni activación. Nuevas: 390 unitarias/33 archivos y 372 E2E únicos/15 archivos (35 C2 + 337 regresión), todos completos exit 0. Prisma, migración limpia/upgrade con historia B intacta, ambos tsconfig, build, linters y docs pasan; scan final cero violaciones. Intentos abortados/fallidos excluidos, causa nativa pendiente; Independent necesitó base propia por paginación global. Historia conservada y fixtures C2 deshabilitados/cancelados sólo en bases nuevas locales. Informe: docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md; índice: docs/checks/v1.13-c2-evidence.json.
+
+Cambios: modelo AuthorizedQuoteAcceptance y migración 20260929000100_authorized_quote_acceptance; DTO/servicio/controller accept, opener, contexto auth y proyección me, flag/config test, contrato cancelación, pruebas C2, adaptaciones contractuales B2/B4 y doble HTTP, runners/evidencia/OpenAPI/README/VERIFICATION. No cambio de decisiones de negocio. Principal conserva comida pagada separada de envío/cobro/adelanto/créditos. No sustitución enlazada ni UNIQUE empresarial.
+
+Verificaciones actuales detalladas por intento en el informe: cancel/accept/completion deterministas, revocación que espera aceptación, TTL tras lock y en constraint final, rollback, replay, SQL exacto; regresión B2/B3/B4 y lifecycle/finanzas. Calidad final y revisión de diff/referencias/secretos. PASS históricos no contados. Excluidos aborto C2 forks con JSON engañoso, abortos nativos de regresión y fallos de fixtures corregidos; no configuración compartida relajada.
+
+Resultado: listo para C3, no cierre de C. Pendientes: C3 adversarial/compatibilidad, CHECK C4 completo, causa de abortos, deuda de aislamiento Independent, coordinación Coita/Web, instrucciones D y pendientes operativos A. Verificador A3 sin tocar. Entrada de coordinación previa y nul preservados; sin cambios .env/versión/base principal, commit/push/despliegue/activación.
+
+
+## 2026-09-29 — V1.13-C3: verificación adversarial y compatibilidad
+
+Solicitud: buscar contraejemplos de C1/C2 sin modificar producto, usando bases locales aisladas.
+
+Cambios: dos suites nuevas, runners de evidencia/migraciones/compatibilidad/regresión/diagnóstico/escaneo e informe C3; continuidad actualizada. C2 preexistente, nul y entradas anteriores conservados.
+
+Verificaciones ejecutadas ahora: **V1.13-C3 (2026-09-29): LISTO PARA CHECK C4.** Verificación nueva: 62 E2E adversariales con dos Nest/pools y A5 durable real, 359 E2E de regresión en 14 archivos, total 421/421 E2E únicos y 393/393 unitarias. Migración limpia/upgrade B no vacío/status/reaplicación/drift, tipos/build/Prisma/linters/docs PASS; 336 archivos existentes y .env idénticos. Escaneo de 16 bases aisladas sin violaciones; historia preservada. Dos abortos nativos excluidos; único ensayo forks por archivo completó Quotes/Assignments, causa raíz pendiente. Binario pre-C lee/cancela historia C pero rechaza accept/replay: no despliegue mixto acreditado. Sin cambios de producto, commit/push/activación; C4/D no iniciados. Informe: docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md.
+
+Los 390 unitarios/372 E2E de C2 son históricos y no se suman. Fallos de fixtures/runners C3 explicados y conservados; ningún caso omitido ni regla debilitada. Los dos intentos nativos sin reporte no se acreditan. Próximo paso explícito: CHECK C4, sólo mediante nueva solicitud; sin activación automática.
+
+
+## 2026-09-29 — Publicación de V1.13-C2/C3
+
+Solicitud: commitear y subir a la rama actual. Se incluyen implementación, migración incremental, pruebas, documentación y evidencia C2/C3 pendientes. Se conserva nul preexistente fuera del commit. Verificaciones de esta tarea: revisión del alcance Git, diff --check y búsqueda de secretos conocidos/JWT antes de publicar. Las 393 unitarias y 421 E2E son resultados de C3, no pruebas reejecutadas durante este commit. Se mantiene LISTO PARA CHECK C4; causa nativa del runner y validación integral/operativa pendientes. Publicación solicitada sin despliegue ni activación.
+
+Preparación del commit: el chequeo staged incluyó por primera vez los logs nuevos y detectó whitespace final. Se normalizaron espacios y líneas vacías finales de logs C2/C3, sin alterar mensajes, códigos o resultados; git diff --cached --check se vuelve a comprobar antes del commit.

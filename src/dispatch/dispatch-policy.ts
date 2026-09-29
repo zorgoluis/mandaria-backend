@@ -144,7 +144,23 @@ export async function openDispatch(
   ttlMinutes: number,
   now: Date,
 ) {
-  await rejectConvertedRequest(tx, quote.deliveryRequestId);
+  const conversion = await tx.prequoteConversion.findUnique({
+    where: { deliveryRequestId: quote.deliveryRequestId },
+    select: { id: true },
+  });
+  let authorizedDispatchId: string | undefined;
+  if (conversion) {
+    const evidence = await tx.authorizedQuoteAcceptance.findUnique({
+      where: { conversionId: conversion.id },
+    });
+    if (
+      !evidence ||
+      evidence.deliveryQuoteId !== quote.id ||
+      evidence.deliveryRequestId !== quote.deliveryRequestId
+    )
+      await rejectConvertedRequest(tx, quote.deliveryRequestId);
+    authorizedDispatchId = evidence!.dispatchId;
+  }
   const providerIds = await eligibleProviderIds(
     tx,
     quote.serviceZoneId,
@@ -152,6 +168,7 @@ export async function openDispatch(
   );
   const dispatch = await tx.dispatch.create({
     data: {
+      id: authorizedDispatchId,
       deliveryRequestId: quote.deliveryRequestId,
       deliveryQuoteId: quote.id,
       openedAt: now,

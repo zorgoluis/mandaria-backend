@@ -506,8 +506,8 @@ describe('CHECK B4 §2 recorrido integral con componentes reales', () => {
       .auth(tokens[0], bearer)
       .send({});
     expect([accept.status, accept.body.code]).toEqual([
-      409,
-      'AUTHORIZED_ACCEPT_REQUIRED',
+      400,
+      'VALIDATION_ERROR',
     ]);
     const requote = await api()
       .post(
@@ -575,7 +575,7 @@ describe('CHECK B4 §2 recorrido integral con componentes reales', () => {
       'emitir crea exactamente un permiso FINISHED y una llamada de routing',
       'emitir crea su ejecución durable A3; convertir no crea permisos, ni ejecución, ni llamada de routing',
       'snapshot idéntico a la MPQ; fechas de MDR/MQ son convertedAt',
-      'accept 409 AUTHORIZED_ACCEPT_REQUIRED y requote 409 PREQUOTE_REQUOTE_NOT_ALLOWED',
+      'accept sin atestación 400 VALIDATION_ERROR y requote 409 PREQUOTE_REQUOTE_NOT_ALLOWED',
       'cancelar no libera la MPQ; replay devuelve estados actuales y otra key 409',
       `Dispatch/asignación/ledger/Outbox/snapshots sin cambio: ${JSON.stringify(before)}`,
     );

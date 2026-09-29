@@ -597,8 +597,8 @@ describe('B2 atomic conversion on real PostgreSQL', () => {
     const accept = await api()
       .post(`/api/v1/delivery-quotes/${r.body.quote.publicId}/accept`)
       .auth(tokens[0], { type: 'bearer' });
-    expect(accept.status).toBe(409);
-    expect(accept.body.code).toBe('AUTHORIZED_ACCEPT_REQUIRED');
+    expect(accept.status).toBe(400);
+    expect(accept.body.code).toBe('VALIDATION_ERROR');
     const quote = await api()
       .post(
         `/api/v1/delivery-requests/${r.body.deliveryRequestPublicId}/quotes`,

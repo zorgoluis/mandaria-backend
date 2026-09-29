@@ -1,0 +1,17 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/authorized-acceptance.e2e-spec.ts (35 tests) 12528ms
+     ✓ TTL is rechecked after MDR lock; expired converted request can be cancelled  1922ms
+     ✓ replay after natural expiry returns same accepted result  1885ms
+     ✓ completion wins concurrent completion/cancel: no reopened dispatch and delivered state prevails  386ms
+     ✓ cancel wins concurrent completion/cancel: no reopened dispatch and delivered state prevails  351ms
+     ✓ expiry during snapshot persistence rolls back at deferred SQL validation with business code  1923ms
+
+ Test Files  1 passed (1)
+      Tests  35 passed (35)
+   Start at  01:00:48
+   Duration  13.68s (transform 1.20s, setup 0ms, import 921ms, tests 12.53s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-locks-complete.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

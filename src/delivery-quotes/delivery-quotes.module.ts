@@ -1,3 +1,5 @@
+import { AuthorizedAcceptanceService } from './authorized-acceptance.service.js';
+import { IdempotencyService } from '../idempotency/idempotency.service.js';
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module.js';
 import { IntegrationsModule } from '../integrations/integrations.module.js';
@@ -18,6 +20,10 @@ import { DeliveryQuotesService } from './delivery-quotes.service.js';
     RatePlansModule,
   ],
   controllers: [DeliveryQuotesController, AdminDeliveryQuotesController],
-  providers: [DeliveryQuotesService],
+  providers: [
+    DeliveryQuotesService,
+    AuthorizedAcceptanceService,
+    IdempotencyService,
+  ],
 })
 export class DeliveryQuotesModule {}

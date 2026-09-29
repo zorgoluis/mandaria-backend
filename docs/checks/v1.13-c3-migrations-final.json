@@ -1,0 +1,290 @@
+[
+  {
+    "database": "mandaria_c3_clean_e9c4e4219e_test",
+    "version": "PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35228, 64-bit",
+    "migrations": [
+      {
+        "migration_name": "20260915000100_core",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000200_b2b_credentials",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000300_delivery_providers",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000400_drivers_vehicles",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000500_delivery_requests",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000600_routing_pricing_quotes",
+        "applied": true
+      },
+      {
+        "migration_name": "20260916000700_user_invitations",
+        "applied": true
+      },
+      {
+        "migration_name": "20260917000800_dispatch_engine",
+        "applied": true
+      },
+      {
+        "migration_name": "20260917000900_delivery_assignments",
+        "applied": true
+      },
+      {
+        "migration_name": "20260918001000_independent_drivers",
+        "applied": true
+      },
+      {
+        "migration_name": "20260921001100_credit_accounts_ledger",
+        "applied": true
+      },
+      {
+        "migration_name": "20260921001200_credit_ledger_purge_test_only",
+        "applied": true
+      },
+      {
+        "migration_name": "20260922001300_credit_policies",
+        "applied": true
+      },
+      {
+        "migration_name": "20260922001400_dispatch_credit_snapshots",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923000100_dispatch_credit_consumption",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923000200_award_integrity_boundary",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923000300_service_refunds",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923001500_delivery_completion_states",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923001600_delivery_completion_rules",
+        "applied": true
+      },
+      {
+        "migration_name": "20260924000100_b2b_event_outbox",
+        "applied": true
+      },
+      {
+        "migration_name": "20260925000100_b2b_webhook_delivery",
+        "applied": true
+      },
+      {
+        "migration_name": "20260926000100_reliable_webhook_delivery",
+        "applied": true
+      },
+      {
+        "migration_name": "20260927000100_webhook_operations",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000100_b2b_public_execution_identity",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000100_prequote_persistence",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000200_prequote_execution_hardening",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000300_prequote_consumption",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000400_prequote_conversion",
+        "applied": true
+      },
+      {
+        "migration_name": "20260929000100_authorized_quote_acceptance",
+        "applied": true
+      }
+    ],
+    "steps": [
+      {
+        "command": "node node_modules/prisma/build/index.js migrate status --config prisma.test.config.ts",
+        "exit": 0,
+        "signal": null,
+        "log": "docs/checks/v1.13-c3-mandaria_c3_clean_e9c4e4219e_test-status.txt"
+      },
+      {
+        "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+        "exit": 0,
+        "signal": null,
+        "log": "docs/checks/v1.13-c3-mandaria_c3_clean_e9c4e4219e_test-deploy.txt"
+      },
+      {
+        "command": "node node_modules/prisma/build/index.js migrate diff --from-url [DATABASE_URL] --to-schema-datamodel prisma/schema.prisma --exit-code",
+        "exit": 0,
+        "signal": null,
+        "log": "docs/checks/v1.13-c3-mandaria_c3_clean_e9c4e4219e_test-diff.txt"
+      }
+    ],
+    "triggerCount": 70,
+    "catalogHash": "a2f262685806cdad02c315c07eca1484308e129eeacfc1e1b5a27abe37f841a5"
+  },
+  {
+    "database": "mandaria_c3_upgrade_e9c4e4219e_test",
+    "version": "PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35228, 64-bit",
+    "migrations": [
+      {
+        "migration_name": "20260915000100_core",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000200_b2b_credentials",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000300_delivery_providers",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000400_drivers_vehicles",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000500_delivery_requests",
+        "applied": true
+      },
+      {
+        "migration_name": "20260915000600_routing_pricing_quotes",
+        "applied": true
+      },
+      {
+        "migration_name": "20260916000700_user_invitations",
+        "applied": true
+      },
+      {
+        "migration_name": "20260917000800_dispatch_engine",
+        "applied": true
+      },
+      {
+        "migration_name": "20260917000900_delivery_assignments",
+        "applied": true
+      },
+      {
+        "migration_name": "20260918001000_independent_drivers",
+        "applied": true
+      },
+      {
+        "migration_name": "20260921001100_credit_accounts_ledger",
+        "applied": true
+      },
+      {
+        "migration_name": "20260921001200_credit_ledger_purge_test_only",
+        "applied": true
+      },
+      {
+        "migration_name": "20260922001300_credit_policies",
+        "applied": true
+      },
+      {
+        "migration_name": "20260922001400_dispatch_credit_snapshots",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923000100_dispatch_credit_consumption",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923000200_award_integrity_boundary",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923000300_service_refunds",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923001500_delivery_completion_states",
+        "applied": true
+      },
+      {
+        "migration_name": "20260923001600_delivery_completion_rules",
+        "applied": true
+      },
+      {
+        "migration_name": "20260924000100_b2b_event_outbox",
+        "applied": true
+      },
+      {
+        "migration_name": "20260925000100_b2b_webhook_delivery",
+        "applied": true
+      },
+      {
+        "migration_name": "20260926000100_reliable_webhook_delivery",
+        "applied": true
+      },
+      {
+        "migration_name": "20260927000100_webhook_operations",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000100_b2b_public_execution_identity",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000100_prequote_persistence",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000200_prequote_execution_hardening",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000300_prequote_consumption",
+        "applied": true
+      },
+      {
+        "migration_name": "20260928000400_prequote_conversion",
+        "applied": true
+      },
+      {
+        "migration_name": "20260929000100_authorized_quote_acceptance",
+        "applied": true
+      }
+    ],
+    "steps": [
+      {
+        "command": "node node_modules/prisma/build/index.js migrate status --config prisma.test.config.ts",
+        "exit": 0,
+        "signal": null,
+        "log": "docs/checks/v1.13-c3-mandaria_c3_upgrade_e9c4e4219e_test-status.txt"
+      },
+      {
+        "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+        "exit": 0,
+        "signal": null,
+        "log": "docs/checks/v1.13-c3-mandaria_c3_upgrade_e9c4e4219e_test-deploy.txt"
+      },
+      {
+        "command": "node node_modules/prisma/build/index.js migrate diff --from-url [DATABASE_URL] --to-schema-datamodel prisma/schema.prisma --exit-code",
+        "exit": 0,
+        "signal": null,
+        "log": "docs/checks/v1.13-c3-mandaria_c3_upgrade_e9c4e4219e_test-diff.txt"
+      }
+    ],
+    "triggerCount": 70,
+    "catalogHash": "a2f262685806cdad02c315c07eca1484308e129eeacfc1e1b5a27abe37f841a5"
+  }
+]

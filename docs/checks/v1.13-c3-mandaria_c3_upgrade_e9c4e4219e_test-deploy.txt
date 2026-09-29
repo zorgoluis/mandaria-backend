@@ -1,0 +1,10 @@
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "mandaria_c3_upgrade_e9c4e4219e_test", schema "public" at "localhost:5432"
+
+29 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+Loaded Prisma config from prisma.test.config.ts.
+
+Prisma config detected, skipping environment variable loading.

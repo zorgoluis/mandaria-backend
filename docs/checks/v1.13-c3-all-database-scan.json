@@ -1,0 +1,210 @@
+[
+  {
+    "database": "mandaria_c3_clean_e9c4e4219e_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_upgrade_e9c4e4219e_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_c6ecd5c037a4_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_706c8ff829fa_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_b946b0fb7d76_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_49493b31e6d7_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_3ee34646e0db_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_683b29c11fa6_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_30453251be04_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_da3853363c5d_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_e4e272b0448f_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_2b5284ad8a63_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_c8bbfb1f51cc_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_09461ceb54bf_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_b12a5fe7b2ed_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  },
+  {
+    "database": "mandaria_c3_reg_0b1022da68ef_test",
+    "scan": {
+      "invalidEvidence": 0,
+      "acceptedWithoutEvidence": 0,
+      "dispatchWithoutEvidence": 0,
+      "orphanKeys": 0,
+      "orphanCandidates": 0,
+      "incompleteSnapshots": 0,
+      "negativeBalances": 0,
+      "disabledOrTemporaryTriggers": 0
+    }
+  }
+]

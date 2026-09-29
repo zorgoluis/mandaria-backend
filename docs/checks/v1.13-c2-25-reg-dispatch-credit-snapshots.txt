@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/dispatch-credit-snapshots.e2e-spec.ts (14 tests) 5212ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  00:52:42
+   Duration  6.11s (transform 1.07s, setup 0ms, import 716ms, tests 5.21s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-dispatch-credit-snapshots.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

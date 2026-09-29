@@ -1,3 +1,19 @@
+# V1.13-C3 — Verificación local (2026-09-29)
+
+**V1.13-C3 (2026-09-29): LISTO PARA CHECK C4.** Verificación nueva: 62 E2E adversariales con dos Nest/pools y A5 durable real, 359 E2E de regresión en 14 archivos, total 421/421 E2E únicos y 393/393 unitarias. Migración limpia/upgrade B no vacío/status/reaplicación/drift, tipos/build/Prisma/linters/docs PASS; 336 archivos existentes y .env idénticos. Escaneo de 16 bases aisladas sin violaciones; historia preservada. Dos abortos nativos excluidos; único ensayo forks por archivo completó Quotes/Assignments, causa raíz pendiente. Binario pre-C lee/cancela historia C pero rechaza accept/replay: no despliegue mixto acreditado. Sin cambios de producto, commit/push/activación; C4/D no iniciados. Informe: docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md.
+
+Evidencia nueva por intento: [C3](docs/checks/v1.13-c3-evidence.json); [informe](docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md). Sólo archivos completos exit 0/reporte exitoso; 15 E2E y 34 unitarios. No es toda la suite E2E. Se conservan abajo los dictámenes históricos sin presentarlos como ejecuciones nuevas.
+
+---
+
+# Verificación actual — V1.13-C2
+
+**V1.13-C2 (2026-09-29): IMPLEMENTADO, LISTO PARA VERIFICACIÓN C3.** Accept convertido con atestación exacta, evidencia inmutable/constraints SQL, IdempotencyService y Dispatch/snapshots atómicos; contexto interno B2B y flag false por defecto. Conserva TTL, cancel/completion, CASH/COURIER_ADVANCE y refunds existentes; no D ni activación. Nuevas: 390 unitarias/33 archivos y 372 E2E únicos/15 archivos (35 C2 + 337 regresión), todos completos exit 0. Prisma, migración limpia/upgrade con historia B intacta, ambos tsconfig, build, linters y docs pasan; scan final cero violaciones. Intentos abortados/fallidos excluidos, causa nativa pendiente; Independent necesitó base propia por paginación global. Historia conservada y fixtures C2 deshabilitados/cancelados sólo en bases nuevas locales. Informe: docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md; índice: docs/checks/v1.13-c2-evidence.json.
+
+Evidencia nueva: [informe C2](docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md), [comandos/exits/reportes](docs/checks/v1.13-c2-evidence.json), [upgrade B](docs/checks/v1.13-c2-upgrade.json), [escaneo/cleanup](docs/checks/v1.13-c2-scan.json). Cobertura E2E seleccionada, no suite completa ni CHECK C4. C3 no iniciado y activación no autorizada. Se conservan a continuación los resultados históricos; no se cuentan como pruebas C2.
+
+---
+
 # Verificación actual — Subsanación final B4
 
 **Subsanación final B4 (2026-09-29): PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE.** Nuevas: 380 unitarias y 248 E2E en seis archivos completos; 406 casos E2E históricos en 24 archivos con hashes/procedencia verificados. Total consolidado 654/654, 30/30 archivos. Webhooks pasó completo dos veces sin cambios (bases nueva e histórica); causa raíz de abortos anteriores no confirmada. Un aborto nuevo de B3 forks excluido; único ensayo diagnóstico threads 58/58. Nueve errores de tipos corregidos en seis pruebas; ambos tsconfig, Oxlint y ESLint pasan. Producto/.env/HEAD/versión intactos; escaneo final sin violaciones. No certifica estabilidad absoluta del runner ni activación. C/D y pendientes A siguen abiertos. Informe: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia: docs/checks/v1.13-b4-final-evidence.json.

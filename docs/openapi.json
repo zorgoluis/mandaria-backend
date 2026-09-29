@@ -18612,7 +18612,7 @@
     },
     "/api/v1/delivery-requests/{publicId}/cancel": {
       "post": {
-        "description": "Requiere deliveries:cancel. CREATED → CANCELLED con reason y cancelledAt. Si ya estaba CANCELLED responde 200 con el estado actual y conserva la razón y fecha originales. No existe edición ni borrado: para corregir datos, cancelar y crear otra solicitud.",
+        "description": "Requiere deliveries:cancel. CREATED → CANCELLED con reason y cancelledAt. Si ya estaba CANCELLED responde 200 con el estado actual y conserva la razón y fecha originales. Admite origen convertido con MQ vencida. Un 200/MDR CANCELLED no prueba ausencia de entrega: GET /delivery-requests/:publicId/status puede seguir DELIVERED. Antes de reiniciar: confirmar MDR CANCELLED y cancelledAt, luego status CANCELLED/EXPIRED con deliveredAt null; si incierto o DELIVERED, no reemplazar. Reintentar cancel sobre la misma MDR conserva fecha/razón; no libera MPQ ni reabre Dispatch. Nueva secuencia exige nueva MPQ, conversión y consentimiento sobre MQ exacta, sin otra transferencia de comida ni reembolso implícito. Coita serializa por pedido; externalReference no es único.",
         "operationId": "DeliveryRequestsController_cancel",
         "parameters": [
           {
@@ -28186,7 +28186,7 @@
     },
     "/api/v1/delivery-quotes/{publicId}/accept": {
       "post": {
-        "description": "Requiere quotes:accept. Quotes convertidas desde MPQ rechazan esta ruta hasta aceptación autorizada C. OFFERED vigente → ACCEPTED y abre Dispatch con snapshots de créditos en una sola transacción. LOCAL_DELIVERY requiere políticas ACTIVE de PROVIDER e INDEPENDENT_DRIVER, incluso sin candidatos. No consulta saldos ni debita créditos. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver. En errores conservar statusCode, code y requestId (también X-Request-Id); no sustituir code por REMOTE_ERROR.",
+        "description": "Requiere quotes:accept. Convertidas requieren Idempotency-Key y atestación del integrador sobre MQ/importe/moneda/expiry exactos, con consentimiento posterior a conversión. Flag false por defecto. Mandaria no verifica directamente consentimiento humano. Evidencia inmutable, ACCEPTED y Dispatch atómicos. Replay con autenticación vigente funciona incluso vencida/cancelada o flag off; Idempotent-Replayed y Cache-Control no-store. No significa comida/envío cobrado ni entrega física. Legacy conserva body vacío y replay actual. OFFERED vigente → ACCEPTED y abre Dispatch con snapshots de créditos en una sola transacción. LOCAL_DELIVERY requiere políticas ACTIVE de PROVIDER e INDEPENDENT_DRIVER, incluso sin candidatos. No consulta saldos ni debita créditos. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver. En errores conservar statusCode, code y requestId (también X-Request-Id); no sustituir code por REMOTE_ERROR.",
         "operationId": "DeliveryQuotesController_accept",
         "parameters": [
           {
@@ -28198,11 +28198,45 @@
               "example": "MQ-000001",
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Obligatoria para MQ convertida: ASCII visible 8–255; repetir misma key y atestación ante respuesta perdida. Legacy no la requiere.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "description": "Body opcional sólo para legacy. En MQ convertida customerAuthorization y Idempotency-Key son obligatorios; no hay consentimiento inferido.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptDeliveryQuoteDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Aceptación técnica, no cobro ni entrega. Convertida: creación/replay 200; Idempotent-Replayed false/true. Replay no reabre Dispatch.",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "Sólo rama convertida; true al recuperar la misma intención.",
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "example": "no-store"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -28212,7 +28246,7 @@
             }
           },
           "400": {
-            "description": "publicId o parámetros inválidos.",
+            "description": "VALIDATION_ERROR: falta key/atestación o datos inválidos; AUTHORIZED_ACCEPT_ORIGIN_REQUIRED: atestación enviada a legacy.",
             "content": {
               "application/json": {
                 "schema": {
@@ -28426,7 +28460,7 @@
             }
           },
           "409": {
-            "description": "AUTHORIZED_ACCEPT_REQUIRED: origen MPQ bloqueado durante B, incluso ante retry. QUOTE_EXPIRED (expiresAt alcanzado; solicitar nueva Quote) | QUOTE_NOT_ACCEPTABLE (cancelada o solicitud cancelada) | CREDIT_POLICY_UNAVAILABLE (falta política ACTIVE o configuración válida para uno de los actores requeridos; accept y apertura de Dispatch se revierten). Leer code del JSON, no inferir la causa del HTTP 409.",
+            "description": "HTTP_409 (key incompatible) | CUSTOMER_AUTHORIZATION_MISMATCH | QUOTE_ALREADY_AUTHORIZED | AUTHORIZED_ACCEPT_SERVICE_UNAVAILABLE | QUOTE_EXPIRED (convertida: cancelar y confirmar estado definitivo antes de nueva secuencia/consentimiento) | QUOTE_NOT_ACCEPTABLE (cancelada o solicitud cancelada) | CREDIT_POLICY_UNAVAILABLE (falta política ACTIVE o configuración válida para uno de los actores requeridos; accept y apertura de Dispatch se revierten). Leer code del JSON, no inferir la causa del HTTP 409.",
             "content": {
               "application/json": {
                 "schema": {
@@ -28607,6 +28641,59 @@
                     "code": {
                       "type": "string",
                       "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AUTHORIZED_ACCEPT_DISABLED | AUTHORIZED_ACCEPT_UNAVAILABLE. Reintentar misma key/intención, sin reapertura.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
                     },
                     "message": {
                       "type": "string",
@@ -59800,6 +59887,77 @@
           "totalPages",
           "items"
         ]
+      },
+      "CustomerAuthorizationDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AUTHORIZED_BY_CUSTOMER"
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Referencia opaca de evidencia conservada por el integrador; sin PII ni comprobantes. Mandaria no verifica directamente el consentimiento humano."
+          },
+          "authorizedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Posterior a la creación de MQ; zona explícita. No amplía TTL."
+          },
+          "quotePublicId": {
+            "type": "string",
+            "example": "MQ-000101"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00",
+            "description": "Eco exacto del snapshot; nunca determina el precio."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "MXN"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Vencimiento exacto de MQ, sin renovación."
+          }
+        },
+        "required": [
+          "version",
+          "status",
+          "reference",
+          "authorizedAt",
+          "quotePublicId",
+          "amount",
+          "currency",
+          "expiresAt"
+        ]
+      },
+      "AcceptDeliveryQuoteDto": {
+        "type": "object",
+        "properties": {
+          "customerAuthorization": {
+            "description": "Obligatorio sólo para MQ convertidas. Legacy admite ausencia/body vacío; atestación en legacy se rechaza.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerAuthorizationDto"
+              }
+            ]
+          }
+        }
       },
       "AdminQuoteRequestResponse": {
         "type": "object",

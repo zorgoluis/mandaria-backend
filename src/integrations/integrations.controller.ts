@@ -56,7 +56,9 @@ export class IntegrationsController {
     description: 'Invalid, expired, revoked or suspended integration identity',
   })
   me(@Req() req: IntegrationRequest) {
-    return req.integration;
+    const { id, name, code, status, createdAt, updatedAt, scopes } =
+      req.integration;
+    return { id, name, code, status, createdAt, updatedAt, scopes };
   }
   @Get('scope-check')
   @UseGuards(IntegrationGuard, IntegrationScopesGuard)

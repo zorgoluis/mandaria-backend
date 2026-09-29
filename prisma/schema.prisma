@@ -77,6 +77,7 @@ model IntegrationClient {
   webhookDeliveries B2bWebhookDelivery[]
 }
 model IntegrationCredential {
+  authorizedAcceptances AuthorizedQuoteAcceptance[]
   id String @id @default(uuid()) @db.Uuid
   clientId String @db.Uuid
   client IntegrationClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -298,6 +299,7 @@ enum GoodsPaymentMode {
 /// Demand received from an IntegrationClient: what must be transported. Immutable except
 /// for cancellation. No provider/driver/vehicle relation until Dispatch.
 model DeliveryRequest {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
   prequoteConversion PrequoteConversion?
   id String @id @default(uuid()) @db.Uuid
   /// MDR-000001; generated from sequence "DeliveryRequest_publicId_seq" inside the creation transaction.
@@ -374,6 +376,7 @@ model DeliveryFinancialContext {
 }
 /// Reusable B2B idempotency ledger. Stores only a payload hash, never the payload.
 model ApiIdempotencyRecord {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
   prequoteConversion PrequoteConversion?
   execution ApiIdempotencyExecution?
   prequote DeliveryPrequote?
@@ -473,6 +476,7 @@ model RateBand {
 }
 /// Immutable price snapshot for a DeliveryRequest. Only status and its timestamps change.
 model DeliveryQuote {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
   @@unique([id, deliveryRequestId])
   prequoteConversion PrequoteConversion?
   id String @id @default(uuid()) @db.Uuid
@@ -595,6 +599,7 @@ enum DispatchCandidateStatus {
 /// V1.7: offer of an ACCEPTED quote to eligible providers. Created in the same transaction that
 /// accepts the quote (one per quote). The winner is claimedByProviderId; no Driver/Vehicle yet.
 model Dispatch {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
   /// V1.12-G: frozen by PostgreSQL at completion. NULL for historical deliveries; no backfill.
   publicExecutionSnapshot Json?
   /// V1.10-C: frozen credit cost per actor type; empty for Dispatches opened before V1.10-C.
@@ -1212,6 +1217,7 @@ model PrequoteConsumptionPermit {
 
 /// Immutable commercial facts and complete child identity manifest. Destination FKs deferred in SQL.
 model PrequoteConversion {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
   @@unique([prequoteId, integrationClientId])
   @@unique([deliveryRequestId, integrationClientId])
   @@unique([deliveryQuoteId, deliveryRequestId])
@@ -1239,4 +1245,34 @@ model PrequoteConversion {
   deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
   deliveryQuote DeliveryQuote @relation(fields: [deliveryQuoteId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
   record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+}
+
+/// Immutable integrator attestation, not independently verified human consent.
+model AuthorizedQuoteAcceptance {
+  @@unique([deliveryRequestId, integrationClientId])
+  @@unique([deliveryQuoteId, deliveryRequestId])
+  @@unique([dispatchId, deliveryRequestId])
+  id String @id @db.Uuid
+  conversionId String @unique @db.Uuid
+  deliveryRequestId String @unique @db.Uuid
+  deliveryQuoteId String @unique @db.Uuid
+  integrationClientId String @db.Uuid
+  dispatchId String @unique @db.Uuid
+  idempotencyRecordId String @unique @db.Uuid
+  credentialId String @db.Uuid
+  authenticatedTokenExpiresAt DateTime
+  authorizationVersion Int
+  authorizationStatus String
+  authorizationReference String @db.VarChar(100)
+  authorizedAt DateTime
+  acceptedAt DateTime @default(dbgenerated("clock_timestamp()"))
+  authorizedAmount Decimal @db.Decimal(14, 2)
+  authorizedCurrency String @db.Char(3)
+  authorizedExpiresAt DateTime
+  conversion PrequoteConversion @relation(fields: [conversionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  request DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
+  quote DeliveryQuote @relation(fields: [deliveryQuoteId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
+  dispatch Dispatch @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
+  record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  credential IntegrationCredential @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 }
