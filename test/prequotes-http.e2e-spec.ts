@@ -25,6 +25,7 @@ if (
 process.env.DATABASE_URL = url;
 process.env.NODE_ENV = 'test';
 process.env.PREQUOTE_ENABLED = 'true';
+process.env.PREQUOTE_GLOBAL_DAILY_ROUTING_UNITS = '100000';
 process.env.B2B_WEBHOOK_POLL_SECONDS = '0';
 for (const key of [
   'JWT_ACCESS_SECRET',
@@ -72,6 +73,7 @@ const routing = {
   }),
 };
 const permit = {
+  assertReady: vi.fn(async () => {}),
   start: vi.fn(async () => {}),
   finish: vi.fn(async (outcome: unknown) => {
     void outcome;

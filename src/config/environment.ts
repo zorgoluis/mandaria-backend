@@ -30,7 +30,7 @@ const schema = z.object({
     .max(2592000)
     .default(604800),
   CORS_ORIGINS: z.string().default(''),
-  // A4 flag is necessary but never sufficient: production admission remains closed until A5.
+  // A5 remains disabled by default; enabling also requires explicit shared routing budget.
   PREQUOTE_ENABLED: z
     .enum(['true', 'false'])
     .default('false')
@@ -43,6 +43,18 @@ const schema = z.object({
     .default(900000),
   PREQUOTE_LEASE_MS: z.coerce.number().int().min(1).max(300000).default(90000),
   PREQUOTE_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(5).default(3),
+  PREQUOTE_PER_MINUTE: z.coerce.number().int().min(1).max(10000).default(10),
+  PREQUOTE_PER_DAY: z.coerce.number().int().min(1).max(1000000).default(500),
+  PREQUOTE_MAX_CONCURRENT: z.coerce.number().int().min(1).max(100).default(2),
+  PREQUOTE_PERMIT_RESERVE_MS: z.coerce
+    .number()
+    .int()
+    .min(1000)
+    .max(300000)
+    .default(30000),
+  PREQUOTE_GLOBAL_DAILY_ROUTING_UNITS: optional(
+    z.coerce.number().int().min(1).max(1000000),
+  ),
   // V1.6 routing. local_fake is LOCAL/TEST ONLY and rejected in production.
   ROUTING_PROVIDER: z.enum(['google', 'local_fake']).default('google'),
   GOOGLE_ROUTES_API_KEY: z.preprocess(
@@ -169,6 +181,15 @@ export function validateEnvironment(input: Record<string, unknown>) {
       `Invalid environment: ${result.error.issues.map((i) => i.path.join('.') + ': ' + i.message).join('; ')}`,
     );
   const env = result.data;
+  if (
+    env.PREQUOTE_ENABLED &&
+    (!env.PREQUOTE_GLOBAL_DAILY_ROUTING_UNITS ||
+      env.PREQUOTE_GLOBAL_DAILY_ROUTING_UNITS <
+        env.GOOGLE_ROUTES_MAX_RETRIES + 1)
+  )
+    throw new Error(
+      'PREQUOTE_ENABLED requires explicit PREQUOTE_GLOBAL_DAILY_ROUTING_UNITS covering routing retries',
+    );
   const routingBudget =
     env.GOOGLE_ROUTES_TIMEOUT_MS * (env.GOOGLE_ROUTES_MAX_RETRIES + 1) +
     100 * env.GOOGLE_ROUTES_MAX_RETRIES * (env.GOOGLE_ROUTES_MAX_RETRIES + 1);

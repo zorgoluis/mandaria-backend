@@ -1,6 +1,8 @@
 import { DomainException } from '../common/domain-error.js';
 
 export const PREQUOTE_ERRORS: Record<string, number> = {
+  PREQUOTE_CONSUMPTION_LIMIT: 429,
+  PREQUOTE_PERMIT_INVALID: 409,
   PREQUOTE_DISABLED: 503,
   PREQUOTE_CONSUMPTION_UNAVAILABLE: 503,
   PREQUOTE_IN_PROGRESS: 409,

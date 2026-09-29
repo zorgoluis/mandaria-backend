@@ -63,7 +63,7 @@ export class PrequotesController {
   @ApiCreatedResponse({
     type: PrequoteResponse,
     description:
-      'Snapshot publicado. Idempotent-Replayed: false. Emisión operativa bloqueada hasta A5.',
+      'Snapshot publicado. Idempotent-Replayed: false. Deshabilitada por defecto; requiere configuración y admisión compartida A5.',
   })
   @ApiOkResponse({
     type: PrequoteResponse,
@@ -74,15 +74,15 @@ export class PrequotesController {
     400: 'PREQUOTE_CONDITIONS_INVALID | IDEMPOTENCY_KEY_INVALID. Sin reserva ni routing.',
     401: 'Token B2B inválido o estado/credencial revocados; PREQUOTE_AUTHORIZATION_CHANGED durante ejecución.',
     403: 'Requiere prequotes:create, no otorgado automáticamente.',
-    409: 'HTTP_409: clave/cuerpo/operación incompatible. PREQUOTE_IN_PROGRESS: Retry-After hasta lease actual. PREQUOTE_LEASE_LOST | PREQUOTE_LEASE_BUDGET_INSUFFICIENT | PREQUOTE_CONFIGURATION_CHANGED | ATTEMPTS_EXHAUSTED | PREQUOTE_FAILED (intención terminal). No significa éxito.',
+    409: 'HTTP_409: clave/cuerpo/operación incompatible. PREQUOTE_IN_PROGRESS: Retry-After hasta lease actual. PREQUOTE_PERMIT_INVALID | PREQUOTE_LEASE_LOST | PREQUOTE_LEASE_BUDGET_INSUFFICIENT | PREQUOTE_CONFIGURATION_CHANGED | ATTEMPTS_EXHAUSTED | PREQUOTE_FAILED (intención terminal). No significa éxito.',
     422: 'OUT_OF_SERVICE_AREA | CROSS_ZONE_NOT_SUPPORTED | ROUTE_NOT_FOUND | DISTANCE_NOT_SUPPORTED. Fallo terminal de esta intención.',
-    429: 'Límite HTTP global; no sustituye protección compartida A5.',
-    503: 'PREQUOTE_DISABLED | PREQUOTE_CONSUMPTION_UNAVAILABLE (sin reserva; flag no omite barrera A5). ROUTING_UNAVAILABLE | RATE_CONFIGURATION_UNAVAILABLE | RATE_CONFIGURATION_INVALID | SERVICE_ZONE_AMBIGUOUS | PREQUOTE_EXECUTION_FAILED. Reintentos con misma key acotados; sin Retry-After inventado. Leer code, message y requestId.',
+    429: 'PREQUOTE_CONSUMPTION_LIMIT: cuota móvil de 60s/24h, concurrencia o presupuesto global MPQ agotados. Retry-After refleja todos los límites bloqueantes, sin prometer admisión. Separado del límite HTTP de abuso.',
+    503: 'PREQUOTE_DISABLED | PREQUOTE_CONSUMPTION_UNAVAILABLE (configuración global ausente/incoherente o infraestructura caída; sin plazo inventado). ROUTING_UNAVAILABLE | RATE_CONFIGURATION_UNAVAILABLE | RATE_CONFIGURATION_INVALID | SERVICE_ZONE_AMBIGUOUS | PREQUOTE_EXECUTION_FAILED. Reintentos con misma key acotados; sin Retry-After inventado. Leer code, message y requestId.',
   })
   @ApiOperation({
     summary: 'Emitir o recuperar mi precotización',
     description:
-      'Requiere prequotes:create. Contrato A4: FOOD, MXN, inmediato y conditionsVersion=1 obligatorio. Autentica y normaliza antes de consultar la clave. Replay disponible aun deshabilitado. Nuevas emisiones requieren flag y permiso compartido; producción deniega hasta A5. Routing fuera de transacciones; publicación con fencing y revalidación de configuración y autenticación. Una llamada al adaptador por intento, hasta presupuesto persistido. No crea solicitud, Quote, Dispatch ni movimientos. No hay conversión/aceptación.',
+      'Requiere prequotes:create. Contrato A4: FOOD, MXN, inmediato y conditionsVersion=1 obligatorio. Autentica y normaliza antes de consultar la clave. Replay disponible aun deshabilitado. Nuevas emisiones requieren flag y permiso compartido; requieren configuración global explícita y coherente entre instancias; cuotas 10/min, 500/24h y 2 slots por integración por defecto. Consumo potencial conservador MAX_RETRIES+1 unidades por inicio, aun sin publicación. Routing fuera de transacciones; publicación con fencing y revalidación de configuración y autenticación. Una llamada al adaptador por intento, hasta presupuesto persistido. No crea solicitud, Quote, Dispatch ni movimientos. No hay conversión/aceptación.',
   })
   async create(
     @Req() req: IntegrationRequest,

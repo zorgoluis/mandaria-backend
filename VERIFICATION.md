@@ -1,3 +1,11 @@
+# V1.13-A5 — Prequote Consumption Controls (2026-09-28)
+
+**V1.13-A5 (2026-09-28): LISTO PARA CHECK A6.** Consumo durable PostgreSQL compartido, cuotas y presupuesto global MPQ explícito; start/finish conservadores, fencing y recuperación. Nuevas verificaciones: 372/372 unitarias y 497/497 E2E consolidadas por archivo (21 nuevas); invitaciones repetida completa tras aborto nativo Windows. Prisma, limpia/upgrade, tipos/build/linters/OpenAPI/docs:check PASS. Migración sólo en bases locales _test, principal intacta. Flag false, sin Google real, versión/CHANGELOG, commit/push/despliegue. No cierra V1.13-A. Informe: docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md.
+
+Detalle de comandos, intentos fallidos/abortados, matriz por archivo y garantías: [informe A5](docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md).
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
 # V1.13-A4 — Prequote HTTP Orchestration (2026-09-28)
 
 **LISTO PARA A5, emisión operativa bloqueada.** Verificación nueva sobre HEAD inicial 22cc73e, PostgreSQL local mandaria_test, sin migraciones ni cambios en base principal. 357/357 unitarias y 476/476 E2E consolidadas de 25 archivos completos, incluidos 40 HTTP nuevos. TypeScript/build/Oxlint/ESLint/OpenAPI/docs:check/diff-check PASS. Webhooks y dispatch completaron repeticiones tras abortos nativos; dos fixtures A4 se corrigieron respetando guardas SQL. No se afirma una pasada monolítica exitosa.

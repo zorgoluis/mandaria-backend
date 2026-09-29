@@ -6,10 +6,8 @@ import { RatePlansModule } from '../rate-plans/rate-plans.module.js';
 import { PrequotesController } from './prequotes.controller.js';
 import { PrequotesService } from './prequotes.service.js';
 import { PrequotePersistenceService } from './prequote-persistence.service.js';
-import {
-  PREQUOTE_CONSUMPTION,
-  UnavailablePrequoteConsumption,
-} from './prequote-consumption.js';
+import { PREQUOTE_CONSUMPTION } from './prequote-consumption.js';
+import { DurablePrequoteConsumption } from './durable-prequote-consumption.js';
 @Module({
   imports: [
     IntegrationsModule,
@@ -21,7 +19,7 @@ import {
   providers: [
     PrequotesService,
     PrequotePersistenceService,
-    { provide: PREQUOTE_CONSUMPTION, useClass: UnavailablePrequoteConsumption },
+    { provide: PREQUOTE_CONSUMPTION, useClass: DurablePrequoteConsumption },
   ],
 })
 export class PrequotesModule {}

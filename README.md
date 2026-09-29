@@ -20,13 +20,15 @@ La identidad vigente sigue la asignación ACTIVE. Release devuelve `execution: n
 
 Contrato, configuración, ejemplos, privacidad y límites: [V1.12-G](docs/V1.12-G-B2B-PUBLIC-EXECUTION-IDENTITY.md). Verificaciones actuales: [VERIFICATION.md](VERIFICATION.md).
 
-## V1.13-A4 — precotizaciones B2B (emisión operativa bloqueada)
+## V1.13-A5 — precotizaciones B2B (deshabilitadas por defecto)
 
 `POST /api/v1/delivery-prequotes` (`prequotes:create`, `Idempotency-Key`) y `GET /api/v1/delivery-prequotes/:publicId` (`prequotes:read`) exponen el contrato FOOD/LOCAL_DELIVERY/MXN. `conditionsVersion: 1` es obligatorio. Publicación 201; replay durable 200 sin renovar vigencia ni llamar routing. Ownership B2B obligatorio; no crea solicitud, Quote, Dispatch ni efectos financieros.
 
-La capacidad está deshabilitada por defecto. **Incluso con PREQUOTE_ENABLED=true, la admisión de producción deniega nuevas emisiones hasta implementar la protección compartida A5.** GET y replay siguen disponibles. Las pruebas usan permisos y routing controlados por inyección de dependencias; no existe bypass operativo por entorno. No se conceden automáticamente los scopes nuevos.
+La capacidad permanece deshabilitada por defecto. A5 implementa admisión durable compartida en PostgreSQL: 10 inicios por minuto, 500 por 24 horas y 2 slots por integración; reserva conservadora de retries y presupuesto global MPQ obligatorio sin default. Habilitar requiere migración, configuración válida y coherente entre instancias y revisión operativa; esta etapa no habilita el flag ni migra la base principal. GET y replay siguen disponibles. Las pruebas A5 usan dos aplicaciones reales y sólo routing simulado. No se conceden automáticamente los scopes nuevos.
 
-Contrato, configuración, errores/Retry-After, límites de revocación concurrente y resultados: [V1.13-A4](docs/V1.13-A4-PREQUOTE-HTTP-ORCHESTRATION.md). No existe conversión, aceptación ni flujo completo de transferencia. Base principal sin migrar en esta etapa.
+Permisos, ventanas, recuperación, límites de concurrencia externa, configuración y pruebas: [V1.13-A5](docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md). LISTO PARA CHECK A6; no cierra V1.13-A.
+
+Contrato HTTP, errores/Retry-After y límites de revocación concurrente: [V1.13-A4](docs/V1.13-A4-PREQUOTE-HTTP-ORCHESTRATION.md). No existe conversión, aceptación ni flujo completo de transferencia. Base principal sin migrar en esta etapa.
 
 ## Estado y arquitectura
 

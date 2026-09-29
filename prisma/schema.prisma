@@ -70,6 +70,7 @@ model IntegrationClient {
   deliveryRequests DeliveryRequest[]
   idempotencyRecords ApiIdempotencyRecord[]
   prequotes DeliveryPrequote[]
+  consumptionPermits PrequoteConsumptionPermit[]
   outboxEvents B2bOutboxEvent[]
   webhookEndpoint B2bWebhookEndpoint?
   webhookAttempts B2bWebhookDeliveryAttempt[]
@@ -1164,4 +1165,41 @@ model DeliveryPrequote {
   ratePlan RatePlan @relation(fields: [ratePlanId, serviceZoneId], references: [id, serviceZoneId], onDelete: Restrict)
   rateBand RateBand @relation(fields: [rateBandId, ratePlanId], references: [id, ratePlanId], onDelete: Restrict)
   @@index([integrationClientId, issuedAt])
+}
+
+enum PrequotePermitState {
+  RESERVED
+  STARTED
+  FINISHED
+  CANCELLED
+  EXPIRED
+  ABANDONED
+}
+/// Configuration identity only, never a second quota counter.
+model PrequoteConsumptionPolicy {
+  id Int @id
+  fingerprint String @db.VarChar(64)
+}
+/// Single durable authority for reservations and potential MPQ routing consumption.
+model PrequoteConsumptionPermit {
+  id String @id @db.Uuid
+  integrationClientId String @db.Uuid
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  ownerHash String @db.VarChar(64)
+  policyFingerprint String @db.VarChar(64)
+  state PrequotePermitState
+  units Int
+  routingBudgetMs Int
+  reservedAt DateTime
+  reserveExpiresAt DateTime
+  startedAt DateTime?
+  startBy DateTime?
+  protectedUntil DateTime?
+  finishedAt DateTime?
+  routingReported Boolean?
+  publishedReported Boolean?
+  @@index([integrationClientId, startedAt])
+  @@index([startedAt])
+  @@index([state, reserveExpiresAt])
+  @@index([protectedUntil])
 }

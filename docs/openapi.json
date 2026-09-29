@@ -54862,7 +54862,7 @@
     },
     "/api/v1/delivery-prequotes": {
       "post": {
-        "description": "Requiere prequotes:create. Contrato A4: FOOD, MXN, inmediato y conditionsVersion=1 obligatorio. Autentica y normaliza antes de consultar la clave. Replay disponible aun deshabilitado. Nuevas emisiones requieren flag y permiso compartido; producción deniega hasta A5. Routing fuera de transacciones; publicación con fencing y revalidación de configuración y autenticación. Una llamada al adaptador por intento, hasta presupuesto persistido. No crea solicitud, Quote, Dispatch ni movimientos. No hay conversión/aceptación.",
+        "description": "Requiere prequotes:create. Contrato A4: FOOD, MXN, inmediato y conditionsVersion=1 obligatorio. Autentica y normaliza antes de consultar la clave. Replay disponible aun deshabilitado. Nuevas emisiones requieren flag y permiso compartido; requieren configuración global explícita y coherente entre instancias; cuotas 10/min, 500/24h y 2 slots por integración por defecto. Consumo potencial conservador MAX_RETRIES+1 unidades por inicio, aun sin publicación. Routing fuera de transacciones; publicación con fencing y revalidación de configuración y autenticación. Una llamada al adaptador por intento, hasta presupuesto persistido. No crea solicitud, Quote, Dispatch ni movimientos. No hay conversión/aceptación.",
         "operationId": "PrequotesController_create",
         "parameters": [
           {
@@ -54901,7 +54901,7 @@
             }
           },
           "201": {
-            "description": "Snapshot publicado. Idempotent-Replayed: false. Emisión operativa bloqueada hasta A5.",
+            "description": "Snapshot publicado. Idempotent-Replayed: false. Deshabilitada por defecto; requiere configuración y admisión compartida A5.",
             "content": {
               "application/json": {
                 "schema": {
@@ -55072,7 +55072,7 @@
             }
           },
           "409": {
-            "description": "HTTP_409: clave/cuerpo/operación incompatible. PREQUOTE_IN_PROGRESS: Retry-After hasta lease actual. PREQUOTE_LEASE_LOST | PREQUOTE_LEASE_BUDGET_INSUFFICIENT | PREQUOTE_CONFIGURATION_CHANGED | ATTEMPTS_EXHAUSTED | PREQUOTE_FAILED (intención terminal). No significa éxito.",
+            "description": "HTTP_409: clave/cuerpo/operación incompatible. PREQUOTE_IN_PROGRESS: Retry-After hasta lease actual. PREQUOTE_PERMIT_INVALID | PREQUOTE_LEASE_LOST | PREQUOTE_LEASE_BUDGET_INSUFFICIENT | PREQUOTE_CONFIGURATION_CHANGED | ATTEMPTS_EXHAUSTED | PREQUOTE_FAILED (intención terminal). No significa éxito.",
             "content": {
               "application/json": {
                 "schema": {
@@ -55178,7 +55178,7 @@
             }
           },
           "429": {
-            "description": "Límite HTTP global; no sustituye protección compartida A5.",
+            "description": "PREQUOTE_CONSUMPTION_LIMIT: cuota móvil de 60s/24h, concurrencia o presupuesto global MPQ agotados. Retry-After refleja todos los límites bloqueantes, sin prometer admisión. Separado del límite HTTP de abuso.",
             "content": {
               "application/json": {
                 "schema": {
@@ -55231,7 +55231,7 @@
             }
           },
           "503": {
-            "description": "PREQUOTE_DISABLED | PREQUOTE_CONSUMPTION_UNAVAILABLE (sin reserva; flag no omite barrera A5). ROUTING_UNAVAILABLE | RATE_CONFIGURATION_UNAVAILABLE | RATE_CONFIGURATION_INVALID | SERVICE_ZONE_AMBIGUOUS | PREQUOTE_EXECUTION_FAILED. Reintentos con misma key acotados; sin Retry-After inventado. Leer code, message y requestId.",
+            "description": "PREQUOTE_DISABLED | PREQUOTE_CONSUMPTION_UNAVAILABLE (configuración global ausente/incoherente o infraestructura caída; sin plazo inventado). ROUTING_UNAVAILABLE | RATE_CONFIGURATION_UNAVAILABLE | RATE_CONFIGURATION_INVALID | SERVICE_ZONE_AMBIGUOUS | PREQUOTE_EXECUTION_FAILED. Reintentos con misma key acotados; sin Retry-After inventado. Leer code, message y requestId.",
             "content": {
               "application/json": {
                 "schema": {

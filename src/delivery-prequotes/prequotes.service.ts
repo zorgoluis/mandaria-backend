@@ -120,12 +120,13 @@ export class PrequotesService {
     await this.authorize(token, integrationClientId);
     const admission = await this.consumption
       .admit(integrationClientId)
-      .catch(() => {
+      .catch((error: unknown) => {
+        if (error instanceof PrequotePublicError) throw error;
         throw new PrequotePublicError('PREQUOTE_CONSUMPTION_UNAVAILABLE');
       });
     if (!admission.admitted)
       throw new PrequotePublicError(
-        'PREQUOTE_CONSUMPTION_UNAVAILABLE',
+        admission.code ?? 'PREQUOTE_CONSUMPTION_UNAVAILABLE',
         admission.retryAt,
       );
     let routingStarted = false;
@@ -173,6 +174,7 @@ export class PrequotesService {
         await admission.permit.start();
         await this.authorize(token, integrationClientId);
         await this.persistence.requireRoutingBudget(result.lease, budget);
+        await admission.permit.assertReady();
         this.enabled();
         routingStarted = true;
         // No transaction/lock is held here. Exactly one adapter invocation per attempt.

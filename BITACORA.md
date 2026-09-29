@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.13-A5 (2026-09-28):** commit y push autorizados a la rama actual; se publica el conjunto validado en la tarea anterior. Emisión deshabilitada, sin despliegue ni migración principal.
+
+- **V1.13-A5 (2026-09-28): LISTO PARA CHECK A6.** Consumo durable PostgreSQL compartido, cuotas y presupuesto global MPQ explícito; start/finish conservadores, fencing y recuperación. Nuevas verificaciones: 372/372 unitarias y 497/497 E2E consolidadas por archivo (21 nuevas); invitaciones repetida completa tras aborto nativo Windows. Prisma, limpia/upgrade, tipos/build/linters/OpenAPI/docs:check PASS. Migración sólo en bases locales _test, principal intacta. Flag false, sin Google real, versión/CHANGELOG, commit/push/despliegue. No cierra V1.13-A. Informe: docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md.
+
 - **Publicación V1.13-A4 (2026-09-28):** commit y push autorizados a la rama actual; se publica el contrato HTTP y la orquestación validados en la tarea anterior. La emisión operativa sigue bloqueada hasta A5. Sin despliegue.
 
 - **V1.13-A4 — contrato HTTP y orquestación (2026-09-28):** LISTO PARA A5. POST/GET delivery-prequotes con scopes explícitos, ownership, replay durable y routing fuera de transacciones. Producción deniega emisión incluso con flag habilitado; GET/replay disponibles. 357/357 unitarias y 476/476 E2E consolidadas por archivo ejecutadas en esta tarea; tipos/build/linters/OpenAPI/docs:check PASS. Sin migraciones nuevas ni principal migrada; no conversión/accept, versión, commit/push/despliegue. Informe: docs/V1.13-A4-PREQUOTE-HTTP-ORCHESTRATION.md.
@@ -1153,3 +1157,17 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificaciones actuales:** lectura de continuidad, esquema, cotización/routing/idempotencia, configuración HTTP, patrón de leases y utilidades; git diff --check. No pruebas de producto ni operaciones reales.
 - **Resultado:** viable reutilizar sin alterar contrato legacy, pero requiere ajustes internos. DeliveryQuote exige solicitud y congela vínculo; reutilizarla como MPQ sería más invasivo. Snapshot futuro duplicado como evidencia no implica recálculo/cobro duplicado. Presupuesto global MPQ no debe confundirse con total de Google ni alterar legacy silenciosamente.
 - **Pendientes:** revisar recomendación y concretar extensión de idempotencia antes de etapa A; validar regresiones al implementar. Sin código, migraciones, configuración, commit, push ni despliegue; cambios previos y nul conservados.
+
+## 2026-09-28 — V1.13-A5: límites y consumo durable
+
+Solicitud: completar el puerto A4 con protección compartida real, sin habilitar operación.
+
+Cambios: ledger de permisos y política coherente, cuotas/ventanas/presupuesto, recuperación conservadora y wiring real; migración incremental, pruebas y documentación.
+
+Verificación y resultado: **V1.13-A5 (2026-09-28): LISTO PARA CHECK A6.** Consumo durable PostgreSQL compartido, cuotas y presupuesto global MPQ explícito; start/finish conservadores, fencing y recuperación. Nuevas verificaciones: 372/372 unitarias y 497/497 E2E consolidadas por archivo (21 nuevas); invitaciones repetida completa tras aborto nativo Windows. Prisma, limpia/upgrade, tipos/build/linters/OpenAPI/docs:check PASS. Migración sólo en bases locales _test, principal intacta. Flag false, sin Google real, versión/CHANGELOG, commit/push/despliegue. No cierra V1.13-A. Informe: docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md.
+
+Pendientes: CHECK A6 independiente, coordinación operativa de cambios de política, evaluación de throughput y pausas/red externa; no implementar conversión ni aceptación en esta tarea. Historial anterior conservado.
+
+## 2026-09-28 — Publicación Git de V1.13-A5
+
+Solicitud: commitear y subir a la rama actual. Cambios: publicación de A5 y registro de continuidad. Verificaciones actuales: estado/rama/remoto y git diff --check; las 372 unitarias y 497 E2E corresponden a la tarea anterior y no se repitieron en esta publicación. Resultado: conjunto preparado para commit y push; confirmación del remoto en la respuesta de esta tarea. Pendiente funcional: CHECK A6. Sin despliegue; nul preexistente excluido.
