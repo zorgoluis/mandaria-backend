@@ -5404,6 +5404,57 @@
         "log": "docs/checks/v1.13-c4-diag-delivery-requests-b2b.txt",
         "observer": "docs/checks/v1.13-c4-diag-delivery-requests-b2b-events.jsonl"
       }
+    },
+    {
+      "complete": false,
+      "reason": "incomplete worker termination",
+      "total": 15,
+      "passed": 13,
+      "failed": 0,
+      "attempt": {
+        "file": "delivery-requests-b2b",
+        "database": "mandaria_c4_reg_02b867eb3058_test",
+        "node": "v24.15.0",
+        "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/c4/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-requests-b2b.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/v1.13-c4-completion-1.json",
+        "testEnvironment": {
+          "B2B_WEBHOOK_POLL_SECONDS": "0"
+        },
+        "startedAt": "2026-09-29T15:04:57.883Z",
+        "endedAt": "2026-09-29T15:05:16.313Z",
+        "exit": 1,
+        "signal": null,
+        "report": "docs/checks/v1.13-c4-completion-1.json",
+        "log": "docs/checks/v1.13-c4-completion-1.txt",
+        "observer": "docs/checks/v1.13-c4-completion-1-events.jsonl"
+      }
+    },
+    {
+      "complete": false,
+      "reason": "native termination without final report",
+      "attempt": {
+        "file": "delivery-requests-b2b",
+        "database": "mandaria_c4_reg_02b867eb3058_test",
+        "node": "v24.15.0",
+        "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/c4/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-requests-b2b.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/v1.13-c4-completion-2.json",
+        "testEnvironment": {
+          "B2B_WEBHOOK_POLL_SECONDS": "0"
+        },
+        "startedAt": "2026-09-29T15:05:49.422Z",
+        "endedAt": "2026-09-29T15:06:01.044Z",
+        "exit": 3221226505,
+        "signal": null,
+        "report": "docs/checks/v1.13-c4-completion-2.json",
+        "log": "docs/checks/v1.13-c4-completion-2.txt",
+        "observer": "docs/checks/v1.13-c4-completion-2-events.jsonl"
+      }
     }
-  ]
+  ],
+  "followUp": {
+    "at": "2026-09-29T15:08:23.926Z",
+    "evidence": "docs/checks/v1.13-c4-completion-attempts.json",
+    "verdict": "PARTIAL",
+    "newAccreditedCases": 0,
+    "reusedUnitCases": 393,
+    "reusedE2eCases": 738
+  }
 }

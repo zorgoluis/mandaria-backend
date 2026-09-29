@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación del seguimiento C4 (2026-09-29):** commit y push autorizados a la rama actual para conservar evidencia de los dos intentos acotados. Dictamen PARTIAL y bloqueo de `delivery-requests-b2b` intactos; sin nuevas pruebas ni activación en esta publicación.
+
+- **Pendiente C4, ejecución acotada (2026-09-29): PARTIAL conservado.** Sólo `delivery-requests-b2b` en su base C4 existente: forks termina incompleto 13/15, exit 1, error de worker; único diagnóstico adicional threads aborta 0xC0000409 sin reporte completo. No hay nuevos casos acreditados ni más ejecuciones. Se reutilizan 393 unitarias y 738 E2E/32 archivos de C4 anterior; sin repetir suites, migraciones o escaneos. Producto/pruebas/configuración sin ajustes; evidencia e informes actualizados. Sin commit/push/activación; causa nativa pendiente.
+
 - **Publicación CHECK C4 (2026-09-29):** commit y push autorizados a la rama actual. Se publica la verificación con dictamen PARTIAL; queda pendiente acreditar `delivery-requests-b2b` y diagnosticar el aborto del runner. Publicación sin activación ni inicio de D; resultados de pruebas corresponden al CHECK anterior.
 
 - **CHECK V1.13-C4 (2026-09-29): PARTIAL.** Nuevas 393/393 unitarias (34 archivos) y 738 E2E acreditadas en 32/33 archivos; incluye A6/B2/B3/B4/C2/C3 completos y dos recuperaciones C4 a precio igual/menor. `delivery-requests-b2b` (15 casos) no acreditado: forks incompleto y único diagnóstico threads aborta 0xC0000409; causa nativa pendiente, sin más repeticiones. Webhooks/status completaron el único diagnóstico. Prisma/build/ambos tipos/linters/docs, limpia/upgrade B conservado/drift y 23 invariantes en 35 bases pasan. Producto congelado 348/348, .env/HEAD/versión intactos; historia conservada y accesos sintéticos retirados. Sin defecto de producto reproducido; sin commit/push/activación ni D. Informe: docs/CHECK-V1.13-C4-AUTHORIZED-ACCEPTANCE.md; evidencia: docs/checks/v1.13-c4-evidence.json.
@@ -1421,3 +1425,19 @@ Preparación del commit: el chequeo staged incluyó por primera vez los logs nue
 - Verificaciones de esta tarea: revisión del estado Git, rama/remoto, alcance de archivos, diff y contenido preparado; comprobar commit y sincronización remota después del push. No se reejecutaron suites: 393 unitarias y 738 E2E/32 de 33 archivos son evidencia de la tarea CHECK anterior.
 - Resultado técnico conservado: C4 PARTIAL; sin cambios de producto ni activación. La publicación no acredita los 15 casos pendientes ni resuelve la causa nativa.
 - Pendientes: diagnóstico y ejecución íntegra de delivery-requests-b2b, dependencias operativas y autorización de activación; D no iniciado.
+
+## 2026-09-29 — Pendiente C4: ejecución íntegra de solicitudes B2B
+
+- Solicitud: ejecutar únicamente delivery-requests-b2b, reutilizar evidencia válida restante y permitir un solo diagnóstico adicional si aborta.
+- Cambios: evidencia de dos intentos, consolidado e índice C4; adenda del informe y estado de VERIFICATION/BITACORA. Ningún ajuste de pruebas, runner compartido o producto.
+- Verificación nueva: comparación de 348 archivos congelados, sin diferencias; primer intento forks exit 1, 13/15 parciales con error de worker; diagnóstico único threads exit 3221226505, sin reporte completo. Ambos sobre la base C4 existente aislada. Referencias/JSON/diff revisados para la documentación.
+- Resultado: PARTIAL; cero casos nuevos acreditados. 393 unitarias y 738 E2E/32 de 33 archivos siguen siendo evidencia histórica C4 válida, no reejecutada. No se repitieron migraciones, escaneos ni suites adicionales.
+- Pendientes: archivo íntegro exit 0/15 casos y causa del aborto; no más ejecuciones autorizadas en esta tarea. Fixtures de abortos preservados en base aislada; hooks finales no acreditados. Sin commit/push/activación ni siguiente etapa.
+
+## 2026-09-29 — Publicación del seguimiento acotado C4
+
+- Solicitud: commit y push a la rama actual.
+- Cambios: publicar únicamente documentación, consolidado y evidencia de los dos intentos del archivo pendiente; actualizar esta bitácora sin borrar historial. Excluir nul preexistente.
+- Verificaciones de publicación: estado Git, rama/remoto, diff preparado y revisión de secretos; comprobar sincronización después del push. No ejecutar suites, migraciones ni escaneos de bases. Resultados de los intentos pertenecen a la tarea anterior.
+- Resultado técnico conservado: PARTIAL, 393 unitarias y 738 E2E/32 archivos previamente acreditados; ningún caso adicional acreditado.
+- Pendientes: ejecución íntegra de delivery-requests-b2b y causa del aborto. Sin cambios de producto, despliegue, activación ni inicio de otra etapa.

@@ -2,6 +2,8 @@
 
 2026-09-29 UTC. **PARTIAL**: aceptación autorizada y gates locales comprobados, pero falta acreditar un archivo de la regresión E2E completa. V1.13-C no se declara cerrada.
 
+Seguimiento posterior limitado al archivo pendiente: **PARTIAL conservado**, dos intentos autorizados agotados el 2026-09-29 a las 15:06 UTC. Véase la adenda final y [evidencia nueva](checks/v1.13-c4-completion-attempts.json). Las cifras y verificaciones del CHECK original siguientes son históricas respecto a este seguimiento.
+
 ## Alcance y línea base
 
 Rama `1.13-Precotización_integración_comida_prepagada`, HEAD `69f757b8c5049771d6a893c77506bb81242001a9`, versión 1.12.0. [Línea base](checks/v1.13-c4-baseline.json): 348 archivos existentes de producto, pruebas, contratos, migraciones, scripts y configuración. `nul` era el único untracked preexistente; se conserva. `.env` se compara privadamente, sin publicar contenido ni huella.
@@ -118,3 +120,20 @@ Sólo pruebas/runners/evidencia/documentación C4 y actualizaciones de continuid
 El cierre local no autoriza activación. Requiere actualizar coordinadamente todas las instancias antes de habilitar: el código pre-C `3e9e194a3fba78536802123d32edc4c82ac68bc7` compilado con dependencias/Prisma actuales lee/cancela historia C pero rechaza accept/replay; no equivale al artefacto histórico completo ni acredita despliegue mixto. Flag off conserva binario/schema/historia capaces de C, no es downgrade destructivo. No eliminar evidencia ni reinstalar barreras B absolutas.
 
 Pendientes separados: causa de intermitencia del runner, revisión operativa A, mantenimiento del verificador A3, coordinación/consentimiento/retención de evidencia y UX en Coita/Web, instrucciones a ejecutores D y autorización posterior de activación. Ninguna siguiente etapa se inicia automáticamente.
+
+## Adenda — intento acotado de completar el único pendiente C4
+
+Solicitud posterior a la publicación `2e1a82ae4f2d4a7bca1440501fd75921c1e319d0`: ejecutar sólo delivery-requests-b2b íntegro, reutilizar el resto y permitir como máximo un diagnóstico adicional. Producto y los 348 archivos del baseline comparados antes de cada intento, sin diferencias. Ninguna modificación de pruebas o configuración compartida. Se reutilizó la base ya migrada `mandaria_c4_reg_02b867eb3058_test`; no se crearon ni migraron bases.
+
+Configuración inicial: forks, un worker, hookTimeout 30000; éxito histórico comprobado en `v1.13-b4-rerun-evidence.json`, intento `cc7fb08e-2ec4-4027-bb5b-94ae87238a59` (15/15, exit 0). Se mantuvo deshabilitado el polling de webhooks únicamente en el proceso de prueba. Node v24.15.0 y mismas dependencias del CHECK. Comandos exactos, tiempos, base, exit/señal y reportes/logs en [índice de estos intentos](checks/v1.13-c4-completion-attempts.json).
+
+| Intento nuevo | Resultado | Evidencia |
+|---|---|---|
+| 1, forks; 15:04:57.883–15:05:16.313 UTC | exit 1; JSON parcial 13/15, cero aserciones fallidas; worker forks emitted error | [Log](checks/v1.13-c4-completion-1.txt), [reporte parcial](checks/v1.13-c4-completion-1.json), [observador](checks/v1.13-c4-completion-1-events.jsonl) |
+| 2, único diagnóstico threads; 15:05:49.422–15:06:01.044 UTC | exit 3221226505 (0xC0000409), señal null; sin JSON final ni evento de fin | [Log](checks/v1.13-c4-completion-2.txt), [observador](checks/v1.13-c4-completion-2-events.jsonl) |
+
+El primero se interrumpe durante `rate-limits creation per the existing throttler`; su reporter indica erróneamente reason passed junto a unhandledErrors del worker, por lo que no se acredita. El segundo termina tras comenzar la comprobación de separación de roles/tokens. Ninguno alcanza los 300 segundos del timeout del padre. Estos puntos de corte no identifican la causa; no se atribuye a la prueba, al producto ni a Windows. Sin tercera ejecución, cambios de aserciones o nuevos diagnósticos externos.
+
+**Resultado: PARTIAL.** Permanecen 738 E2E acreditadas/32 archivos y 393 unitarias de la ejecución C4 anterior, cuya evidencia no se modifica ni se repite. Los 15 casos del archivo pendiente siguen sin acreditarse. El consolidado incorpora los nuevos intentos excluidos y conserva el total. No se ejecutaron otras suites, build/gates, migraciones ni escaneos. Los resultados anteriores de integridad y limpieza conservan su fecha/alcance; no constituyen un nuevo escaneo posterior a estos intentos. No se acredita que afterAll haya limpiado los fixtures de las corridas abortadas; se mantienen aislados para diagnóstico, sin limpieza adicional ni cambio de datos ajenos.
+
+Cambios de este seguimiento: sólo evidencia, consolidado/índice C4, este informe, VERIFICATION y BITACORA. Bloqueo concreto: falta una ejecución íntegra exit 0 y 15/15; causa de terminación del worker/nativa no confirmada. Se detienen las ejecuciones conforme al límite del usuario. Sin producto, principal, .env, versión, commit, push ni activación. No cierre local ni inicio de otra etapa.

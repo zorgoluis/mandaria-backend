@@ -1,5 +1,13 @@
 # CHECK V1.13-C4 — Verificación integral local (2026-09-29)
 
+## Seguimiento acotado del único archivo pendiente — 2026-09-29, 15:04–15:06 UTC
+
+**PARTIAL conservado.** Se ejecutó exclusivamente `delivery-requests-b2b.e2e-spec.ts` en la base existente `mandaria_c4_reg_02b867eb3058_test`. Forks (configuración con éxito histórico B4) terminó con exit 1, 13/15 parciales y error del worker; el único diagnóstico adicional threads abortó `3221226505 / 0xC0000409`, sin reporte completo. Ningún fragmento se acredita. Límite de ejecuciones agotado; causa no resuelta.
+
+Se conservan **393 unitarias y 738 E2E en 32/33 archivos**, todos provenientes del CHECK anterior: no se reejecutaron esas suites ni gates, migraciones o escaneos. Se compararon los 348 archivos congelados antes de los intentos, sin diferencias; ningún cambio de producto, pruebas, .env o versión. [Nuevos intentos](docs/checks/v1.13-c4-completion-attempts.json). Los hooks de limpieza del archivo abortado no quedan acreditados; sus fixtures remanentes se conservan en esa base aislada, sin restaurar/borrar datos mediante un proceso adicional.
+
+### Resultado original conservado
+
 **PARTIAL.** Nuevas **393/393 unitarias en 34 archivos** y **738 E2E en 32/33 archivos** completos exit 0. Quince casos de `delivery-requests-b2b.e2e-spec.ts` quedan sin acreditar: primer intento incompleto exit 1 y único diagnóstico alternativo abortado `0xC0000409`, sin reporte final. No se cuentan fragmentos ni se reemplazan con historia. Webhooks 54/54 y estado B2B 21/21 sí completaron el diagnóstico; no acredita solución causal del runner.
 
 Prisma validate/generate, ambos tsconfig noEmit, build, Oxlint, ESLint, OpenAPI/docs:check pasan. Limpia y upgrade B con nueve tablas históricas intactas, 29 migraciones, reaplicación/drift y catálogo igual de 70 triggers activos. Escaneo de 35 bases nuevas: 23 contadores en cero más integridad económica; limpieza conserva historia, deshabilita accesos sintéticos. 348 archivos existentes, .env/HEAD/versión sin cambios. Sólo pruebas/runners/documentación C4; no producto, migraciones ni configuración operativa.

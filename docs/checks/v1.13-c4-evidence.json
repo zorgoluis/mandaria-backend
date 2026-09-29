@@ -273,7 +273,8 @@
     "docs/checks/v1.13-c4-all-database-scan.json",
     "docs/checks/v1.13-c4-cleanup.json",
     "docs/checks/v1.13-c4-artifact-check.json",
-    "docs/checks/v1.13-c4-native-events.json"
+    "docs/checks/v1.13-c4-native-events.json",
+    "docs/checks/v1.13-c4-completion-attempts.json"
   ],
   "notes": [
     "Historical C3 counts are not included; all reported passing files ran anew.",
@@ -287,5 +288,13 @@
     "prisma": "6.19.3",
     "typescript": "6.0.3",
     "postgresql": "18.6 (see migrations-final report)"
+  },
+  "followUp": {
+    "at": "2026-09-29T15:08:23.926Z",
+    "evidence": "docs/checks/v1.13-c4-completion-attempts.json",
+    "verdict": "PARTIAL",
+    "newAccreditedCases": 0,
+    "reusedUnitCases": 393,
+    "reusedE2eCases": 738
   }
 }
