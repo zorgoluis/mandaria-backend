@@ -1,0 +1,1 @@
+C3 invariant scan passed; histories retained, synthetic C3 credentials disabled

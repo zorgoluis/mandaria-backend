@@ -1,0 +1,70 @@
+{"at":"2026-09-29T07:56:32.115Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > upgrade B history fixture remains a converted OFFERED resource"}
+{"at":"2026-09-29T07:56:32.258Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > upgrade B history fixture remains a converted OFFERED resource","state":"passed"}
+{"at":"2026-09-29T07:56:32.263Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > atomic exact attestation opens one dispatch and snapshots without routing, A5 or debit; private data never exposed"}
+{"at":"2026-09-29T07:56:32.376Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > atomic exact attestation opens one dispatch and snapshots without routing, A5 or debit; private data never exposed","state":"passed"}
+{"at":"2026-09-29T07:56:32.378Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched amount with no key/economic effects"}
+{"at":"2026-09-29T07:56:32.381Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched amount with no key/economic effects","state":"passed"}
+{"at":"2026-09-29T07:56:32.478Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched currency with no key/economic effects"}
+{"at":"2026-09-29T07:56:32.482Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched currency with no key/economic effects","state":"passed"}
+{"at":"2026-09-29T07:56:32.484Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched expiresAt with no key/economic effects"}
+{"at":"2026-09-29T07:56:32.590Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched expiresAt with no key/economic effects","state":"passed"}
+{"at":"2026-09-29T07:56:32.592Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched quotePublicId with no key/economic effects"}
+{"at":"2026-09-29T07:56:32.595Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > rejects mismatched quotePublicId with no key/economic effects","state":"passed"}
+{"at":"2026-09-29T07:56:32.690Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > validates missing authorization"}
+{"at":"2026-09-29T07:56:32.694Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > validates missing authorization","state":"passed"}
+{"at":"2026-09-29T07:56:32.697Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > validates null authorization"}
+{"at":"2026-09-29T07:56:32.796Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > validates null authorization","state":"passed"}
+{"at":"2026-09-29T07:56:32.799Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > validates extra authorization"}
+{"at":"2026-09-29T07:56:32.801Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > validates extra authorization","state":"passed"}
+{"at":"2026-09-29T07:56:32.940Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > validates future authorization"}
+{"at":"2026-09-29T07:56:32.943Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > validates future authorization","state":"passed"}
+{"at":"2026-09-29T07:56:32.947Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > validates before authorization"}
+{"at":"2026-09-29T07:56:32.949Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > validates before authorization","state":"passed"}
+{"at":"2026-09-29T07:56:33.041Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > validates no-key authorization"}
+{"at":"2026-09-29T07:56:33.044Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > validates no-key authorization","state":"passed"}
+{"at":"2026-09-29T07:56:33.046Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > requires owner and scope and valid token on new acceptance and replay"}
+{"at":"2026-09-29T07:56:33.215Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > requires owner and scope and valid token on new acceptance and replay","state":"passed"}
+{"at":"2026-09-29T07:56:33.218Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > flag off blocks first acceptance; lost response replay remains available after cancel and never reopens"}
+{"at":"2026-09-29T07:56:33.371Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > flag off blocks first acceptance; lost response replay remains available after cancel and never reopens","state":"passed"}
+{"at":"2026-09-29T07:56:33.380Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > same key concurrent attempts replay one result; incompatible body and namespace conflict"}
+{"at":"2026-09-29T07:56:33.555Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > same key concurrent attempts replay one result; incompatible body and namespace conflict","state":"passed"}
+{"at":"2026-09-29T07:56:33.560Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > different keys concurrent: one winner, other keys rolled back"}
+{"at":"2026-09-29T07:56:33.732Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > different keys concurrent: one winner, other keys rolled back","state":"passed"}
+{"at":"2026-09-29T07:56:33.735Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > cancel wins MDR lock: acceptance fails, repeated cancellation retains original timestamp"}
+{"at":"2026-09-29T07:56:33.928Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > cancel wins MDR lock: acceptance fails, repeated cancellation retains original timestamp","state":"passed"}
+{"at":"2026-09-29T07:56:33.932Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > both live accept/cancel requests serialize without leaving dispatch operational"}
+{"at":"2026-09-29T07:56:34.054Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > both live accept/cancel requests serialize without leaving dispatch operational","state":"passed"}
+{"at":"2026-09-29T07:56:34.058Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > TTL is rechecked after MDR lock; expired converted request can be cancelled"}
+{"at":"2026-09-29T07:56:35.898Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > TTL is rechecked after MDR lock; expired converted request can be cancelled","state":"passed"}
+{"at":"2026-09-29T07:56:36.000Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > replay after natural expiry returns same accepted result"}
+{"at":"2026-09-29T07:56:37.782Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > replay after natural expiry returns same accepted result","state":"passed"}
+{"at":"2026-09-29T07:56:37.967Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > revocation committed before credential lock rejects without effects"}
+{"at":"2026-09-29T07:56:37.970Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > revocation committed before credential lock rejects without effects","state":"passed"}
+{"at":"2026-09-29T07:56:37.974Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > missing credit policy rolls back evidence, key, quote and dispatch"}
+{"at":"2026-09-29T07:56:37.978Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > missing credit policy rolls back evidence, key, quote and dispatch","state":"passed"}
+{"at":"2026-09-29T07:56:38.140Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > SQL denies direct accept and forged dispatch without authorized evidence with exact error"}
+{"at":"2026-09-29T07:56:38.143Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > SQL denies direct accept and forged dispatch without authorized evidence with exact error","state":"passed"}
+{"at":"2026-09-29T07:56:38.147Z","event":"start","name":"C2 authorized acceptance, real isolated PostgreSQL > SQL rejects orphan C key, and immutable record/key edits/deletes after acceptance"}
+{"at":"2026-09-29T07:56:38.150Z","event":"finish","name":"C2 authorized acceptance, real isolated PostgreSQL > SQL rejects orphan C key, and immutable record/key edits/deletes after acceptance","state":"passed"}
+{"at":"2026-09-29T07:56:38.434Z","event":"start","name":"C2 controlled operational and transactional barriers > completion wins concurrent completion/cancel: no reopened dispatch and delivered state prevails"}
+{"at":"2026-09-29T07:56:38.438Z","event":"finish","name":"C2 controlled operational and transactional barriers > completion wins concurrent completion/cancel: no reopened dispatch and delivered state prevails","state":"passed"}
+{"at":"2026-09-29T07:56:38.749Z","event":"start","name":"C2 controlled operational and transactional barriers > cancel wins concurrent completion/cancel: no reopened dispatch and delivered state prevails"}
+{"at":"2026-09-29T07:56:38.753Z","event":"finish","name":"C2 controlled operational and transactional barriers > cancel wins concurrent completion/cancel: no reopened dispatch and delivered state prevails","state":"passed"}
+{"at":"2026-09-29T07:56:38.881Z","event":"start","name":"C2 controlled operational and transactional barriers > controlled failure after evidence/MQ/Dispatch mutation rolls back everything"}
+{"at":"2026-09-29T07:56:38.884Z","event":"finish","name":"C2 controlled operational and transactional barriers > controlled failure after evidence/MQ/Dispatch mutation rolls back everything","state":"passed"}
+{"at":"2026-09-29T07:56:38.983Z","event":"start","name":"C2 controlled operational and transactional barriers > credential scope removed while request waits is rejected on revalidation"}
+{"at":"2026-09-29T07:56:39.101Z","event":"finish","name":"C2 controlled operational and transactional barriers > credential scope removed while request waits is rejected on revalidation","state":"passed"}
+{"at":"2026-09-29T07:56:39.107Z","event":"start","name":"C2 SQL structural forgeries > rejects wrong-owner in structurally valid statements, exact guard failure"}
+{"at":"2026-09-29T07:56:39.112Z","event":"finish","name":"C2 SQL structural forgeries > rejects wrong-owner in structurally valid statements, exact guard failure","state":"passed"}
+{"at":"2026-09-29T07:56:39.117Z","event":"start","name":"C2 SQL structural forgeries > rejects wrong-quote in structurally valid statements, exact guard failure"}
+{"at":"2026-09-29T07:56:39.227Z","event":"finish","name":"C2 SQL structural forgeries > rejects wrong-quote in structurally valid statements, exact guard failure","state":"passed"}
+{"at":"2026-09-29T07:56:39.327Z","event":"start","name":"C2 SQL structural forgeries > rejects wrong-amount in structurally valid statements, exact guard failure"}
+{"at":"2026-09-29T07:56:39.332Z","event":"finish","name":"C2 SQL structural forgeries > rejects wrong-amount in structurally valid statements, exact guard failure","state":"passed"}
+{"at":"2026-09-29T07:56:39.336Z","event":"start","name":"C2 SQL structural forgeries > rejects no-dispatch in structurally valid statements, exact guard failure"}
+{"at":"2026-09-29T07:56:39.492Z","event":"finish","name":"C2 SQL structural forgeries > rejects no-dispatch in structurally valid statements, exact guard failure","state":"passed"}
+{"at":"2026-09-29T07:56:39.496Z","event":"start","name":"C2 final transaction deadline > expiry during snapshot persistence rolls back at deferred SQL validation with business code"}
+{"at":"2026-09-29T07:56:41.329Z","event":"finish","name":"C2 final transaction deadline > expiry during snapshot persistence rolls back at deferred SQL validation with business code","state":"passed"}
+{"at":"2026-09-29T07:56:41.446Z","event":"start","name":"C2 deterministic accept/cancel and administrative lock order > cancel transaction holds MDR first; concurrent accept sees terminal state after waiting"}
+{"at":"2026-09-29T07:56:41.452Z","event":"finish","name":"C2 deterministic accept/cancel and administrative lock order > cancel transaction holds MDR first; concurrent accept sees terminal state after waiting","state":"passed"}
+{"at":"2026-09-29T07:56:41.637Z","event":"start","name":"C2 deterministic accept/cancel and administrative lock order > accept holds MDR and credential first; concurrent cancel and revocation wait for its atomic commit"}
+{"at":"2026-09-29T07:56:41.640Z","event":"finish","name":"C2 deterministic accept/cancel and administrative lock order > accept holds MDR and credential first; concurrent cancel and revocation wait for its atomic commit","state":"passed"}

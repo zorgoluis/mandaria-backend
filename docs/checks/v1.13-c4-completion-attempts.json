@@ -1,0 +1,186 @@
+{
+  "attempts": [
+    {
+      "file": "delivery-requests-b2b",
+      "database": "mandaria_c4_reg_02b867eb3058_test",
+      "node": "v24.15.0",
+      "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/c4/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-requests-b2b.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/v1.13-c4-completion-1.json",
+      "testEnvironment": {
+        "B2B_WEBHOOK_POLL_SECONDS": "0"
+      },
+      "startedAt": "2026-09-29T15:04:57.883Z",
+      "endedAt": "2026-09-29T15:05:16.313Z",
+      "exit": 1,
+      "signal": null,
+      "report": "docs/checks/v1.13-c4-completion-1.json",
+      "log": "docs/checks/v1.13-c4-completion-1.txt",
+      "observer": "docs/checks/v1.13-c4-completion-1-events.jsonl"
+    },
+    {
+      "file": "delivery-requests-b2b",
+      "database": "mandaria_c4_reg_02b867eb3058_test",
+      "node": "v24.15.0",
+      "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/c4/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-requests-b2b.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/v1.13-c4-completion-2.json",
+      "testEnvironment": {
+        "B2B_WEBHOOK_POLL_SECONDS": "0"
+      },
+      "startedAt": "2026-09-29T15:05:49.422Z",
+      "endedAt": "2026-09-29T15:06:01.044Z",
+      "exit": 3221226505,
+      "signal": null,
+      "report": "docs/checks/v1.13-c4-completion-2.json",
+      "log": "docs/checks/v1.13-c4-completion-2.txt",
+      "observer": "docs/checks/v1.13-c4-completion-2-events.jsonl"
+    }
+  ],
+  "frozenFilesVerified": 348,
+  "historicalConfiguration": "v1.13-b4-rerun-evidence.json: cc7fb08e-2ec4-4027-bb5b-94ae87238a59, forks, 15/15, exit 0",
+  "reusedEvidence": {
+    "sourceCommit": "2e1a82ae4f2d4a7bca1440501fd75921c1e319d0",
+    "unitCases": 393,
+    "e2eCases": 738,
+    "e2eFiles": 32,
+    "reports": [
+      {
+        "file": "docs/checks/v1.13-c4-unit.json",
+        "sha256": "9c0935a1665a9d9eb6a26c433f6504ff25a0cefc99449ae5022b787eaf2ecaa2"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-authorized-acceptance.json",
+        "sha256": "6030389aaca27d8546251cb0a90363d59bf7019dc23f24edc7f0a7c37fe63840"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-b2b.json",
+        "sha256": "ded889c96f33d7e8ef3787a4f0c2bcfe3d59060a6813b342bd9c918c04df7342"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-diag-b2b-delivery-status.json",
+        "sha256": "074d6b46a77223b94013f9965093c5017fdd2805d6a090bb618a1c1cdb143d76"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-b2b-outbox.json",
+        "sha256": "6ce5b313ac67575a267cd9a76c441cd8c6920662daf78f9d748bedb4c09adbcc"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-diag-b2b-webhooks.json",
+        "sha256": "cc7251ef5f57850482404ea7bc0ee171471e5b301a0120dafd6ddace8c4f056e"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-check-a6-prequotes.json",
+        "sha256": "9564c5607dff045bacf8310d47ae2a89f0eca7bac123edebfb400cefcdfaeb62"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-check-b3-conversion.json",
+        "sha256": "c34e1b6beff7281fddc632e06fdcc69876f67e7827a01082fa43d1a156b442b2"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-check-b4-conversion.json",
+        "sha256": "f2b62f96f2fc457af0fbeb89e6f927f934a2f4405f06fdc7ded64efc1ed37530"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-check-c3-authorized-acceptance.json",
+        "sha256": "ddad5ef9e4a2f92cb2c9d5d798074a880da97d9ea2ff068b5404bbd20f25af2f"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-check-c4-recovery.json",
+        "sha256": "f93529d3ce0cc4e3a003dd09fa4af0fb0b003a3d54e9280bd147320aafa2ea94"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-core.json",
+        "sha256": "658c89475153455d5fc41475eeb8bb072bd9e70703e2d4c383c32f0db8f0a849"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-credit-consumption.json",
+        "sha256": "72e25610d33725fc42edb92d6f7d93840ff1fa4fef76eb4d5be2e59a8b033fb6"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-credit-policies.json",
+        "sha256": "216f08f0740289f610a0ae7709de3e4054544fe5658473186ddd17cf29e413a3"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-credit-refunds.json",
+        "sha256": "96736ddfc1a298218137f094a59e19d58e90a9b2810313b4aa2f029c63db3965"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-credits.json",
+        "sha256": "898784e5a554fe6fde3c3869aeea6902bf047455618966b9618821a08af75e51"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-delivery-assignments.json",
+        "sha256": "f5478fe5a1f746c7b481acaf56066148f14376d68996b74d74342c1ffc114fec"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-delivery-completion.json",
+        "sha256": "756d3a5cfcfbfb770f2561a1bbb0afb971b72a26dbde518ee6af174a899c6bc8"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-delivery-quotes.json",
+        "sha256": "c652a0c3ce797382548e19fec9bfac0c4d0b0ea2bdc4f5a8e3b1b37e1ce9cb0b"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-delivery-requests-validation.json",
+        "sha256": "07886fe5f0684d2df30653efd4a6a1c305de1d71398dced43d7e5dfb2eb15bc3"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-dispatch.json",
+        "sha256": "9467c87203d2ffa72115d77b8eaaadfaf922b56f90c6049187ec667385fe076f"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-dispatch-credit-snapshots.json",
+        "sha256": "3a367d7b48ad2f1ca2e5fa3e20007655b5517fabd755a8e58aac3e6f5e6bc694"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-driver-self.json",
+        "sha256": "f5f38c7573a325ebf1e9f194640790475029e304cd1bd8a47f0d4ee58b1095f6"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-drivers-vehicles.json",
+        "sha256": "f1fd62b093b793d93334a340a87f21e0c4e288bae096b757595199c7e110c013"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-independent-drivers.json",
+        "sha256": "3486d0e36f794fa6578202d32a60269fd7cc8d0caf97e94253fb2a07f8071c54"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-prequote-consumption.json",
+        "sha256": "c77711b28fe2c9ceadeed4ef0f1a7b189c3e5b88bf1a6534cf2d0f198a91e0fc"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-prequote-conversion.json",
+        "sha256": "7bdd5512d743fe30448229e562d2e2588645c1f3104ffe5df151213afa411aff"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-prequote-persistence.json",
+        "sha256": "f747ed9d3eef45d6b04d8a75af41d9b532a4009855a2628dc43807f10ba92db0"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-prequotes-http.json",
+        "sha256": "267bb52957b7d4d97f51bfcf52e05cb5e120263254efc583274604dd37691928"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-pricing-admin.json",
+        "sha256": "1c34754416109be08a14bc62718f9e04f4932da6bc87e0f314c1ba8b13667802"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-provider-admin-access.json",
+        "sha256": "25c1ba107b53db796197db6e5f90846b7ddbf8aaaf6ff40034be7a7b61b25972"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-providers.json",
+        "sha256": "169faec57a5e43d09834cbe633e9d649d83fdd6019ca2cfba192bfab1f0fd83c"
+      },
+      {
+        "file": "docs/checks/v1.13-c4-reg-user-invitations.json",
+        "sha256": "f8546e9935cc879855911be6ba50f0e937f028abe65ca80f52686f66d37c40bf"
+      }
+    ]
+  },
+  "versions": {
+    "node": "v24.15.0",
+    "vitest": "4.1.11",
+    "prisma": "6.19.3"
+  },
+  "verdict": "PARTIAL",
+  "newAccreditedCases": 0,
+  "envUnchanged": true
+}

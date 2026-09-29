@@ -11,6 +11,9 @@ import { ApiExtension } from '@nestjs/swagger';
 import type { IntegrationRequest } from './integration.guard.js';
 
 export const INTEGRATION_SCOPES = [
+  'prequotes:convert',
+  'prequotes:create',
+  'prequotes:read',
   'quotes:create',
   'quotes:read',
   'quotes:accept',

@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/delivery-quotes.e2e-spec.ts (14 tests) 6932ms
+     ✓ 20 concurrent quote calls produce one quote and one routing call; concurrent accepts one ACCEPTED  689ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  00:52:23
+   Duration  7.98s (transform 1.13s, setup 0ms, import 814ms, tests 6.93s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-delivery-quotes.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

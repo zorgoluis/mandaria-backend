@@ -1,0 +1,101 @@
+{
+  "at": "2026-09-29T08:12:00.298Z",
+  "frozenFiles": 348,
+  "changes": [],
+  "envUnchanged": true,
+  "headUnchanged": true,
+  "versionUnchanged": true,
+  "historicalC3": {
+    "files": 336,
+    "changes": []
+  },
+  "references": [
+    {
+      "reference": "checks/v1.13-c4-baseline.json",
+      "exists": true
+    },
+    {
+      "reference": "V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md",
+      "exists": true
+    },
+    {
+      "reference": "V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md",
+      "exists": true
+    },
+    {
+      "reference": "V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md",
+      "exists": true
+    },
+    {
+      "reference": "CHECK-V1.13-A6-PREQUOTES.md",
+      "exists": true
+    },
+    {
+      "reference": "CHECK-V1.13-B4-CONVERSION.md",
+      "exists": true
+    },
+    {
+      "reference": "REVIEW-V1.13-B4-CHECK.md",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-inventory.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-regression.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-evidence.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-regression.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-unit.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-consolidated.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-upgrade.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-migrations-final.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-all-database-scan.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-cleanup.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-artifact-check.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-diagnostics.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-native-events.json",
+      "exists": true
+    },
+    {
+      "reference": "checks/v1.13-c4-files.json",
+      "exists": true
+    }
+  ],
+  "parsedJsonFiles": 51,
+  "secretFindings": [],
+  "gitDiffCheck": ""
+}

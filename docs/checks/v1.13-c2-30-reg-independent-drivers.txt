@@ -1,0 +1,61 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ❯ test/independent-drivers.e2e-spec.ts (23 tests | 1 failed) 8378ms
+     ✓ only SUPER_ADMIN can enable; nobody can self-approve 26ms
+     ✓ enables an existing Driver straight to APPROVED, idempotently 37ms
+     ✓ refuses a driver that is not operational and reports unknown ids as 404 12ms
+     ✓ registers vehicles owned by the driver, never by a provider, within the limit 42ms
+     ✓ shows the capability and its own vehicles to the driver 37ms
+     × lists eligible dispatches without leaking private data 171ms
+     ✓ take is claim + assignment in one step, with OWNER detail and payment context 128ms
+     ✓ refuses a vehicle that is not the driver own, in either direction 137ms
+     ✓ a suspended independent driver cannot take anything 144ms
+     ✓ release cancels the assignment and reopens the dispatch, atomically 206ms
+     ✓ requires a motive and only the driver holding the service may release it 130ms
+     ✓ gives the driver no way to reassign a service to anyone 125ms
+     ✓ a provider CLAIM and an independent TAKE on the same dispatch produce one owner  442ms
+     ✓ several independent drivers competing for one dispatch: exactly one wins 131ms
+     ✓ the same driver taking two dispatches at once ends up busy on exactly one 192ms
+     ✓ the same vehicle on two dispatches at once is used by exactly one 182ms
+     ✓ a driver busy with fleet work cannot take an independent service, and the reverse  453ms
+     ✓ a vehicle executing a service cannot start another one 203ms
+     ✓ refuses both instead of leaving an inconsistent delivery  310ms
+     ✓ SQL rejects a dispatch owned by both models, whatever the service layer does 236ms
+     ✓ SQL rejects an assignment whose dispatch nobody has taken, and unowned vehicles 179ms
+     ✓ keeps the V1.8 guarantees and adds the V1.9 ones as database objects 9ms
+     ✓ every V1.9 event is audited and no secret reaches the logs 1ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 22 passed (23)
+   Start at  00:53:23
+   Duration  9.35s (transform 1.15s, setup 0ms, import 781ms, tests 8.38s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-independent-drivers.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/independent-drivers.e2e-spec.ts > V1.9 taking a service > lists eligible dispatches without leaking private data
+AssertionError: expected undefined to match object { status: 'OPEN', …(3) }
+
+- Expected:
+{
+  "access": "OFFER",
+  "serviceType": "LOCAL_DELIVERY",
+  "status": "OPEN",
+  "takenByMe": false,
+}
+
++ Received:
+undefined
+
+ ❯ test/independent-drivers.e2e-spec.ts:608:19
+    606|       .expect(200);
+    607|     const offer = list.body.items.find((d: { id: string }) => d.id ===…
+    608|     expect(offer).toMatchObject({
+       |                   ^
+    609|       status: 'OPEN',
+    610|       access: 'OFFER',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

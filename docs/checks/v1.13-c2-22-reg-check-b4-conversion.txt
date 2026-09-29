@@ -1,0 +1,16 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/check-b4-conversion.e2e-spec.ts (24 tests) 10657ms
+     ✓ exige PREPAID, MXN, FOOD y LOCAL_DELIVERY y trata goodsValue como opcional  432ms
+     ✓ antes del vencimiento convierte y después lo rechaza sin renovar el expiry  1598ms
+     ✓ una espera de lock que cruza el vencimiento termina en rechazo y rollback  2661ms
+     ✓ convertir sólo agrega sus propios recursos y no toca créditos, despacho ni legacy  683ms
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  00:52:10
+   Duration  11.66s (transform 1.29s, setup 0ms, import 826ms, tests 10.66s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-check-b4-conversion.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

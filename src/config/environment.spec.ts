@@ -7,6 +7,17 @@ const valid = {
   INTEGRATION_JWT_SECRET: 'c'.repeat(40),
 };
 describe('environment', () => {
+  it('keeps authorized acceptance disabled unless explicitly enabled', () => {
+    expect(validateEnvironment(valid).PREQUOTE_AUTHORIZED_ACCEPT_ENABLED).toBe(
+      false,
+    );
+    expect(
+      validateEnvironment({
+        ...valid,
+        PREQUOTE_AUTHORIZED_ACCEPT_ENABLED: 'true',
+      }).PREQUOTE_AUTHORIZED_ACCEPT_ENABLED,
+    ).toBe(true);
+  });
   it('rejects missing critical values', () =>
     expect(() => validateEnvironment({})).toThrow('Invalid environment'));
   it('rejects equal secrets and wildcard CORS', () => {

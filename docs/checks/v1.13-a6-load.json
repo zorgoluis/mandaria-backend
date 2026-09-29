@@ -1,0 +1,245 @@
+{
+  "environment": {
+    "node": "v24.15.0",
+    "platform": "win32",
+    "arch": "x64",
+    "cpu": "Intel(R) Core(TM) Ultra 7 155H",
+    "logicalCpus": 22,
+    "memoryGB": 31,
+    "database": "mandaria_a6_load_25c30c4ed3_test",
+    "postgresql": "PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35228, 64-bit"
+  },
+  "crashes": [
+    {
+      "phase": "reserved",
+      "exit": {
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "stateAfterRecovery": "EXPIRED",
+      "units": 1,
+      "consumptionRetained": false
+    },
+    {
+      "phase": "started",
+      "exit": {
+        "code": null,
+        "signal": "SIGKILL"
+      },
+      "stateAfterRecovery": "STARTED",
+      "units": 1,
+      "consumptionRetained": true
+    }
+  ],
+  "load": [
+    {
+      "historicalExpired": 0,
+      "currentStarted": 0,
+      "rows": 104,
+      "concurrency": 2,
+      "requests": 100,
+      "success": 100,
+      "errors": {},
+      "durationMs": 977,
+      "operationsPerSecond": 102.35,
+      "admissionMs": {
+        "p50": 10.49,
+        "p95": 17.32,
+        "p99": 26.04
+      }
+    },
+    {
+      "historicalExpired": 0,
+      "currentStarted": 0,
+      "rows": 204,
+      "concurrency": 8,
+      "requests": 100,
+      "success": 100,
+      "errors": {},
+      "durationMs": 1142,
+      "operationsPerSecond": 87.56,
+      "admissionMs": {
+        "p50": 42.23,
+        "p95": 105.61,
+        "p99": 171.61
+      }
+    },
+    {
+      "historicalExpired": 1000,
+      "currentStarted": 1000,
+      "rows": 2304,
+      "concurrency": 2,
+      "requests": 100,
+      "success": 100,
+      "errors": {},
+      "durationMs": 3693,
+      "operationsPerSecond": 27.08,
+      "admissionMs": {
+        "p50": 50.04,
+        "p95": 76.98,
+        "p99": 80.27
+      }
+    },
+    {
+      "historicalExpired": 1000,
+      "currentStarted": 1000,
+      "rows": 2404,
+      "concurrency": 8,
+      "requests": 100,
+      "success": 100,
+      "errors": {},
+      "durationMs": 3787,
+      "operationsPerSecond": 26.41,
+      "admissionMs": {
+        "p50": 156.5,
+        "p95": 268.88,
+        "p99": 295.14
+      }
+    },
+    {
+      "historicalExpired": 5000,
+      "currentStarted": 5000,
+      "rows": 10504,
+      "concurrency": 2,
+      "requests": 100,
+      "success": 100,
+      "errors": {},
+      "durationMs": 15482,
+      "operationsPerSecond": 6.46,
+      "admissionMs": {
+        "p50": 198.84,
+        "p95": 339.07,
+        "p99": 360.08
+      }
+    },
+    {
+      "historicalExpired": 5000,
+      "currentStarted": 5000,
+      "rows": 10604,
+      "concurrency": 8,
+      "requests": 100,
+      "success": 100,
+      "errors": {},
+      "durationMs": 14496,
+      "operationsPerSecond": 6.9,
+      "admissionMs": {
+        "p50": 634.17,
+        "p95": 1144.45,
+        "p99": 1260.01
+      }
+    }
+  ],
+  "queryPlan": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Seq Scan",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Relation Name": "PrequoteConsumptionPermit",
+            "Alias": "PrequoteConsumptionPermit",
+            "Startup Cost": 0,
+            "Total Cost": 971.82,
+            "Plan Rows": 7641,
+            "Plan Width": 224,
+            "Actual Startup Time": 0.029,
+            "Actual Total Time": 1.328,
+            "Actual Rows": 5001,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Filter": "(((state = 'RESERVED'::\"PrequotePermitState\") AND (\"reserveExpiresAt\" > '2026-09-28 18:52:51.242-06'::timestamp with time zone)) OR (\"startedAt\" > '2026-09-27 18:52:51.242-06'::timestamp with time zone) OR (\"protectedUntil\" > '2026-09-28 18:52:51.242-06'::timestamp with time zone))",
+            "Rows Removed by Filter": 5603,
+            "Shared Hit Blocks": 760,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning": {
+            "Shared Hit Blocks": 13,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.154,
+          "Triggers": [],
+          "Execution Time": 1.467
+        }
+      ]
+    }
+  ],
+  "routingCalls": 0,
+  "historyRetained": true,
+  "queryPlanDiagnosticVolatile": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Seq Scan",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Relation Name": "PrequoteConsumptionPermit",
+            "Alias": "PrequoteConsumptionPermit",
+            "Startup Cost": 0,
+            "Total Cost": 1157.16,
+            "Plan Rows": 5885,
+            "Plan Width": 224,
+            "Actual Startup Time": 0.091,
+            "Actual Total Time": 3.331,
+            "Actual Rows": 5001,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Filter": "(((state = 'RESERVED'::\"PrequotePermitState\") AND (\"reserveExpiresAt\" > (clock_timestamp() AT TIME ZONE 'UTC'::text))) OR (\"startedAt\" > ((clock_timestamp() AT TIME ZONE 'UTC'::text) - '24:00:00'::interval)) OR (\"protectedUntil\" > (clock_timestamp() AT TIME ZONE 'UTC'::text)))",
+            "Rows Removed by Filter": 5603,
+            "Shared Hit Blocks": 760,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning": {
+            "Shared Hit Blocks": 61,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.43,
+          "Triggers": [],
+          "Execution Time": 3.536
+        }
+      ]
+    }
+  ],
+  "queryPlanNote": "Parameterized timestamps as in product. Earlier volatile-clock diagnostic retained separately; do not equate its index plan with product.",
+  "idempotentDeploy": {
+    "exit": 0,
+    "statusExit": 0,
+    "permitRows": 10604,
+    "historyHashBefore": "618bd24ec038e8bf1aff57eca4448a2148e4269056c23a7834f74d628c185336",
+    "historyHashAfter": "618bd24ec038e8bf1aff57eca4448a2148e4269056c23a7834f74d628c185336",
+    "equal": true
+  }
+}

@@ -69,12 +69,15 @@ model IntegrationClient {
   credentials IntegrationCredential[]
   deliveryRequests DeliveryRequest[]
   idempotencyRecords ApiIdempotencyRecord[]
+  prequotes DeliveryPrequote[]
+  consumptionPermits PrequoteConsumptionPermit[]
   outboxEvents B2bOutboxEvent[]
   webhookEndpoint B2bWebhookEndpoint?
   webhookAttempts B2bWebhookDeliveryAttempt[]
   webhookDeliveries B2bWebhookDelivery[]
 }
 model IntegrationCredential {
+  authorizedAcceptances AuthorizedQuoteAcceptance[]
   id String @id @default(uuid()) @db.Uuid
   clientId String @db.Uuid
   client IntegrationClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -296,6 +299,8 @@ enum GoodsPaymentMode {
 /// Demand received from an IntegrationClient: what must be transported. Immutable except
 /// for cancellation. No provider/driver/vehicle relation until Dispatch.
 model DeliveryRequest {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
+  prequoteConversion PrequoteConversion?
   id String @id @default(uuid()) @db.Uuid
   /// MDR-000001; generated from sequence "DeliveryRequest_publicId_seq" inside the creation transaction.
   publicId String @unique
@@ -371,6 +376,10 @@ model DeliveryFinancialContext {
 }
 /// Reusable B2B idempotency ledger. Stores only a payload hash, never the payload.
 model ApiIdempotencyRecord {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
+  prequoteConversion PrequoteConversion?
+  execution ApiIdempotencyExecution?
+  prequote DeliveryPrequote?
   id String @id @default(uuid()) @db.Uuid
   integrationClientId String @db.Uuid
   key String
@@ -409,6 +418,7 @@ enum DeliveryQuoteStatus {
 /// Operating area. boundary is a validated GeoJSON Polygon/MultiPolygon; the bbox columns
 /// pre-filter candidates in SQL before the exact point-in-polygon check (PostGIS-replaceable).
 model ServiceZone {
+  prequotes DeliveryPrequote[]
   id String @id @default(uuid()) @db.Uuid
   code String @unique
   name String
@@ -428,6 +438,7 @@ model ServiceZone {
 }
 /// Versioned tariff for ServiceZone + ServiceType. Only DRAFT is editable; at most one ACTIVE.
 model RatePlan {
+  prequotes DeliveryPrequote[]
   id String @id @default(uuid()) @db.Uuid
   serviceZoneId String @db.Uuid
   serviceType ServiceType
@@ -449,6 +460,7 @@ model RatePlan {
 }
 /// Distance band [minDistanceMeters, maxDistanceMeters): min inclusive, max exclusive.
 model RateBand {
+  prequotes DeliveryPrequote[]
   id String @id @default(uuid()) @db.Uuid
   ratePlanId String @db.Uuid
   minDistanceMeters Int
@@ -464,6 +476,9 @@ model RateBand {
 }
 /// Immutable price snapshot for a DeliveryRequest. Only status and its timestamps change.
 model DeliveryQuote {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
+  @@unique([id, deliveryRequestId])
+  prequoteConversion PrequoteConversion?
   id String @id @default(uuid()) @db.Uuid
   /// MQ-000001; generated from sequence "DeliveryQuote_publicId_seq".
   publicId String @unique
@@ -584,6 +599,7 @@ enum DispatchCandidateStatus {
 /// V1.7: offer of an ACCEPTED quote to eligible providers. Created in the same transaction that
 /// accepts the quote (one per quote). The winner is claimedByProviderId; no Driver/Vehicle yet.
 model Dispatch {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
   /// V1.12-G: frozen by PostgreSQL at completion. NULL for historical deliveries; no backfill.
   publicExecutionSnapshot Json?
   /// V1.10-C: frozen credit cost per actor type; empty for Dispatches opened before V1.10-C.
@@ -1109,4 +1125,154 @@ model B2bWebhookDelivery {
   /// The worker queue: what is PENDING and due, oldest first.
   @@index([state, nextAttemptAt])
   @@index([integrationClientId, state])
+}
+
+/// Internal execution metadata, subordinate to the sole integration/key authority.
+enum IdempotencyExecutionState {
+  PROCESSING
+  RETRYABLE_FAILED
+  FAILED
+  SUCCEEDED
+}
+model ApiIdempotencyExecution {
+  recordId String @id @db.Uuid
+  state IdempotencyExecutionState
+  owner String @db.Uuid
+  version Int
+  attempts Int
+  maxAttempts Int
+  leaseExpiresAt DateTime
+  errorCode String?
+  record ApiIdempotencyRecord @relation(fields: [recordId], references: [id], onDelete: Restrict)
+}
+/// Published immutable offer. Expiration is derived; no conversion state in A3.
+model DeliveryPrequote {
+  @@unique([id, integrationClientId])
+  prequoteConversion PrequoteConversion?
+  id String @id @db.Uuid
+  publicId String @unique
+  idempotencyRecordId String @unique @db.Uuid
+  integrationClientId String @db.Uuid
+  conditionsVersion Int
+  conditions Json
+  serviceType ServiceType
+  serviceZoneId String @db.Uuid
+  zoneCode String
+  zoneName String
+  zoneBoundary Json
+  ratePlanId String @db.Uuid
+  rateBandId String @db.Uuid
+  distanceMeters Int
+  durationSeconds Int
+  routingProvider String
+  routeCalculatedAt DateTime
+  amount Decimal @db.Decimal(14, 2)
+  currency String @db.Char(3)
+  issuedAt DateTime
+  expiresAt DateTime
+  record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict)
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
+  ratePlan RatePlan @relation(fields: [ratePlanId, serviceZoneId], references: [id, serviceZoneId], onDelete: Restrict)
+  rateBand RateBand @relation(fields: [rateBandId, ratePlanId], references: [id, ratePlanId], onDelete: Restrict)
+  @@index([integrationClientId, issuedAt])
+}
+
+enum PrequotePermitState {
+  RESERVED
+  STARTED
+  FINISHED
+  CANCELLED
+  EXPIRED
+  ABANDONED
+}
+/// Configuration identity only, never a second quota counter.
+model PrequoteConsumptionPolicy {
+  id Int @id
+  fingerprint String @db.VarChar(64)
+}
+/// Single durable authority for reservations and potential MPQ routing consumption.
+model PrequoteConsumptionPermit {
+  id String @id @db.Uuid
+  integrationClientId String @db.Uuid
+  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  ownerHash String @db.VarChar(64)
+  policyFingerprint String @db.VarChar(64)
+  state PrequotePermitState
+  units Int
+  routingBudgetMs Int
+  reservedAt DateTime
+  reserveExpiresAt DateTime
+  startedAt DateTime?
+  startBy DateTime?
+  protectedUntil DateTime?
+  finishedAt DateTime?
+  routingReported Boolean?
+  publishedReported Boolean?
+  @@index([integrationClientId, startedAt])
+  @@index([startedAt])
+  @@index([state, reserveExpiresAt])
+  @@index([protectedUntil])
+}
+
+/// Immutable commercial facts and complete child identity manifest. Destination FKs deferred in SQL.
+model PrequoteConversion {
+  authorizedAcceptance AuthorizedQuoteAcceptance?
+  @@unique([prequoteId, integrationClientId])
+  @@unique([deliveryRequestId, integrationClientId])
+  @@unique([deliveryQuoteId, deliveryRequestId])
+  id String @id @db.Uuid
+  prequoteId String @unique @db.Uuid
+  deliveryRequestId String @unique @db.Uuid
+  deliveryQuoteId String @unique @db.Uuid
+  idempotencyRecordId String @unique @db.Uuid
+  integrationClientId String @db.Uuid
+  convertedAt DateTime @default(dbgenerated("clock_timestamp()"))
+  goodsPaymentStatus String
+  goodsPaymentReference String
+  goodsPaymentConfirmedAt DateTime
+  orderAcceptanceStatus String
+  orderAcceptanceReference String
+  orderAcceptedAt DateTime
+  collectionPayer String
+  collectionMethod String
+  collectionDueAt String
+  collectionComponent String
+  stopIds String[] @db.Uuid
+  packageIds String[] @db.Uuid
+  financialContextId String @db.Uuid
+  prequote DeliveryPrequote @relation(fields: [prequoteId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
+  deliveryQuote DeliveryQuote @relation(fields: [deliveryQuoteId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
+  record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+}
+
+/// Immutable integrator attestation, not independently verified human consent.
+model AuthorizedQuoteAcceptance {
+  @@unique([deliveryRequestId, integrationClientId])
+  @@unique([deliveryQuoteId, deliveryRequestId])
+  @@unique([dispatchId, deliveryRequestId])
+  id String @id @db.Uuid
+  conversionId String @unique @db.Uuid
+  deliveryRequestId String @unique @db.Uuid
+  deliveryQuoteId String @unique @db.Uuid
+  integrationClientId String @db.Uuid
+  dispatchId String @unique @db.Uuid
+  idempotencyRecordId String @unique @db.Uuid
+  credentialId String @db.Uuid
+  authenticatedTokenExpiresAt DateTime
+  authorizationVersion Int
+  authorizationStatus String
+  authorizationReference String @db.VarChar(100)
+  authorizedAt DateTime
+  acceptedAt DateTime @default(dbgenerated("clock_timestamp()"))
+  authorizedAmount Decimal @db.Decimal(14, 2)
+  authorizedCurrency String @db.Char(3)
+  authorizedExpiresAt DateTime
+  conversion PrequoteConversion @relation(fields: [conversionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  request DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
+  quote DeliveryQuote @relation(fields: [deliveryQuoteId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
+  dispatch Dispatch @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
+  record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  credential IntegrationCredential @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 }

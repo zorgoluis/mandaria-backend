@@ -1,0 +1,123 @@
+deploy B 0 Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "mandaria_c2_upgrade_50096f2691_test", schema "public" at "localhost:5432"
+
+28 migrations found in prisma/migrations
+
+Applying migration `20260915000100_core`
+Applying migration `20260915000200_b2b_credentials`
+Applying migration `20260915000300_delivery_providers`
+Applying migration `20260915000400_drivers_vehicles`
+Applying migration `20260915000500_delivery_requests`
+Applying migration `20260915000600_routing_pricing_quotes`
+Applying migration `20260916000700_user_invitations`
+Applying migration `20260917000800_dispatch_engine`
+Applying migration `20260917000900_delivery_assignments`
+Applying migration `20260918001000_independent_drivers`
+Applying migration `20260921001100_credit_accounts_ledger`
+Applying migration `20260921001200_credit_ledger_purge_test_only`
+Applying migration `20260922001300_credit_policies`
+Applying migration `20260922001400_dispatch_credit_snapshots`
+Applying migration `20260923000100_dispatch_credit_consumption`
+Applying migration `20260923000200_award_integrity_boundary`
+Applying migration `20260923000300_service_refunds`
+Applying migration `20260923001500_delivery_completion_states`
+Applying migration `20260923001600_delivery_completion_rules`
+Applying migration `20260924000100_b2b_event_outbox`
+Applying migration `20260925000100_b2b_webhook_delivery`
+Applying migration `20260926000100_reliable_webhook_delivery`
+Applying migration `20260927000100_webhook_operations`
+Applying migration `20260928000100_b2b_public_execution_identity`
+Applying migration `20260928000100_prequote_persistence`
+Applying migration `20260928000200_prequote_execution_hardening`
+Applying migration `20260928000300_prequote_consumption`
+Applying migration `20260928000400_prequote_conversion`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260915000100_core/
+    └─ migration.sql
+  └─ 20260915000200_b2b_credentials/
+    └─ migration.sql
+  └─ 20260915000300_delivery_providers/
+    └─ migration.sql
+  └─ 20260915000400_drivers_vehicles/
+    └─ migration.sql
+  └─ 20260915000500_delivery_requests/
+    └─ migration.sql
+  └─ 20260915000600_routing_pricing_quotes/
+    └─ migration.sql
+  └─ 20260916000700_user_invitations/
+    └─ migration.sql
+  └─ 20260917000800_dispatch_engine/
+    └─ migration.sql
+  └─ 20260917000900_delivery_assignments/
+    └─ migration.sql
+  └─ 20260918001000_independent_drivers/
+    └─ migration.sql
+  └─ 20260921001100_credit_accounts_ledger/
+    └─ migration.sql
+  └─ 20260921001200_credit_ledger_purge_test_only/
+    └─ migration.sql
+  └─ 20260922001300_credit_policies/
+    └─ migration.sql
+  └─ 20260922001400_dispatch_credit_snapshots/
+    └─ migration.sql
+  └─ 20260923000100_dispatch_credit_consumption/
+    └─ migration.sql
+  └─ 20260923000200_award_integrity_boundary/
+    └─ migration.sql
+  └─ 20260923000300_service_refunds/
+    └─ migration.sql
+  └─ 20260923001500_delivery_completion_states/
+    └─ migration.sql
+  └─ 20260923001600_delivery_completion_rules/
+    └─ migration.sql
+  └─ 20260924000100_b2b_event_outbox/
+    └─ migration.sql
+  └─ 20260925000100_b2b_webhook_delivery/
+    └─ migration.sql
+  └─ 20260926000100_reliable_webhook_delivery/
+    └─ migration.sql
+  └─ 20260927000100_webhook_operations/
+    └─ migration.sql
+  └─ 20260928000100_b2b_public_execution_identity/
+    └─ migration.sql
+  └─ 20260928000100_prequote_persistence/
+    └─ migration.sql
+  └─ 20260928000200_prequote_execution_hardening/
+    └─ migration.sql
+  └─ 20260928000300_prequote_consumption/
+    └─ migration.sql
+  └─ 20260928000400_prequote_conversion/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+Loaded Prisma config from .tmp\c2\upgrade\prisma.config.ts.
+
+Prisma config detected, skipping environment variable loading.
+
+seed B graph via real HTTP conversion (not a full-suite validation) 0 JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-upgrade-seed.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+C:\Users\zorgl\Documents\mandaria-backend\node_modules\@prisma\client\runtime\library.js:121
+`)}var So=({clientMethod:e,activeProvider:r})=>t=>{let n="",i;if(Vn(t))n=t.sql,i={values:Wr(t.values),__prismaRawParameters__:!0};else if(Array.isArray(t)){let[o,...s]=t;n=o,i={values:Wr(s||[]),__prismaRawParameters__:!0}}else switch(r){case"sqlite":case"mysql":{n=t.sql,i={values:Wr(t.values),__prismaRawParameters__:!0};break}case"cockroachdb":case"postgresql":case"postgres":{n=t.text,i={values:Wr(t.values),__prismaRawParameters__:!0};break}case"sqlserver":{n=Vl(t),i={values:Wr(t.values),__prismaRawParameters__:!0};break}default:throw new Error(`The ${r} provider does not support ${e}`)}return i?.values?Ql(`prisma.${e}(${n}, ${i.values})`):Ql(`prisma.${e}(${n})`),{query:n,parameters:i}},Wl={requestArgsToMiddlewareArgs(e){return[e.strings,...e.values]},middlewareArgsToRequestArgs(e){let[r,...t]=e;return new ie(r,t)}},Jl={requestArgsToMiddlewareArgs(e){return[e]},middlewareArgsToRequestArgs(e){return e[0]}};function Ro(e){return function(t,n){let i,o=(s=e)=>{try{return s===void 0||s?.kind==="itx"?i??=Kl(t(s)):Kl(t(s))}catch(a){return Promise.reject(a)}};return{get spec(){return n},then(s,a){return o().then(s,a)},catch(s){return o().catch(s)},finally(s){return o().finally(s)},requestTransaction(s){let a=o(s);return a.requestTransaction?a.requestTransaction(s):a},[Symbol.toStringTag]:"PrismaPromise"}}}function Kl(e){return typeof e.then=="function"?e:Promise.resolve(e)}var Tf=xi.split(".")[0],Sf={isEnabled(){return!1},getTraceParent(){return"00-10-10-00"},dispatchEngineSpans(){},getActiveContext(){},runInChildSpan(e,r){return r()}},Ao=class{isEnabled(){return this.getGlobalTracingHelper().isEnabled()}getTraceParent(r){return this.getGlobalTracingHelper().getTraceParent(r)}dispatchEngineSpans(r){return this.getGlobalTracingHelper().dispatchEngineSpans(r)}getActiveContext(){return this.getGlobalTracingHelper().getActiveContext()}runInChildSpan(r,t){return this.getGlobalTracingHelper().runInChildSpan(r,t)}getGlobalTracingHelper(){let r=globalThis[`V${Tf}_PRISMA_INSTRUMENTATION`],t=globalThis.PRISMA_INSTRUMENTATION;return r?.helper??t?.helper??Sf}};function Hl(){return new Ao}function Yl(e,r=()=>{}){let t,n=new Promise(i=>t=i);return{then(i){return--e===0&&t(r()),i?.(n)}}}function zl(e){return typeof e=="string"?e:e.reduce((r,t)=>{let n=typeof t=="string"?t:t.level;return n==="query"?r:r&&(t==="info"||r==="info")?"info":n},void 0)}function zn(e){return typeof e.batchRequestIdx=="number"}function Zl(e){if(e.action!=="findUnique"&&e.action!=="findUniqueOrThrow")return;let r=[];return e.modelName&&r.push(e.modelName),e.query.arguments&&r.push(Co(e.query.arguments)),r.push(Co(e.query.selection)),r.join("")}function Co(e){return`(${Object.keys(e).sort().map(t=>{let n=e[t];return typeof n=="object"&&n!==null?`(${t} ${Co(n)})`:t}).join(" ")})`}var Rf={aggregate:!1,aggregateRaw:!1,createMany:!0,createManyAndReturn:!0,createOne:!0,deleteMany:!0,deleteOne:!0,executeRaw:!0,findFirst:!1,findFirstOrThrow:!1,findMany:!1,findRaw:!1,findUnique:!1,findUniqueOrThrow:!1,groupBy:!1,queryRaw:!1,runCommandRaw:!0,updateMany:!0,updateManyAndReturn:!0,updateOne:!0,upsertOne:!0};function Io(e){return Rf[e]}var Zn=class{constructor(r){this.options=r;this.batches={}}batches;tickActive=!1;request(r){let t=this.options.batchBy(r);return t?(this.batches[t]||(this.batches[t]=[],this.tickActive||(this.tickActive=!0,process.nextTick(()=>{this.dispatchBatches(),this.tickActive=!1}))),new Promise((n,i)=>{this.batches[t].push({request:r,resolve:n,reject:i})})):this.options.singleLoader(r)}dispatchBatches(){for(let r in this.batches){let t=this.batches[r];delete this.batches[r],t.length===1?this.options.singleLoader(t[0].request).then(n=>{n instanceof Error?t[0].reject(n):t[0].resolve(n)}).catch(n=>{t[0].reject(n)}):(t.sort((n,i)=>this.options.batchOrder(n.request,i.request)),this.options.batchLoader(t.map(n=>n.request)).then(n=>{if(n instanceof Error)for(let i=0;i<t.length;i++)t[i].reject(n);else for(let i=0;i<t.length;i++){let o=n[i];o instanceof Error?t[i].reject(o):t[i].resolve(o)}}).catch(n=>{for(let i=0;i<t.length;i++)t[i].reject(n)}))}}get[Symbol.toStringTag](){return"DataLoader"}};function mr(e,r){if(r===null)return r;switch(e){case"bigint":return BigInt(r);case"bytes":{let{buffer:t,byteOffset:n,byteLength:i}=Buffer.from(r,"base64");return new Uint8Array(t,n,i)}case"decimal":return new Fe(r);case"datetime":case"date":return new Date(r);case"time":return new Date(`1970-01-01T${r}Z`);case"bigint-array":return r.map(t=>mr("bigint",t));case"bytes-array":return r.map(t=>mr("bytes",t));case"decimal-array":return r.map(t=>mr("decimal",t));case"datetime-array":return r.map(t=>mr("datetime",t));case"date-array":return r.map(t=>mr("date",t));case"time-array":return r.map(t=>mr("time",t));default:return r}}function Xn(e){let r=[],t=Af(e);for(let n=0;n<e.rows.length;n++){let i=e.rows[n],o={...t};for(let s=0;s<i.length;s++)o[e.columns[s]]=mr(e.types[s],i[s]);r.push(o)}return r}function Af(e){let r={};for(let t=0;t<e.columns.length;t++)r[e.columns[t]]=null;return r}var Cf=N("prisma:client:request_handler"),ei=class{client;dataloader;logEmitter;constructor(r,t){this.logEmitter=t,this.client=r,this.dataloader=new Zn({batchLoader:rl(async({requests:n,customDataProxyFetch:i})=>{let{transaction:o,otelParentCtx:s}=n[0],a=n.map(p=>p.protocolQuery),l=this.client._tracingHelper.getTraceParent(s),u=n.some(p=>Io(p.protocolQuery.action));return(await this.client._engine.requestBatch(a,{traceparent:l,transaction:If(o),containsWrite:u,customDataProxyFetch:i})).map((p,d)=>{if(p instanceof Error)return p;try{return this.mapQueryEngineResult(n[d],p)}catch(f){return f}})}),singleLoader:async n=>{let i=n.transaction?.kind==="itx"?Xl(n.transaction):void 0,o=await this.client._engine.request(n.protocolQuery,{traceparent:this.client._tracingHelper.getTraceParent(),interactiveTransaction:i,isWrite:Io(n.protocolQuery.action),customDataProxyFetch:n.customDataProxyFetch});return this.mapQueryEngineResult(n,o)},batchBy:n=>n.transaction?.id?`transaction-${n.transaction.id}`:Zl(n.protocolQuery),batchOrder(n,i){return n.transaction?.kind==="batch"&&i.transaction?.kind==="batch"?n.transaction.index-i.transaction.index:0}})}async request(r){try{return await this.dataloader.request(r)}catch(t){let{clientMethod:n,callsite:i,transaction:o,args:s,modelName:a}=r;this.handleAndLogRequestError({error:t,clientMethod:n,callsite:i,transaction:o,args:s,modelName:a,globalOmit:r.globalOmit})}}mapQueryEngineResult({dataPath:r,unpacker:t},n){let i=n?.data,o=this.unpack(i,r,t);return process.env.PRISMA_CLIENT_GET_TIME?{data:o}:o}handleAndLogRequestError(r){try{this.handleRequestError(r)}catch(t){throw this.logEmitter&&this.logEmitter.emit("error",{message:t.message,target:r.clientMethod,timestamp:new Date}),t}}handleRequestError({error:r,clientMethod:t,callsite:n,transaction:i,args:o,modelName:s,globalOmit:a}){if(Cf(r),Df(r,i))throw r;if(r instanceof z&&Of(r)){let u=eu(r.meta);Nn({args:o,errors:[u],callsite:n,errorFormat:this.client._errorFormat,originalMethod:t,clientVersion:this.client._clientVersion,globalOmit:a})}let l=r.message;if(n&&(l=Tn({callsite:n,originalMethod:t,isPanic:r.isPanic,showColors:this.client._errorFormat==="pretty",message:l})),l=this.sanitizeMessage(l),r.code){let u=s?{modelName:s,...r.meta}:r.meta;throw new z(l,{code:r.code,clientVersion:this.client._clientVersion,meta:u,batchRequestIdx:r.batchRequestIdx})}else{if(r.isPanic)throw new ae(l,this.client._clientVersion);if(r instanceof V)throw new V(l,{clientVersion:this.client._clientVersion,batchRequestIdx:r.batchRequestIdx});if(r instanceof P)throw new P(l,this.client._clientVersion);if(r instanceof ae)throw new ae(l,this.client._clientVersion)}throw r.clientVersion=this.client._clientVersion,r}sanitizeMessage(r){return this.client._errorFormat&&this.client._errorFormat!=="pretty"?wr(r):r}unpack(r,t,n){if(!r||(r.data&&(r=r.data),!r))return r;let i=Object.keys(r)[0],o=Object.values(r)[0],s=t.filter(u=>u!=="select"&&u!=="include"),a=ao(o,s),l=i==="queryRaw"?Xn(a):Vr(a);return n?n(l):l}get[Symbol.toStringTag](){return"RequestHandler"}};function If(e){if(e){if(e.kind==="batch")return{kind:"batch",options:{isolationLevel:e.isolationLevel}};if(e.kind==="itx")return{kind:"itx",options:Xl(e)};ar(e,"Unknown transaction kind")}}function Xl(e){return{id:e.id,payload:e.payload}}function Df(e,r){return zn(e)&&r?.kind==="batch"&&e.batchRequestIdx!==r.index}function Of(e){return e.code==="P2009"||e.code==="P2012"}function eu(e){if(e.kind==="Union")return{kind:"Union",errors:e.errors.map(eu)};if(Array.isArray(e.selectionPath)){let[,...r]=e.selectionPath;return{...e,selectionPath:r}}return e}var ru=xl;var su=O(Ki());var _=class extends Error{constructor(r){super(r+`
+
+
+PrismaClientKnownRequestError:
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42703`. Message: `no existe la columna «id»`
+    at ei.handleRequestError (C:\Users\zorgl\Documents\mandaria-backend\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\zorgl\Documents\mandaria-backend\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\zorgl\Documents\mandaria-backend\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\zorgl\Documents\mandaria-backend\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async digest (file:///C:/Users/zorgl/Documents/mandaria-backend/scripts/verify-authorized-acceptance-migrations.mjs:68:18)
+    at async file:///C:/Users/zorgl/Documents/mandaria-backend/scripts/verify-authorized-acceptance-migrations.mjs:97:18 {
+  code: 'P2010',
+  meta: { code: '42703', message: 'no existe la columna «id»' },
+  clientVersion: '6.19.3'
+}
+
+Node.js v24.15.0

@@ -1,0 +1,28 @@
+{
+  "attempts": [
+    {
+      "file": "delivery-quotes",
+      "database": "mandaria_c3_reg_3ee34646e0db_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-quotes.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c3-runner-observer.mjs --outputFile=docs/checks/v1.13-c3-diag-delivery-quotes.json",
+      "startedAt": "2026-09-29T07:31:00.228Z",
+      "endedAt": "2026-09-29T07:31:17.042Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-diag-delivery-quotes.json",
+      "log": "docs/checks/v1.13-c3-diag-delivery-quotes.txt",
+      "observer": "docs/checks/v1.13-c3-diag-delivery-quotes-events.jsonl"
+    },
+    {
+      "file": "delivery-assignments",
+      "database": "mandaria_c3_reg_da3853363c5d_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-assignments.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c3-runner-observer.mjs --outputFile=docs/checks/v1.13-c3-diag-delivery-assignments.json",
+      "startedAt": "2026-09-29T07:31:17.049Z",
+      "endedAt": "2026-09-29T07:31:29.849Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-diag-delivery-assignments.json",
+      "log": "docs/checks/v1.13-c3-diag-delivery-assignments.txt",
+      "observer": "docs/checks/v1.13-c3-diag-delivery-assignments-events.jsonl"
+    }
+  ]
+}

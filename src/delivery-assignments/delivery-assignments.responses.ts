@@ -1,3 +1,7 @@
+import {
+  CollectionInstructionsResponse,
+  collectionInstructionsDoc,
+} from './collection-instructions.responses.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   DeliveryAssignmentEndReason,
@@ -77,6 +81,11 @@ export class DeliveryAssignmentResponse {
     string | null;
 }
 export class DeliveryAssignmentWithPaymentResponse extends DeliveryAssignmentResponse {
+  @ApiPropertyOptional({
+    type: CollectionInstructionsResponse,
+    description: collectionInstructionsDoc,
+  })
+  collectionInstructions?: CollectionInstructionsResponse;
   @ApiProperty({ type: PaymentContextResponse })
   paymentContext!: PaymentContextResponse;
 }

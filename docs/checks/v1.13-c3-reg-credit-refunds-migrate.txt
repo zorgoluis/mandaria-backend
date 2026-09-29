@@ -1,0 +1,101 @@
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "mandaria_c3_reg_2b5284ad8a63_test", schema "public" at "localhost:5432"
+
+29 migrations found in prisma/migrations
+
+Applying migration `20260915000100_core`
+Applying migration `20260915000200_b2b_credentials`
+Applying migration `20260915000300_delivery_providers`
+Applying migration `20260915000400_drivers_vehicles`
+Applying migration `20260915000500_delivery_requests`
+Applying migration `20260915000600_routing_pricing_quotes`
+Applying migration `20260916000700_user_invitations`
+Applying migration `20260917000800_dispatch_engine`
+Applying migration `20260917000900_delivery_assignments`
+Applying migration `20260918001000_independent_drivers`
+Applying migration `20260921001100_credit_accounts_ledger`
+Applying migration `20260921001200_credit_ledger_purge_test_only`
+Applying migration `20260922001300_credit_policies`
+Applying migration `20260922001400_dispatch_credit_snapshots`
+Applying migration `20260923000100_dispatch_credit_consumption`
+Applying migration `20260923000200_award_integrity_boundary`
+Applying migration `20260923000300_service_refunds`
+Applying migration `20260923001500_delivery_completion_states`
+Applying migration `20260923001600_delivery_completion_rules`
+Applying migration `20260924000100_b2b_event_outbox`
+Applying migration `20260925000100_b2b_webhook_delivery`
+Applying migration `20260926000100_reliable_webhook_delivery`
+Applying migration `20260927000100_webhook_operations`
+Applying migration `20260928000100_b2b_public_execution_identity`
+Applying migration `20260928000100_prequote_persistence`
+Applying migration `20260928000200_prequote_execution_hardening`
+Applying migration `20260928000300_prequote_consumption`
+Applying migration `20260928000400_prequote_conversion`
+Applying migration `20260929000100_authorized_quote_acceptance`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260915000100_core/
+    └─ migration.sql
+  └─ 20260915000200_b2b_credentials/
+    └─ migration.sql
+  └─ 20260915000300_delivery_providers/
+    └─ migration.sql
+  └─ 20260915000400_drivers_vehicles/
+    └─ migration.sql
+  └─ 20260915000500_delivery_requests/
+    └─ migration.sql
+  └─ 20260915000600_routing_pricing_quotes/
+    └─ migration.sql
+  └─ 20260916000700_user_invitations/
+    └─ migration.sql
+  └─ 20260917000800_dispatch_engine/
+    └─ migration.sql
+  └─ 20260917000900_delivery_assignments/
+    └─ migration.sql
+  └─ 20260918001000_independent_drivers/
+    └─ migration.sql
+  └─ 20260921001100_credit_accounts_ledger/
+    └─ migration.sql
+  └─ 20260921001200_credit_ledger_purge_test_only/
+    └─ migration.sql
+  └─ 20260922001300_credit_policies/
+    └─ migration.sql
+  └─ 20260922001400_dispatch_credit_snapshots/
+    └─ migration.sql
+  └─ 20260923000100_dispatch_credit_consumption/
+    └─ migration.sql
+  └─ 20260923000200_award_integrity_boundary/
+    └─ migration.sql
+  └─ 20260923000300_service_refunds/
+    └─ migration.sql
+  └─ 20260923001500_delivery_completion_states/
+    └─ migration.sql
+  └─ 20260923001600_delivery_completion_rules/
+    └─ migration.sql
+  └─ 20260924000100_b2b_event_outbox/
+    └─ migration.sql
+  └─ 20260925000100_b2b_webhook_delivery/
+    └─ migration.sql
+  └─ 20260926000100_reliable_webhook_delivery/
+    └─ migration.sql
+  └─ 20260927000100_webhook_operations/
+    └─ migration.sql
+  └─ 20260928000100_b2b_public_execution_identity/
+    └─ migration.sql
+  └─ 20260928000100_prequote_persistence/
+    └─ migration.sql
+  └─ 20260928000200_prequote_execution_hardening/
+    └─ migration.sql
+  └─ 20260928000300_prequote_consumption/
+    └─ migration.sql
+  └─ 20260928000400_prequote_conversion/
+    └─ migration.sql
+  └─ 20260929000100_authorized_quote_acceptance/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+Loaded Prisma config from prisma.test.config.ts.
+
+Prisma config detected, skipping environment variable loading.

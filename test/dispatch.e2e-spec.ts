@@ -605,6 +605,7 @@ describe.sequential('Provider claiming', () => {
       },
     });
     const offerJson = JSON.stringify(item);
+    expect(item).not.toHaveProperty('collectionInstructions');
     for (const hidden of [
       CONTACT_PHONE,
       CONTACT_NAME,

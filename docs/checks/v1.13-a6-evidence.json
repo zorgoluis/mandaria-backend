@@ -1,0 +1,752 @@
+{
+  "baseline": {
+    "head": "1172567c85c8c967424ac6ab1f6bfdbc054fe741",
+    "branch": "1.13-Precotización_integración_comida_prepagada",
+    "preexistingUntracked": [
+      "nul"
+    ],
+    "frozenFiles": 250
+  },
+  "targets": {
+    "regression": "mandaria_a6_reg_25c30c4ed3_test",
+    "check": "mandaria_a6_check_25c30c4ed3_test",
+    "load": "mandaria_a6_load_25c30c4ed3_test"
+  },
+  "unit": [
+    {
+      "file": "unit",
+      "exit": 0,
+      "passed": 372,
+      "failed": 0,
+      "total": 372
+    }
+  ],
+  "regression": {
+    "initial": [
+      {
+        "file": "b2b-delivery-status.e2e-spec.ts",
+        "exit": 0,
+        "passed": 21,
+        "failed": 0,
+        "total": 21
+      },
+      {
+        "file": "b2b-outbox.e2e-spec.ts",
+        "exit": 0,
+        "passed": 17,
+        "failed": 0,
+        "total": 17
+      },
+      {
+        "file": "b2b-webhooks.e2e-spec.ts",
+        "exit": 0,
+        "passed": 54,
+        "failed": 0,
+        "total": 54
+      },
+      {
+        "file": "b2b.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14
+      },
+      {
+        "file": "core.e2e-spec.ts",
+        "exit": 0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      {
+        "file": "credit-consumption.e2e-spec.ts",
+        "exit": 0,
+        "passed": 36,
+        "failed": 0,
+        "total": 36
+      },
+      {
+        "file": "credit-policies.e2e-spec.ts",
+        "exit": 0,
+        "passed": 19,
+        "failed": 0,
+        "total": 19
+      },
+      {
+        "file": "credit-refunds.e2e-spec.ts",
+        "exit": 0,
+        "passed": 22,
+        "failed": 0,
+        "total": 22
+      },
+      {
+        "file": "credits.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24
+      },
+      {
+        "file": "delivery-assignments.e2e-spec.ts",
+        "exit": 0,
+        "passed": 13,
+        "failed": 0,
+        "total": 13
+      },
+      {
+        "file": "delivery-completion.e2e-spec.ts",
+        "exit": 0,
+        "passed": 29,
+        "failed": 0,
+        "total": 29
+      },
+      {
+        "file": "delivery-quotes.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14
+      },
+      {
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "exit": 3221226505
+      },
+      {
+        "file": "delivery-requests-validation.e2e-spec.ts",
+        "exit": 0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      {
+        "file": "dispatch-credit-snapshots.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14
+      },
+      {
+        "file": "dispatch.e2e-spec.ts",
+        "exit": 3221226505
+      },
+      {
+        "file": "driver-self.e2e-spec.ts",
+        "exit": 0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      {
+        "file": "drivers-vehicles.e2e-spec.ts",
+        "exit": 3221226505
+      },
+      {
+        "file": "independent-drivers.e2e-spec.ts",
+        "exit": 3221226505
+      },
+      {
+        "file": "prequote-consumption.e2e-spec.ts",
+        "exit": 0,
+        "passed": 21,
+        "failed": 0,
+        "total": 21
+      },
+      {
+        "file": "prequote-persistence.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24
+      },
+      {
+        "file": "prequotes-http.e2e-spec.ts",
+        "exit": 0,
+        "passed": 40,
+        "failed": 0,
+        "total": 40
+      },
+      {
+        "file": "pricing-admin.e2e-spec.ts",
+        "exit": 0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4
+      },
+      {
+        "file": "provider-admin-access.e2e-spec.ts",
+        "exit": 0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9
+      },
+      {
+        "file": "providers.e2e-spec.ts",
+        "exit": 0,
+        "passed": 15,
+        "failed": 0,
+        "total": 15
+      },
+      {
+        "file": "user-invitations.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24
+      }
+    ],
+    "retry": [
+      {
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "exit": 3221226505
+      },
+      {
+        "file": "dispatch.e2e-spec.ts",
+        "exit": 0,
+        "passed": 13,
+        "failed": 0,
+        "total": 13
+      },
+      {
+        "file": "drivers-vehicles.e2e-spec.ts",
+        "exit": 0,
+        "passed": 11,
+        "failed": 0,
+        "total": 11
+      },
+      {
+        "file": "independent-drivers.e2e-spec.ts",
+        "exit": 0,
+        "passed": 23,
+        "failed": 0,
+        "total": 23
+      }
+    ],
+    "secondRetryForks": [
+      {
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "exit": 0,
+        "passed": 15,
+        "failed": 0,
+        "total": 15
+      }
+    ],
+    "consolidated": [
+      {
+        "file": "b2b-delivery-status.e2e-spec.ts",
+        "exit": 0,
+        "passed": 21,
+        "failed": 0,
+        "total": 21
+      },
+      {
+        "file": "b2b-outbox.e2e-spec.ts",
+        "exit": 0,
+        "passed": 17,
+        "failed": 0,
+        "total": 17
+      },
+      {
+        "file": "b2b-webhooks.e2e-spec.ts",
+        "exit": 0,
+        "passed": 54,
+        "failed": 0,
+        "total": 54
+      },
+      {
+        "file": "b2b.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14
+      },
+      {
+        "file": "core.e2e-spec.ts",
+        "exit": 0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      {
+        "file": "credit-consumption.e2e-spec.ts",
+        "exit": 0,
+        "passed": 36,
+        "failed": 0,
+        "total": 36
+      },
+      {
+        "file": "credit-policies.e2e-spec.ts",
+        "exit": 0,
+        "passed": 19,
+        "failed": 0,
+        "total": 19
+      },
+      {
+        "file": "credit-refunds.e2e-spec.ts",
+        "exit": 0,
+        "passed": 22,
+        "failed": 0,
+        "total": 22
+      },
+      {
+        "file": "credits.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24
+      },
+      {
+        "file": "delivery-assignments.e2e-spec.ts",
+        "exit": 0,
+        "passed": 13,
+        "failed": 0,
+        "total": 13
+      },
+      {
+        "file": "delivery-completion.e2e-spec.ts",
+        "exit": 0,
+        "passed": 29,
+        "failed": 0,
+        "total": 29
+      },
+      {
+        "file": "delivery-quotes.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14
+      },
+      {
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "exit": 0,
+        "passed": 15,
+        "failed": 0,
+        "total": 15
+      },
+      {
+        "file": "delivery-requests-validation.e2e-spec.ts",
+        "exit": 0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      {
+        "file": "dispatch-credit-snapshots.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14
+      },
+      {
+        "file": "dispatch.e2e-spec.ts",
+        "exit": 0,
+        "passed": 13,
+        "failed": 0,
+        "total": 13
+      },
+      {
+        "file": "driver-self.e2e-spec.ts",
+        "exit": 0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      {
+        "file": "drivers-vehicles.e2e-spec.ts",
+        "exit": 0,
+        "passed": 11,
+        "failed": 0,
+        "total": 11
+      },
+      {
+        "file": "independent-drivers.e2e-spec.ts",
+        "exit": 0,
+        "passed": 23,
+        "failed": 0,
+        "total": 23
+      },
+      {
+        "file": "prequote-consumption.e2e-spec.ts",
+        "exit": 0,
+        "passed": 21,
+        "failed": 0,
+        "total": 21
+      },
+      {
+        "file": "prequote-persistence.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24
+      },
+      {
+        "file": "prequotes-http.e2e-spec.ts",
+        "exit": 0,
+        "passed": 40,
+        "failed": 0,
+        "total": 40
+      },
+      {
+        "file": "pricing-admin.e2e-spec.ts",
+        "exit": 0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4
+      },
+      {
+        "file": "provider-admin-access.e2e-spec.ts",
+        "exit": 0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9
+      },
+      {
+        "file": "providers.e2e-spec.ts",
+        "exit": 0,
+        "passed": 15,
+        "failed": 0,
+        "total": 15
+      },
+      {
+        "file": "user-invitations.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24
+      }
+    ],
+    "total": 497,
+    "monolithic": false
+  },
+  "adversarial": {
+    "summary": [
+      {
+        "file": "check-a6-prequotes.e2e-spec.ts",
+        "exit": 0,
+        "passed": 36,
+        "failed": 0,
+        "total": 36
+      }
+    ],
+    "cases": [
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption exhausted global MPQ budget does not restrict a new legacy Quote",
+        "status": "passed",
+        "durationMs": 239.1839999999993
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption normalizes order and nullable measures without changing the key",
+        "status": "passed",
+        "durationMs": 117.70430000000033
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption rejects missing/invalid key before reservation",
+        "status": "passed",
+        "durationMs": 20.717200000000048
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption conflicting body and legacy operation reject before routing",
+        "status": "passed",
+        "durationMs": 122.1237000000001
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption scope and ownership: foreign and missing both 404; human token rejected",
+        "status": "passed",
+        "durationMs": 116.56790000000001
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption suspended integration and revoked credential reject even replay",
+        "status": "passed",
+        "durationMs": 114.73930000000018
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption disabled flag creates no reservation; GET/replay still work and expired replay never renews",
+        "status": "passed",
+        "durationMs": 292.0806999999995
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption routing runs outside locks and receives only canonical points",
+        "status": "passed",
+        "durationMs": 125.53359999999975
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption routing timeout recovers under same key with bounded attempts",
+        "status": "passed",
+        "durationMs": 144.28639999999996
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption route not found is terminal and never invokes routing on retry",
+        "status": "passed",
+        "durationMs": 93.17519999999968
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption exhaustion stops further routing and preserves stored attempt budget",
+        "status": "passed",
+        "durationMs": 192.6900999999998
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption revocation during routing prevents publication",
+        "status": "passed",
+        "durationMs": 71.40899999999965
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption administrative change during routing cannot publish incompatible configuration",
+        "status": "passed",
+        "durationMs": 148.7557999999999
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption administrative changes after publication do not alter price/zone evidence",
+        "status": "passed",
+        "durationMs": 109.14420000000064
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption same key is isolated by integration",
+        "status": "passed",
+        "durationMs": 163.0618999999997
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption GET and replay expire at exact expiresAt with no routing or renewed deadline",
+        "status": "passed",
+        "durationMs": 93.80109999999968
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption publishes after routing, not before; snapshot matches SQL band and independent validity",
+        "status": "passed",
+        "durationMs": 228.29479999999967
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption rejects unknown sensitive field creditCost before admission",
+        "status": "passed",
+        "durationMs": 22.90180000000055
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption rejects unknown sensitive field clientSecret before admission",
+        "status": "passed",
+        "durationMs": 23.270799999999326
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption rejects unknown sensitive field deliveryRequestId before admission",
+        "status": "passed",
+        "durationMs": 19.710299999999734
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption rejects unknown sensitive field amount before admission",
+        "status": "passed",
+        "durationMs": 18.657199999999648
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption rejects unknown sensitive field scheduledAt before admission",
+        "status": "passed",
+        "durationMs": 18.821399999999812
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption rejects unknown sensitive field recipientContact before admission",
+        "status": "passed",
+        "durationMs": 17.44000000000051
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption expired credential and removed current scope deny existing tokens without routing",
+        "status": "passed",
+        "durationMs": 25.952000000000226
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption two applications compete on one intent and only one start and resource persist",
+        "status": "passed",
+        "durationMs": 95.36880000000019
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption two applications compete on last minute capacity with actual HTTP Retry-After",
+        "status": "passed",
+        "durationMs": 88.0028999999995
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption SQL rejects a committed snapshot update/delete and terminal consumption changes",
+        "status": "passed",
+        "durationMs": 114.04950000000099
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption publication SQL failure rolls back success and snapshot but retains consumed units",
+        "status": "passed",
+        "durationMs": 178.89760000000024
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption no conversion or authorized accept routes exist",
+        "status": "passed",
+        "durationMs": 113.37329999999929
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption revocation while admission waits is revalidated before start with real controls",
+        "status": "passed",
+        "durationMs": 305.1214999999993
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption lost HTTP response after committed publication replays once without a second start",
+        "status": "passed",
+        "durationMs": 133.41650000000118
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption independent persistence instances recover one expired lease and fence old publication and failure",
+        "status": "passed",
+        "durationMs": 268.5064000000002
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption coordinated reduction preserves prior use; changed retries cannot rewrite consumed units",
+        "status": "passed",
+        "durationMs": 85.72310000000107
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption expired reservations beyond lazy batch do not consume capacity",
+        "status": "passed",
+        "durationMs": 251.79209999999875
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption real database lock timeout in control fails closed without routing or partial permit",
+        "status": "passed",
+        "durationMs": 5622.7768
+      },
+      {
+        "name": "CHECK A6 integral with real auth, persistence, idempotency and consumption preserves nonempty logistics, ledger and outbox exactly and keeps logs sanitized",
+        "status": "passed",
+        "durationMs": 70.18249999999898
+      }
+    ]
+  },
+  "preservation": {
+    "before": {
+      "DeliveryRequest": {
+        "count": 10,
+        "hash": "fd92fc5f456d5b44445dddf826c352ad4c638536d8a4f60a61332276d1d11267"
+      },
+      "DeliveryQuote": {
+        "count": 10,
+        "hash": "b629eb74654e2d0cc09b7900f2258f4917d143b7b007bb3b0bf2f2226d7cf84e"
+      },
+      "DeliveryStop": {
+        "count": 20,
+        "hash": "e0a7a1c2222c8d317b9648aa3e1c560cb67a74b5fcea4a183b2f8ceef79b0e6c"
+      },
+      "DeliveryPackage": {
+        "count": 10,
+        "hash": "32fcbf1b655967b31806eefae9d18414b59f849bb8258137cedad44813c4379a"
+      },
+      "DeliveryFinancialContext": {
+        "count": 10,
+        "hash": "392bb7fe1c57374ee2465369a6abb21385ab761e07bb7ae5b7c8d2d5214c27b8"
+      },
+      "Dispatch": {
+        "count": 8,
+        "hash": "dd08083e1c823aca8ba5d132b47d8cb4b0a9eed1eff6bd097b854f3b4745f7cc"
+      },
+      "DeliveryAssignment": {
+        "count": 5,
+        "hash": "9e79be10e2c772a9cc2e12080ce373f2d6228cd6f7ce5cb0fea7f6014fafded5"
+      },
+      "CreditAccount": {
+        "count": 8,
+        "hash": "350ea6dcc184c930352c7b0376ecb7c46b4f517fe45b6110076d90bf52b85578"
+      },
+      "CreditLedgerEntry": {
+        "count": 13,
+        "hash": "6e6629c8acd701d9838ec48e4d993544a269fefbc3a6aab8d77ab80f68491b82"
+      },
+      "B2bOutboxEvent": {
+        "count": 5,
+        "hash": "ea46f5fa338ef26a6f91291b679afd06d85b74b3a6c25af3bd108e801d378e81"
+      }
+    },
+    "after": {
+      "DeliveryRequest": {
+        "count": 10,
+        "hash": "fd92fc5f456d5b44445dddf826c352ad4c638536d8a4f60a61332276d1d11267"
+      },
+      "DeliveryQuote": {
+        "count": 10,
+        "hash": "b629eb74654e2d0cc09b7900f2258f4917d143b7b007bb3b0bf2f2226d7cf84e"
+      },
+      "DeliveryStop": {
+        "count": 20,
+        "hash": "e0a7a1c2222c8d317b9648aa3e1c560cb67a74b5fcea4a183b2f8ceef79b0e6c"
+      },
+      "DeliveryPackage": {
+        "count": 10,
+        "hash": "32fcbf1b655967b31806eefae9d18414b59f849bb8258137cedad44813c4379a"
+      },
+      "DeliveryFinancialContext": {
+        "count": 10,
+        "hash": "392bb7fe1c57374ee2465369a6abb21385ab761e07bb7ae5b7c8d2d5214c27b8"
+      },
+      "Dispatch": {
+        "count": 8,
+        "hash": "dd08083e1c823aca8ba5d132b47d8cb4b0a9eed1eff6bd097b854f3b4745f7cc"
+      },
+      "DeliveryAssignment": {
+        "count": 5,
+        "hash": "9e79be10e2c772a9cc2e12080ce373f2d6228cd6f7ce5cb0fea7f6014fafded5"
+      },
+      "CreditAccount": {
+        "count": 8,
+        "hash": "350ea6dcc184c930352c7b0376ecb7c46b4f517fe45b6110076d90bf52b85578"
+      },
+      "CreditLedgerEntry": {
+        "count": 13,
+        "hash": "6e6629c8acd701d9838ec48e4d993544a269fefbc3a6aab8d77ab80f68491b82"
+      },
+      "B2bOutboxEvent": {
+        "count": 5,
+        "hash": "ea46f5fa338ef26a6f91291b679afd06d85b74b3a6c25af3bd108e801d378e81"
+      }
+    },
+    "equal": true
+  },
+  "migrations": {
+    "clean": "mandaria_a5_clean_b3c65761f2_test",
+    "upgrade": "mandaria_a5_upgrade_b3c65761f2_test",
+    "migrationCount": 27,
+    "comparedTables": 14,
+    "exit": 0,
+    "retained": true
+  },
+  "quality": {
+    "build": 0,
+    "prismaValidate": 0,
+    "typescript": 0,
+    "oxlint": 0,
+    "eslint": 0,
+    "docsCheck": 0,
+    "gitDiffCheck": 0
+  },
+  "frozen": {
+    "checked": 250,
+    "changed": [],
+    "environmentUnchanged": true,
+    "headUnchanged": true
+  },
+  "fixtureAttempts": [
+    {
+      "attempt": 1,
+      "result": "setup failed: synthetic secret format; native exit 3221225477",
+      "credited": 0
+    },
+    {
+      "attempt": 2,
+      "result": "setup failed: Outbox requires completion",
+      "credited": 0
+    },
+    {
+      "attempt": 3,
+      "result": "setup failed: active user password constraint",
+      "credited": 0
+    },
+    {
+      "attempt": 4,
+      "result": "setup failed: provider coverage required",
+      "credited": 0
+    },
+    {
+      "result": "syntax error in new test extension",
+      "credited": 0
+    },
+    {
+      "result": "unused new test helper removed; final linters exit 0"
+    }
+  ]
+}

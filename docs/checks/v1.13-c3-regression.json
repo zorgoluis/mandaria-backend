@@ -1,0 +1,299 @@
+{
+  "node": "v24.15.0",
+  "attempts": [
+    {
+      "file": "check-a6-prequotes",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_c6ecd5c037a4_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-check-a6-prequotes-migrate.txt"
+    },
+    {
+      "file": "check-a6-prequotes",
+      "phase": "test",
+      "database": "mandaria_c3_reg_c6ecd5c037a4_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-a6-prequotes.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-check-a6-prequotes.json",
+      "startedAt": "2026-09-29T07:27:02.527Z",
+      "endedAt": "2026-09-29T07:27:16.216Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-check-a6-prequotes.json",
+      "log": "docs/checks/v1.13-c3-reg-check-a6-prequotes.txt"
+    },
+    {
+      "file": "prequote-conversion",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_706c8ff829fa_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-prequote-conversion-migrate.txt"
+    },
+    {
+      "file": "prequote-conversion",
+      "phase": "test",
+      "database": "mandaria_c3_reg_706c8ff829fa_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/prequote-conversion.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-prequote-conversion.json",
+      "startedAt": "2026-09-29T07:27:19.370Z",
+      "endedAt": "2026-09-29T07:27:32.251Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-prequote-conversion.json",
+      "log": "docs/checks/v1.13-c3-reg-prequote-conversion.txt"
+    },
+    {
+      "file": "check-b3-conversion",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_b946b0fb7d76_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-check-b3-conversion-migrate.txt"
+    },
+    {
+      "file": "check-b3-conversion",
+      "phase": "test",
+      "database": "mandaria_c3_reg_b946b0fb7d76_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-b3-conversion.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-check-b3-conversion.json",
+      "startedAt": "2026-09-29T07:27:35.053Z",
+      "endedAt": "2026-09-29T07:28:00.258Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-check-b3-conversion.json",
+      "log": "docs/checks/v1.13-c3-reg-check-b3-conversion.txt"
+    },
+    {
+      "file": "check-b4-conversion",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_49493b31e6d7_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-check-b4-conversion-migrate.txt"
+    },
+    {
+      "file": "check-b4-conversion",
+      "phase": "test",
+      "database": "mandaria_c3_reg_49493b31e6d7_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/check-b4-conversion.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-check-b4-conversion.json",
+      "startedAt": "2026-09-29T07:28:03.554Z",
+      "endedAt": "2026-09-29T07:28:16.183Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-check-b4-conversion.json",
+      "log": "docs/checks/v1.13-c3-reg-check-b4-conversion.txt"
+    },
+    {
+      "file": "delivery-quotes",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_3ee34646e0db_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-delivery-quotes-migrate.txt"
+    },
+    {
+      "file": "delivery-quotes",
+      "phase": "test",
+      "database": "mandaria_c3_reg_3ee34646e0db_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-quotes.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-delivery-quotes.json",
+      "startedAt": "2026-09-29T07:28:19.267Z",
+      "endedAt": "2026-09-29T07:28:28.072Z",
+      "exit": 3221226505,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-delivery-quotes.json",
+      "log": "docs/checks/v1.13-c3-reg-delivery-quotes.txt"
+    },
+    {
+      "file": "dispatch",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_683b29c11fa6_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-dispatch-migrate.txt"
+    },
+    {
+      "file": "dispatch",
+      "phase": "test",
+      "database": "mandaria_c3_reg_683b29c11fa6_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/dispatch.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-dispatch.json",
+      "startedAt": "2026-09-29T07:28:31.285Z",
+      "endedAt": "2026-09-29T07:28:42.287Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-dispatch.json",
+      "log": "docs/checks/v1.13-c3-reg-dispatch.txt"
+    },
+    {
+      "file": "dispatch-credit-snapshots",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_30453251be04_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-dispatch-credit-snapshots-migrate.txt"
+    },
+    {
+      "file": "dispatch-credit-snapshots",
+      "phase": "test",
+      "database": "mandaria_c3_reg_30453251be04_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/dispatch-credit-snapshots.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-dispatch-credit-snapshots.json",
+      "startedAt": "2026-09-29T07:28:45.665Z",
+      "endedAt": "2026-09-29T07:28:53.870Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-dispatch-credit-snapshots.json",
+      "log": "docs/checks/v1.13-c3-reg-dispatch-credit-snapshots.txt"
+    },
+    {
+      "file": "delivery-assignments",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_da3853363c5d_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-delivery-assignments-migrate.txt"
+    },
+    {
+      "file": "delivery-assignments",
+      "phase": "test",
+      "database": "mandaria_c3_reg_da3853363c5d_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-assignments.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-delivery-assignments.json",
+      "startedAt": "2026-09-29T07:28:56.955Z",
+      "endedAt": "2026-09-29T07:29:05.629Z",
+      "exit": 3221226505,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-delivery-assignments.json",
+      "log": "docs/checks/v1.13-c3-reg-delivery-assignments.txt"
+    },
+    {
+      "file": "credit-consumption",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_e4e272b0448f_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-credit-consumption-migrate.txt"
+    },
+    {
+      "file": "credit-consumption",
+      "phase": "test",
+      "database": "mandaria_c3_reg_e4e272b0448f_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/credit-consumption.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-credit-consumption.json",
+      "startedAt": "2026-09-29T07:29:09.220Z",
+      "endedAt": "2026-09-29T07:29:23.921Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-credit-consumption.json",
+      "log": "docs/checks/v1.13-c3-reg-credit-consumption.txt"
+    },
+    {
+      "file": "credit-refunds",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_2b5284ad8a63_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-credit-refunds-migrate.txt"
+    },
+    {
+      "file": "credit-refunds",
+      "phase": "test",
+      "database": "mandaria_c3_reg_2b5284ad8a63_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/credit-refunds.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-credit-refunds.json",
+      "startedAt": "2026-09-29T07:29:28.615Z",
+      "endedAt": "2026-09-29T07:29:42.695Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-credit-refunds.json",
+      "log": "docs/checks/v1.13-c3-reg-credit-refunds.txt"
+    },
+    {
+      "file": "delivery-completion",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_c8bbfb1f51cc_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-delivery-completion-migrate.txt"
+    },
+    {
+      "file": "delivery-completion",
+      "phase": "test",
+      "database": "mandaria_c3_reg_c8bbfb1f51cc_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-completion.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-delivery-completion.json",
+      "startedAt": "2026-09-29T07:29:46.410Z",
+      "endedAt": "2026-09-29T07:30:00.484Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-delivery-completion.json",
+      "log": "docs/checks/v1.13-c3-reg-delivery-completion.txt"
+    },
+    {
+      "file": "independent-drivers",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_09461ceb54bf_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-independent-drivers-migrate.txt"
+    },
+    {
+      "file": "independent-drivers",
+      "phase": "test",
+      "database": "mandaria_c3_reg_09461ceb54bf_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/independent-drivers.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-independent-drivers.json",
+      "startedAt": "2026-09-29T07:30:03.572Z",
+      "endedAt": "2026-09-29T07:30:14.530Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-independent-drivers.json",
+      "log": "docs/checks/v1.13-c3-reg-independent-drivers.txt"
+    },
+    {
+      "file": "b2b-outbox",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_b12a5fe7b2ed_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-b2b-outbox-migrate.txt"
+    },
+    {
+      "file": "b2b-outbox",
+      "phase": "test",
+      "database": "mandaria_c3_reg_b12a5fe7b2ed_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/b2b-outbox.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-b2b-outbox.json",
+      "startedAt": "2026-09-29T07:30:18.867Z",
+      "endedAt": "2026-09-29T07:30:32.073Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-b2b-outbox.json",
+      "log": "docs/checks/v1.13-c3-reg-b2b-outbox.txt"
+    },
+    {
+      "file": "b2b-delivery-status",
+      "phase": "migrate",
+      "database": "mandaria_c3_reg_0b1022da68ef_test",
+      "exit": 0,
+      "signal": null,
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "log": "docs/checks/v1.13-c3-reg-b2b-delivery-status-migrate.txt"
+    },
+    {
+      "file": "b2b-delivery-status",
+      "phase": "test",
+      "database": "mandaria_c3_reg_0b1022da68ef_test",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/b2b-delivery-status.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --outputFile=docs/checks/v1.13-c3-reg-b2b-delivery-status.json",
+      "startedAt": "2026-09-29T07:30:35.897Z",
+      "endedAt": "2026-09-29T07:30:47.017Z",
+      "exit": 0,
+      "signal": null,
+      "report": "docs/checks/v1.13-c3-reg-b2b-delivery-status.json",
+      "log": "docs/checks/v1.13-c3-reg-b2b-delivery-status.txt"
+    }
+  ]
+}

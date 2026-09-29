@@ -7,6 +7,11 @@ import type {
   VehicleStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
+import {
+  collectionConversionSelect,
+  collectionInstructionFields,
+  collectionSourceSelect,
+} from './collection-instructions.js';
 import { pageResult } from '../common/pagination.dto.js';
 import {
   isUniqueViolation,
@@ -439,13 +444,23 @@ export class DeliveryAssignmentsService {
       );
   }
 
-  private async withPaymentContext<T>(dispatchId: string, assignment: T) {
+  private async withPaymentContext<T extends { id: string; status: string }>(
+    dispatchId: string,
+    assignment: T,
+  ) {
     const dispatch = await this.prisma.dispatch.findUniqueOrThrow({
       where: { id: dispatchId },
       select: {
-        deliveryQuote: { select: { amount: true, currency: true } },
+        ...collectionSourceSelect,
+        deliveryAssignments: {
+          where: { status: 'ACTIVE' },
+          take: 1,
+          select: { id: true },
+        },
         deliveryRequest: {
           select: {
+            status: true,
+            prequoteConversion: { select: collectionConversionSelect },
             financialContext: {
               select: {
                 goodsValue: true,
@@ -459,6 +474,13 @@ export class DeliveryAssignmentsService {
     });
     return {
       ...assignment,
+      ...collectionInstructionFields(
+        dispatch,
+        assignment.status === 'ACTIVE' &&
+          dispatch.deliveryAssignments[0]?.id === assignment.id
+          ? 'EXECUTOR'
+          : 'HISTORY',
+      ),
       paymentContext: paymentContext(
         dispatch.deliveryQuote,
         dispatch.deliveryRequest.financialContext,

@@ -1,0 +1,17 @@
+{
+  "database": "mandaria_c2_independent_f8c1ab43a1_test",
+  "steps": [
+    {
+      "label": "migrate",
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "label": "independent full file",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/independent-drivers.e2e-spec.ts --pool=forks --reporter=default --reporter=json --outputFile=docs/checks/v1.13-c2-independent-isolated.json",
+      "exit": 0,
+      "signal": null
+    }
+  ]
+}

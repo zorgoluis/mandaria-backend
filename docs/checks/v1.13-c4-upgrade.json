@@ -1,0 +1,52 @@
+{
+  "steps": [
+    {
+      "label": "deploy B",
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\c4\\upgrade\\prisma.config.ts",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "label": "seed B graph via real HTTP conversion (not a full-suite validation)",
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/authorized-acceptance.e2e-spec.ts -t upgrade B history --reporter=json --outputFile=docs/checks/v1.13-c4-upgrade-seed.json",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "label": "upgrade B to C",
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\c4\\upgrade\\prisma.config.ts",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "label": "status",
+      "command": "node node_modules/prisma/build/index.js migrate status --config C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\c4\\upgrade\\prisma.config.ts",
+      "exit": 0,
+      "signal": null
+    }
+  ],
+  "before": {
+    "PrequoteConversion": "21f2bc7efbbea0d446b3604c80df89a47595cd46e86a0ccac9dd94744123dfa1",
+    "DeliveryPrequote": "1008c887d935a974f96c9bbc565afecdfc9010938329ef0f1b3ad208e8c87ab9",
+    "DeliveryRequest": "7e68856c41af455bf9aff65404fdca97264600ed25ce832453c2fe7343ff04bf",
+    "DeliveryQuote": "9f65943433ea48663db88dec732cea9dbd3e6d380406a5814f0af5e9e35ef590",
+    "DeliveryStop": "8827532fe10a8cc98739d9fa97bf85e33af6602bafa6c19234331b1b8eba391f",
+    "DeliveryPackage": "80460f4996dde771111568959e86234c97f79340717b41639b5b659a6034cce0",
+    "DeliveryFinancialContext": "cd59da2512889bf7bb9b375c90b43d59854a81e735a14eb6395b2cf735b8a0da",
+    "ApiIdempotencyRecord": "9795617379b708ef7cf3de4fa94d8c67a128b2b1b879338dab511d517e096d54",
+    "ApiIdempotencyExecution": "67a223c2732f5022ae5a80e74293c5b81692f3727f779bf6b20eb59c1bf3376c"
+  },
+  "after": {
+    "PrequoteConversion": "21f2bc7efbbea0d446b3604c80df89a47595cd46e86a0ccac9dd94744123dfa1",
+    "DeliveryPrequote": "1008c887d935a974f96c9bbc565afecdfc9010938329ef0f1b3ad208e8c87ab9",
+    "DeliveryRequest": "7e68856c41af455bf9aff65404fdca97264600ed25ce832453c2fe7343ff04bf",
+    "DeliveryQuote": "9f65943433ea48663db88dec732cea9dbd3e6d380406a5814f0af5e9e35ef590",
+    "DeliveryStop": "8827532fe10a8cc98739d9fa97bf85e33af6602bafa6c19234331b1b8eba391f",
+    "DeliveryPackage": "80460f4996dde771111568959e86234c97f79340717b41639b5b659a6034cce0",
+    "DeliveryFinancialContext": "cd59da2512889bf7bb9b375c90b43d59854a81e735a14eb6395b2cf735b8a0da",
+    "ApiIdempotencyRecord": "9795617379b708ef7cf3de4fa94d8c67a128b2b1b879338dab511d517e096d54",
+    "ApiIdempotencyExecution": "67a223c2732f5022ae5a80e74293c5b81692f3727f779bf6b20eb59c1bf3376c"
+  },
+  "historyPreserved": true,
+  "noBackfill": true
+}

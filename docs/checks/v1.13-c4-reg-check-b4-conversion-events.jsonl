@@ -1,0 +1,48 @@
+{"at":"2026-09-29T07:58:29.200Z","event":"start","name":"CHECK B4 §2 recorrido integral con componentes reales > emite con consumo durable real, convierte una vez y nada más se mueve"}
+{"at":"2026-09-29T07:58:29.348Z","event":"finish","name":"CHECK B4 §2 recorrido integral con componentes reales > emite con consumo durable real, convierte una vez y nada más se mueve","state":"passed"}
+{"at":"2026-09-29T07:58:29.498Z","event":"start","name":"CHECK B4 §2 recorrido integral con componentes reales > la emisión repetida con la misma key no consume dos veces"}
+{"at":"2026-09-29T07:58:29.501Z","event":"finish","name":"CHECK B4 §2 recorrido integral con componentes reales > la emisión repetida con la misma key no consume dos veces","state":"passed"}
+{"at":"2026-09-29T07:58:29.504Z","event":"start","name":"CHECK B4 §3 contrato y aislamiento > exige los tres scopes y no los otorga implícitamente"}
+{"at":"2026-09-29T07:58:29.506Z","event":"finish","name":"CHECK B4 §3 contrato y aislamiento > exige los tres scopes y no los otorga implícitamente","state":"passed"}
+{"at":"2026-09-29T07:58:29.599Z","event":"start","name":"CHECK B4 §3 contrato y aislamiento > una MPQ ajena responde exactamente como una inexistente"}
+{"at":"2026-09-29T07:58:29.602Z","event":"finish","name":"CHECK B4 §3 contrato y aislamiento > una MPQ ajena responde exactamente como una inexistente","state":"passed"}
+{"at":"2026-09-29T07:58:29.605Z","event":"start","name":"CHECK B4 §3 contrato y aislamiento > un token humano no entra y la revocación/suspensión/expiración cierran incluso el replay"}
+{"at":"2026-09-29T07:58:29.773Z","event":"finish","name":"CHECK B4 §3 contrato y aislamiento > un token humano no entra y la revocación/suspensión/expiración cierran incluso el replay","state":"passed"}
+{"at":"2026-09-29T07:58:29.776Z","event":"start","name":"CHECK B4 §3 validación, confirmaciones y privacidad > rechaza el cuerpo inválido antes de tocar la MPQ o crear la key"}
+{"at":"2026-09-29T07:58:29.875Z","event":"finish","name":"CHECK B4 §3 validación, confirmaciones y privacidad > rechaza el cuerpo inválido antes de tocar la MPQ o crear la key","state":"passed"}
+{"at":"2026-09-29T07:58:29.878Z","event":"start","name":"CHECK B4 §3 validación, confirmaciones y privacidad > exige PREPAID, MXN, FOOD y LOCAL_DELIVERY y trata goodsValue como opcional"}
+{"at":"2026-09-29T07:58:30.169Z","event":"finish","name":"CHECK B4 §3 validación, confirmaciones y privacidad > exige PREPAID, MXN, FOOD y LOCAL_DELIVERY y trata goodsValue como opcional","state":"passed"}
+{"at":"2026-09-29T07:58:30.419Z","event":"start","name":"CHECK B4 §3 validación, confirmaciones y privacidad > no expone confirmaciones, manifiesto, UUID internos ni proveedor de routing"}
+{"at":"2026-09-29T07:58:30.424Z","event":"finish","name":"CHECK B4 §3 validación, confirmaciones y privacidad > no expone confirmaciones, manifiesto, UUID internos ni proveedor de routing","state":"passed"}
+{"at":"2026-09-29T07:58:30.428Z","event":"start","name":"CHECK B4 §3 validación, confirmaciones y privacidad > con el flag apagado no nacen conversiones nuevas y el replay autorizado sigue disponible"}
+{"at":"2026-09-29T07:58:30.431Z","event":"finish","name":"CHECK B4 §3 validación, confirmaciones y privacidad > con el flag apagado no nacen conversiones nuevas y el replay autorizado sigue disponible","state":"passed"}
+{"at":"2026-09-29T07:58:30.520Z","event":"start","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > la misma key y cuerpo en dos instancias dejan un solo ganador"}
+{"at":"2026-09-29T07:58:30.523Z","event":"finish","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > la misma key y cuerpo en dos instancias dejan un solo ganador","state":"passed"}
+{"at":"2026-09-29T07:58:30.526Z","event":"start","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > la misma key con otro cuerpo, otra MPQ u otra operación entra en conflicto"}
+{"at":"2026-09-29T07:58:30.664Z","event":"finish","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > la misma key con otro cuerpo, otra MPQ u otra operación entra en conflicto","state":"passed"}
+{"at":"2026-09-29T07:58:30.770Z","event":"start","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > varias keys compiten por una MPQ y sólo una persiste"}
+{"at":"2026-09-29T07:58:30.962Z","event":"finish","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > varias keys compiten por una MPQ y sólo una persiste","state":"passed"}
+{"at":"2026-09-29T07:58:30.967Z","event":"start","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > el mismo texto de key en dos integraciones son intenciones independientes"}
+{"at":"2026-09-29T07:58:31.149Z","event":"finish","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > el mismo texto de key en dos integraciones son intenciones independientes","state":"passed"}
+{"at":"2026-09-29T07:58:31.153Z","event":"start","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > una respuesta perdida después del commit se recupera sin duplicar"}
+{"at":"2026-09-29T07:58:31.156Z","event":"finish","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > una respuesta perdida después del commit se recupera sin duplicar","state":"passed"}
+{"at":"2026-09-29T07:58:31.249Z","event":"start","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > la cancelación concurrente y las lecturas dan pares coherentes"}
+{"at":"2026-09-29T07:58:31.358Z","event":"finish","name":"CHECK B4 §4 concurrencia, idempotencia y recuperación con dos instancias > la cancelación concurrente y las lecturas dan pares coherentes","state":"passed"}
+{"at":"2026-09-29T07:58:31.362Z","event":"start","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > una tarifa reemplazada o inactivada no reprecifica la conversión"}
+{"at":"2026-09-29T07:58:31.365Z","event":"finish","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > una tarifa reemplazada o inactivada no reprecifica la conversión","state":"passed"}
+{"at":"2026-09-29T07:58:31.466Z","event":"start","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > la metadata de zona queda congelada en la proyección convertida"}
+{"at":"2026-09-29T07:58:31.470Z","event":"finish","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > la metadata de zona queda congelada en la proyección convertida","state":"passed"}
+{"at":"2026-09-29T07:58:31.617Z","event":"start","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > una zona INACTIVE bloquea una conversión nueva pero no el replay"}
+{"at":"2026-09-29T07:58:31.621Z","event":"finish","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > una zona INACTIVE bloquea una conversión nueva pero no el replay","state":"passed"}
+{"at":"2026-09-29T07:58:33.269Z","event":"start","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > ni un escritor directo puede mover el vencimiento de una MPQ"}
+{"at":"2026-09-29T07:58:33.275Z","event":"finish","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > ni un escritor directo puede mover el vencimiento de una MPQ","state":"passed"}
+{"at":"2026-09-29T07:58:33.281Z","event":"start","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > antes del vencimiento convierte y después lo rechaza sin renovar el expiry"}
+{"at":"2026-09-29T07:58:33.284Z","event":"finish","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > antes del vencimiento convierte y después lo rechaza sin renovar el expiry","state":"passed"}
+{"at":"2026-09-29T07:58:33.371Z","event":"start","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > una espera de lock que cruza el vencimiento termina en rechazo y rollback"}
+{"at":"2026-09-29T07:58:35.951Z","event":"finish","name":"CHECK B4 §5 snapshot, tiempo y límite SQL > una espera de lock que cruza el vencimiento termina en rechazo y rollback","state":"passed"}
+{"at":"2026-09-29T07:58:36.722Z","event":"start","name":"CHECK B4 §6 catálogo, guardas y límite temporal del escritor directo > las guardas de integridad y las FKs diferidas están activas en el catálogo"}
+{"at":"2026-09-29T07:58:36.725Z","event":"finish","name":"CHECK B4 §6 catálogo, guardas y límite temporal del escritor directo > las guardas de integridad y las FKs diferidas están activas en el catálogo","state":"passed"}
+{"at":"2026-09-29T07:58:36.730Z","event":"start","name":"CHECK B4 §6 catálogo, guardas y límite temporal del escritor directo > un escritor directo no puede reutilizar, reprecificar, adoptar hijos ni despachar"}
+{"at":"2026-09-29T07:58:36.734Z","event":"finish","name":"CHECK B4 §6 catálogo, guardas y límite temporal del escritor directo > un escritor directo no puede reutilizar, reprecificar, adoptar hijos ni despachar","state":"passed"}
+{"at":"2026-09-29T07:58:36.740Z","event":"start","name":"CHECK B4 §8 preservación económica y legacy con fixtures no vacíos > convertir sólo agrega sus propios recursos y no toca créditos, despacho ni legacy"}
+{"at":"2026-09-29T07:58:36.748Z","event":"finish","name":"CHECK B4 §8 preservación económica y legacy con fixtures no vacíos > convertir sólo agrega sus propios recursos y no toca créditos, despacho ni legacy","state":"passed"}

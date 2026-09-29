@@ -1,0 +1,19 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/check-b3-conversion.e2e-spec.ts (58 tests) 23572ms
+     ✓ same key/body, changed body and competing keys have one durable winner  916ms
+     ✓ real transaction timeout rolls back; another instance retries same intent  6377ms
+     ✓ bounded contention: 16 keys on one MPQ and 8 independent MPQs  700ms
+     ✓ direct SQL early validation can cross expiry; no renewal, reuse or dispatch  1804ms
+     ✓ B1 accept cannot dispatch converted quote; expired requote also rolls back  2217ms
+     ✓ nonempty credits ledger assignments dispatch outbox and legacy records preserved  328ms
+     ✓ uncommitted winner is invisible to GET; concurrent reader sees complete links after commit  421ms
+
+ Test Files  1 passed (1)
+      Tests  58 passed (58)
+   Start at  00:51:45
+   Duration  24.80s (transform 2.31s, setup 0ms, import 923ms, tests 23.57s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-check-b3-conversion.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

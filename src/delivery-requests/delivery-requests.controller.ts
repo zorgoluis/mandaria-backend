@@ -202,7 +202,7 @@ export class DeliveryRequestsController {
   @ApiOperation({
     summary: 'Cancelar mi DeliveryRequest',
     description:
-      'Requiere deliveries:cancel. CREATED → CANCELLED con reason y cancelledAt. Si ya estaba CANCELLED responde 200 con el estado actual y conserva la razón y fecha originales. No existe edición ni borrado: para corregir datos, cancelar y crear otra solicitud.',
+      'Requiere deliveries:cancel. CREATED → CANCELLED con reason y cancelledAt. Si ya estaba CANCELLED responde 200 con el estado actual y conserva la razón y fecha originales. Admite origen convertido con MQ vencida. Un 200/MDR CANCELLED no prueba ausencia de entrega: GET /delivery-requests/:publicId/status puede seguir DELIVERED. Antes de reiniciar: confirmar MDR CANCELLED y cancelledAt, luego status CANCELLED/EXPIRED con deliveredAt null; si incierto o DELIVERED, no reemplazar. Reintentar cancel sobre la misma MDR conserva fecha/razón; no libera MPQ ni reabre Dispatch. Nueva secuencia exige nueva MPQ, conversión y consentimiento sobre MQ exacta, sin otra transferencia de comida ni reembolso implícito. Coita serializa por pedido; externalReference no es único.',
   })
   async cancel(
     @Req() req: IntegrationRequest,

@@ -1,0 +1,38 @@
+{"at":"2026-09-29T08:00:03.302Z","event":"start","name":"V1.10-B authorization and missing policies > only SUPER_ADMIN reaches credit policies; providers, drivers and B2B never read the rules"}
+{"at":"2026-09-29T08:00:03.308Z","event":"finish","name":"V1.10-B authorization and missing policies > only SUPER_ADMIN reaches credit policies; providers, drivers and B2B never read the rules","state":"passed"}
+{"at":"2026-09-29T08:00:03.445Z","event":"start","name":"V1.10-B authorization and missing policies > fails closed without an ACTIVE policy: CREDIT_POLICY_UNAVAILABLE, never 0 credits"}
+{"at":"2026-09-29T08:00:03.448Z","event":"finish","name":"V1.10-B authorization and missing policies > fails closed without an ACTIVE policy: CREDIT_POLICY_UNAVAILABLE, never 0 credits","state":"passed"}
+{"at":"2026-09-29T08:00:03.452Z","event":"start","name":"V1.10-B authorization and missing policies > exposes no PATCH, PUT or DELETE for policies"}
+{"at":"2026-09-29T08:00:03.455Z","event":"finish","name":"V1.10-B authorization and missing policies > exposes no PATCH, PUT or DELETE for policies","state":"passed"}
+{"at":"2026-09-29T08:00:03.691Z","event":"start","name":"V1.10-B create, validate and calculate > creates version 1 ACTIVE, decided by the server, attributed to the SUPER_ADMIN"}
+{"at":"2026-09-29T08:00:03.695Z","event":"finish","name":"V1.10-B create, validate and calculate > creates version 1 ACTIVE, decided by the server, attributed to the SUPER_ADMIN","state":"passed"}
+{"at":"2026-09-29T08:00:03.698Z","event":"start","name":"V1.10-B create, validate and calculate > never trusts version, status, author, dates or ids from the client"}
+{"at":"2026-09-29T08:00:03.702Z","event":"finish","name":"V1.10-B create, validate and calculate > never trusts version, status, author, dates or ids from the client","state":"passed"}
+{"at":"2026-09-29T08:00:03.706Z","event":"start","name":"V1.10-B create, validate and calculate > rejects ambiguous or invalid economics instead of normalizing them"}
+{"at":"2026-09-29T08:00:03.708Z","event":"finish","name":"V1.10-B create, validate and calculate > rejects ambiguous or invalid economics instead of normalizing them","state":"passed"}
+{"at":"2026-09-29T08:00:03.794Z","event":"start","name":"V1.10-B create, validate and calculate > calculates from the canonical distance through the API: 1 credit/km, minimum 3"}
+{"at":"2026-09-29T08:00:03.798Z","event":"finish","name":"V1.10-B create, validate and calculate > calculates from the canonical distance through the API: 1 credit/km, minimum 3","state":"passed"}
+{"at":"2026-09-29T08:00:03.802Z","event":"start","name":"V1.10-B create, validate and calculate > rejects invalid distances and duplicated parameters"}
+{"at":"2026-09-29T08:00:03.806Z","event":"finish","name":"V1.10-B create, validate and calculate > rejects invalid distances and duplicated parameters","state":"passed"}
+{"at":"2026-09-29T08:00:03.809Z","event":"start","name":"V1.10-B create, validate and calculate > refuses a result above the per-service credit limit"}
+{"at":"2026-09-29T08:00:03.812Z","event":"finish","name":"V1.10-B create, validate and calculate > refuses a result above the per-service credit limit","state":"passed"}
+{"at":"2026-09-29T08:00:03.928Z","event":"start","name":"V1.10-B create, validate and calculate > returns the full configuration, ranges included, and 404/400 for unknown or malformed ids"}
+{"at":"2026-09-29T08:00:03.931Z","event":"finish","name":"V1.10-B create, validate and calculate > returns the full configuration, ranges included, and 404/400 for unknown or malformed ids","state":"passed"}
+{"at":"2026-09-29T08:00:04.090Z","event":"start","name":"V1.10-B versioning and history > v1 -> v2 -> v3 -> v4 keeps every version, exactly one ACTIVE, contiguous effective dates"}
+{"at":"2026-09-29T08:00:04.093Z","event":"finish","name":"V1.10-B versioning and history > v1 -> v2 -> v3 -> v4 keeps every version, exactly one ACTIVE, contiguous effective dates","state":"passed"}
+{"at":"2026-09-29T08:00:04.245Z","event":"start","name":"V1.10-B versioning and history > never versions from a superseded version; the ACTIVE one keeps working"}
+{"at":"2026-09-29T08:00:04.248Z","event":"finish","name":"V1.10-B versioning and history > never versions from a superseded version; the ACTIVE one keeps working","state":"passed"}
+{"at":"2026-09-29T08:00:04.251Z","event":"start","name":"V1.10-B versioning and history > resolves the ACTIVE version: range boundaries through the API"}
+{"at":"2026-09-29T08:00:04.255Z","event":"finish","name":"V1.10-B versioning and history > resolves the ACTIVE version: range boundaries through the API","state":"passed"}
+{"at":"2026-09-29T08:00:04.511Z","event":"start","name":"V1.10-B concurrency > 10 simultaneous new versions from the same ACTIVE: 1 applies, 9 conflict, versions stay unique"}
+{"at":"2026-09-29T08:00:04.518Z","event":"finish","name":"V1.10-B concurrency > 10 simultaneous new versions from the same ACTIVE: 1 applies, 9 conflict, versions stay unique","state":"passed"}
+{"at":"2026-09-29T08:00:04.690Z","event":"start","name":"V1.10-B concurrency > 10 simultaneous chains of 3 versions each still produce contiguous versions and one ACTIVE"}
+{"at":"2026-09-29T08:00:04.693Z","event":"finish","name":"V1.10-B concurrency > 10 simultaneous chains of 3 versions each still produce contiguous versions and one ACTIVE","state":"passed"}
+{"at":"2026-09-29T08:00:04.792Z","event":"start","name":"V1.10-B concurrency > simultaneous initial creations for a new combination: exactly one version 1"}
+{"at":"2026-09-29T08:00:04.797Z","event":"finish","name":"V1.10-B concurrency > simultaneous initial creations for a new combination: exactly one version 1","state":"passed"}
+{"at":"2026-09-29T08:00:04.800Z","event":"start","name":"V1.10-B database guarantees > refuses every invalid policy written directly in SQL"}
+{"at":"2026-09-29T08:00:04.925Z","event":"finish","name":"V1.10-B database guarantees > refuses every invalid policy written directly in SQL","state":"passed"}
+{"at":"2026-09-29T08:00:05.110Z","event":"start","name":"V1.10-B calculations never touch accounts or the ledger > many calculations leave every balance and every ledger entry exactly as they were"}
+{"at":"2026-09-29T08:00:05.114Z","event":"finish","name":"V1.10-B calculations never touch accounts or the ledger > many calculations leave every balance and every ledger entry exactly as they were","state":"passed"}
+{"at":"2026-09-29T08:00:05.159Z","event":"start","name":"V1.10-B audit > logs who created each version and its full configuration, without secrets"}
+{"at":"2026-09-29T08:00:05.164Z","event":"finish","name":"V1.10-B audit > logs who created each version and its full configuration, without secrets","state":"passed"}

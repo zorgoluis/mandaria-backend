@@ -1,0 +1,49 @@
+[Nest] 20048  - 29/09/2026, 9:25:36 a.m.     LOG [DeliveryAssignmentsService] Object(7) {
+  event: 'DELIVERY_ASSIGNMENT_CREATED',
+  assignmentId: 'new',
+  dispatchId: 'd1',
+  providerId: 'A',
+  driverId: 'carlos',
+  vehicleId: 'moto03',
+  actorUserId: 'u1'
+}
+[Nest] 20048  - 29/09/2026, 9:25:36 a.m.     LOG [DeliveryAssignmentsService] Object(11) {
+  event: 'DELIVERY_ASSIGNMENT_REASSIGNED',
+  previousAssignmentId: 'a1',
+  assignmentId: 'new',
+  dispatchId: 'd1',
+  providerId: 'A',
+  previousDriverId: 'pedro',
+  previousVehicleId: 'moto07',
+  driverId: 'carlos',
+  vehicleId: 'moto03',
+  actorUserId: 'u1',
+  reason: 'DRIVER_UNAVAILABLE'
+}
+[Nest] 40544  - 29/09/2026, 9:25:36 a.m.     LOG [IndependentDriversService] Object(4) {
+  event: 'INDEPENDENT_DRIVER_ENABLED',
+  profileId: 'p',
+  driverId: 'd',
+  actorUserId: 'admin'
+}
+[Nest] 40544  - 29/09/2026, 9:25:36 a.m.     LOG [IndependentDriversService] Object(4) {
+  event: 'INDEPENDENT_DRIVER_ENABLED',
+  profileId: 'p',
+  driverId: 'd',
+  actorUserId: 'admin'
+}
+[Nest] 40544  - 29/09/2026, 9:25:36 a.m.     LOG [IndependentDriversService] Object(5) {
+  event: 'INDEPENDENT_DRIVER_SUSPENDED',
+  profileId: 'p',
+  driverId: 'd',
+  actorUserId: 'admin',
+  reason: 'documentos vencidos'
+}
+[Nest] 40544  - 29/09/2026, 9:25:36 a.m.     LOG [IndependentDriversService] Object(4) {
+  event: 'INDEPENDENT_VEHICLE_CREATED',
+  driverId: 'd',
+  vehicleId: 'v',
+  actorUserId: 'admin'
+}
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-d-units.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

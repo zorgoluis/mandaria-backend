@@ -1,0 +1,90 @@
+{
+  "id": "23d498bb-445b-479c-a157-4541e96acf71",
+  "status": "CLAIMED",
+  "access": "OWNER",
+  "serviceType": "LOCAL_DELIVERY",
+  "serviceZone": {
+    "code": "D13_25C37A4616EF",
+    "name": "B2 zone"
+  },
+  "openedAt": "2026-09-29T15:35:55.615Z",
+  "expiresAt": "2026-09-29T15:45:55.615Z",
+  "claimedByMe": true,
+  "claimedAt": "2026-09-29T15:35:55.748Z",
+  "cancelledAt": null,
+  "deliveredAt": null,
+  "creditEnforcementMode": "ENFORCED",
+  "creditCost": 3,
+  "assignment": null,
+  "assignmentDeadline": "2026-09-29T15:40:55.748Z",
+  "assignmentOverdue": false,
+  "myCandidate": {
+    "status": "CLAIMED",
+    "offeredAt": "2026-09-29T15:35:55.615Z",
+    "claimedAt": "2026-09-29T15:35:55.748Z",
+    "releasedAt": null,
+    "releaseReason": null
+  },
+  "collectionInstructions": {
+    "applicability": "CURRENT",
+    "goodsPaidToRestaurant": true,
+    "advanceToRestaurant": false,
+    "collectGoodsFromRecipient": false,
+    "deliveryFee": {
+      "amount": "25.10",
+      "currency": "MXN"
+    },
+    "payer": "RECIPIENT",
+    "method": "CASH",
+    "dueAt": "DELIVERY",
+    "component": "DELIVERY_FEE"
+  },
+  "service": {
+    "deliveryFee": {
+      "amount": "25.10",
+      "currency": "MXN"
+    },
+    "route": {
+      "distanceMeters": 1200,
+      "durationSeconds": 60
+    },
+    "pickup": {
+      "address": "Synthetic location",
+      "latitude": 40.038002,
+      "longitude": 75.000002,
+      "contactName": "Fixture",
+      "contactPhone": "0000000000",
+      "instructions": null
+    },
+    "dropoff": {
+      "address": "Synthetic location",
+      "latitude": 40.038008,
+      "longitude": 75.000008,
+      "contactName": "Fixture",
+      "contactPhone": "0000000000",
+      "instructions": null
+    },
+    "packages": [
+      {
+        "category": "FOOD",
+        "quantity": 1,
+        "weightKg": null,
+        "isFragile": false,
+        "description": "Food package",
+        "lengthCm": null,
+        "widthCm": null,
+        "heightCm": null,
+        "handlingInstructions": null
+      }
+    ],
+    "goods": {
+      "paymentMode": "PREPAID",
+      "value": "150.00",
+      "currency": "MXN",
+      "driverAdvancesGoods": false,
+      "driverAdvanceAmount": null
+    },
+    "deliveryRequestPublicId": "MDR-000009",
+    "externalReference": "b2-order"
+  }
+}

@@ -652,23 +652,36 @@ describe.sequential(
           'RATE_CONFIGURATION_INVALID',
         );
       } finally {
-        await prisma.$transaction([
-          prisma.$executeRawUnsafe(
-            'ALTER TABLE "RateBand" DISABLE TRIGGER "RateBand_draft_only"',
-          ),
-          prisma.rateBand.create({
+        // Restore usable fixture configuration through a new version, keeping every guard active.
+        await prisma.$transaction(async (tx) => {
+          const replacement = await tx.ratePlan.create({
             data: {
-              ratePlanId: middle.ratePlanId,
-              minDistanceMeters: middle.minDistanceMeters,
-              maxDistanceMeters: middle.maxDistanceMeters,
-              amount: middle.amount,
-              currency: middle.currency,
+              serviceZoneId: active.serviceZoneId,
+              serviceType: active.serviceType,
+              version: active.version + 1,
+              status: 'DRAFT',
+              calculationType: active.calculationType,
+              quoteValidityMinutes: active.quoteValidityMinutes,
+              currency: active.currency,
+              bands: {
+                create: active.bands.map((band) => ({
+                  minDistanceMeters: band.minDistanceMeters,
+                  maxDistanceMeters: band.maxDistanceMeters,
+                  amount: band.amount,
+                  currency: band.currency,
+                })),
+              },
             },
-          }),
-          prisma.$executeRawUnsafe(
-            'ALTER TABLE "RateBand" ENABLE TRIGGER "RateBand_draft_only"',
-          ),
-        ]);
+          });
+          await tx.ratePlan.update({
+            where: { id: active.id },
+            data: { status: 'INACTIVE', deactivatedAt: new Date() },
+          });
+          await tx.ratePlan.update({
+            where: { id: replacement.id },
+            data: { status: 'ACTIVE', activatedAt: new Date() },
+          });
+        });
       }
       const failures = logs
         .filter((l) => l.includes('DELIVERY_QUOTE_FAILED'))
@@ -756,6 +769,11 @@ describe.sequential('V1.6 quotes — cancellation and concurrency', () => {
         (await quotesOf(requestId)).filter((q) => q.status === 'ACCEPTED'),
       ).toHaveLength(1);
       expect(
+        await prisma.dispatch.count({
+          where: { deliveryRequest: { publicId: requestId } },
+        }),
+      ).toBe(1);
+      expect(
         logs.filter(
           (l) => l.includes('DELIVERY_QUOTE_ACCEPTED') && l.includes(publicId),
         ),
@@ -804,6 +822,71 @@ describe.sequential('V1.6 quotes — cancellation and concurrency', () => {
       }),
     ).rejects.toThrow(/Unique constraint/);
   });
+});
+
+describe.sequential('V1.13-A1 accept/cancel serialization baseline', () => {
+  withApp();
+  it.each(['cancel-first', 'accept-first', 'concurrent'] as const)(
+    '%s never leaves a cancelled request with a claimable or duplicate Dispatch',
+    async (order) => {
+      const requestId = await newRequest();
+      const offered = await quote(requestId).expect(201);
+      const calls = routing.calls;
+      const entries = await prisma.creditLedgerEntry.count();
+      const cancel = () =>
+        api()
+          .post(`/api/v1/delivery-requests/${requestId}/cancel`)
+          .auth(t.A, bearer)
+          .send({ reason: 'A1 cancellation regression' });
+      let accepted;
+      if (order === 'cancel-first') {
+        await cancel().expect(200);
+        accepted = await accept(offered.body.publicId);
+        expect(accepted.status).toBe(409);
+      } else if (order === 'accept-first') {
+        accepted = await accept(offered.body.publicId).expect(200);
+        await cancel().expect(200);
+      } else {
+        const results = await Promise.all([
+          accept(offered.body.publicId),
+          cancel(),
+        ]);
+        accepted = results[0];
+        expect(results[1].status).toBe(200);
+        expect([200, 409]).toContain(accepted.status);
+      }
+      const rows = await quotesOf(requestId);
+      expect(rows).toHaveLength(1);
+      const dispatches = await prisma.dispatch.findMany({
+        where: { deliveryRequestId: rows[0].deliveryRequestId },
+      });
+      expect(
+        (
+          await prisma.deliveryRequest.findUniqueOrThrow({
+            where: { publicId: requestId },
+          })
+        ).status,
+      ).toBe('CANCELLED');
+      if (accepted.status === 200) {
+        expect(rows[0].status).toBe('ACCEPTED');
+        expect(dispatches).toHaveLength(1);
+        expect(dispatches[0].status).toBe('CANCELLED');
+        // Legacy accept replay preserves history, even after request cancellation. Never reopen.
+        await accept(offered.body.publicId).expect(200);
+        expect(
+          await prisma.dispatch.findMany({
+            where: { deliveryRequestId: rows[0].deliveryRequestId },
+          }),
+        ).toEqual(dispatches);
+      } else {
+        expect(accepted.body.code).toBe('QUOTE_NOT_ACCEPTABLE');
+        expect(rows[0].status).toBe('CANCELLED');
+        expect(dispatches).toHaveLength(0);
+      }
+      expect(routing.calls).toBe(calls);
+      expect(await prisma.creditLedgerEntry.count()).toBe(entries);
+    },
+  );
 });
 
 describe.sequential(

@@ -1,3 +1,4 @@
+import { rejectConvertedRequest } from '../delivery-prequotes/prequote-origin.js';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
@@ -8,7 +9,13 @@ import { DomainException } from '../common/domain-error.js';
 import { nextPublicId } from '../common/public-id.js';
 import { ServiceZonesService } from '../service-zones/service-zones.service.js';
 import { RatePlansService } from '../rate-plans/rate-plans.service.js';
-import { findBand, validateBands } from '../rate-plans/rate-bands.js';
+import {
+  QUOTE_FAILURES,
+  fail,
+  prepareQuotePricing,
+  evaluateQuotePrice,
+  buildDeliveryQuoteSnapshot,
+} from '../pricing/quote-pricing.js';
 import { ROUTING_PROVIDER, RoutingError } from '../routing/routing.types.js';
 import type { RoutingProvider } from '../routing/routing.types.js';
 import type { GeoPoint } from '../geo/geometry.js';
@@ -18,23 +25,12 @@ import {
   DeliveryQuoteListQueryDto,
 } from './delivery-quotes.dto.js';
 
-/** Failure codes returned to clients and audited as DELIVERY_QUOTE_FAILED. No quote is created. */
-export const QUOTE_FAILURES = {
-  OUT_OF_SERVICE_AREA: 422,
-  CROSS_ZONE_NOT_SUPPORTED: 422,
-  ROUTE_NOT_FOUND: 422,
-  DISTANCE_NOT_SUPPORTED: 422,
-  ROUTING_UNAVAILABLE: 503,
-  RATE_CONFIGURATION_UNAVAILABLE: 503,
-  RATE_CONFIGURATION_INVALID: 503,
-  SERVICE_ZONE_AMBIGUOUS: 503,
-  DELIVERY_REQUEST_NOT_QUOTABLE: 409,
-} as const;
-type FailureCode = keyof typeof QUOTE_FAILURES;
-const fail = (code: FailureCode, message: string) =>
-  new DomainException(code, QUOTE_FAILURES[code], message);
+export { QUOTE_FAILURES } from '../pricing/quote-pricing.js';
 
 export const quoteSelect = {
+  prequoteConversion: {
+    select: { prequote: { select: { zoneCode: true, zoneName: true } } },
+  },
   id: true,
   publicId: true,
   deliveryRequestId: true,
@@ -74,7 +70,16 @@ type QuoteRow = Prisma.DeliveryQuoteGetPayload<{ select: typeof quoteSelect }>;
 export function quoteView(row: QuoteRow, now = new Date()) {
   const effective: DeliveryQuoteStatus =
     row.status === 'OFFERED' && row.expiresAt <= now ? 'EXPIRED' : row.status;
-  return { ...row, status: effective, amount: row.amount.toFixed(2) };
+  const { prequoteConversion, ...safe } = row;
+  const source = prequoteConversion?.prequote;
+  return {
+    ...safe,
+    serviceZone: source
+      ? { ...row.serviceZone, code: source.zoneCode, name: source.zoneName }
+      : row.serviceZone,
+    status: effective,
+    amount: row.amount.toFixed(2),
+  };
 }
 /** B2B contract: no internal UUIDs, rate plan internals or routing vendor details. */
 export function integrationQuoteView(row: QuoteRow, now = new Date()) {
@@ -131,6 +136,11 @@ export class DeliveryQuotesService {
           >`SELECT id, status, "serviceType" FROM "DeliveryRequest" WHERE "publicId" = ${deliveryRequestPublicId} AND "integrationClientId" = ${integrationClientId}::uuid FOR UPDATE`;
           if (!request)
             throw new NotFoundException('Delivery request not found');
+          await rejectConvertedRequest(
+            tx,
+            request.id,
+            'PREQUOTE_REQUOTE_NOT_ALLOWED',
+          );
           if (request.status !== 'CREATED')
             throw fail(
               'DELIVERY_REQUEST_NOT_QUOTABLE',
@@ -174,81 +184,38 @@ export class DeliveryQuotesService {
           const pickup = point('PICKUP');
           const dropoff = point('DROPOFF');
 
-          // Every query of this transaction runs on `tx`. A lookup on the global client would need a
-          // second pool connection while this one holds the request lock; with as many concurrent
-          // quotes as pool connections, all of them wait on that lock and the holder waits on the
-          // pool, until the 10 s pool timeout fails every request (P2024 -> 500).
-          const pickupZones = await this.zones.resolveActive(pickup, tx);
-          const dropoffZones = await this.zones.resolveActive(dropoff, tx);
-          if (!pickupZones.length || !dropoffZones.length)
-            throw fail(
-              'OUT_OF_SERVICE_AREA',
-              `${pickupZones.length ? 'Dropoff' : 'Pickup'} is outside every active service zone`,
-            );
-          if (pickupZones.length > 1 || dropoffZones.length > 1)
-            throw fail(
-              'SERVICE_ZONE_AMBIGUOUS',
-              'A stop matches more than one active service zone',
-            );
-          const zone = pickupZones[0];
-          if (zone.id !== dropoffZones[0].id)
-            throw fail(
-              'CROSS_ZONE_NOT_SUPPORTED',
-              `${request.serviceType} requires pickup and dropoff in the same service zone`,
-            );
-
-          // Rate configuration is checked before routing to avoid paid calls that cannot be priced.
-          const plan = await this.plans.findActive(
-            zone.id,
-            request.serviceType,
+          const configuration = await prepareQuotePricing(
             tx,
+            pickup,
+            dropoff,
+            request.serviceType,
+            { zones: this.zones, plans: this.plans },
           );
-          if (!plan)
-            throw fail(
-              'RATE_CONFIGURATION_UNAVAILABLE',
-              'No active rate plan for this zone and service type',
-            );
-          if (
-            plan.calculationType !== 'DISTANCE_BANDS' ||
-            plan.currency !== zone.currency ||
-            !validateBands(plan.bands, plan.currency).valid
-          )
-            throw fail(
-              'RATE_CONFIGURATION_INVALID',
-              'Active rate plan is inconsistent',
-            );
+          const { plan } = configuration;
 
           const route = await this.route(
             pickup,
             dropoff,
             deliveryRequestPublicId,
           );
-          const band = findBand(plan.bands, route.distanceMeters);
-          if (!band)
-            throw fail(
-              'DISTANCE_NOT_SUPPORTED',
-              'Route distance exceeds the supported rate bands',
-            );
-
+          const price = evaluateQuotePrice(configuration, route);
           const created = await tx.deliveryQuote.create({
-            data: {
-              publicId: await nextPublicId(tx, 'MQ'),
-              deliveryRequestId: request.id,
-              serviceType: request.serviceType,
-              serviceZoneId: zone.id,
-              ratePlanId: plan.id,
-              rateBandId: band.id,
-              distanceMeters: route.distanceMeters,
-              durationSeconds: route.durationSeconds,
-              amount: band.amount,
-              currency: band.currency,
-              routingProvider: route.routingProvider,
-              routeCalculatedAt: route.calculatedAt,
-              createdAt: now,
-              expiresAt: new Date(
-                now.getTime() + plan.quoteValidityMinutes * 60_000,
-              ),
-            },
+            data: buildDeliveryQuoteSnapshot(
+              {
+                publicId: await nextPublicId(tx, 'MQ'),
+                deliveryRequestId: request.id,
+                serviceType: request.serviceType,
+              },
+              configuration,
+              route,
+              price,
+              {
+                createdAt: now,
+                expiresAt: new Date(
+                  now.getTime() + plan.quoteValidityMinutes * 60_000,
+                ),
+              },
+            ),
             select: quoteSelect,
           });
           events.push({
@@ -335,6 +302,7 @@ export class DeliveryQuotesService {
       const [request] = await tx.$queryRaw<
         { status: string }[]
       >`SELECT status FROM "DeliveryRequest" WHERE id = ${owned.deliveryRequestId}::uuid FOR UPDATE`;
+      await rejectConvertedRequest(tx, owned.deliveryRequestId);
       const quote = await tx.deliveryQuote.findUniqueOrThrow({
         where: { id: owned.id },
         select: quoteSelect,

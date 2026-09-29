@@ -4,6 +4,102 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación de configuración segura (2026-09-29):** commit/push autorizados de .env.example, .gitignore y continuidad, incluyendo retirar .env del repositorio sin eliminar el archivo local. Sin publicar nuevos valores privados ni reescribir historia; V1.13 permanece sin activar.
+
+- **Sincronización local de entorno (2026-09-29):** .env completado con claves faltantes de .env.example, conservando valores existentes; plantilla actualizada con flag de aceptación autorizada deshabilitado. Validación de configuración en memoria aprobada; presupuesto operativo no inventado, V1.13 sin activar. Se detectó .env versionado: exclusión local del índice y regla .gitignore para prevenir publicaciones futuras, sin borrar archivo ni reescribir historia.
+
+- **Publicación de readiness V1.13 (2026-09-29):** commit/push autorizados de la lista operativa y continuidad documental. Sin nuevas pruebas ni cambios de producto; C4 PARTIAL, A3 aparcado y flujo sin activar permanecen intactos.
+
+- **Coordinación operativa (2026-09-29):** readiness leído; pendientes de respuesta del usuario: tamaño/demanda del piloto, responsable operativo y custodia/atención financiera. Sin nueva verificación técnica ni autorización de activación.
+
+- **Preparación operativa V1.13 (2026-09-29):** lista accionable en [V1.13-ACTIVATION-READINESS](docs/V1.13-ACTIVATION-READINESS.md): capacidad A6 frente a demanda aún desconocida, flags/defaults/scopes exactos, despliegue coordinado y rollback compatible, observabilidad y responsabilidades Mandaria/Coita/negocio. Máximo dos bloques Mandaria (operación Backend y Frontend), integración externa separada. Sólo documentación e inspección acotada; sin nuevas pruebas ni acceso al entorno operativo. C4 PARTIAL y verificador A3 aparcados; flujo sin activar, sin aceptación de riesgos.
+
+- **Comprobación de publicación D (2026-09-29):** `f722f50` confirmado en origin; sin cambios nuevos de código. Nueva solicitud de commit/push atendida con este registro documental exigido por AGENTS.md. `nul` continúa excluido; sin nuevas pruebas ni activación.
+
+- **Publicación V1.13-D (2026-09-29):** commit y push autorizados a la rama actual para publicar backend, pruebas, contrato y evidencia D. Se conservan la validación proporcional de la tarea anterior, C4 PARTIAL, interfaces pendientes y flujo sin activar. Esta publicación no ejecuta nuevas suites ni modifica datos.
+
+- **V1.13-D (2026-09-29): BACKEND IMPLEMENTADO, VALIDACIÓN LOCAL PROPORCIONAL COMPLETA.** Campo aditivo `collectionInstructions` en proyecciones existentes de proveedor/independiente/asignación y `driver/me`; importe/moneda de MQ aceptada e instrucción persistida, sin adelanto ni cobro de comida. OFFER/CURRENT/HISTORICAL separan oferta, ejecución e historia; cancelación/entrega no confirman cobro. Nuevas ejecuciones: 63 unitarias/5 archivos y 61 E2E únicos/5 archivos completos, tipos raíz/build, build, Oxlint/ESLint y OpenAPI/docs:check exit 0. Una interrupción de dispatch forks excluida; único diagnóstico threads completo, causa no acreditada. Fixtures inválidos corregidos sin cambiar reglas. Frontend pendiente; flujo sin activar; C4 PARTIAL y pendientes A intactos. Sin migraciones, .env, versión, principal, commit/push/despliegue. [Informe y guía](docs/V1.13-D-EXECUTOR-COLLECTION-INSTRUCTIONS.md), [evidencia nueva](docs/checks/v1.13-d-evidence.json).
+
+- **Publicación del seguimiento C4 (2026-09-29):** commit y push autorizados a la rama actual para conservar evidencia de los dos intentos acotados. Dictamen PARTIAL y bloqueo de `delivery-requests-b2b` intactos; sin nuevas pruebas ni activación en esta publicación.
+
+- **Pendiente C4, ejecución acotada (2026-09-29): PARTIAL conservado.** Sólo `delivery-requests-b2b` en su base C4 existente: forks termina incompleto 13/15, exit 1, error de worker; único diagnóstico adicional threads aborta 0xC0000409 sin reporte completo. No hay nuevos casos acreditados ni más ejecuciones. Se reutilizan 393 unitarias y 738 E2E/32 archivos de C4 anterior; sin repetir suites, migraciones o escaneos. Producto/pruebas/configuración sin ajustes; evidencia e informes actualizados. Sin commit/push/activación; causa nativa pendiente.
+
+- **Publicación CHECK C4 (2026-09-29):** commit y push autorizados a la rama actual. Se publica la verificación con dictamen PARTIAL; queda pendiente acreditar `delivery-requests-b2b` y diagnosticar el aborto del runner. Publicación sin activación ni inicio de D; resultados de pruebas corresponden al CHECK anterior.
+
+- **CHECK V1.13-C4 (2026-09-29): PARTIAL.** Nuevas 393/393 unitarias (34 archivos) y 738 E2E acreditadas en 32/33 archivos; incluye A6/B2/B3/B4/C2/C3 completos y dos recuperaciones C4 a precio igual/menor. `delivery-requests-b2b` (15 casos) no acreditado: forks incompleto y único diagnóstico threads aborta 0xC0000409; causa nativa pendiente, sin más repeticiones. Webhooks/status completaron el único diagnóstico. Prisma/build/ambos tipos/linters/docs, limpia/upgrade B conservado/drift y 23 invariantes en 35 bases pasan. Producto congelado 348/348, .env/HEAD/versión intactos; historia conservada y accesos sintéticos retirados. Sin defecto de producto reproducido; sin commit/push/activación ni D. Informe: docs/CHECK-V1.13-C4-AUTHORIZED-ACCEPTANCE.md; evidencia: docs/checks/v1.13-c4-evidence.json.
+
+- **Publicación C2/C3 (2026-09-29):** commit y push autorizados a la rama actual para publicar implementación C2 y verificación C3. Resultado técnico: LISTO PARA CHECK C4; sin activación ni inicio automático de C4/D.
+
+- **V1.13-C3 (2026-09-29): LISTO PARA CHECK C4.** Verificación nueva: 62 E2E adversariales con dos Nest/pools y A5 durable real, 359 E2E de regresión en 14 archivos, total 421/421 E2E únicos y 393/393 unitarias. Migración limpia/upgrade B no vacío/status/reaplicación/drift, tipos/build/Prisma/linters/docs PASS; 336 archivos existentes y .env idénticos. Escaneo de 16 bases aisladas sin violaciones; historia preservada. Dos abortos nativos excluidos; único ensayo forks por archivo completó Quotes/Assignments, causa raíz pendiente. Binario pre-C lee/cancela historia C pero rechaza accept/replay: no despliegue mixto acreditado. Sin cambios de producto, commit/push/activación; C4/D no iniciados. Informe: docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md.
+
+- **V1.13-C2 (2026-09-29): IMPLEMENTADO, LISTO PARA VERIFICACIÓN C3.** Accept convertido con atestación exacta, evidencia inmutable/constraints SQL, IdempotencyService y Dispatch/snapshots atómicos; contexto interno B2B y flag false por defecto. Conserva TTL, cancel/completion, CASH/COURIER_ADVANCE y refunds existentes; no D ni activación. Nuevas: 390 unitarias/33 archivos y 372 E2E únicos/15 archivos (35 C2 + 337 regresión), todos completos exit 0. Prisma, migración limpia/upgrade con historia B intacta, ambos tsconfig, build, linters y docs pasan; scan final cero violaciones. Intentos abortados/fallidos excluidos, causa nativa pendiente; Independent necesitó base propia por paginación global. Historia conservada y fixtures C2 deshabilitados/cancelados sólo en bases nuevas locales. Informe: docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md; índice: docs/checks/v1.13-c2-evidence.json.
+
+- **Revisión de coordinación C1 (2026-09-29):** diseño leído y alineado con las decisiones aprobadas; siguiente paso propuesto: prompt de implementación C2. Revisión documental, sin nueva comprobación de carreras/SQL ni pruebas de producto. No acredita C implementada ni autoriza activación.
+
+- **Publicación del cierre C1 (2026-09-29):** commit y push autorizados a la rama actual. Se publica el diseño listo para revisión con las cuatro decisiones aprobadas; C2 e implementación/activación permanecen pendientes.
+
+- **Cierre documental V1.13-C1 (2026-09-29): DISEÑO LISTO PARA REVISIÓN.** Decisiones aprobadas: atestación de Coita sobre MQ exacta; cancelar y confirmar antes de nueva secuencia/consentimiento; sustitución enlazada fuera de C; reiniciar envío no exige otro pago de comida ni implica reembolso. Inspección estática confirma cancelación admisible con MQ convertida vencida, pero cancel200/MDR CANCELLED puede coexistir con DELIVERED: se requiere también GET status CANCELLED/EXPIRED y deliveredAt null. Coita debe serializar generaciones por pedido; externalReference no es único. Matriz de fallos, invariantes y etapas C2/C3/C4 actualizadas. Sólo documentación, referencias/JSON/diff comprobados; no suites ni DB. C2 no iniciado; implementación/activación y validación externa pendientes. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
+
+Las entradas siguientes conservan estados históricos; el cierre anterior con D2 pendiente queda superado por la decisión explícita de esta tarea.
+
+- **Publicación C1 (2026-09-29):** commit y push autorizados a la rama actual para publicar el diseño documental. D2 (recuperación tras vencimiento) continúa pendiente; publicar no autoriza implementación ni activación.
+
+- **V1.13-C1 (2026-09-29): DISEÑO CON DECISIONES BLOQUEANTES.** Sólo análisis/documentación de aceptación autorizada, reutilizando accept/Dispatch/idempotencia y proponiendo evidencia inmutable del consentimiento ligada a MQ exacta. El usuario eligió atestación de Coita Eats con evidencia conservada allí. Pendiente decidir recuperación tras vencimiento: nueva secuencia después de cancelar o sustitución enlazada/atómica. Conserva snapshot/TTL, barreras SQL, CASH/COURIER_ADVANCE y refunds de créditos existentes; sin implementar C/D ni activar. Revisión de código/OpenAPI/migraciones y referencias, ejemplos JSON y diff --check; no pruebas nuevas ni acceso DB. B4 es evidencia histórica, causa de abortos no confirmada. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
+
+- **Publicación de subsanación B4 (2026-09-29):** commit y push autorizados a la rama actual. Se publica el cierre PASS local y la corrección de tipos de pruebas; permanece documentada la causa no confirmada de abortos del runner. Sin activación ni despliegue.
+
+- **Subsanación final B4 (2026-09-29): PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE.** Nuevas: 380 unitarias y 248 E2E en seis archivos completos; 406 casos E2E históricos en 24 archivos con hashes/procedencia verificados. Total consolidado 654/654, 30/30 archivos. Webhooks pasó completo dos veces sin cambios (bases nueva e histórica); causa raíz de abortos anteriores no confirmada. Un aborto nuevo de B3 forks excluido; único ensayo diagnóstico threads 58/58. Nueve errores de tipos corregidos en seis pruebas; ambos tsconfig, Oxlint y ESLint pasan. Producto/.env/HEAD/versión intactos; escaneo final sin violaciones. No certifica estabilidad absoluta del runner ni activación. C/D y pendientes A siguen abiertos. Informe: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia: docs/checks/v1.13-b4-final-evidence.json.
+
+- **Publicación CHECK B4 (2026-09-29):** commit y push solicitados a la rama actual. Se publica el CHECK con dictamen PARTIAL, sus pruebas, revisión y evidencia; no habilita B ni cierra los pendientes de webhooks/tipos. Sin despliegue.
+
+- **CHECK B4 reejecutado (2026-09-29): PARTIAL.** 380/380 unitarias y 600 E2E en 29/30 archivos completos con exit 0; webhooks sigue abortando y no se acredita. B4 corregido 24/24, B2 39/39, B3 58/58, A6 36/36. Corregidos falso positivo SQL, aserciones de concurrencia, consolidación y limpieza de fixture sin deshabilitar guardas. Nueve errores de tipos preexistentes en pruebas; tipos de producto/build/linters pasan. Migraciones limpia/upgrade/reaplicación/drift y escaneo final pasan. 261 archivos originales idénticos; .env/HEAD/versión intactos. Sin defecto bloqueante de producto confirmado, sin commit/push/activación. El PASS anterior es histórico y no se ratifica. Detalle: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia nueva: docs/checks/v1.13-b4-rerun-evidence.json.
+
+- **Revisión independiente de B4 (2026-09-28): cierre pendiente de subsanar evidencia del CHECK.** El PASS anterior se conserva como resultado histórico. Se detectó un falso positivo SQL (Dispatch con columna inexistente), aserciones amplias de concurrencia y consolidación que no exige exit 0; en los resúmenes retenidos falta el exit exitoso de user-invitations. No se demostró un defecto de producto. Los 261 archivos congelados siguen idénticos; tipos de producto pasan y se reproducen nueve errores de tipos existentes en pruebas. No se reejecutaron E2E ni migraciones. Detalle: `docs/REVIEW-V1.13-B4-CHECK.md`. Corregir el CHECK antes de ratificar B; C y activación siguen pendientes.
+
+- **CHECK V1.13-B4 (2026-09-28/29): PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE.** Evidencia nueva de esta tarea: inventario **descubierto** de 30 archivos E2E y 32 unitarios; **380/380 unitarias** y **654/654 E2E** por archivo completo, incluidos CHECK A6 (36), B2 (39), B3 (58) y la suite nueva B4 (24). El recorrido integral cierra la brecha que B2/B3 dejaban al doblar el consumo A5: con el servicio durable real, **emitir crea un permiso, una ejecución A3 y una llamada de routing, y convertir no crea ninguno de los tres**. Dos Nest con pools propios; tres scopes obligatorios, ownership indistinguible, replay que se cierra ante revocación/suspensión/expiración, 12 cuerpos inválidos rechazados sin crear key, flag false con replay disponible, ocho keys compitiendo por una MPQ con un solo ganador, respuesta perdida recuperada, snapshot y metadata congelados, `expiresAt` inmutable incluso en SQL, cruce de vencimiento por lock real, **16 escrituras forjadas rechazadas**, doce invariantes en 0 y ocho tablas no vacías idénticas antes y después. **261 archivos de producto/contrato con hash combinado idéntico**, `.env` comparado en privado e idéntico, HEAD y versión intactos. Migraciones limpia/upgrade/estado/reaplicación/drift PASS. **Ningún defecto de producto**; diez defectos de fixtures propios corregidos y explicados, y `scripts/verify-prequote-migrations.mjs` documentado como verificador obsoleto de la época A3 **sin corregirlo**. Sin commit, push, despliegue ni activación. C y D siguen fuera de alcance y los pendientes operativos de A siguen abiertos. Informe: `docs/CHECK-V1.13-B4-CONVERSION.md`.
+
+- **Publicación V1.13-B3 (2026-09-28):** commit y push autorizados a la rama actual para publicar pruebas, verificadores y evidencia B3. LISTO PARA CHECK B4; sin activación ni despliegue.
+
+- **V1.13-B3 (2026-09-28): LISTO PARA CHECK B4.** Verificación nueva: 58/58 focalizadas, 39/39 B2 y 140/140 E2E seleccionadas A/legacy (237 E2E por archivo), más 380/380 unitarias. Dos Nest/pools y revisión B1 compilada: legacy funcional, accept/requote convertido bloqueado por SQL. Manifiesto/rollback/contención/privacidad/preservación no vacía comprobados. SET CONSTRAINTS IMMEDIATE permite commit tardío directo sin renovar expiry ni abrir Dispatch, límite B1/B2 conservado. 256 archivos de producto/contrato idénticos, .env y HEAD intactos. Migraciones limpia/upgrade/status/drift, build/tipos/Prisma/linters/docs:check y escaneo SQL PASS. Sin corrección de producto, versión, commit/push/despliegue/activación. B4 y pendientes operativos A siguen abiertos. Informe: docs/V1.13-B3-CONVERSION-ADVERSARIAL-VERIFICATION.md.
+
+- **Publicación V1.13-B2 (2026-09-28):** commit y push autorizados a la rama actual. Se publica la implementación verificada en la tarea anterior; B3 y CHECK B4 siguen pendientes. Sin activación ni despliegue.
+
+- **V1.13-B2 (2026-09-28): IMPLEMENTADO, LISTO PARA VERIFICACIÓN B3.** Conversión única y atómica MPQ → MDR PREPAID + MQ OFFERED; manifiesto inmutable de hijos sin xmin/XID, idempotencia existente, snapshot/TTL conservados y barreras SQL/aplicación pre-C. Verificación nueva: 380/380 unitarias y 572/572 E2E consolidadas por archivo completo (39 nuevas); Prisma, migración limpia/upgrade, catálogo/drift, verificadores, tipos/build/linters/OpenAPI/docs:check PASS. Bases locales nuevas _test solamente, limpieza de fixtures y escaneo de invariantes sin violaciones. Flag deshabilitado; sin versión, commit/push/despliegue. B no cerrada: B3 y CHECK B4 pendientes. Pendientes de activación A conservados: capacidad del mutex, política coordinada, migraciones/entorno, observabilidad/responsables. Informe: docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md.
+
+- **Publicación V1.13-B1 (2026-09-28):** commit y push autorizados a la rama actual para publicar el diseño y su continuidad. B sigue pendiente de implementación; sin activación ni despliegue.
+
+- **V1.13-B1 (2026-09-28): LISTO PARA IMPLEMENTAR B2 — sólo diseño.** Informe `docs/V1.13-B1-PREQUOTE-CONVERSION-DESIGN.md`: conversión inmutable con hechos propios, transacción local e idempotencia existente, snapshot sin recálculo y barreras de aplicación/SQL pre-C. Revisión estática y documental; sin pruebas de producto ni operaciones de datos. B no implementada. Pendientes de activación A conservados: capacidad del mutex, política coordinada, migraciones/validación del despliegue y observabilidad/responsables. Sin versión, configuración, commit/push o activación.
+
+- **Publicación CHECK V1.13-A6 (2026-09-28):** commit y push autorizados a la rama actual para publicar pruebas, verificador y evidencia del CHECK validado en la tarea anterior. Sin activación ni despliegue.
+
+- **CHECK V1.13-A6 (2026-09-28): PASS — V1.13-A IMPLEMENTADA Y VALIDADA LOCALMENTE.** Evidencia nueva: 372/372 unitarias, 497/497 E2E existentes consolidadas por archivo y 36/36 CHECK integral (533 E2E en total). Dos Nest con auth/idempotencia/persistencia/consumo reales; caídas de proceso, SQL/rollback, carga de 10604 permisos y preservación de 10 tablas no vacías. 250 archivos de producto/configuración/contrato/migraciones congelados, .env y HEAD intactos. Bases nuevas aisladas _test; principal sin escrituras. Build/tipos/Prisma/linters/docs:check PASS; abortos Windows y correcciones de fixtures documentados. Activación pendiente de runbook/capacidad/migración del entorno real; flag deshabilitado, sin Google real, B, commit/push/despliegue. Informe: docs/CHECK-V1.13-A6-PREQUOTES.md.
+
+- **Publicación V1.13-A5 (2026-09-28):** commit y push autorizados a la rama actual; se publica el conjunto validado en la tarea anterior. Emisión deshabilitada, sin despliegue ni migración principal.
+
+- **V1.13-A5 (2026-09-28): LISTO PARA CHECK A6.** Consumo durable PostgreSQL compartido, cuotas y presupuesto global MPQ explícito; start/finish conservadores, fencing y recuperación. Nuevas verificaciones: 372/372 unitarias y 497/497 E2E consolidadas por archivo (21 nuevas); invitaciones repetida completa tras aborto nativo Windows. Prisma, limpia/upgrade, tipos/build/linters/OpenAPI/docs:check PASS. Migración sólo en bases locales _test, principal intacta. Flag false, sin Google real, versión/CHANGELOG, commit/push/despliegue. No cierra V1.13-A. Informe: docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md.
+
+- **Publicación V1.13-A4 (2026-09-28):** commit y push autorizados a la rama actual; se publica el contrato HTTP y la orquestación validados en la tarea anterior. La emisión operativa sigue bloqueada hasta A5. Sin despliegue.
+
+- **V1.13-A4 — contrato HTTP y orquestación (2026-09-28):** LISTO PARA A5. POST/GET delivery-prequotes con scopes explícitos, ownership, replay durable y routing fuera de transacciones. Producción deniega emisión incluso con flag habilitado; GET/replay disponibles. 357/357 unitarias y 476/476 E2E consolidadas por archivo ejecutadas en esta tarea; tipos/build/linters/OpenAPI/docs:check PASS. Sin migraciones nuevas ni principal migrada; no conversión/accept, versión, commit/push/despliegue. Informe: docs/V1.13-A4-PREQUOTE-HTTP-ORCHESTRATION.md.
+
+- **Publicación V1.13-A3 (2026-09-28):** commit y push autorizados a la rama actual; se publica la persistencia e idempotencia durable validada en la tarea anterior. Sin despliegue ni migración de la base principal.
+
+- **V1.13-A3 — persistencia e idempotencia durable (2026-09-28):** LISTO PARA A4. DeliveryPrequote independiente e inmutable; metadata 1:1 bajo la única autoridad ApiIdempotencyRecord, leases con fencing y publicación atómica. 347/347 unitarias y 436/436 E2E consolidadas por archivo; migración limpia/upgrade, Prisma, tipos/build/linters/docs:check PASS. Dos migraciones aplicadas sólo a bases locales de pruebas; principal sin migrar. Sin endpoints/routing nuevo/cuotas/conversión, versión, commit/push/despliegue. Informe: docs/V1.13-A3-PREQUOTE-PERSISTENCE-IDEMPOTENCY.md.
+
+- **Publicación V1.13-A2 (2026-09-28):** commit y push autorizados a la rama actual; se publica la extracción validada en la tarea anterior. Sin despliegue.
+
+- **V1.13-A2 — cálculo compartido (2026-09-28):** LISTO PARA A3. DeliveryQuotesService usa funciones extraídas de preparación/validación/precio/snapshot, conservando routing transaccional, TTL y contrato. Verificación nueva: 331/331 unitarias y 412/412 E2E consolidadas por archivo; tipos/build/Oxlint/ESLint/docs:check pasan. Abortos Windows y repeticiones documentados. Sin precotización, Prisma, versión, commit/push/despliegue. Informe: docs/V1.13-A2-SHARED-PRICING-EXTRACTION.md.
+
+- **Publicación V1.13-A1 (2026-09-28):** commit y push a la rama actual autorizados por el propietario; se publica la baseline validada en la tarea anterior, sin despliegue.
+
+- **V1.13-A1 — baseline legacy (2026-09-28):** LISTO PARA A2. Caracterización de cotización/idempotencia/accept/cancel y seis pruebas nuevas; 312/312 unitarias, 412/412 E2E consolidadas por archivo, tipos/build/Oxlint/ESLint pasan. Intentos Windows abortados/incompletos y repeticiones documentados; no equivalen a PASS. Sin cambios de producto ni precotización. Informe: docs/V1.13-A1-LEGACY-REGRESSION-BASELINE.md.
+
+- **Análisis de reutilización de precotización (2026-09-28):** docs/PREQUOTE-REUSE-ASSESSMENT.md recomienda compartir cálculo, routing, tarifas e infraestructura; conservar una autoridad de idempotencia y agregar sólo persistencia MPQ necesaria. Reutilizar DeliveryQuote como recurso sin solicitud exige romper invariantes actuales y no se recomienda. Sin implementación.
+
+- **Diseño de precotización garantizada (2026-09-28):** propuesta documentada en docs/PROPOSAL-PREQUOTE-PREPAID-RECIPIENT-CASH.md; MPQ independiente, conversión única a MDR/MQ con vencimiento heredado, accept autorizado e instrucción de efectivo al destinatario. Viabilidad estática, no implementado ni aprobado como contrato operativo. Conserva legacy/COURIER_ADVANCE y separa entrega de cobro.
+
+- **Análisis de comida prepagada y envío al destinatario (2026-09-28):** PREPAID declara mercancía ya cobrada, no envío pagado; el contrato no modela transferencia pendiente ni evidencia de cobro del envío. Aceptar Quote abre Dispatch atómicamente. Cotización previa sin declaración falsa requiere precotización externa o extensión aditiva; no se implementó. Revisión estática de OpenAPI/código, sin operaciones reales ni pruebas ejecutadas.
+
 - **Publicación V1.12-G (2026-09-28):** propietario autoriza commit y push en la rama actual v1.12-Public_Execution_Identity. Se publica el conjunto validado en la tarea anterior; sin despliegue.
 
 - **V1.12-G validada localmente (2026-09-28):** identidad pública B2B aditiva; Driver.displayName explícito nullable, snapshot inmutable al entregar y Outbox consistente. 309 unitarias y 409 E2E pasan; migración incremental, build, linters y documentación verificados. Sin commit/push/despliegue ni cambios de .env/Web/Coita Eats. Informe: docs/V1.12-G-B2B-PUBLIC-EXECUTION-IDENTITY.md.
@@ -244,6 +340,73 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-09-28 — Publicación de V1.13-A4
+
+- Solicitud: commit y push a la rama actual.
+- Cambios: publicación del conjunto A4, pruebas, configuración de ejemplo y documentación; nul preexistente excluido.
+- Verificaciones actuales: revisión de rama/remoto/conjunto y git diff --check; comprobación del commit y sincronización remota al publicar. Las 357 unitarias y 476 E2E son resultados de la implementación anterior, no pruebas repetidas en esta tarea.
+- Resultado: conjunto preparado para commit y push autorizados; confirmación remota al ejecutar la publicación. Sin despliegue, migración ni activación operativa.
+- Pendientes: protección compartida A5 y etapas posteriores, conforme al informe A4.
+
+### 2026-09-28 — V1.13-A4, HTTP de precotizaciones sin activación operativa
+
+- Solicitud: implementar contrato HTTP/emisión/consulta sobre A2/A3, sin activar routing operativo antes de protección compartida A5.
+- Base: rama actual, HEAD 22cc73e; tracked limpio; nul preexistente conservado. A3 era evidencia histórica; verificación nueva separada.
+- Cambios: módulo, controlador, DTOs, proyección segura, scopes, orquestación y permiso DI de producción denegado; lectura durable sin reserva y presupuesto restante de lease; configuración validada y .env.example; OpenAPI/matriz, README, VERIFICATION e informe detallado. No reglas legacy, schema, migraciones aplicadas, .env ni versión modificados.
+- Verificaciones actuales: PostgreSQL localhost mandaria_test (26 migraciones, sólo lectura de catálogo); 357/357 unitarias; 476/476 E2E consolidadas de 25 archivos, incluidos 40 HTTP A4 y 24 A3; build/TypeScript/Oxlint/ESLint/OpenAPI/docs:check y diff-check PASS. Webhooks/dispatch repitieron archivos completos tras abortos Windows. Dos fixtures nuevos corregidos (lease demasiado breve, deactivatedAt requerido), no reglas relajadas. Intentos fallidos/incompletos documentados en el informe.
+- Resultado: LISTO PARA A5. Contrato de emisión y consulta implementado y probado con routing controlado. Emisión operativa bloqueada hasta completar A5. No existe conversión, aceptación ni flujo completo de transferencia.
+- Pendientes/límites: protección compartida y reconciliación de consumo A5; revocación concurrente no atómica con red/COMMIT; runner Windows inestable. Evidencia test inmutable retenida, zonas de fixtures desactivadas y credenciales nuevas revocadas al terminar. Base principal sin migrar; sin Docker, APIs pagadas, Web/Coita Eats, commit, push ni despliegue.
+
+### 2026-09-28 — Publicación de V1.13-A3
+
+- Solicitud: realizar commit y push a la rama actual.
+- Cambios: publicación de modelos, dos migraciones incrementales, servicios internos, pruebas, verificador de migraciones e informe de A3. Archivo ajeno `nul` excluido.
+- Verificaciones de esta tarea: revisión del conjunto y `git diff --check`; comprobación del commit y sincronización remota al publicar. Las 347 unitarias y 436 E2E corresponden a la tarea anterior y no se repiten para esta publicación.
+- Resultado: conjunto preparado para commit y push autorizados; confirmación remota pendiente de ejecutar. Sin despliegue.
+- Pendientes: A4; migración de la base principal fuera del alcance de esta publicación.
+
+### 2026-09-28 — V1.13-A3: DeliveryPrequote y protocolo interno durable
+
+- **Solicitud:** persistencia de precotización y reserva/recuperación/publicación interna, sin emisión ni consulta pública.
+- **Cambios:** DeliveryPrequote, ApiIdempotencyExecution y dos migraciones incrementales; normalizador FOOD/LOCAL_DELIVERY separado de legacy; servicio con owner/version/lease e intentos acotados; MPQ; guard de replay legacy ante metadata durable; pruebas y verificador de migración específicos; informe A3.
+- **Verificaciones actuales:** Prisma validate/generate y estado de 26 migraciones; build, TypeScript, Oxlint, ESLint, docs:check y git diff --check PASS. 347/347 unitarias (16 nuevas) y 436/436 E2E en 24 archivos (412 legacy +24 nuevas). Bases nuevas mandaria_a3_clean_52b4dfb5d3_test y mandaria_a3_upgrade_52b4dfb5d3_test retenidas: instalación/upgrade PASS, comparación de 12 tablas y registro/hash idempotente legacy preservados. Sólo escrituras en bases locales de pruebas verificadas.
+- **Incidencias:** primera migración nueva falló por sintaxis; se comprobó rollback íntegro, se marcó rolled-back y se corrigió/aplicó sólo en test. Verificador inicialmente abortó antes de crear bases por selector de nombres, corregido. Tres suites abortaron nativamente; invitaciones pasó en primera repetición, quotes y solicitudes B2B en segunda tras errores de worker. Ejecuciones incompletas no contadas como PASS; detalle en informe.
+- **Resultado:** LISTO PARA A4. Misma clave por integración, replay sin renovación, terminales no reabren, todas las mutaciones con fencing; publicación y éxito se confirman juntos o rollback. Snapshot, condiciones, referencias y dinero protegidos en PostgreSQL. Comparación de 284 archivos preexistentes: sólo cambios autorizados en schema, public-id, IdempotencyService y su mock; .env/migraciones históricas/contratos/flujos operativos sin cambios.
+- **Pendientes/riesgos:** primero migrar esquema en futuro despliegue autorizado; principal intacta. A4 debe conectar API/guardas/orquestación y A5 cuotas. No hay endpoints públicos, routing nuevo, cuotas activadas, conversión ni aceptación del flujo nuevo; transferencia completa pendiente. Fixtures durables y bases de validación retenidos; zona de fixtures se desactiva. Inestabilidad de runner Windows sin causa raíz resuelta. Sin Docker, versión/CHANGELOG, commit, push o despliegue.
+
+### 2026-09-28 — Publicación de V1.13-A2
+
+- **Solicitud:** commit y push a la rama actual.
+- **Cambios:** publicación del cálculo compartido, integración en DeliveryQuotesService, pruebas, informe y bitácora. nul preexistente queda fuera del commit.
+- **Verificación actual:** revisión del conjunto y git diff --check. Las 331 unitarias, 412 E2E y comprobaciones de calidad corresponden a la tarea A2 anterior; no se repiten para publicar.
+- **Resultado y pendientes:** conjunto preparado para commit/push; se comprobará sincronización con origin al finalizar. Sin despliegue ni trabajo de A3.
+
+
+### 2026-09-28 — V1.13-A2: extracción del cálculo compartido
+
+- **Solicitud:** extraer preparación, validación, evaluación y snapshot sin alterar comportamiento legacy ni implementar precotizaciones.
+- **Cambios:** nuevo src/pricing/quote-pricing.ts usado por DeliveryQuotesService; nuevo test/quote-pricing.spec.ts con 19 casos; informe de extracción. Baseline A1 y mocks intactos, sin módulos nuevos ni algoritmo duplicado.
+- **Verificaciones ejecutadas en A2:** destino local mandaria_test confirmado por lectura, 24 migraciones existentes; 331/331 unitarias; 412/412 E2E consolidadas de 23 archivos. Build, TypeScript, Oxlint, ESLint, docs:check y git diff --check PASS. Comparación de 286 archivos preexistentes protegidos: sólo cambia el servicio de quotes; contratos, Prisma, tests A1, configuración y .env iguales. Tramo route/accept/lecturas del servicio idéntico al inicial.
+- **Ejecuciones incompletas:** webhooks exit 1 con 16/54, luego 51/54 por salida inesperada del worker; dispatch aborto nativo 3221226505. No se contabilizan como PASS. Dispatch repitió 13/13; webhooks completó 54/54 con forks/1 worker y aislamiento predeterminado. Ninguna aserción debilitada o configuración global alterada.
+- **Resultado:** LISTO PARA A3, con inestabilidad Windows documentada. Routing dentro de transacción y bloqueo, TTL anclado antes de routing y snapshot con tiempos explícitos; accept/cancel/openDispatch/idempotencia/finanzas sin cambios.
+- **Pendientes/límites:** diseñar el alcance autorizado de A3; ninguna MPQ, cuota, lease, conversión o instrucción de cobro implementada. Servicios externos reales/VM no verificados. Fixtures residuales de abortos pueden permanecer en la base local de pruebas; no se ejecutó barrido global. Sin Docker, migraciones, cambio de versión/CHANGELOG, commit, push ni despliegue.
+
+### 2026-09-28 — Publicación de baseline V1.13-A1
+
+- **Solicitud:** commit y push a la rama actual.
+- **Cambios:** publicación de tres archivos de pruebas, informe de baseline y bitácora; se conserva nul preexistente fuera del commit.
+- **Verificación actual:** revisión del diff y git diff --check; las 312 unitarias y 412 E2E corresponden a la tarea anterior, no se repiten para esta publicación.
+- **Resultado y pendientes:** conjunto preparado para commit/push; comprobar sincronización remota al finalizar. Sin despliegue ni implementación A2.
+
+
+### 2026-09-28 — V1.13-A1: base de regresión previa a precotización
+
+- **Solicitud:** inspeccionar y verificar legacy, cubrir brechas relevantes y proponer extracción A2, sin modificar producto.
+- **Cambios:** informe docs/V1.13-A1-LEGACY-REGRESSION-BASELINE.md; dos casos unitarios de conflicto idempotente entre operaciones/tipos, uno de routing transaccional/TTL, tres E2E accept/cancel y conteo de Dispatch en aceptación concurrente. Sólo pruebas, informe y bitácora.
+- **Verificaciones actuales:** destino local mandaria_test comprobado (24 migraciones aplicadas; sin migrar/resetear), 312/312 unitarias; 412/412 E2E en 23 archivos con ejecuciones completas, incluidas repeticiones de cinco archivos inicialmente incompletos. Build, TypeScript, Oxlint y ESLint pasan; git diff --check pasa. Comparación de 233 archivos protegidos sin cambios, incluido .env. Resultados históricos no se computan como actuales.
+- **Resultado:** LISTO PARA A2; se conservan routing dentro de transacción, TTL desde antes de routing, una autoridad de idempotencia y atomicidad accept/openDispatch/cancel. CASH es método de recarga, no GoodsPaymentMode. Replay accept tras cancel mantiene historia sin reabrir despacho.
+- **Limitaciones/pendientes:** inestabilidad de procesos Vitest en Windows; intentos abortados no aprobados. Posibles fixtures residuales de abortos sólo en base de pruebas; sin barrido destructivo ni restauración exacta acreditada. Servicios externos reales/VM no verificados. A2 queda propuesta, no implementada. Sin Docker, cambios de versión/OpenAPI, commit, push ni despliegue.
 
 ### 2026-09-27 — Comprobación de pantalla de secretos webhook
 
@@ -1043,3 +1206,312 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificaciones actuales:** estado, rama, remoto y git diff --check. Las 309 unitarias y 409 E2E corresponden a la tarea anterior; no se repiten para la publicación Git.
 - **Resultado:** conjunto listo para commit y push autorizado a origin; resultado remoto confirmado al cierre de esta tarea.
 - **Pendientes:** despliegue coordinado de migración y escritores; configurar nombres públicos explícitos. No se ejecuta despliegue ni se modifica .env.
+### 2026-09-28 — Análisis de transferencia al restaurante y cobro exclusivo del envío
+
+- **Solicitud:** revisar contrato e implementación para comida pagada por transferencia al restaurante, sin adelanto del repartidor y con cobro exclusivo del envío; permitir cotización antes de confirmar pago sin despachar ni autorizar aumentos automáticamente.
+- **Cambios:** sólo esta bitácora; análisis entregado en la conversación. Sin cambios funcionales, configuración, migraciones ni alteraciones al flujo COURIER_ADVANCE.
+- **Verificaciones actuales:** lectura dirigida de BITACORA, README y VERIFICATION; contraste de docs/openapi.json, DTOs, normalización, serializadores, quote/accept, vistas proveedor/independiente, completion/status, cancelación, esquema y migraciones; inspección de pruebas existentes sin ejecutarlas. git diff --check y estado Git. No HTTP, bases de datos, routing, despachos, Docker ni acceso a Coita Eats o Mandaria Web.
+- **Resultado:** financialContext PREPAID con goodsValue positivo opcional representa mercancía ya cobrada; paymentContext deriva false/null para adelanto y deliveryFee de Quote. No hay campo de cobro al destinatario, estado de pago del envío, recibo ni reembolso monetario. Inmutabilidad de solicitud por contrato API (sin edición), sin atribuirle un trigger SQL de inmutabilidad financiera. Crear/cotizar no despacha; accept sí. Sin modo pendiente ni precotización desacoplada en API actual. No usar COURIER_ADVANCE ficticio ni PREPAID pendiente. Vencimiento exige nueva Quote y autorización explícita ante aumento. Completion/webhook acredita logística, no cobro. SERVICE_REFUND devuelve créditos del ejecutor, no comida/envío.
+- **Pendientes:** decidir precotización independiente, política de consentimiento y vencimientos, responsable/evidencia de cobro del envío y devolución de transferencia por restaurante; verificar interfaces en tareas separadas. Pruebas históricas no reejecutadas. Sin commit, push ni despliegue; archivo nul preexistente conservado.
+### 2026-09-28 — Diseño de precotización y envío en efectivo al destinatario
+
+- **Solicitud:** diseñar extensión para precotizar antes de transferencia, garantizar temporalmente precio y convertir tras confirmación del restaurante; no implementar.
+- **Cambios:** documento de propuesta con endpoints/scopes/cuerpos/respuestas/errores, estados e invariantes, snapshot y garantía, conversión/aceptación, idempotencia/concurrencia, abuso de routing, responsabilidades, interfaces, migraciones futuras, decisiones y matriz de pruebas/etapas. Sólo documentación y esta bitácora.
+- **Verificaciones actuales:** lectura de continuidad y contraste estático de OpenAPI/código, helper idempotente, trigger de Quote, apertura de Dispatch, scopes y driver/me (asignación propia sin contexto financiero). Ocho bloques JSON de ejemplos parseados correctamente; git diff --check sin errores. No pruebas de producto, HTTP, routing, SQL, migraciones ni operaciones reales.
+- **Resultado:** diseño viable condicionado a implementar persistencia y guardas. MPQ garantiza precio hasta aceptación antes del vencimiento original, sin disponibilidad garantizada; conversión no renueva plazo. Nuevo flujo exige aceptación autorizada y bloquea bypass legacy. Instrucción de cobrar envío no confirma recepción de dinero. Flotilla requiere canal operativo verificado o extensión de lectura/UI; capacidades Web/KMP no inspeccionadas.
+- **Pendientes:** aprobar políticas de vigencia, consentimiento, suspensión, límites/retención, canal de flotilla y devoluciones externas; ejecutar etapas y matriz en tareas futuras. Las verificaciones históricas no se reejecutaron. Sin cambios de código/OpenAPI operativo/configuración/versión, commit, push o despliegue. nul preexistente conservado.
+### 2026-09-28 — Acoplamiento sin duplicación innecesaria
+
+- **Solicitud:** analizar adaptación de componentes existentes antes de implementar precotización, evitando duplicidad de recursos y preservando comportamiento validado.
+- **Cambios:** informe docs/PREQUOTE-REUSE-ASSESSMENT.md y bitácora; propuesta de extracción controlada de cálculo común, único registro de claves con extensión durable y una entidad MPQ con función propia. No crear tablas futuras sin necesidad.
+- **Verificaciones actuales:** lectura de continuidad, esquema, cotización/routing/idempotencia, configuración HTTP, patrón de leases y utilidades; git diff --check. No pruebas de producto ni operaciones reales.
+- **Resultado:** viable reutilizar sin alterar contrato legacy, pero requiere ajustes internos. DeliveryQuote exige solicitud y congela vínculo; reutilizarla como MPQ sería más invasivo. Snapshot futuro duplicado como evidencia no implica recálculo/cobro duplicado. Presupuesto global MPQ no debe confundirse con total de Google ni alterar legacy silenciosamente.
+- **Pendientes:** revisar recomendación y concretar extensión de idempotencia antes de etapa A; validar regresiones al implementar. Sin código, migraciones, configuración, commit, push ni despliegue; cambios previos y nul conservados.
+
+## 2026-09-28 — V1.13-A5: límites y consumo durable
+
+Solicitud: completar el puerto A4 con protección compartida real, sin habilitar operación.
+
+Cambios: ledger de permisos y política coherente, cuotas/ventanas/presupuesto, recuperación conservadora y wiring real; migración incremental, pruebas y documentación.
+
+Verificación y resultado: **V1.13-A5 (2026-09-28): LISTO PARA CHECK A6.** Consumo durable PostgreSQL compartido, cuotas y presupuesto global MPQ explícito; start/finish conservadores, fencing y recuperación. Nuevas verificaciones: 372/372 unitarias y 497/497 E2E consolidadas por archivo (21 nuevas); invitaciones repetida completa tras aborto nativo Windows. Prisma, limpia/upgrade, tipos/build/linters/OpenAPI/docs:check PASS. Migración sólo en bases locales _test, principal intacta. Flag false, sin Google real, versión/CHANGELOG, commit/push/despliegue. No cierra V1.13-A. Informe: docs/V1.13-A5-PREQUOTE-CONSUMPTION-CONTROLS.md.
+
+Pendientes: CHECK A6 independiente, coordinación operativa de cambios de política, evaluación de throughput y pausas/red externa; no implementar conversión ni aceptación en esta tarea. Historial anterior conservado.
+
+## 2026-09-28 — Publicación Git de V1.13-A5
+
+Solicitud: commitear y subir a la rama actual. Cambios: publicación de A5 y registro de continuidad. Verificaciones actuales: estado/rama/remoto y git diff --check; las 372 unitarias y 497 E2E corresponden a la tarea anterior y no se repitieron en esta publicación. Resultado: conjunto preparado para commit y push; confirmación del remoto en la respuesta de esta tarea. Pendiente funcional: CHECK A6. Sin despliegue; nul preexistente excluido.
+
+## 2026-09-28 — CHECK V1.13-A6 integral y adversarial
+
+Solicitud: verificar A1–A5 con producto congelado y evidencia nueva; no corregir producto ni activar.
+
+Cambios: nuevo CHECK HTTP de 36 casos, verificador de carga/caídas, informe y evidencia sanitizada. Ningún cambio a servicios, DTOs, reglas SQL, migraciones, paquetes o contrato.
+
+Verificaciones y resultado: **CHECK V1.13-A6 (2026-09-28): PASS — V1.13-A IMPLEMENTADA Y VALIDADA LOCALMENTE.** Evidencia nueva: 372/372 unitarias, 497/497 E2E existentes consolidadas por archivo y 36/36 CHECK integral (533 E2E en total). Dos Nest con auth/idempotencia/persistencia/consumo reales; caídas de proceso, SQL/rollback, carga de 10604 permisos y preservación de 10 tablas no vacías. 250 archivos de producto/configuración/contrato/migraciones congelados, .env y HEAD intactos. Bases nuevas aisladas _test; principal sin escrituras. Build/tipos/Prisma/linters/docs:check PASS; abortos Windows y correcciones de fixtures documentados. Activación pendiente de runbook/capacidad/migración del entorno real; flag deshabilitado, sin Google real, B, commit/push/despliegue. Informe: docs/CHECK-V1.13-A6-PREQUOTES.md.
+
+Pendientes: aprobar/ensayar operación coordinada de política, dimensionar piloto (p99 admisión ~1260 ms con concurrencia 8 y 10604 filas), sincronización de relojes y límites de red; diseñar V1.13-B sin implementarla aquí. Bases conservadas; credenciales CHECK revocadas y zonas desactivadas; nul previo sin tocar. Las cifras A5 previas permanecen como historia.
+
+## 2026-09-28 — Publicación Git del CHECK V1.13-A6
+
+Solicitud: commitear y hacer push a la rama actual. Cambios: publicación de pruebas y evidencia A6, con actualización de continuidad. Verificaciones actuales: estado/rama/remoto y git diff --check; las 372 unitarias y 533 E2E son resultados de la tarea anterior, no se repitieron en esta publicación. Resultado: conjunto preparado para commit y push; confirmación remota en la respuesta de esta tarea. Pendientes: activación coordinada, capacidad y diseño de V1.13-B. Sin despliegue ni cambios de producto; nul preexistente excluido.
+
+## 2026-09-28 — V1.13-B1 diseño de conversión única
+
+Solicitud: diseñar conversión MPQ→MDR/MQ, exclusivamente mediante documentación y contrastando A3–A6 con código real.
+
+Cambios: informe B1 con alternativas, mapa de reutilización, contrato propuesto, condiciones/snapshot, transacción/locks/replay, esquema y guardas SQL, bloqueo de accept/quotes/Dispatch legacy, intención comercial inmutable, cancelación, migración/despliegue y matriz B2/B3/B4. Actualización del estado actual; historial conservado.
+
+Verificaciones actuales: lectura estática de documentación obligatoria, servicios/DTOs/modelos/triggers; revisión de campos de ejemplos, referencias locales, alcance Git y `git diff --check`. No se ejecutaron unitarias/E2E, build, DB ni operaciones externas; los resultados A6 siguen siendo evidencia histórica. Resultado: **LISTO PARA IMPLEMENTAR B2**, no B implementada. Sólo documentación; `nul` preexistente intacto.
+
+Pendientes: implementar y verificar barreras/constraints/transacción en B2/B3, CHECK B4; C autorizará aceptación y D expondrá cobro a ejecutores. Se conservan abiertos capacidad del mutex A, política coordinada, migración/validación de entorno y observabilidad/responsables. Sin cambios de producto, OpenAPI operativo, configuración, datos, versión/CHANGELOG, commit/push/despliegue/activación.
+
+## 2026-09-28 — Publicación Git de V1.13-B1
+
+Solicitud: commitear y hacer push a la rama actual. Cambios: publicación del diseño B1 y registro de continuidad. Verificaciones actuales: estado/rama, alcance documental y git diff --check; no se repitieron pruebas de producto. Resultado: documentación preparada para commit y push; confirmación del remoto en la respuesta de esta tarea. Pendientes: implementación B2 y verificación B3/B4, además de los pendientes operativos A conservados. Sin despliegue ni activación; nul preexistente excluido.
+
+
+## 2026-09-28 — V1.13-B2: conversión única y atómica
+
+- Solicitud: implementar B2 sobre B1, sin cierre de B, activación ni publicación.
+- Cambios: modelo/migración incremental PrequoteConversion, contrato HTTP/scopes/flag, construcción transaccional mediante manifiesto, proyecciones CONVERTED y defensas pre-C; documentación y pruebas. Header corregido a Idempotent-Replayed.
+- Verificaciones actuales: 380 unitarias, 572 E2E en 28 archivos completos, Prisma/generate, limpia/upgrade (14 tablas históricas), drift/status, verificadores, tsc/build, Oxlint/ESLint, OpenAPI/docs:check y escaneo SQL PASS. Intentos abortados/no completos excluidos; evidencia por archivo en docs/checks/v1.13-b2-evidence.json.
+- Resultado: IMPLEMENTADO, LISTO PARA VERIFICACIÓN B3. Limpieza sólo en bases creadas para esta tarea, sin borrar historia.
+- Pendientes: B3, CHECK B4, compatibilidad con binario antiguo real, límites temporales/aislamiento/carga y pendientes operativos A. Sin commit/push, versión, cambios .env, principal migrada o despliegue.
+
+
+## 2026-09-28 — Publicación Git de V1.13-B2
+
+- Solicitud: realizar commit y push a la rama actual.
+- Cambios: publicación de implementación, migración, pruebas, contrato y documentación B2; actualización de continuidad.
+- Verificaciones de esta tarea: revisión de rama/remoto y conjunto de archivos, diff --check y revisión de secretos conocidos. Las 380 unitarias y 572 E2E corresponden a la tarea anterior; no se repiten para esta publicación.
+- Resultado previsto: commit y push normal a origin en la rama actual; confirmación del resultado Git en la respuesta de esta tarea. Archivo preexistente nul excluido.
+- Pendientes: B3, CHECK B4 y pendientes operativos A; sin despliegue ni activación.
+
+
+## 2026-09-28 — V1.13-B3: verificación adversarial
+
+- Solicitud: evaluar conversión B2 con PostgreSQL real, concurrencia, integridad SQL, tiempo y escritor anterior, sin cerrar B ni publicar.
+- Cambios: suite focalizada, preparador local de binario anterior, escáner de invariantes, informe/evidencia y continuidad. Producto/configuración/contrato/migraciones sin cambios, verificados por hash de 256 archivos.
+- Verificaciones de esta tarea: 58 focalizadas, 39 B2 y 140 E2E A/legacy (237 E2E por archivo completo); 380 unitarias, limpia/upgrade con 14 tablas, status/drift, build/tipos/Prisma/linters/docs:check y escaneo SQL PASS. Resultados B2 históricos no reutilizados como evidencia nueva.
+- Resultado: LISTO PARA CHECK B4. Pruebas iniciales con fixtures inválidos no acreditadas, corregidas sin debilitar reglas; límites temporales/compatibilidad explícitos en informe.
+- Limpieza: apps cerradas, credenciales revocadas y zonas desactivadas; bases nuevas/historia conservadas, sin principal migrada ni .env alterado; nul intacto.
+- Pendientes: CHECK B4 integral, entorno/dependencias/despliegue compatibles y pendientes A (mutex, política coordinada, migraciones, observabilidad/responsables). C/D fuera de alcance; sin commit/push/despliegue/activación.
+
+
+## 2026-09-28 — Publicación Git de V1.13-B3
+
+- Solicitud: realizar commit y push en la rama actual.
+- Cambios: publicación del conjunto de verificación B3 y actualización de continuidad.
+- Verificaciones de esta tarea: estado/rama/remoto, revisión del conjunto, diff --check y búsqueda de secretos conocidos. Los 380 casos unitarios y 237 E2E son resultados de la tarea B3 anterior; no se repiten para publicar.
+- Resultado: conjunto preparado para commit y push normal a origin; confirmación Git en la respuesta de esta tarea. nul preexistente excluido.
+- Pendientes: CHECK B4 y pendientes operativos A. Sin despliegue ni activación.
+
+### 2026-09-28/29 — CHECK V1.13-B4 conversión única de precotizaciones
+
+- **Solicitud:** ejecutar el CHECK integral de V1.13-B para decidir si puede declararse implementada y validada localmente, con producto congelado, sin corregir defectos de producto en silencio y sin reutilizar las cifras de B2/B3 como evidencia actual. Sin commit, push, despliegue ni activación.
+- **Trabajo:** baseline y congelación de 261 archivos de producto, migraciones, configuración, contratos y paquetes, con comparación privada de `.env`. Dos bases nuevas locales `_test` **separadas** —integral y regresión limpia— porque las fixtures de upgrade insertan IDs manuales que no avanzan secuencias. Suite nueva `test/check-b4-conversion.e2e-spec.ts` con **24 casos** en dos aplicaciones Nest de pools independientes donde autenticación, token, idempotencia, **consumo durable A5**, conversión, persistencia y PostgreSQL son reales y sólo el routing está controlado: ésa era la brecha, porque B2 y B3 doblan el consumo. Reejecución de las suites existentes y verificadores, escaneo SQL propio de doce invariantes, compilación aislada de la revisión anterior desde el historial local y reproducción documentada del verificador de migraciones obsoleto.
+- **Resultado: PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE**, con el alcance limitado a conversión MPQ → MDR PREPAID + MQ OFFERED y barreras pre-C. **Ningún defecto de producto.**
+- **Verificaciones de esta tarea:** inventario descubierto de **30 archivos E2E y 32 unitarios**; **380/380 unitarias** y **654/654 E2E** por archivo completo; **24/24** del recorrido integral; `prisma validate`, `npm run build` y `docs:check` antes de las E2E, tipos de producto con `tsconfig.build.json` en 0, Oxlint, ESLint y `git diff --check` en exit 0; `verify-migrations`, el verificador de conversión y el de consumo en PASS con 28 migraciones y 14 tablas históricas; estado, reaplicación idempotente con 199 y 127 conversiones existentes y drift **sin diferencias** en ambas bases aisladas; escaneo SQL final con **doce invariantes en 0**, 17 triggers de integridad activos y 2 FKs diferidas; **16 escrituras forjadas rechazadas**; ocho tablas no vacías idénticas por hash antes y después de tres conversiones. Congelación final: 261 archivos con hash combinado idéntico, 0 diferencias, `.env` idéntico y HEAD sin cambio.
+- **Hallazgos:** **producto sin defectos.** Diez defectos de fixtures del propio CHECK, corregidos y explicados sin debilitar aserciones ni deshabilitar guardas; los que conviene recordar: emitir sí crea una ejecución durable A3, así que el punto de referencia va después de emitir; el envelope 404 repite el `path` que el llamante pidió; un plan de tarifas con bandas sólo nace `DRAFT` y un plan `INACTIVE` no vuelve a `ACTIVE`; el `expiresAt` de una MPQ no se mueve ni por SQL, así que la frontera temporal se prueba acortando la vigencia por configuración; y `migrate diff --to-schema-datasource` resuelve el datasource del archivo de schema, que apunta a la base principal. **Limitación documentada y no corregida:** `scripts/verify-prequote-migrations.mjs` quedó obsoleto —excluye sólo las migraciones de A3, así que su base de upgrade recibe las de A5 y B2, que dependen de tablas de A3; falla en `20260928000400_prequote_conversion` y reaplicar devuelve `P3009`—; la cadena queda cubierta por los otros tres verificadores. `tsc -p tsconfig.json` arroja **9 errores preexistentes** en suites de A6/B2/B3, con el gate de producto en 0. Tres archivos abortaron por la caída nativa de worker en Windows y se repitieron completos hasta exit 0, sin sumar repeticiones a los casos únicos.
+- **Bases y limpieza:** la base principal tiene **24 de 28** migraciones y ninguna tabla de V1.13; se consultó sólo de lectura y **no se migró**. Todas las escrituras en bases nuevas `_test` retenidas, sin reset, purga ni borrado de bases preexistentes. Credenciales de fixtures revocadas y zonas desactivadas, incluidas las que dejó activas un aborto nativo, con un segundo escaneo en cero. Cero triggers de fallo residuales y cero triggers de integridad deshabilitados.
+- **Documentación:** `docs/CHECK-V1.13-B4-CONVERSION.md` y `docs/checks/v1.13-b4-evidence.json` (nuevos, sanitizados), más las secciones nuevas al inicio de VERIFICATION.md y esta entrada.
+- **Pendientes:** **un PASS no habilita emisión ni conversión y no permite despachar recursos convertidos.** C aceptación autorizada y D exposición de instrucciones a ejecutores siguen fuera de alcance. Siguen abiertos los pendientes operativos de A: capacidad del mutex y volumen, política coordinada, migraciones y entorno de despliegue, observabilidad, responsables y retención, y actualizar todas las instancias antes de activar B. Queda anotado el verificador obsoleto de A3 para una tarea de mantenimiento aparte.
+
+### 2026-09-28 — Revisión independiente del CHECK B4
+
+- Solicitud: corroborar el trabajo del otro agente frente al alcance acordado.
+- Cambios: sólo documentación; nuevo docs/REVIEW-V1.13-B4-CHECK.md y actualización del estado actual, conservando todo el historial.
+- Verificaciones nuevas: revisión de código, contrato y evidencia; comparación actual de 261 archivos contra freeze final sin diferencias; inspección de resúmenes de ejecución; TypeScript sin emisión de producto PASS y nueve errores existentes en pruebas reproducidos. Sin reejecución de suites, migraciones ni operaciones de base de datos.
+- Resultado: alcance correcto, cierre del CHECK pendiente por falso positivo SQL, aserciones de concurrencia amplias y trazabilidad incompleta de exit 0. No se acreditó un defecto de producto ni se ratifica ausencia absoluta de defectos.
+- Pendientes: subsanar y revalidar CHECK B4; mantenimiento del verificador A3 y deuda de tipos por separado; C y pendientes operativos intactos. Sin cambios de producto, configuración, versión, commit, push, despliegue ni activación.
+
+
+## 2026-09-29 — Reejecución CHECK B4
+
+Solicitud: validación integral, producto congelado y evidencia trazable.
+
+**CHECK B4 reejecutado (2026-09-29): PARTIAL.** 380/380 unitarias y 600 E2E en 29/30 archivos completos con exit 0; webhooks sigue abortando y no se acredita. B4 corregido 24/24, B2 39/39, B3 58/58, A6 36/36. Corregidos falso positivo SQL, aserciones de concurrencia, consolidación y limpieza de fixture sin deshabilitar guardas. Nueve errores de tipos preexistentes en pruebas; tipos de producto/build/linters pasan. Migraciones limpia/upgrade/reaplicación/drift y escaneo final pasan. 261 archivos originales idénticos; .env/HEAD/versión intactos. Sin defecto bloqueante de producto confirmado, sin commit/push/activación. El PASS anterior es histórico y no se ratifica. Detalle: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia nueva: docs/checks/v1.13-b4-rerun-evidence.json.
+
+Pendientes: ejecución completa de webhooks y deuda de tipos; C/D y pendientes operativos A continúan abiertos. Cambios limitados a pruebas, verificador y documentación; evidencia histórica conservada.
+
+
+## 2026-09-29 — Publicación del CHECK B4
+
+Solicitud: commitear y subir a la rama actual. Cambios: pruebas, consolidador, informes y evidencia del CHECK; se conserva el historial y se excluye el archivo preexistente nul. Verificación de esta tarea: revisión de Git y diff --check; no se reejecutaron suites. Resultado técnico conservado: PARTIAL, con webhooks incompleto y nueve errores de tipos preexistentes. Publicación autorizada; sin activación ni despliegue.
+
+
+## 2026-09-29 — Subsanación final de CHECK B4
+
+Solicitud: diagnosticar abortos de webhooks, corregir tipos de pruebas y determinar cierre local.
+
+**Subsanación final B4 (2026-09-29): PASS — V1.13-B IMPLEMENTADA Y VALIDADA LOCALMENTE.** Nuevas: 380 unitarias y 248 E2E en seis archivos completos; 406 casos E2E históricos en 24 archivos con hashes/procedencia verificados. Total consolidado 654/654, 30/30 archivos. Webhooks pasó completo dos veces sin cambios (bases nueva e histórica); causa raíz de abortos anteriores no confirmada. Un aborto nuevo de B3 forks excluido; único ensayo diagnóstico threads 58/58. Nueve errores de tipos corregidos en seis pruebas; ambos tsconfig, Oxlint y ESLint pasan. Producto/.env/HEAD/versión intactos; escaneo final sin violaciones. No certifica estabilidad absoluta del runner ni activación. C/D y pendientes A siguen abiertos. Informe: docs/CHECK-V1.13-B4-CONVERSION.md; evidencia: docs/checks/v1.13-b4-final-evidence.json.
+
+Cambios: parámetros objeto de helpers HTTP y firma del mock de transacción; informe/evidencia/continuidad. Sin cambio de producto o configuración compartida del runner. Verificaciones nuevas e históricas separadas en el informe; no se reejecutaron build/docs:check/upgrade. Resultado PASS local, causa raíz de caída intermitente pendiente de diagnóstico nativo si recurre. Sin commit, push, despliegue o activación.
+
+
+## 2026-09-29 — Publicación de subsanación final B4
+
+Solicitud: commitear y subir a la rama actual. Cambios publicados: seis pruebas corregidas, informe, evidencia final y continuidad. Verificaciones de publicación: revisión de diff, diff --check y auditoría privada de secretos conocidos; suites no reejecutadas en esta tarea. Resultado conservado: PASS local con riesgo de intermitencia del runner documentado; C/D y pendientes operativos A abiertos. Se excluye nul preexistente. Sin despliegue ni activación.
+
+
+## 2026-09-29 — Diseño C1 de aceptación autorizada
+
+Solicitud: reconstruir contratos y diseñar aceptación de cotizaciones convertidas, sólo documentación.
+
+**V1.13-C1 (2026-09-29): DISEÑO CON DECISIONES BLOQUEANTES.** Sólo análisis/documentación de aceptación autorizada, reutilizando accept/Dispatch/idempotencia y proponiendo evidencia inmutable del consentimiento ligada a MQ exacta. El usuario eligió atestación de Coita Eats con evidencia conservada allí. Pendiente decidir recuperación tras vencimiento: nueva secuencia después de cancelar o sustitución enlazada/atómica. Conserva snapshot/TTL, barreras SQL, CASH/COURIER_ADVANCE y refunds de créditos existentes; sin implementar C/D ni activar. Revisión de código/OpenAPI/migraciones y referencias, ejemplos JSON y diff --check; no pruebas nuevas ni acceso DB. B4 es evidencia histórica, causa de abortos no confirmada. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
+
+Cambios: nuevo documento C1 y continuidad en esta bitácora; historial conservado. Verificaciones: 26 referencias locales existentes, ejemplos JSON parseables y git diff --check. Resultado: propuesta completa para revisión, no lista para implementar mientras D2 esté pendiente. Pendientes operativos A y verificador A3 separados. Sin código/pruebas/configuración/datos/migraciones/.env/versión, Docker, servicios externos, Coita Eats, commit/push/despliegue/activación.
+
+
+## 2026-09-29 — Publicación del diseño C1
+
+Solicitud: commit y push a la rama actual. Cambios: diseño C1 y bitácora; sin producto ni pruebas. Verificación de publicación: estado Git, diff --check y auditoría privada de secretos conocidos; no suites ejecutadas. Resultado: diseño con decisión bloqueante D2 conservada; atestación de Coita Eats aprobada previamente. nul preexistente excluido. Sin despliegue ni activación.
+
+
+## 2026-09-29 — Cierre del diseño C1 con decisiones de negocio aprobadas
+
+Solicitud: cerrar el diseño documental y contrastar garantías de cancelación/reinicio con código y contrato, sin implementar C2.
+
+**Cierre documental V1.13-C1 (2026-09-29): DISEÑO LISTO PARA REVISIÓN.** Decisiones aprobadas: atestación de Coita sobre MQ exacta; cancelar y confirmar antes de nueva secuencia/consentimiento; sustitución enlazada fuera de C; reiniciar envío no exige otro pago de comida ni implica reembolso. Inspección estática confirma cancelación admisible con MQ convertida vencida, pero cancel200/MDR CANCELLED puede coexistir con DELIVERED: se requiere también GET status CANCELLED/EXPIRED y deliveredAt null. Coita debe serializar generaciones por pedido; externalReference no es único. Matriz de fallos, invariantes y etapas C2/C3/C4 actualizadas. Sólo documentación, referencias/JSON/diff comprobados; no suites ni DB. C2 no iniciado; implementación/activación y validación externa pendientes. Diseño: docs/V1.13-C1-AUTHORIZED-ACCEPTANCE-DESIGN.md.
+
+Cambios: diseño C1 y esta bitácora, conservando historial. Definidos cancel/accept/completion concurrentes, respuesta perdida y reintentos, barrera de confirmación con detalle y estado público, nueva MPQ→conversión→consentimiento MQ→aceptación sin renovar TTL, separación financiera y responsabilidades de Coita/Web. El consentimiento final se obtiene después de convertir para quedar vinculado a MQ exacta; la presentación previa de MPQ no lo sustituye. No se propone nueva ruta de sustitución/cancelación ni unicidad por pedido en Mandaria.
+
+Verificación actual: lectura local de AGENTS/README/VERIFICATION/diseño, servicios/controllers/DTO, OpenAPI, schema y guardas SQL; referencias Markdown existentes y ejemplos JSON parseables; git diff --check. No pruebas de ejecución, migraciones, HTTP ni servicios. B4 y verificaciones de C1 inicial se citan exclusivamente como históricas. Baseline HEAD ed2072e6411958742c7ed503615d00c102e548cc; nul preexistente intacto. Sin producto, tests, configuración, .env, versión, datos, commit, push, despliegue o activación.
+
+Resultado: DISEÑO LISTO PARA REVISIÓN; no quedan decisiones de negocio bloqueantes. Pendientes: revisión e implementación C2 bajo solicitud nueva, pruebas de carreras/SQL/compatibilidad C3 y CHECK C4; acreditar coordinación por pedido, consentimiento y conciliación de Coita antes de operar, e instrucciones a ejecutores según D. Mantenimiento A3 y pendientes A permanecen separados.
+
+
+## 2026-09-29 — Publicación del cierre documental C1
+
+Solicitud: commitear y subir a la rama actual. Cambios: diseño C1 y bitácora, sin producto ni pruebas. Verificación de publicación: revisión de diff, estado Git y git diff --check; no suites reejecutadas. Resultado documental: DISEÑO LISTO PARA REVISIÓN, con decisiones de negocio resueltas y dependencias externas explícitas. nul preexistente excluido. Sin implementación de C2, despliegue ni activación.
+
+
+### 2026-09-29 — Revisión de coordinación C1 y preparación de C2
+
+- Solicitud/contexto: revisar el cierre documental C1 para continuar la secuencia de prompts de Mandaria Backend.
+- Trabajo: lectura de BITACORA, README, VERIFICATION y diseño C1; preparación del prompt C2 reutilizando accept, Dispatch e idempotencia y preservando la barrera de recuperación tras cancelación.
+- Verificación: revisión documental únicamente; sin suites, servicios, DB ni migraciones. Las propiedades de código citadas por C1 no se volvieron a verificar independientemente en esta tarea.
+- Resultado: diseño alineado con decisiones aprobadas; C2 queda para ejecución en el otro chat, sin implementación aquí.
+- Pendientes: implementación C2, verificación C3 y CHECK C4; D y pendientes operativos A separados. Sin cambios de producto, configuración, versión, commit, push, despliegue ni activación.
+
+## 2026-09-29 — Implementación y verificación focalizada C2
+
+Solicitud: implementar C2 conforme a C1 aprobado, sin activar ni iniciar C3.
+
+**V1.13-C2 (2026-09-29): IMPLEMENTADO, LISTO PARA VERIFICACIÓN C3.** Accept convertido con atestación exacta, evidencia inmutable/constraints SQL, IdempotencyService y Dispatch/snapshots atómicos; contexto interno B2B y flag false por defecto. Conserva TTL, cancel/completion, CASH/COURIER_ADVANCE y refunds existentes; no D ni activación. Nuevas: 390 unitarias/33 archivos y 372 E2E únicos/15 archivos (35 C2 + 337 regresión), todos completos exit 0. Prisma, migración limpia/upgrade con historia B intacta, ambos tsconfig, build, linters y docs pasan; scan final cero violaciones. Intentos abortados/fallidos excluidos, causa nativa pendiente; Independent necesitó base propia por paginación global. Historia conservada y fixtures C2 deshabilitados/cancelados sólo en bases nuevas locales. Informe: docs/V1.13-C2-AUTHORIZED-ACCEPTANCE-IMPLEMENTATION.md; índice: docs/checks/v1.13-c2-evidence.json.
+
+Cambios: modelo AuthorizedQuoteAcceptance y migración 20260929000100_authorized_quote_acceptance; DTO/servicio/controller accept, opener, contexto auth y proyección me, flag/config test, contrato cancelación, pruebas C2, adaptaciones contractuales B2/B4 y doble HTTP, runners/evidencia/OpenAPI/README/VERIFICATION. No cambio de decisiones de negocio. Principal conserva comida pagada separada de envío/cobro/adelanto/créditos. No sustitución enlazada ni UNIQUE empresarial.
+
+Verificaciones actuales detalladas por intento en el informe: cancel/accept/completion deterministas, revocación que espera aceptación, TTL tras lock y en constraint final, rollback, replay, SQL exacto; regresión B2/B3/B4 y lifecycle/finanzas. Calidad final y revisión de diff/referencias/secretos. PASS históricos no contados. Excluidos aborto C2 forks con JSON engañoso, abortos nativos de regresión y fallos de fixtures corregidos; no configuración compartida relajada.
+
+Resultado: listo para C3, no cierre de C. Pendientes: C3 adversarial/compatibilidad, CHECK C4 completo, causa de abortos, deuda de aislamiento Independent, coordinación Coita/Web, instrucciones D y pendientes operativos A. Verificador A3 sin tocar. Entrada de coordinación previa y nul preservados; sin cambios .env/versión/base principal, commit/push/despliegue/activación.
+
+
+## 2026-09-29 — V1.13-C3: verificación adversarial y compatibilidad
+
+Solicitud: buscar contraejemplos de C1/C2 sin modificar producto, usando bases locales aisladas.
+
+Cambios: dos suites nuevas, runners de evidencia/migraciones/compatibilidad/regresión/diagnóstico/escaneo e informe C3; continuidad actualizada. C2 preexistente, nul y entradas anteriores conservados.
+
+Verificaciones ejecutadas ahora: **V1.13-C3 (2026-09-29): LISTO PARA CHECK C4.** Verificación nueva: 62 E2E adversariales con dos Nest/pools y A5 durable real, 359 E2E de regresión en 14 archivos, total 421/421 E2E únicos y 393/393 unitarias. Migración limpia/upgrade B no vacío/status/reaplicación/drift, tipos/build/Prisma/linters/docs PASS; 336 archivos existentes y .env idénticos. Escaneo de 16 bases aisladas sin violaciones; historia preservada. Dos abortos nativos excluidos; único ensayo forks por archivo completó Quotes/Assignments, causa raíz pendiente. Binario pre-C lee/cancela historia C pero rechaza accept/replay: no despliegue mixto acreditado. Sin cambios de producto, commit/push/activación; C4/D no iniciados. Informe: docs/V1.13-C3-AUTHORIZED-ACCEPTANCE-ADVERSARIAL-VERIFICATION.md.
+
+Los 390 unitarios/372 E2E de C2 son históricos y no se suman. Fallos de fixtures/runners C3 explicados y conservados; ningún caso omitido ni regla debilitada. Los dos intentos nativos sin reporte no se acreditan. Próximo paso explícito: CHECK C4, sólo mediante nueva solicitud; sin activación automática.
+
+
+## 2026-09-29 — Publicación de V1.13-C2/C3
+
+Solicitud: commitear y subir a la rama actual. Se incluyen implementación, migración incremental, pruebas, documentación y evidencia C2/C3 pendientes. Se conserva nul preexistente fuera del commit. Verificaciones de esta tarea: revisión del alcance Git, diff --check y búsqueda de secretos conocidos/JWT antes de publicar. Las 393 unitarias y 421 E2E son resultados de C3, no pruebas reejecutadas durante este commit. Se mantiene LISTO PARA CHECK C4; causa nativa del runner y validación integral/operativa pendientes. Publicación solicitada sin despliegue ni activación.
+
+Preparación del commit: el chequeo staged incluyó por primera vez los logs nuevos y detectó whitespace final. Se normalizaron espacios y líneas vacías finales de logs C2/C3, sin alterar mensajes, códigos o resultados; git diff --cached --check se vuelve a comprobar antes del commit.
+
+## 2026-09-29 — CHECK V1.13-C4 integral local
+
+- Solicitud: cerrar localmente aceptación autorizada contra inventario completo, auditar C1, preservar producto y distinguir nueva evidencia de historia, sin activación ni siguiente etapa.
+- Cambios: prueba C4 de recuperación con nueva MQ a precio igual/menor; runners de inventario/regresión aislada, diagnóstico acotado, migración, escaneo, limpieza, consolidación y artefactos; informe C4 e índices/logs. README/VERIFICATION/estado actual de esta bitácora actualizados; entradas previas conservadas. No pruebas existentes ni producto modificados.
+- Verificaciones nuevas: 393 unitarias/34 archivos y 738 E2E/32 de 33 archivos completos. A6/B2/B3/B4/C2/C3 y recuperación C4 pasan. Prisma validate/generate, build, tsconfig general/build, Oxlint/ESLint, OpenAPI/docs:check; limpia/upgrade con nueve tablas B intactas, status/reaplicación/drift, 70 triggers activos. Escaneo de 35 bases nuevas sin violaciones; accesos sintéticos retirados, historia preservada. Comparación 348 archivos/.env/HEAD/versión y referencias/JSON/diff/secretos.
+- Intentos excluidos: estado B2B, webhooks y solicitudes B2B terminaron incompletos en forks; único diagnóstico threads completó los dos primeros y abortó solicitudes B2B con 0xC0000409. No hubo tercera ejecución. Error inicial de lectura OpenAPI, bloqueo de subproceso del verificador y corrección de identidad de casos parametrizados del consolidador documentados separadamente.
+- Resultado: PARTIAL. Ningún defecto de producto reproducido; falta acreditar íntegramente delivery-requests-b2b (15 casos). Sin causa nativa acreditada ni promesa de estabilidad. Historia C3 revisada; cifras anteriores no sumadas al CHECK.
+- Pendientes: diagnóstico causal y corrida completa del archivo bloqueante; coordinación/consentimiento Coita/Web y actualización coordinada de instancias antes de cualquier futura activación. A operativo/A3 y D fuera del alcance. Sin commit, push, despliegue ni activación.
+
+## 2026-09-29 — Publicación de CHECK V1.13-C4
+
+- Solicitud: realizar commit y push a la rama actual.
+- Cambios: publicar pruebas, runners, documentación y evidencia C4; registrar esta publicación conservando el dictamen PARTIAL y el historial. Excluir el archivo nul preexistente.
+- Verificaciones de esta tarea: revisión del estado Git, rama/remoto, alcance de archivos, diff y contenido preparado; comprobar commit y sincronización remota después del push. No se reejecutaron suites: 393 unitarias y 738 E2E/32 de 33 archivos son evidencia de la tarea CHECK anterior.
+- Resultado técnico conservado: C4 PARTIAL; sin cambios de producto ni activación. La publicación no acredita los 15 casos pendientes ni resuelve la causa nativa.
+- Pendientes: diagnóstico y ejecución íntegra de delivery-requests-b2b, dependencias operativas y autorización de activación; D no iniciado.
+
+## 2026-09-29 — Pendiente C4: ejecución íntegra de solicitudes B2B
+
+- Solicitud: ejecutar únicamente delivery-requests-b2b, reutilizar evidencia válida restante y permitir un solo diagnóstico adicional si aborta.
+- Cambios: evidencia de dos intentos, consolidado e índice C4; adenda del informe y estado de VERIFICATION/BITACORA. Ningún ajuste de pruebas, runner compartido o producto.
+- Verificación nueva: comparación de 348 archivos congelados, sin diferencias; primer intento forks exit 1, 13/15 parciales con error de worker; diagnóstico único threads exit 3221226505, sin reporte completo. Ambos sobre la base C4 existente aislada. Referencias/JSON/diff revisados para la documentación.
+- Resultado: PARTIAL; cero casos nuevos acreditados. 393 unitarias y 738 E2E/32 de 33 archivos siguen siendo evidencia histórica C4 válida, no reejecutada. No se repitieron migraciones, escaneos ni suites adicionales.
+- Pendientes: archivo íntegro exit 0/15 casos y causa del aborto; no más ejecuciones autorizadas en esta tarea. Fixtures de abortos preservados en base aislada; hooks finales no acreditados. Sin commit/push/activación ni siguiente etapa.
+
+## 2026-09-29 — Publicación del seguimiento acotado C4
+
+- Solicitud: commit y push a la rama actual.
+- Cambios: publicar únicamente documentación, consolidado y evidencia de los dos intentos del archivo pendiente; actualizar esta bitácora sin borrar historial. Excluir nul preexistente.
+- Verificaciones de publicación: estado Git, rama/remoto, diff preparado y revisión de secretos; comprobar sincronización después del push. No ejecutar suites, migraciones ni escaneos de bases. Resultados de los intentos pertenecen a la tarea anterior.
+- Resultado técnico conservado: PARTIAL, 393 unitarias y 738 E2E/32 archivos previamente acreditados; ningún caso adicional acreditado.
+- Pendientes: ejecución íntegra de delivery-requests-b2b y causa del aborto. Sin cambios de producto, despliegue, activación ni inicio de otra etapa.
+
+## 2026-09-29 — V1.13-D: instrucciones financieras para ejecutores
+
+- Solicitud: exponer comida pagada, sin adelanto/cobro de comida y cobro exclusivo de envío persistido para conversiones autorizadas; validación proporcional sin retomar C4.
+- Cambios: helper/Swagger compartidos collectionInstructions y campos opcionales en provider/driver dispatch, mutaciones de asignación y activeDeliveryAssignment de driver/me/availability. Importe/moneda de MQ aceptada, instrucción de PrequoteConversion; OFFER/CURRENT/HISTORICAL, privacidad por selección explícita. CASH/COURIER_ADVANCE, TTL, autorizaciones y refunds existentes conservados. Documentación/OpenAPI/README/VERIFICATION actualizados; no interfaces.
+- Verificaciones nuevas: 63 unitarias en cinco archivos y 61 E2E únicos en cinco archivos completos exit 0; build, ambos tsconfig sin emisión, Oxlint/ESLint, OpenAPI/docs:check. Oxlint conserva advertencia preexistente del runner C3. Regresión directa, sin suites completas, migraciones ni escaneos. Evidencia: docs/checks/v1.13-d-evidence.json.
+- Intentos excluidos: fixtures iniciales incompatibles con constraints de usuario/vehículo y con DTO release independiente, corregidos sólo en pruebas. Dispatch forks interrumpido 7/13, exit 1; único diagnóstico threads completo 13/13. Causa no acreditada, no se afirma resuelta. Restantes archivos completos; ninguna repetición suma casos.
+- Resultado: backend D terminado y validado dentro del alcance local solicitado. Pendientes: interfaces consumidoras, C4 PARTIAL, causa de intermitencia y pendientes operativos A. Flujo sin activar; sin .env/versión/principal/Coita/Docker/servicios externos, commit/push/despliegue. Nul preexistente conservado. No CHECK adicional.
+
+## 2026-09-29 — Publicación V1.13-D
+
+- Solicitud: commitear y subir los cambios a la rama actual.
+- Cambios: publicar implementación, pruebas, OpenAPI, documentación y evidencia de instrucciones financieras; actualizar esta bitácora y excluir nul preexistente.
+- Verificaciones de publicación: estado/rama/remoto, diff --check, revisión de archivos y secretos antes del commit; comprobar sincronización remota después del push. Sin nuevas suites: 63 unitarias y 61 E2E son resultados de la tarea de implementación anterior.
+- Resultado técnico conservado: backend D implementado y validado proporcionalmente; C4 PARTIAL, intermitencia sin causa acreditada, interfaces y pendientes operativos A abiertos. Publicar no activa el flujo ni constituye despliegue.
+
+## 2026-09-29 — Comprobación de publicación D
+
+- Solicitud: repetir commit y push a la rama actual.
+- Verificación actual: estado Git sin cambios de código, HEAD f722f50 y mismo commit en la rama remota comprobado con ls-remote; nul preexistente excluido.
+- Cambios: únicamente este registro de continuidad y estado actual. Diff documental comprobado antes de publicar; no se repitieron suites.
+- Resultado técnico conservado: D validada proporcionalmente en la tarea anterior, C4 PARTIAL e interfaces pendientes. Sin despliegue ni activación.
+
+## 2026-09-29 — Preparación operativa para activar V1.13
+
+- Solicitud: concretar requisitos operativos, decisiones pendientes y responsabilidades externas, sin repetir auditoría técnica ni diagnóstico aparcado.
+- Cambios: docs/V1.13-ACTIVATION-READINESS.md con tabla de requisitos/acciones/responsables/bloqueos; alcance real de capacidad A6, configuración y permisos contrastados con código, secuencia futura de despliegue/desactivación, señales existentes y carencias, coordinación por pedido/consentimiento/retención y atención financiera externa. Dos bloques Mandaria como máximo; preguntas agrupadas al final.
+- Verificación actual: lectura acotada de secciones vigentes y apartados relevantes A6/C1/C2/C3/D, controllers y configuración/logging de producto; git diff --check documental. Evidencia de carga/pruebas citada sólo como histórica. No lectura de .env/secretos, pruebas, benchmarks, consultas DB, migraciones, servicios externos ni cambios de producto/configuración/versión.
+- Resultado: checklist operativo documentado; no acredita capacidad del entorno ni integración Coita. Pendientes: volumen/objetivos/presupuesto, responsables/ventana/retención, interfaces e integración externa. C4 PARTIAL y A3 siguen aparcados; sin aceptar riesgos, commit, push, despliegue, activación ni nueva etapa CHECK.
+
+
+### 2026-09-29 — Lectura de readiness y decisiones del piloto
+
+- Solicitud: continuar desde la lista operativa entregada.
+- Trabajo: lectura de estado y readiness; síntesis de decisiones para el usuario. Sólo BITACORA modificada.
+- Verificación: revisión documental y git diff --check; sin pruebas, consultas de bases ni comprobación del entorno.
+- Resultado y pendientes: decisiones operativas pendientes; C4/A3 aparcados, frontend e integración Coita pendientes. Sin implementación, configuración, commit, push ni activación.
+
+## 2026-09-29 — Publicación de readiness V1.13
+
+- Solicitud: commit y push a la rama actual.
+- Cambios: publicar docs/V1.13-ACTIVATION-READINESS.md y las entradas de BITACORA de preparación/coordinación operativa, conservando historial. Nul preexistente excluido.
+- Verificaciones de publicación: revisar contenido documental, estado/rama/remoto y diff preparado con --check; comprobar sincronización tras el push. Sin suites, bases de datos ni nuevas comprobaciones técnicas.
+- Resultado técnico conservado: requisitos operativos documentados, decisiones del usuario e integración externa pendientes. No resuelve C4/A3, no acepta riesgos ni activa o despliega el flujo.
+
+## 2026-09-29 — Ajuste de .env frente a plantilla
+
+- Solicitud: completar la configuración local requerida según .env.example.
+- Cambios: añadir 25 claves ausentes sin modificar valores existentes; incluir en la plantilla el flag de aceptación autorizada con default deshabilitado. Sin publicar valores locales, secretos o contenido del archivo. Presupuesto global pendiente de decisión, sin valor operativo inventado.
+- Verificaciones actuales: comparación privada de claves, preservación de valores existentes y validateEnvironment sobre configuración candidata y guardada: PASS. Todos los campos de plantilla presentes, flags V1.13 deshabilitados. Archivo local preservado; se detectó seguimiento Git de .env y se retiró sólo del índice, con regla .gitignore. No se inspeccionó ni reescribió historia de secretos.
+- Resultado: configuración local alineada y válida en memoria; no acredita conexiones, credenciales o disponibilidad de servicios. Sin iniciar backend, DB, Docker, migraciones o pruebas integrales; sin commit/push/activación. C4/A3 y decisiones operativas siguen pendientes. Si hubo credenciales reales en historia Git, su revisión/rotación requiere tratamiento separado; no se realizó aquí.
+
+## 2026-09-29 — Publicación de plantilla y exclusión de .env
+
+- Solicitud: commit y push de los ajustes de entorno a la rama actual.
+- Cambios: publicar flag de aceptación autorizada deshabilitado en plantilla y regla .gitignore; registrar retirada de .env del seguimiento, conservando archivo local. Nul preexistente excluido.
+- Verificaciones de publicación: revisión del diff de archivos públicos y nombres/estado del índice sin imprimir contenido privado; diff --check, comprobación de archivo local e ignorado y sincronización tras push. Validación de entorno corresponde a la tarea anterior; sin nuevas pruebas ni servicios.
+- Resultado técnico conservado: configuración local alineada, flujo sin activar. La retirada no elimina posibles secretos del historial; revisión/rotación separada pendiente cuando corresponda. Sin despliegue ni cambios de datos.

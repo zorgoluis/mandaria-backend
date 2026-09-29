@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 C:/Users/zorgl/Documents/mandaria-backend
+
+ ✓ test/credit-consumption.e2e-spec.ts (36 tests) 7353ms
+
+ Test Files  1 passed (1)
+      Tests  36 passed (36)
+   Start at  00:52:49
+   Duration  8.25s (transform 1.04s, setup 0ms, import 705ms, tests 7.35s, environment 0ms)
+
+JSON report written to C:/Users/zorgl/Documents/mandaria-backend/docs/checks/v1.13-c2-reg-credit-consumption.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.

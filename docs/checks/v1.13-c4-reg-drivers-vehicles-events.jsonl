@@ -1,0 +1,22 @@
+{"at":"2026-09-29T08:02:19.253Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > Admin A manages Drivers and Vehicles of Provider A (implicit and explicit providerId)"}
+{"at":"2026-09-29T08:02:19.359Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > Admin A manages Drivers and Vehicles of Provider A (implicit and explicit providerId)","state":"passed"}
+{"at":"2026-09-29T08:02:19.364Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > rejects invalid driver/vehicle payloads, unknown fields and bad transitions"}
+{"at":"2026-09-29T08:02:19.533Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > rejects invalid driver/vehicle payloads, unknown fields and bad transitions","state":"passed"}
+{"at":"2026-09-29T08:02:19.536Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > isolates Provider A and B: foreign scope 403, foreign resource IDs 404"}
+{"at":"2026-09-29T08:02:19.684Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > isolates Provider A and B: foreign scope 403, foreign resource IDs 404","state":"passed"}
+{"at":"2026-09-29T08:02:19.687Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > PROVIDER_ADMIN without membership cannot create or list Drivers/Vehicles"}
+{"at":"2026-09-29T08:02:19.690Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > PROVIDER_ADMIN without membership cannot create or list Drivers/Vehicles","state":"passed"}
+{"at":"2026-09-29T08:02:19.693Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > membership never replaces the global role check (defence in depth)"}
+{"at":"2026-09-29T08:02:19.696Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > membership never replaces the global role check (defence in depth)","state":"passed"}
+{"at":"2026-09-29T08:02:19.700Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > SUPER_ADMIN administers Drivers/Vehicles of A and B and sees usage without N+1"}
+{"at":"2026-09-29T08:02:19.846Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > SUPER_ADMIN administers Drivers/Vehicles of A and B and sees usage without N+1","state":"passed"}
+{"at":"2026-09-29T08:02:19.850Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > enforces maxDrivers/maxVehicles counting every status and blocks lowering limits below usage"}
+{"at":"2026-09-29T08:02:19.962Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > enforces maxDrivers/maxVehicles counting every status and blocks lowering limits below usage","state":"passed"}
+{"at":"2026-09-29T08:02:19.966Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > INDEPENDENT uses the same model and limits are configurable, not hardcoded"}
+{"at":"2026-09-29T08:02:19.969Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > INDEPENDENT uses the same model and limits are configurable, not hardcoded","state":"passed"}
+{"at":"2026-09-29T08:02:19.973Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > keeps limits under concurrent creation (provider row lock)"}
+{"at":"2026-09-29T08:02:20.152Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > keeps limits under concurrent creation (provider row lock)","state":"passed"}
+{"at":"2026-09-29T08:02:20.425Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > assigns, rejects busy/ineligible resources, unassigns, reassigns and keeps history"}
+{"at":"2026-09-29T08:02:20.429Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > assigns, rejects busy/ineligible resources, unassigns, reassigns and keeps history","state":"passed"}
+{"at":"2026-09-29T08:02:20.513Z","event":"start","name":"V1.4 Drivers & Vehicles — access, limits and assignments > suspended provider blocks new assignments and forces drivers OFFLINE"}
+{"at":"2026-09-29T08:02:20.517Z","event":"finish","name":"V1.4 Drivers & Vehicles — access, limits and assignments > suspended provider blocks new assignments and forces drivers OFFLINE","state":"passed"}

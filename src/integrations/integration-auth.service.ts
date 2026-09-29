@@ -118,6 +118,11 @@ export class IntegrationAuthService {
     // A token can never gain scopes that were not granted at issuance.
     return {
       ...credential.client,
+      authentication: {
+        credentialId: credential.id,
+        tokenExpiresAt: new Date(claims.exp * 1000),
+        tokenScopes: claims.scopes,
+      },
       scopes: claims.scopes.filter((scope) =>
         credential.scopes.includes(scope),
       ),

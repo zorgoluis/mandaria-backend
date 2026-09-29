@@ -445,6 +445,7 @@ describe('Quote transaction runs every lookup on its own connection', () => {
   const D = (n: number) => new Prisma.Decimal(n);
   const build = (plan: unknown) => {
     const tx = {
+      prequoteConversion: { findUnique: vi.fn().mockResolvedValue(null) },
       $queryRaw: vi
         .fn()
         .mockResolvedValue([
@@ -491,5 +492,121 @@ describe('Quote transaction runs every lookup on its own connection', () => {
     expect(plans.findActive).toHaveBeenCalledTimes(1);
     expect(plans.findActive.mock.calls[0][2]).toBe(tx);
     expect(routing.calculateRoute).not.toHaveBeenCalled();
+  });
+
+  it('A1: routing stays inside the legacy transaction and TTL starts before routing', async () => {
+    const start = new Date('2026-09-28T12:00:00Z');
+    const routeAt = new Date(start.getTime() + 8000);
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(start);
+    let inTransaction = false;
+    const band = {
+      id: 'band',
+      minDistanceMeters: 0,
+      maxDistanceMeters: 6000,
+      amount: D(55),
+      currency: 'MXN',
+    };
+    const tx = {
+      prequoteConversion: { findUnique: vi.fn().mockResolvedValue(null) },
+      $queryRaw: vi
+        .fn()
+        .mockResolvedValue([
+          { id: 'req', status: 'CREATED', serviceType: 'LOCAL_DELIVERY' },
+        ]),
+      $queryRawUnsafe: vi.fn().mockResolvedValue([{ value: 1n }]),
+      deliveryQuote: {
+        findMany: vi.fn().mockResolvedValue([]),
+        create: vi.fn(async ({ data }) => {
+          expect(inTransaction).toBe(true);
+          return data;
+        }),
+      },
+      deliveryStop: {
+        findMany: vi.fn().mockResolvedValue([
+          { type: 'PICKUP', latitude: D(16.7), longitude: D(-93.3) },
+          { type: 'DROPOFF', latitude: D(16.71), longitude: D(-93.31) },
+        ]),
+      },
+    };
+    const transaction = vi.fn<
+      (
+        work: (client: typeof tx) => Promise<unknown>,
+        options?: {
+          maxWait?: number;
+          timeout?: number;
+          isolationLevel?: Prisma.TransactionIsolationLevel;
+        },
+      ) => Promise<unknown>
+    >(async (work) => {
+      inTransaction = true;
+      try {
+        return await work(tx);
+      } finally {
+        inTransaction = false;
+      }
+    });
+    const zones = {
+      resolveActive: vi
+        .fn()
+        .mockResolvedValue([{ id: 'zone', currency: 'MXN' }]),
+    };
+    const plans = {
+      findActive: vi.fn().mockResolvedValue({
+        id: 'plan',
+        version: 3,
+        currency: 'MXN',
+        calculationType: 'DISTANCE_BANDS',
+        quoteValidityMinutes: 15,
+        bands: [band],
+      }),
+    };
+    const routing = {
+      name: 'fake',
+      calculateRoute: vi.fn(async () => {
+        expect(inTransaction).toBe(true);
+        expect(tx.$queryRaw).toHaveBeenCalled();
+        vi.setSystemTime(routeAt);
+        return {
+          distanceMeters: 4700,
+          durationSeconds: 700,
+          routingProvider: 'fake',
+          calculatedAt: routeAt,
+        };
+      }),
+    };
+    const service = new DeliveryQuotesService(
+      { $transaction: transaction } as never,
+      zones as never,
+      plans as never,
+      routing as never,
+      new ConfigService({
+        GOOGLE_ROUTES_TIMEOUT_MS: 5000,
+        GOOGLE_ROUTES_MAX_RETRIES: 1,
+      }),
+    );
+    try {
+      await service.quote('MDR-000001', 'client');
+      expect(tx.deliveryQuote.create.mock.calls[0][0].data).toMatchObject({
+        amount: D(55),
+        currency: 'MXN',
+        ratePlanId: 'plan',
+        rateBandId: 'band',
+        createdAt: start,
+        expiresAt: new Date(start.getTime() + 15 * 60000),
+        routeCalculatedAt: routeAt,
+      });
+      expect(transaction.mock.calls[0][1]).toEqual({
+        timeout: 15200,
+        maxWait: 10000,
+      });
+      expect(inTransaction).toBe(false);
+      expect(routing.calculateRoute).toHaveBeenCalledTimes(1);
+      for (const call of zones.resolveActive.mock.calls)
+        expect(call[1]).toBe(tx);
+      expect(plans.findActive.mock.calls[0][2]).toBe(tx);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -1,0 +1,1 @@
+scripts/verify-authorized-acceptance-c3-regression.mjs:4:10: warning eslint(no-unused-vars): Identifier 'readFileSync' is imported but never used. help: Consider removing this import.

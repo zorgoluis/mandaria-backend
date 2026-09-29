@@ -1,0 +1,116 @@
+{"at":"2026-09-29T07:58:05.534Z","event":"start","name":"B3 independent instances and durable winners > same key/body, changed body and competing keys have one durable winner"}
+{"at":"2026-09-29T07:58:05.537Z","event":"finish","name":"B3 independent instances and durable winners > same key/body, changed body and competing keys have one durable winner","state":"passed"}
+{"at":"2026-09-29T07:58:05.636Z","event":"start","name":"B3 independent instances and durable winners > namespace prevents another MPQ or operation; same text in different owners is independent"}
+{"at":"2026-09-29T07:58:05.816Z","event":"finish","name":"B3 independent instances and durable winners > namespace prevents another MPQ or operation; same text in different owners is independent","state":"passed"}
+{"at":"2026-09-29T07:58:05.820Z","event":"start","name":"B3 independent instances and durable winners > real transaction timeout rolls back; another instance retries same intent"}
+{"at":"2026-09-29T07:58:12.082Z","event":"finish","name":"B3 independent instances and durable winners > real transaction timeout rolls back; another instance retries same intent","state":"passed"}
+{"at":"2026-09-29T07:58:12.817Z","event":"start","name":"B3 independent instances and durable winners > lost response is recovered from the other instance without a second result"}
+{"at":"2026-09-29T07:58:12.821Z","event":"finish","name":"B3 independent instances and durable winners > lost response is recovered from the other instance without a second result","state":"passed"}
+{"at":"2026-09-29T07:58:12.823Z","event":"start","name":"B3 independent instances and durable winners > bounded contention: 16 keys on one MPQ and 8 independent MPQs"}
+{"at":"2026-09-29T07:58:12.826Z","event":"finish","name":"B3 independent instances and durable winners > bounded contention: 16 keys on one MPQ and 8 independent MPQs","state":"passed"}
+{"at":"2026-09-29T07:58:12.938Z","event":"start","name":"B3 manifest SQL and temporal constraints > duplicate-stops cannot commit"}
+{"at":"2026-09-29T07:58:12.940Z","event":"finish","name":"B3 manifest SQL and temporal constraints > duplicate-stops cannot commit","state":"passed"}
+{"at":"2026-09-29T07:58:12.944Z","event":"start","name":"B3 manifest SQL and temporal constraints > duplicate-packages cannot commit"}
+{"at":"2026-09-29T07:58:12.947Z","event":"finish","name":"B3 manifest SQL and temporal constraints > duplicate-packages cannot commit","state":"passed"}
+{"at":"2026-09-29T07:58:13.108Z","event":"start","name":"B3 manifest SQL and temporal constraints > empty-stops cannot commit"}
+{"at":"2026-09-29T07:58:13.111Z","event":"finish","name":"B3 manifest SQL and temporal constraints > empty-stops cannot commit","state":"passed"}
+{"at":"2026-09-29T07:58:13.113Z","event":"start","name":"B3 manifest SQL and temporal constraints > empty-packages cannot commit"}
+{"at":"2026-09-29T07:58:13.116Z","event":"finish","name":"B3 manifest SQL and temporal constraints > empty-packages cannot commit","state":"passed"}
+{"at":"2026-09-29T07:58:13.119Z","event":"start","name":"B3 manifest SQL and temporal constraints > missing-stop cannot commit"}
+{"at":"2026-09-29T07:58:13.121Z","event":"finish","name":"B3 manifest SQL and temporal constraints > missing-stop cannot commit","state":"passed"}
+{"at":"2026-09-29T07:58:13.240Z","event":"start","name":"B3 manifest SQL and temporal constraints > missing-package cannot commit"}
+{"at":"2026-09-29T07:58:13.243Z","event":"finish","name":"B3 manifest SQL and temporal constraints > missing-package cannot commit","state":"passed"}
+{"at":"2026-09-29T07:58:13.246Z","event":"start","name":"B3 manifest SQL and temporal constraints > extra-child cannot commit"}
+{"at":"2026-09-29T07:58:13.248Z","event":"finish","name":"B3 manifest SQL and temporal constraints > extra-child cannot commit","state":"passed"}
+{"at":"2026-09-29T07:58:13.424Z","event":"start","name":"B3 manifest SQL and temporal constraints > wrong-context cannot commit"}
+{"at":"2026-09-29T07:58:13.427Z","event":"finish","name":"B3 manifest SQL and temporal constraints > wrong-context cannot commit","state":"passed"}
+{"at":"2026-09-29T07:58:13.429Z","event":"start","name":"B3 manifest SQL and temporal constraints > foreign-child cannot commit"}
+{"at":"2026-09-29T07:58:13.433Z","event":"finish","name":"B3 manifest SQL and temporal constraints > foreign-child cannot commit","state":"passed"}
+{"at":"2026-09-29T07:58:13.561Z","event":"start","name":"B3 manifest SQL and temporal constraints > complete direct SQL construction with savepoint and constraints immediate commits"}
+{"at":"2026-09-29T07:58:13.564Z","event":"finish","name":"B3 manifest SQL and temporal constraints > complete direct SQL construction with savepoint and constraints immediate commits","state":"passed"}
+{"at":"2026-09-29T07:58:13.568Z","event":"start","name":"B3 manifest SQL and temporal constraints > constraints immediate before construction fail closed without orphan key"}
+{"at":"2026-09-29T07:58:13.572Z","event":"finish","name":"B3 manifest SQL and temporal constraints > constraints immediate before construction fail closed without orphan key","state":"passed"}
+{"at":"2026-09-29T07:58:13.673Z","event":"start","name":"B3 manifest SQL and temporal constraints > direct SQL early validation can cross expiry; no renewal, reuse or dispatch"}
+{"at":"2026-09-29T07:58:15.375Z","event":"finish","name":"B3 manifest SQL and temporal constraints > direct SQL early validation can cross expiry; no renewal, reuse or dispatch","state":"passed"}
+{"at":"2026-09-29T07:58:15.477Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > B1 binary creates/quotes/accepts ordinary legacy with B2 database guards"}
+{"at":"2026-09-29T07:58:15.586Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > B1 binary creates/quotes/accepts ordinary legacy with B2 database guards","state":"passed"}
+{"at":"2026-09-29T07:58:15.589Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > B1 accept cannot dispatch converted quote; expired requote also rolls back"}
+{"at":"2026-09-29T07:58:17.687Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > B1 accept cannot dispatch converted quote; expired requote also rolls back","state":"passed"}
+{"at":"2026-09-29T07:58:17.840Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > SQL update dispatch by either FK and changing quote FK cannot escape origin"}
+{"at":"2026-09-29T07:58:17.843Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > SQL update dispatch by either FK and changing quote FK cannot escape origin","state":"passed"}
+{"at":"2026-09-29T07:58:17.847Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > conversion stopIds immutable"}
+{"at":"2026-09-29T07:58:17.850Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > conversion stopIds immutable","state":"passed"}
+{"at":"2026-09-29T07:58:17.984Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > conversion packageIds immutable"}
+{"at":"2026-09-29T07:58:17.988Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > conversion packageIds immutable","state":"passed"}
+{"at":"2026-09-29T07:58:17.994Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > conversion goodsPaymentReference immutable"}
+{"at":"2026-09-29T07:58:18.000Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > conversion goodsPaymentReference immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.132Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > conversion orderAcceptanceReference immutable"}
+{"at":"2026-09-29T07:58:18.136Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > conversion orderAcceptanceReference immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.140Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > conversion integrationClientId immutable"}
+{"at":"2026-09-29T07:58:18.143Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > conversion integrationClientId immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.285Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > conversion deliveryRequestId immutable"}
+{"at":"2026-09-29T07:58:18.293Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > conversion deliveryRequestId immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.298Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > conversion deliveryQuoteId immutable"}
+{"at":"2026-09-29T07:58:18.303Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > conversion deliveryQuoteId immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.440Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > conversion prequoteId immutable"}
+{"at":"2026-09-29T07:58:18.443Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > conversion prequoteId immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.447Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > conversion idempotencyRecordId immutable"}
+{"at":"2026-09-29T07:58:18.450Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > conversion idempotencyRecordId immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.555Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > idempotency key immutable"}
+{"at":"2026-09-29T07:58:18.558Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > idempotency key immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.561Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > idempotency operation immutable"}
+{"at":"2026-09-29T07:58:18.565Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > idempotency operation immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.676Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > idempotency requestHash immutable"}
+{"at":"2026-09-29T07:58:18.681Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > idempotency requestHash immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.684Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > idempotency resourceId immutable"}
+{"at":"2026-09-29T07:58:18.688Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > idempotency resourceId immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.777Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > idempotency resourceType immutable"}
+{"at":"2026-09-29T07:58:18.781Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > idempotency resourceType immutable","state":"passed"}
+{"at":"2026-09-29T07:58:18.785Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > quote amount immutable after commit"}
+{"at":"2026-09-29T07:58:18.886Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > quote amount immutable after commit","state":"passed"}
+{"at":"2026-09-29T07:58:18.893Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > quote currency immutable after commit"}
+{"at":"2026-09-29T07:58:18.899Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > quote currency immutable after commit","state":"passed"}
+{"at":"2026-09-29T07:58:19.017Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > quote expiresAt immutable after commit"}
+{"at":"2026-09-29T07:58:19.021Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > quote expiresAt immutable after commit","state":"passed"}
+{"at":"2026-09-29T07:58:19.025Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > quote distanceMeters immutable after commit"}
+{"at":"2026-09-29T07:58:19.029Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > quote distanceMeters immutable after commit","state":"passed"}
+{"at":"2026-09-29T07:58:19.118Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > quote ratePlanId immutable after commit"}
+{"at":"2026-09-29T07:58:19.122Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > quote ratePlanId immutable after commit","state":"passed"}
+{"at":"2026-09-29T07:58:19.125Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > quote routeCalculatedAt immutable after commit"}
+{"at":"2026-09-29T07:58:19.265Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > quote routeCalculatedAt immutable after commit","state":"passed"}
+{"at":"2026-09-29T07:58:19.272Z","event":"start","name":"B3 previous compiled writer, economics and barrier mutations > nonempty credits ledger assignments dispatch outbox and legacy records preserved"}
+{"at":"2026-09-29T07:58:19.655Z","event":"finish","name":"B3 previous compiled writer, economics and barrier mutations > nonempty credits ledger assignments dispatch outbox and legacy records preserved","state":"passed"}
+{"at":"2026-09-29T07:58:19.759Z","event":"start","name":"B3 reads cancellation authorization and metadata > concurrent cancel and replay yield coherent pairs; source cannot be reused"}
+{"at":"2026-09-29T07:58:19.926Z","event":"finish","name":"B3 reads cancellation authorization and metadata > concurrent cancel and replay yield coherent pairs; source cannot be reused","state":"passed"}
+{"at":"2026-09-29T07:58:19.932Z","event":"start","name":"B3 reads cancellation authorization and metadata > zone geometry and names change without repricing; inactive flag off still replays"}
+{"at":"2026-09-29T07:58:20.039Z","event":"finish","name":"B3 reads cancellation authorization and metadata > zone geometry and names change without repricing; inactive flag off still replays","state":"passed"}
+{"at":"2026-09-29T07:58:20.044Z","event":"start","name":"B3 reads cancellation authorization and metadata > replay denies credential-expired"}
+{"at":"2026-09-29T07:58:20.049Z","event":"finish","name":"B3 reads cancellation authorization and metadata > replay denies credential-expired","state":"passed"}
+{"at":"2026-09-29T07:58:20.053Z","event":"start","name":"B3 reads cancellation authorization and metadata > replay denies credential-revoked"}
+{"at":"2026-09-29T07:58:20.170Z","event":"finish","name":"B3 reads cancellation authorization and metadata > replay denies credential-revoked","state":"passed"}
+{"at":"2026-09-29T07:58:20.174Z","event":"start","name":"B3 reads cancellation authorization and metadata > replay denies client-suspended"}
+{"at":"2026-09-29T07:58:20.179Z","event":"finish","name":"B3 reads cancellation authorization and metadata > replay denies client-suspended","state":"passed"}
+{"at":"2026-09-29T07:58:20.332Z","event":"start","name":"B3 reads cancellation authorization and metadata > replay denies client-revoked"}
+{"at":"2026-09-29T07:58:20.336Z","event":"finish","name":"B3 reads cancellation authorization and metadata > replay denies client-revoked","state":"passed"}
+{"at":"2026-09-29T07:58:20.339Z","event":"start","name":"B3 reads cancellation authorization and metadata > nested PII, arbitrary shipping amount and invalid references/dates reject before writes"}
+{"at":"2026-09-29T07:58:20.342Z","event":"finish","name":"B3 reads cancellation authorization and metadata > nested PII, arbitrary shipping amount and invalid references/dates reject before writes","state":"passed"}
+{"at":"2026-09-29T07:58:20.439Z","event":"start","name":"B3 reads cancellation authorization and metadata > captured current and old logs contain no bodies contacts references or tokens"}
+{"at":"2026-09-29T07:58:20.443Z","event":"finish","name":"B3 reads cancellation authorization and metadata > captured current and old logs contain no bodies contacts references or tokens","state":"passed"}
+{"at":"2026-09-29T07:58:20.448Z","event":"start","name":"B3 visibility and construction attack extensions > uncommitted winner is invisible to GET; concurrent reader sees complete links after commit"}
+{"at":"2026-09-29T07:58:20.764Z","event":"finish","name":"B3 visibility and construction attack extensions > uncommitted winner is invisible to GET; concurrent reader sees complete links after commit","state":"passed"}
+{"at":"2026-09-29T07:58:20.907Z","event":"start","name":"B3 visibility and construction attack extensions > building then forcing immediate validation does not permit later snapshot or manifest edits"}
+{"at":"2026-09-29T07:58:20.915Z","event":"finish","name":"B3 visibility and construction attack extensions > building then forcing immediate validation does not permit later snapshot or manifest edits","state":"passed"}
+{"at":"2026-09-29T07:58:20.920Z","event":"start","name":"B3 visibility and construction attack extensions > legacy resources and their children created before origin cannot be adopted"}
+{"at":"2026-09-29T07:58:20.926Z","event":"finish","name":"B3 visibility and construction attack extensions > legacy resources and their children created before origin cannot be adopted","state":"passed"}
+{"at":"2026-09-29T07:58:21.084Z","event":"start","name":"B3 visibility and construction attack extensions > all price/publish paths remain unused during conversion and replay"}
+{"at":"2026-09-29T07:58:21.088Z","event":"finish","name":"B3 visibility and construction attack extensions > all price/publish paths remain unused during conversion and replay","state":"passed"}
+{"at":"2026-09-29T07:58:21.092Z","event":"start","name":"B3 visibility and construction attack extensions > scope removed from credential blocks previously authorized replay"}
+{"at":"2026-09-29T07:58:21.096Z","event":"finish","name":"B3 visibility and construction attack extensions > scope removed from credential blocks previously authorized replay","state":"passed"}
+{"at":"2026-09-29T07:58:21.196Z","event":"start","name":"B3 cross-resource concurrency > same key concurrently targeting different MPQs persists just one result"}
+{"at":"2026-09-29T07:58:21.201Z","event":"finish","name":"B3 cross-resource concurrency > same key concurrently targeting different MPQs persists just one result","state":"passed"}
+{"at":"2026-09-29T07:58:21.397Z","event":"start","name":"B3 cross-resource concurrency > same key concurrently in legacy create and conversion has one operation winner"}
+{"at":"2026-09-29T07:58:21.402Z","event":"finish","name":"B3 cross-resource concurrency > same key concurrently in legacy create and conversion has one operation winner","state":"passed"}
+{"at":"2026-09-29T07:58:21.406Z","event":"start","name":"B3 cross-resource concurrency > same key text across owners concurrently creates two independent winners"}
+{"at":"2026-09-29T07:58:21.410Z","event":"finish","name":"B3 cross-resource concurrency > same key text across owners concurrently creates two independent winners","state":"passed"}
+{"at":"2026-09-29T07:58:21.573Z","event":"start","name":"B3 cross-resource concurrency > shared zone concurrent conversion and cancellation keep independent resources coherent"}
+{"at":"2026-09-29T07:58:21.578Z","event":"finish","name":"B3 cross-resource concurrency > shared zone concurrent conversion and cancellation keep independent resources coherent","state":"passed"}

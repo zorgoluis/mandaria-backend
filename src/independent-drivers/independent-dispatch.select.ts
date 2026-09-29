@@ -3,6 +3,10 @@ import {
   preEnforcementSelect,
 } from '../credits/award-boundary.js';
 import type { Prisma } from '@prisma/client';
+import {
+  collectionConversionSelect,
+  collectionInstructionFields,
+} from '../delivery-assignments/collection-instructions.js';
 import { effectiveDispatchStatus } from '../dispatch/dispatch-policy.js';
 import { paymentContext } from '../delivery-assignments/assignment-policy.js';
 import { creditCostFor } from '../credit-policies/dispatch-credit-snapshots.js';
@@ -32,6 +36,7 @@ export const driverDispatchSelect = {
   deliveredAt: true,
   deliveryQuote: {
     select: {
+      status: true,
       serviceType: true,
       distanceMeters: true,
       durationSeconds: true,
@@ -42,6 +47,8 @@ export const driverDispatchSelect = {
   },
   deliveryRequest: {
     select: {
+      status: true,
+      prequoteConversion: { select: collectionConversionSelect },
       publicId: true,
       stops: {
         orderBy: { sequence: 'asc' },
@@ -132,6 +139,7 @@ export function driverDispatchView(
   };
   return {
     id: dispatch.id,
+    ...collectionInstructionFields(dispatch, owner ? 'EXECUTOR' : 'OFFER', now),
     status,
     access,
     serviceType: quote.serviceType,
