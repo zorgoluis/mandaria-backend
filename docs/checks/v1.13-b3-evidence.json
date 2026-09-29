@@ -1,0 +1,395 @@
+{
+  "date": "2026-09-28",
+  "verdict": "LISTO PARA CHECK B4",
+  "branch": "1.13-Precotización_integración_comida_prepagada",
+  "head": "fd1ab7b696cdf9d92f9caed9659ee01bc1b2b3f9",
+  "productReference": {
+    "files": 256,
+    "sha256": "0dc2800dec9c98e263f1e6a13c08a59d3c1d648b7279cd0d304e1677ca5b3ff0"
+  },
+  "freeze": {
+    "head": "fd1ab7b696cdf9d92f9caed9659ee01bc1b2b3f9",
+    "protectedFiles": 256,
+    "changed": [],
+    "envUnchanged": true
+  },
+  "newResults": {
+    "unit": [
+      {
+        "file": "unit",
+        "exit": 0,
+        "passed": 380,
+        "failed": 0,
+        "total": 380
+      }
+    ],
+    "focal": [
+      {
+        "file": "check-b3-conversion.e2e-spec.ts",
+        "exit": 0,
+        "passed": 58,
+        "failed": 0,
+        "total": 58
+      }
+    ],
+    "b2": [
+      {
+        "file": "prequote-conversion.e2e-spec.ts",
+        "exit": 0,
+        "passed": 39,
+        "failed": 0,
+        "total": 39
+      }
+    ],
+    "regression": [
+      {
+        "file": "prequotes-http.e2e-spec.ts",
+        "exit": 0,
+        "passed": 40,
+        "failed": 0,
+        "total": 40
+      },
+      {
+        "file": "prequote-persistence.e2e-spec.ts",
+        "exit": 0,
+        "passed": 24,
+        "failed": 0,
+        "total": 24
+      },
+      {
+        "file": "prequote-consumption.e2e-spec.ts",
+        "exit": 0,
+        "passed": 21,
+        "failed": 0,
+        "total": 21
+      },
+      {
+        "file": "delivery-requests-b2b.e2e-spec.ts",
+        "exit": 0,
+        "passed": 15,
+        "failed": 0,
+        "total": 15
+      },
+      {
+        "file": "delivery-quotes.e2e-spec.ts",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "total": 14
+      },
+      {
+        "file": "dispatch.e2e-spec.ts",
+        "exit": 0,
+        "passed": 13,
+        "failed": 0,
+        "total": 13
+      },
+      {
+        "file": "delivery-assignments.e2e-spec.ts",
+        "exit": 0,
+        "passed": 13,
+        "failed": 0,
+        "total": 13
+      }
+    ],
+    "e2eTotal": 237,
+    "method": "Whole-file exit 0; not a monolithic full E2E run"
+  },
+  "observations": {
+    "same": {
+      "statuses": [
+        201,
+        200
+      ],
+      "winner": true
+    },
+    "different-body": {
+      "statuses": [
+        201,
+        409
+      ],
+      "winner": true
+    },
+    "different-keys": {
+      "statuses": [
+        201,
+        409
+      ],
+      "winner": true
+    },
+    "contention": {
+      "competitors": 16,
+      "winners": 1,
+      "conflicts": 15,
+      "competingMs": 226.34869999999864,
+      "independent": 8,
+      "independentMs": 96.3744999999999
+    },
+    "immediateTemporal": {
+      "commitAfterExpiry": true,
+      "expiryUnchanged": true,
+      "dispatchBlocked": true,
+      "serviceUsesDeferred": true
+    },
+    "oldBinary": {
+      "revision": "5978807270c038d9d7e555ad985ee7bfe35718a5",
+      "compiled": true,
+      "legacyCreateQuoteAccept": true
+    },
+    "oldConverted": {
+      "acceptStatus": 500,
+      "requoteStatus": 500,
+      "noDispatch": true,
+      "quoteRollback": true
+    },
+    "preservation": {
+      "before": {
+        "CreditAccount": {
+          "count": 5,
+          "hash": "3754c275d62c60082e00b83de6a664909d8caaf866b48caebcf96f5297715e9f"
+        },
+        "CreditLedgerEntry": {
+          "count": 9,
+          "hash": "8a352fd158479e6660b9f2f34ecbfb1bb35eb8f820a0f0079aa48b7e31eaea39"
+        },
+        "Dispatch": {
+          "count": 4,
+          "hash": "86e0597d164d31f4380f7e62667dfb5b866775bce68a4c1c3b134552bb53abc8"
+        },
+        "DeliveryAssignment": {
+          "count": 4,
+          "hash": "d5b910be5d8977d1415534fac019892f5111cf7e44ff9d68588dc85bc2f5764a"
+        },
+        "B2bOutboxEvent": {
+          "count": 4,
+          "hash": "83dfd3a315fcb5211eeeeccc2b87e20b6eedbeb5fcc341ca145c93dd17a5b109"
+        },
+        "ApiIdempotencyExecution": {
+          "count": 367,
+          "hash": "fd7402c60f8a475b901beac72b0c19896db9e69139d1bba621b5cf1029766b6b"
+        },
+        "PrequoteConsumptionPermit": {
+          "count": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "DeliveryRequest": {
+          "count": 1,
+          "hash": "582248e3126d7eeb65e8283729d3f82b84c0f88bf3454a703bf4cf2ad3f7ff53"
+        },
+        "DeliveryQuote": {
+          "count": 1,
+          "hash": "14c88d86b24b274f996817c584bfd02d3217f832433509591edd9da8b9f675fa"
+        }
+      },
+      "after": {
+        "CreditAccount": {
+          "count": 5,
+          "hash": "3754c275d62c60082e00b83de6a664909d8caaf866b48caebcf96f5297715e9f"
+        },
+        "CreditLedgerEntry": {
+          "count": 9,
+          "hash": "8a352fd158479e6660b9f2f34ecbfb1bb35eb8f820a0f0079aa48b7e31eaea39"
+        },
+        "Dispatch": {
+          "count": 4,
+          "hash": "86e0597d164d31f4380f7e62667dfb5b866775bce68a4c1c3b134552bb53abc8"
+        },
+        "DeliveryAssignment": {
+          "count": 4,
+          "hash": "d5b910be5d8977d1415534fac019892f5111cf7e44ff9d68588dc85bc2f5764a"
+        },
+        "B2bOutboxEvent": {
+          "count": 4,
+          "hash": "83dfd3a315fcb5211eeeeccc2b87e20b6eedbeb5fcc341ca145c93dd17a5b109"
+        },
+        "ApiIdempotencyExecution": {
+          "count": 367,
+          "hash": "fd7402c60f8a475b901beac72b0c19896db9e69139d1bba621b5cf1029766b6b"
+        },
+        "PrequoteConsumptionPermit": {
+          "count": 0,
+          "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "DeliveryRequest": {
+          "count": 1,
+          "hash": "582248e3126d7eeb65e8283729d3f82b84c0f88bf3454a703bf4cf2ad3f7ff53"
+        },
+        "DeliveryQuote": {
+          "count": 1,
+          "hash": "14c88d86b24b274f996817c584bfd02d3217f832433509591edd9da8b9f675fa"
+        }
+      },
+      "equal": true
+    },
+    "logs": {
+      "privacyAssertions": true,
+      "fullLogsPublished": false
+    },
+    "finalLogs": {
+      "entries": 989,
+      "privacyAssertions": true,
+      "includesOldToken": true
+    }
+  },
+  "databaseScan": {
+    "scan": {
+      "invalid_links": 0,
+      "orphan_keys": 0,
+      "conversion_executions": 0,
+      "premature_dispatches": 0,
+      "invalid_quotes": 0,
+      "invalid_manifests": 0,
+      "fault_triggers": 0,
+      "disabled_integrity_triggers": 0,
+      "active_fixture_credentials": 0,
+      "active_fixture_zones": 0
+    },
+    "catalog": [
+      {
+        "tgname": "Conversion_child",
+        "tgenabled": "O",
+        "tgdeferrable": false,
+        "tginitdeferred": false
+      },
+      {
+        "tgname": "Conversion_child",
+        "tgenabled": "O",
+        "tgdeferrable": false,
+        "tginitdeferred": false
+      },
+      {
+        "tgname": "Conversion_child",
+        "tgenabled": "O",
+        "tgdeferrable": false,
+        "tginitdeferred": false
+      },
+      {
+        "tgname": "Conversion_dispatch",
+        "tgenabled": "O",
+        "tgdeferrable": false,
+        "tginitdeferred": false
+      },
+      {
+        "tgname": "Conversion_immutable",
+        "tgenabled": "O",
+        "tgdeferrable": false,
+        "tginitdeferred": false
+      },
+      {
+        "tgname": "Conversion_insert",
+        "tgenabled": "O",
+        "tgdeferrable": false,
+        "tginitdeferred": false
+      },
+      {
+        "tgname": "Conversion_key",
+        "tgenabled": "O",
+        "tgdeferrable": false,
+        "tginitdeferred": false
+      },
+      {
+        "tgname": "Conversion_quote",
+        "tgenabled": "O",
+        "tgdeferrable": false,
+        "tginitdeferred": false
+      },
+      {
+        "tgname": "Conversion_record_result",
+        "tgenabled": "O",
+        "tgdeferrable": true,
+        "tginitdeferred": true
+      },
+      {
+        "tgname": "Conversion_request",
+        "tgenabled": "O",
+        "tgdeferrable": false,
+        "tginitdeferred": false
+      },
+      {
+        "tgname": "Conversion_result",
+        "tgenabled": "O",
+        "tgdeferrable": true,
+        "tginitdeferred": true
+      }
+    ]
+  },
+  "databases": {
+    "names": [
+      "mandaria_b2_clean_5bc1efc7e1_test",
+      "mandaria_b2_upgrade_5bc1efc7e1_test"
+    ],
+    "regression": "mandaria_b3_reg_a6920c40d4_test"
+  },
+  "migrations": {
+    "count": 28,
+    "clean": true,
+    "upgrade": true,
+    "historicalTablesCompared": 14,
+    "statusExit": 0,
+    "driftExit": 0
+  },
+  "quality": {
+    "build": 0,
+    "types": 0,
+    "prismaValidate": 0,
+    "oxlint": 0,
+    "eslint": 0,
+    "docsCheck": 0
+  },
+  "oldBinary": {
+    "revision": "5978807270c038d9d7e555ad985ee7bfe35718a5",
+    "localHistory": true,
+    "isolatedOutput": true,
+    "dependencies": "current installed dependencies and Prisma client; no download",
+    "newScopeRejected": 401,
+    "convertedAccept": 500,
+    "convertedRequote": 500
+  },
+  "limits": [
+    "Exact equality is a simulated DB clock unit test; real PostgreSQL tests cover before/after and crossing expiry",
+    "Direct SQL SET CONSTRAINTS IMMEDIATE permits late commit without renewal or dispatch",
+    "Previous source compiled with currently installed dependencies/Prisma client; not an archived production distribution",
+    "No XID wraparound test; no XID dependency",
+    "Local bounded load only; no production SLA",
+    "B4 and A activation pending"
+  ],
+  "attempts": [
+    {
+      "attempt": "focused1",
+      "passed": 45,
+      "total": 49,
+      "credited": false,
+      "causes": [
+        "pg_sleep void deserialization in fixture",
+        "old token included unknown new scope; dependent fixtures absent"
+      ]
+    },
+    {
+      "attempt": "focused2",
+      "passed": 53,
+      "total": 54,
+      "credited": false,
+      "causes": [
+        "fixture timestamp cast affected by DB session timezone; corrected to DB-native expiry expression"
+      ]
+    },
+    {
+      "attempt": "regression on upgrade fixture",
+      "credited": false,
+      "causes": [
+        "manual MDR-000001/MQ-000001 fixture identifiers do not advance sequences; repeated on a new clean regression DB"
+      ]
+    }
+  ],
+  "cleanup": {
+    "historyRetained": true,
+    "fixtureCredentialsRevoked": true,
+    "fixtureZonesInactive": true,
+    "noFaultTriggers": true
+  },
+  "noCommitPushDeployActivation": true,
+  "fixtureTimeCast": {
+    "castDeltaSeconds": -21600,
+    "sessionTimeZone": "America/Mexico_City"
+  }
+}

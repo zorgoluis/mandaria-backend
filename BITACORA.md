@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.13-B3 (2026-09-28):** commit y push autorizados a la rama actual para publicar pruebas, verificadores y evidencia B3. LISTO PARA CHECK B4; sin activación ni despliegue.
+
+- **V1.13-B3 (2026-09-28): LISTO PARA CHECK B4.** Verificación nueva: 58/58 focalizadas, 39/39 B2 y 140/140 E2E seleccionadas A/legacy (237 E2E por archivo), más 380/380 unitarias. Dos Nest/pools y revisión B1 compilada: legacy funcional, accept/requote convertido bloqueado por SQL. Manifiesto/rollback/contención/privacidad/preservación no vacía comprobados. SET CONSTRAINTS IMMEDIATE permite commit tardío directo sin renovar expiry ni abrir Dispatch, límite B1/B2 conservado. 256 archivos de producto/contrato idénticos, .env y HEAD intactos. Migraciones limpia/upgrade/status/drift, build/tipos/Prisma/linters/docs:check y escaneo SQL PASS. Sin corrección de producto, versión, commit/push/despliegue/activación. B4 y pendientes operativos A siguen abiertos. Informe: docs/V1.13-B3-CONVERSION-ADVERSARIAL-VERIFICATION.md.
+
 - **Publicación V1.13-B2 (2026-09-28):** commit y push autorizados a la rama actual. Se publica la implementación verificada en la tarea anterior; B3 y CHECK B4 siguen pendientes. Sin activación ni despliegue.
 
 - **V1.13-B2 (2026-09-28): IMPLEMENTADO, LISTO PARA VERIFICACIÓN B3.** Conversión única y atómica MPQ → MDR PREPAID + MQ OFFERED; manifiesto inmutable de hijos sin xmin/XID, idempotencia existente, snapshot/TTL conservados y barreras SQL/aplicación pre-C. Verificación nueva: 380/380 unitarias y 572/572 E2E consolidadas por archivo completo (39 nuevas); Prisma, migración limpia/upgrade, catálogo/drift, verificadores, tipos/build/linters/OpenAPI/docs:check PASS. Bases locales nuevas _test solamente, limpieza de fixtures y escaneo de invariantes sin violaciones. Flag deshabilitado; sin versión, commit/push/despliegue. B no cerrada: B3 y CHECK B4 pendientes. Pendientes de activación A conservados: capacidad del mutex, política coordinada, migraciones/entorno, observabilidad/responsables. Informe: docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md.
@@ -1229,3 +1233,22 @@ Solicitud: commitear y hacer push a la rama actual. Cambios: publicación del di
 - Verificaciones de esta tarea: revisión de rama/remoto y conjunto de archivos, diff --check y revisión de secretos conocidos. Las 380 unitarias y 572 E2E corresponden a la tarea anterior; no se repiten para esta publicación.
 - Resultado previsto: commit y push normal a origin en la rama actual; confirmación del resultado Git en la respuesta de esta tarea. Archivo preexistente nul excluido.
 - Pendientes: B3, CHECK B4 y pendientes operativos A; sin despliegue ni activación.
+
+
+## 2026-09-28 — V1.13-B3: verificación adversarial
+
+- Solicitud: evaluar conversión B2 con PostgreSQL real, concurrencia, integridad SQL, tiempo y escritor anterior, sin cerrar B ni publicar.
+- Cambios: suite focalizada, preparador local de binario anterior, escáner de invariantes, informe/evidencia y continuidad. Producto/configuración/contrato/migraciones sin cambios, verificados por hash de 256 archivos.
+- Verificaciones de esta tarea: 58 focalizadas, 39 B2 y 140 E2E A/legacy (237 E2E por archivo completo); 380 unitarias, limpia/upgrade con 14 tablas, status/drift, build/tipos/Prisma/linters/docs:check y escaneo SQL PASS. Resultados B2 históricos no reutilizados como evidencia nueva.
+- Resultado: LISTO PARA CHECK B4. Pruebas iniciales con fixtures inválidos no acreditadas, corregidas sin debilitar reglas; límites temporales/compatibilidad explícitos en informe.
+- Limpieza: apps cerradas, credenciales revocadas y zonas desactivadas; bases nuevas/historia conservadas, sin principal migrada ni .env alterado; nul intacto.
+- Pendientes: CHECK B4 integral, entorno/dependencias/despliegue compatibles y pendientes A (mutex, política coordinada, migraciones, observabilidad/responsables). C/D fuera de alcance; sin commit/push/despliegue/activación.
+
+
+## 2026-09-28 — Publicación Git de V1.13-B3
+
+- Solicitud: realizar commit y push en la rama actual.
+- Cambios: publicación del conjunto de verificación B3 y actualización de continuidad.
+- Verificaciones de esta tarea: estado/rama/remoto, revisión del conjunto, diff --check y búsqueda de secretos conocidos. Los 380 casos unitarios y 237 E2E son resultados de la tarea B3 anterior; no se repiten para publicar.
+- Resultado: conjunto preparado para commit y push normal a origin; confirmación Git en la respuesta de esta tarea. nul preexistente excluido.
+- Pendientes: CHECK B4 y pendientes operativos A. Sin despliegue ni activación.

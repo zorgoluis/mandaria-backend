@@ -1,3 +1,11 @@
+# V1.13-B3 — Verificación focalizada (2026-09-28)
+
+**V1.13-B3 (2026-09-28): LISTO PARA CHECK B4.** Verificación nueva: 58/58 focalizadas, 39/39 B2 y 140/140 E2E seleccionadas A/legacy (237 E2E por archivo), más 380/380 unitarias. Dos Nest/pools y revisión B1 compilada: legacy funcional, accept/requote convertido bloqueado por SQL. Manifiesto/rollback/contención/privacidad/preservación no vacía comprobados. SET CONSTRAINTS IMMEDIATE permite commit tardío directo sin renovar expiry ni abrir Dispatch, límite B1/B2 conservado. 256 archivos de producto/contrato idénticos, .env y HEAD intactos. Migraciones limpia/upgrade/status/drift, build/tipos/Prisma/linters/docs:check y escaneo SQL PASS. Sin corrección de producto, versión, commit/push/despliegue/activación. B4 y pendientes operativos A siguen abiertos. Informe: docs/V1.13-B3-CONVERSION-ADVERSARIAL-VERIFICATION.md.
+
+[Informe](docs/V1.13-B3-CONVERSION-ADVERSARIAL-VERIFICATION.md) · [Evidencia nueva](docs/checks/v1.13-b3-evidence.json). No se acredita suite E2E integral: B4 repetirá cierre. Intentos fallidos, límites SQL y dependencias del binario anterior documentados.
+
+**Lo siguiente es evidencia histórica de tareas anteriores.**
+
 # V1.13-B2 — Verificación de implementación (2026-09-28)
 
 **V1.13-B2 (2026-09-28): IMPLEMENTADO, LISTO PARA VERIFICACIÓN B3.** Conversión única y atómica MPQ → MDR PREPAID + MQ OFFERED; manifiesto inmutable de hijos sin xmin/XID, idempotencia existente, snapshot/TTL conservados y barreras SQL/aplicación pre-C. Verificación nueva: 380/380 unitarias y 572/572 E2E consolidadas por archivo completo (39 nuevas); Prisma, migración limpia/upgrade, catálogo/drift, verificadores, tipos/build/linters/OpenAPI/docs:check PASS. Bases locales nuevas _test solamente, limpieza de fixtures y escaneo de invariantes sin violaciones. Flag deshabilitado; sin versión, commit/push/despliegue. B no cerrada: B3 y CHECK B4 pendientes. Pendientes de activación A conservados: capacidad del mutex, política coordinada, migraciones/entorno, observabilidad/responsables. Informe: docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md.
