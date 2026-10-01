@@ -1,3 +1,15 @@
+## Piloto — confirmación funcional del operador, 2026-10-01
+
+El propietario confirma pruebas en Android e iOS de Coita Eats 2.1.0, instrucciones correctas en Mandaria web y transmisión por llamada del administrador al repartidor. Confirmación funcional de canales e instrucciones recibida; no ejecución nueva del agente ni identificación de builds/artefactos. No acredita manejo de webhooks duplicados, recuperación de respuesta perdida ni cancelación concurrente.
+
+Actualización documental y git diff --check únicamente. Las entradas anteriores conservan sus pendientes históricos, superados respecto a plataformas e instrucciones por esta declaración.
+
+## Piloto — versión y operación, 2026-10-01
+
+Propietario identifica Coita Eats 2.1.0 Android/iOS y pruebas desde esa app; build y casos por plataforma no identificados. Administrador opera aceptación/entrega desde Mandaria web; repartidores llaman y no usarán pantallas propias. Se acota verificación UI a web administrativa y móvil cliente, sin retirar requisitos backend ni inferir cobro desde entrega. Pendiente confirmar cobertura de ambas plataformas e instrucciones transmitidas; deduplicación/recovery Coita no acreditadas por esta respuesta.
+
+Fuente: declaración del propietario, no ejecución nueva. Plan actualizado y git diff --check documental; sin cambios operativos.
+
 ## Piloto — participantes y atención, 2026-10-01
 
 Participación y horario confirmados por propietario: 8 restaurantes, 1 flotilla con 4 repartidores, Ocozocoautla, Chiapas, todos los días de 08:00 a 00:00 (medianoche), hora local. Una persona técnica por correo, primera respuesta dentro de 8 horas; cómputo del plazo/cobertura y alertas efectivas aún pendientes. Se mantienen 30 días con revisión semanal, Coita Eats móvil y previsión de 100 pedidos/día, pico 5/minuto. No acredita capacidad logística/API ni autoriza lanzamiento. Recomendación pendiente: responsable que pueda pausar nuevas solicitudes críticas sin esperar la respuesta técnica.

@@ -4,6 +4,14 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Roadmap consolidado presentado (2026-10-01):** listado original conservado por capacidades y numeración histórica, incorporando V1.13 A–D, cierre local/VM, ensayo de recuperación cerrado y definición reciente del piloto. Apps, ejecución detallada, GPS/tracking y expansión siguen pendientes; numeración futura desplazada no se reasigna sin decisión. Lectura documental, sin nuevas pruebas ni autorización de apertura.
+
+- **Confirmación funcional del piloto (2026-10-01):** El propietario confirma pruebas en Android e iOS de Coita Eats 2.1.0, instrucciones correctas en Mandaria web y transmisión por llamada del administrador al repartidor. Confirmación funcional de canales e instrucciones recibida; no ejecución nueva del agente ni identificación de builds/artefactos. No acredita manejo de webhooks duplicados, recuperación de respuesta perdida ni cancelación concurrente. Siguiente: evidencia de recuperación/deduplicación de Coita, sin acceso a su sistema.
+
+- **Canales del piloto confirmados (2026-10-01):** Propietario identifica Coita Eats 2.1.0 Android/iOS y pruebas desde esa app; build y casos por plataforma no identificados. Administrador opera aceptación/entrega desde Mandaria web; repartidores llaman y no usarán pantallas propias. Se acota verificación UI a web administrativa y móvil cliente, sin retirar requisitos backend ni inferir cobro desde entrega. Pendiente confirmar cobertura de ambas plataformas e instrucciones transmitidas; deduplicación/recovery Coita no acreditadas por esta respuesta.
+
+- **Correlación móvil del piloto (2026-10-01):** commit previo 592ce8e confirmado, sin push. Se reutilizan declaraciones de casos #85/#86/#89/#90; pendientes versión/build/plataforma, canal de pruebas y pantallas de flotilla. Matriz acotada añadida al plan; sin ejecutar pruebas ni acceder a Coita.
+
 - **Consolidación solicitada 2026-10-01:** preparación de commit de documentación, evidencias y herramientas de revisión/recuperación acumuladas; sin push ni activación. Siguiente cierre: correlacionar versiones/casos de integración móvil, verificar aviso técnico y acordar pausa/reversión. Restauración no se reabre.
 
 - **Participantes y atención del piloto (2026-10-01):** Participación y horario confirmados por propietario: 8 restaurantes, 1 flotilla con 4 repartidores, Ocozocoautla, Chiapas, todos los días de 08:00 a 00:00 (medianoche), hora local. Una persona técnica por correo, primera respuesta dentro de 8 horas; cómputo del plazo/cobertura y alertas efectivas aún pendientes. Se mantienen 30 días con revisión semanal, Coita Eats móvil y previsión de 100 pedidos/día, pico 5/minuto. No acredita capacidad logística/API ni autoriza lanzamiento. Recomendación pendiente: responsable que pueda pausar nuevas solicitudes críticas sin esperar la respuesta técnica. Ver docs/MVP-PILOT-PLAN.md. Los registros anteriores conservados debajo describen su estado histórico.
@@ -410,6 +418,14 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-01 — Roadmap completo actualizado
+
+- **Solicitud:** mostrar el roadmap completo de Mandaria.
+- **Cambios:** actualización de continuidad y presentación comparativa en conversación, respetando alcance original y cambios posteriores de orden/numeración.
+- **Verificaciones actuales:** lectura de BITACORA, README, VERIFICATION y plan del piloto; consulta de estado Git. Sin ejecución de suites, DB, VM o servicios externos.
+- **Resultado:** distingue capacidades construidas V1.0–V1.13, declaraciones funcionales del operador, piloto pendiente de autorización y expansión sin iniciar. Ensayo de restauración no se reabre.
+- **Pendientes:** evidencia de deduplicación/recuperación Coita, aviso técnico/pausa, capacidad y trazabilidad restantes del plan antes de apertura. Sin commit/push ni cambios de producto.
 
 ### 2026-09-30 — Respaldo completo DigitalOcean reportado
 
@@ -1825,3 +1841,24 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Resultado: listo para commit local solicitado, sin push; evidencia histórica conserva su procedencia. Pendientes: integración/versiones y pantallas del piloto, aviso técnico comprobado, responsables de pausa y reversión compatible, fecha de apertura. No se autoriza producción con este commit.
 
 - Resultado de revisión staged: diff --check señala espacios finales/líneas vacías únicamente en logs originales docs/checks/mvp-*. Se conservan como evidencia sin normalizar; no se declara gate global limpio. Revisión de documentación/scripts por separado sin incidencias.
+
+### 2026-10-01 — Inicio de correlación de integración móvil
+
+- Solicitud: continuar con el primer cierre pendiente para el piloto.
+- Cambios: matriz en docs/MVP-PILOT-PLAN.md que separa casos históricos reportados, evidencia del receptor y pantallas de flotilla; preguntas al propietario sobre versión/plataforma y canal.
+- Verificación actual: lectura de informes MVP/D y git diff --check de documentación; sin nuevas suites, VM, Coita ni pedidos.
+- Resultado: alcance acotado a participantes del piloto; no se declara integración verificada. Pendiente respuesta para correlacionar casos y versiones; no repetir casos antes de conocer faltantes.
+
+### 2026-10-01 — App 2.1.0 y operación centralizada de flotilla
+
+- Solicitud: incorporar versión/plataformas y operación por administrador web con llamadas de repartidores.
+- Cambios: plan del piloto y VERIFICATION; Propietario identifica Coita Eats 2.1.0 Android/iOS y pruebas desde esa app; build y casos por plataforma no identificados. Administrador opera aceptación/entrega desde Mandaria web; repartidores llaman y no usarán pantallas propias. Se acota verificación UI a web administrativa y móvil cliente, sin retirar requisitos backend ni inferir cobro desde entrega. Pendiente confirmar cobertura de ambas plataformas e instrucciones transmitidas; deduplicación/recovery Coita no acreditadas por esta respuesta.
+- Verificación: git diff --check documental; sin pruebas nuevas, acceso a Coita/VM ni cambios de producto.
+- Resultado: canal/versión comercial y operador identificados por declaración; no acredita integración completa ni autoriza apertura. Sin commit/push.
+
+### 2026-10-01 — Confirmación de plataformas e instrucciones
+
+- Solicitud: registrar pruebas en ambas plataformas y comunicación telefónica de instrucciones.
+- Cambios: plan y VERIFICATION; El propietario confirma pruebas en Android e iOS de Coita Eats 2.1.0, instrucciones correctas en Mandaria web y transmisión por llamada del administrador al repartidor. Confirmación funcional de canales e instrucciones recibida; no ejecución nueva del agente ni identificación de builds/artefactos. No acredita manejo de webhooks duplicados, recuperación de respuesta perdida ni cancelación concurrente.
+- Verificación actual: git diff --check documental; sin pruebas nuevas ni acceso remoto.
+- Resultado: confirmación funcional del operador incorporada; pendientes de integración resiliente y operación siguen separados. Sin commit, push ni activación.
