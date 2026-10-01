@@ -4,6 +4,8 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Webhooks web y portal B2B, cambio de modalidad (2026-10-01):** el propietario indica continuar mediante análisis y prompts para el agente responsable. Implementación detenida. Quedan borradores locales sin integrar: scripts/export-public-b2b.mjs, scripts/export-public-b2b.test.mjs, docs/openapi-b2b.json y .tmp/web-platform/webhooks.tsx (temporal). Frontend sin modificar en esta tarea. Exportación ejecutada; pruebas Node abortadas por EPERM de creación de proceso, no aprobadas. Pendiente revisión y ejecución por agente responsable; sin commit, push ni despliegue.
+
 - **Roadmap consolidado presentado (2026-10-01):** listado original conservado por capacidades y numeración histórica, incorporando V1.13 A–D, cierre local/VM, ensayo de recuperación cerrado y definición reciente del piloto. Apps, ejecución detallada, GPS/tracking y expansión siguen pendientes; numeración futura desplazada no se reasigna sin decisión. Lectura documental, sin nuevas pruebas ni autorización de apertura.
 
 - **Confirmación funcional del piloto (2026-10-01):** El propietario confirma pruebas en Android e iOS de Coita Eats 2.1.0, instrucciones correctas en Mandaria web y transmisión por llamada del administrador al repartidor. Confirmación funcional de canales e instrucciones recibida; no ejecución nueva del agente ni identificación de builds/artefactos. No acredita manejo de webhooks duplicados, recuperación de respuesta perdida ni cancelación concurrente. Siguiente: evidencia de recuperación/deduplicación de Coita, sin acceso a su sistema.
@@ -1862,3 +1864,10 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Cambios: plan y VERIFICATION; El propietario confirma pruebas en Android e iOS de Coita Eats 2.1.0, instrucciones correctas en Mandaria web y transmisión por llamada del administrador al repartidor. Confirmación funcional de canales e instrucciones recibida; no ejecución nueva del agente ni identificación de builds/artefactos. No acredita manejo de webhooks duplicados, recuperación de respuesta perdida ni cancelación concurrente.
 - Verificación actual: git diff --check documental; sin pruebas nuevas ni acceso remoto.
 - Resultado: confirmación funcional del operador incorporada; pendientes de integración resiliente y operación siguen separados. Sin commit, push ni activación.
+
+### 2026-10-01 — Análisis inicial de webhooks web y portal público B2B
+
+- Solicitud: iniciar ambas capacidades; posteriormente el propietario precisa trabajar mediante prompts para el agente responsable.
+- Cambios: borrador de exportador OpenAPI público filtrado, pruebas del exportador, contrato generado y componente webhook temporal sin integrar. Actualización de continuidad para traspaso; no se modificó el repositorio frontend.
+- Verificaciones actuales: lectura de continuidad, contratos backend y estructura frontend; ejecución del exportador completada. Intento de pruebas Node abortado por EPERM al crear proceso; no acredita pruebas aprobadas. No build ni comprobación visual de estos borradores.
+- Resultado: implementación detenida conforme a la nueva modalidad. Preparar prompts revisables, conservar borradores como trabajo incompleto. Pendientes: revisar filtrado y referencias del contrato, documentación V1.13, integrar UI, pruebas y build por el agente responsable. Sin Docker, acceso a Coita, commit, push ni despliegue.
