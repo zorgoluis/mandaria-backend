@@ -1,0 +1,96 @@
+{
+  "notice": "Ficticio. No ejecutar automáticamente; fechas, precio, IDs y coordenadas deben provenir del entorno de prueba. No acredita cobertura.",
+  "prequote": {
+    "conditionsVersion": 1,
+    "serviceType": "LOCAL_DELIVERY",
+    "stops": [
+      {
+        "type": "PICKUP",
+        "sequence": 1,
+        "latitude": 16.75,
+        "longitude": -93.1
+      },
+      {
+        "type": "DROPOFF",
+        "sequence": 2,
+        "latitude": 16.751,
+        "longitude": -93.101
+      }
+    ],
+    "packages": [
+      {
+        "category": "FOOD",
+        "quantity": 1,
+        "isFragile": false
+      }
+    ]
+  },
+  "conversion": {
+    "conditionsVersion": 1,
+    "deliveryRequest": {
+      "serviceType": "LOCAL_DELIVERY",
+      "externalReference": "DEMO-ORDER-101",
+      "stops": [
+        {
+          "type": "PICKUP",
+          "sequence": 1,
+          "latitude": 16.75,
+          "longitude": -93.1,
+          "address": "Dirección ficticia 1",
+          "contactName": "Contacto ficticio",
+          "contactPhone": "+00000000000"
+        },
+        {
+          "type": "DROPOFF",
+          "sequence": 2,
+          "latitude": 16.751,
+          "longitude": -93.101,
+          "address": "Dirección ficticia 2",
+          "contactName": "Contacto ficticio",
+          "contactPhone": "+00000000000"
+        }
+      ],
+      "packages": [
+        {
+          "category": "FOOD",
+          "quantity": 1,
+          "isFragile": false,
+          "description": "Pedido ficticio"
+        }
+      ],
+      "financialContext": {
+        "goodsPaymentMode": "PREPAID",
+        "goodsValue": "100.00",
+        "currency": "MXN"
+      }
+    },
+    "merchantConfirmation": {
+      "goodsPaymentStatus": "CONFIRMED_BY_MERCHANT",
+      "goodsPaymentReference": "demo-payment-101",
+      "goodsPaymentConfirmedAt": "2026-10-01T11:58:00Z",
+      "orderAcceptanceStatus": "ACCEPTED_BY_MERCHANT",
+      "orderAcceptanceReference": "demo-merchant-101",
+      "orderAcceptedAt": "2026-10-01T11:59:00Z"
+    },
+    "deliveryCollectionInstruction": {
+      "payer": "RECIPIENT",
+      "method": "CASH",
+      "dueAt": "DELIVERY",
+      "components": [
+        "DELIVERY_FEE"
+      ]
+    }
+  },
+  "acceptance": {
+    "customerAuthorization": {
+      "version": 1,
+      "status": "AUTHORIZED_BY_CUSTOMER",
+      "reference": "demo-consent-101",
+      "authorizedAt": "2026-10-01T12:01:00Z",
+      "quotePublicId": "MQ-000101",
+      "amount": "25.00",
+      "currency": "MXN",
+      "expiresAt": "2026-10-01T12:15:00Z"
+    }
+  }
+}

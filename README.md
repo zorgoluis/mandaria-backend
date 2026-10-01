@@ -4,6 +4,15 @@
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
+## Contrato público B2B y entrega a Frontend
+
+[OpenAPI público descargable](docs/openapi-b2b.json), [guía vigente](docs/B2B-PUBLIC-GUIDE.md), [webhooks salientes](docs/B2B-WEBHOOKS.md) y [entrega administrativa interna a Frontend](docs/B2B-FRONTEND-HANDOFF.md). Web confirmada: https://mandaria.com.mx. API confirmada: https://mandaria.com.mx/api/v1. El JSON usa `servers.url=https://mandaria.com.mx`, porque sus rutas ya incluyen `/api/v1`. Los datos de los ejemplos siguen siendo ficticios. No publica el portal ni cambia acceso al Swagger completo.
+
+- `npm run docs:b2b`: build, OpenAPI completo y exportación pública revisada.
+- `npm run docs:b2b:check`: verifica vigencia contra el código y ambos artefactos, sin sobrescribirlos.
+- `npm run test:public-b2b`: pruebas Node completas del exportador y ejemplo de firma, en un proceso sin aislamiento por subprocess. Sin base ni credenciales reales.
+
+
 ## Integridad económica y frontera histórica — V1.10-D correctiva
 
 Toda adjudicación **ENFORCED V1.10-D+** requiere exactamente un SERVICE_AWARD válido, por el monto del snapshot y desde la cuenta del ganador, dentro de la misma transacción. PostgreSQL lo comprueba al COMMIT mediante constraints diferidos y también impide débitos sin historial operacional correspondiente.
@@ -40,7 +49,7 @@ Una transacción consume MPQ propia/vigente y crea MDR PREPAID/MXN/FOOD y MQ OFF
 
 Respuesta inicial 201, `Idempotent-Replayed: false`, `Location` hacia MDR; replay 200/true con mismos vínculos y estados actuales incluso cancelados/vencidos o flag apagado. `Cache-Control: no-store` y `X-Request-Id` siguen el contrato general. GET MPQ informa CONVERTED y enlaces permanentes; cancelar MDR nunca libera MPQ. La intención inmutable es RECIPIENT/CASH/DELIVERY/DELIVERY_FEE, sin monto paralelo ni registro de cobro.
 
-**Durante B no se puede despachar este origen:** accept legacy devuelve `AUTHORIZED_ACCEPT_REQUIRED`; POST quotes devuelve `PREQUOTE_REQUOTE_NOT_ALLOWED`, sin renovar precio. SQL bloquea también escritores antiguos. GET sigue permitido. C incorporará aceptación autorizada y D exposición a ejecutores. No routing, consumo A5, créditos ni Dispatch en conversión; tarifa reemplazada conserva snapshot, zona INACTIVE bloquea sólo conversiones nuevas.
+**Contrato vigente:** la conversión no acepta ni publica el servicio por sí sola. La MQ convertida requiere aceptación autorizada C con atestación e Idempotency-Key; no admite aceptación legacy sin atestación ni recotización sobre la misma MDR. GET sigue permitido. D expone instrucciones de cobro a ejecutores. No routing, consumo A5, créditos ni Dispatch en conversión; tarifa reemplazada conserva snapshot y zona INACTIVE bloquea sólo conversiones nuevas.
 
 Contrato, manifiesto SQL, pruebas, diferencias frente a B1 y pendientes B3: [implementación B2](docs/V1.13-B2-PREQUOTE-CONVERSION-IMPLEMENTATION.md). Ejemplo completo de body y respuesta: [diseño B1](docs/V1.13-B1-PREQUOTE-CONVERSION-DESIGN.md). B2 no cierra V1.13-B: requiere verificación B3 y CHECK B4. Migración incremental primero en un despliegue futuro, todas las instancias compatibles y flag apagado; no deshacer evidencia para hacer rollback.
 

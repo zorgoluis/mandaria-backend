@@ -148,7 +148,7 @@ export class PrequoteConversionResponse {
   @ApiProperty({
     type: DeliveryQuoteResponse,
     description:
-      'Snapshot MPQ exacto, expiry original y metadata de zona congelada. No aceptable ni despachable durante B.',
+      'Precio y vencimiento originales de MPQ, con zona congelada. Requiere aceptación autorizada separada para publicar el servicio.',
   })
   quote!: DeliveryQuoteResponse;
   @ApiProperty({ enum: [false] }) availabilityGuaranteed!: boolean;
