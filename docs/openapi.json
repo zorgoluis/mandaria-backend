@@ -55749,7 +55749,7 @@
     },
     "/api/v1/delivery-prequotes/{publicId}/convert": {
       "post": {
-        "description": "Requiere prequotes:convert + deliveries:create + quotes:create y ownership B2B. Flag independiente false por defecto. Una transacción copia precio, ruta, tarifa y expiry MPQ sin routing ni recálculo. Zona INACTIVE impide nuevas conversiones; tarifa reemplazada no cambia snapshot. Registra declaración del integrador, no verificación bancaria. No acepta Quote, no abre Dispatch ni cobra créditos. Durante B, accept legacy y recotización están bloqueados para este origen. Cancelar no libera MPQ.",
+        "description": "Requiere prequotes:convert + deliveries:create + quotes:create y ownership B2B. Flag independiente false por defecto. Una transacción copia precio, ruta, tarifa y expiry MPQ sin routing ni recálculo. Zona INACTIVE impide nuevas conversiones; tarifa reemplazada no cambia snapshot. Registra declaración del integrador, no verificación bancaria. No acepta Quote, no abre Dispatch ni cobra créditos. La MQ convertida requiere aceptación autorizada; no admite aceptación sin atestación ni recotización sobre la misma solicitud. Cancelar no libera MPQ.",
         "operationId": "PrequoteConversionController_convert",
         "parameters": [
           {
@@ -64755,10 +64755,7 @@
           },
           "deliveryQuotePublicId": {
             "type": "string",
-            "nullable": true,
-            "enum": [
-              null
-            ]
+            "nullable": true
           },
           "availabilityGuaranteed": {
             "type": "boolean",
@@ -65082,7 +65079,7 @@
             "$ref": "#/components/schemas/CollectionInstructionDto"
           },
           "quote": {
-            "description": "Snapshot MPQ exacto, expiry original y metadata de zona congelada. No aceptable ni despachable durante B.",
+            "description": "Precio y vencimiento originales de MPQ, con zona congelada. Requiere aceptación autorizada separada para publicar el servicio.",
             "allOf": [
               {
                 "$ref": "#/components/schemas/DeliveryQuoteResponse"

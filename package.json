@@ -48,7 +48,10 @@
     "verify:delivery-requests": "tsx scripts/verify-delivery-requests-local.ts",
     "verify:delivery-quotes": "tsx scripts/verify-delivery-quotes-local.ts",
     "routing:check-google": "tsx scripts/check-google-routes.ts",
-    "verify:user-invitations": "tsx scripts/verify-user-invitations-local.ts"
+    "verify:user-invitations": "tsx scripts/verify-user-invitations-local.ts",
+    "docs:b2b": "npm run docs:openapi && node scripts/export-public-b2b.mjs",
+    "docs:b2b:check": "npm run docs:check && node scripts/export-public-b2b.mjs --check",
+    "test:public-b2b": "node --test --test-isolation=none scripts/export-public-b2b.test.mjs scripts/webhook-signature-example.test.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.4",

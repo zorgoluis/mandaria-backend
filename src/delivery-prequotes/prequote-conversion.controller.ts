@@ -87,7 +87,7 @@ export class PrequoteConversionController {
   @ApiOperation({
     summary: 'Convertir una precotización una sola vez',
     description:
-      'Requiere prequotes:convert + deliveries:create + quotes:create y ownership B2B. Flag independiente false por defecto. Una transacción copia precio, ruta, tarifa y expiry MPQ sin routing ni recálculo. Zona INACTIVE impide nuevas conversiones; tarifa reemplazada no cambia snapshot. Registra declaración del integrador, no verificación bancaria. No acepta Quote, no abre Dispatch ni cobra créditos. Durante B, accept legacy y recotización están bloqueados para este origen. Cancelar no libera MPQ.',
+      'Requiere prequotes:convert + deliveries:create + quotes:create y ownership B2B. Flag independiente false por defecto. Una transacción copia precio, ruta, tarifa y expiry MPQ sin routing ni recálculo. Zona INACTIVE impide nuevas conversiones; tarifa reemplazada no cambia snapshot. Registra declaración del integrador, no verificación bancaria. No acepta Quote, no abre Dispatch ni cobra créditos. La MQ convertida requiere aceptación autorizada; no admite aceptación sin atestación ni recotización sobre la misma solicitud. Cancelar no libera MPQ.',
   })
   async convert(
     @Req() req: IntegrationRequest,
