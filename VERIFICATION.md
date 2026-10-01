@@ -1,3 +1,145 @@
+## Piloto — confirmación funcional del operador, 2026-10-01
+
+El propietario confirma pruebas en Android e iOS de Coita Eats 2.1.0, instrucciones correctas en Mandaria web y transmisión por llamada del administrador al repartidor. Confirmación funcional de canales e instrucciones recibida; no ejecución nueva del agente ni identificación de builds/artefactos. No acredita manejo de webhooks duplicados, recuperación de respuesta perdida ni cancelación concurrente.
+
+Actualización documental y git diff --check únicamente. Las entradas anteriores conservan sus pendientes históricos, superados respecto a plataformas e instrucciones por esta declaración.
+
+## Piloto — versión y operación, 2026-10-01
+
+Propietario identifica Coita Eats 2.1.0 Android/iOS y pruebas desde esa app; build y casos por plataforma no identificados. Administrador opera aceptación/entrega desde Mandaria web; repartidores llaman y no usarán pantallas propias. Se acota verificación UI a web administrativa y móvil cliente, sin retirar requisitos backend ni inferir cobro desde entrega. Pendiente confirmar cobertura de ambas plataformas e instrucciones transmitidas; deduplicación/recovery Coita no acreditadas por esta respuesta.
+
+Fuente: declaración del propietario, no ejecución nueva. Plan actualizado y git diff --check documental; sin cambios operativos.
+
+## Piloto — participantes y atención, 2026-10-01
+
+Participación y horario confirmados por propietario: 8 restaurantes, 1 flotilla con 4 repartidores, Ocozocoautla, Chiapas, todos los días de 08:00 a 00:00 (medianoche), hora local. Una persona técnica por correo, primera respuesta dentro de 8 horas; cómputo del plazo/cobertura y alertas efectivas aún pendientes. Se mantienen 30 días con revisión semanal, Coita Eats móvil y previsión de 100 pedidos/día, pico 5/minuto. No acredita capacidad logística/API ni autoriza lanzamiento. Recomendación pendiente: responsable que pueda pausar nuevas solicitudes críticas sin esperar la respuesta técnica.
+
+Fuente: respuestas del propietario; sólo actualización documental y git diff --check. No nuevas pruebas ni comprobación de correo. Detalle: docs/MVP-PILOT-PLAN.md. Las entradas siguientes conservan evidencia y estados históricos.
+
+## Piloto — decisiones del propietario 2026-10-01
+
+Piloto definido parcialmente por propietario: 30 días, revisión semanal, Coita Eats móvil, previsión ~100 pedidos/día y pico esperado 5/minuto. No equivale a cupo implementado ni capacidad validada. Escenarios de 1/2/3 precotizaciones por pedido consumen 200/400/600 unidades diarias bajo supuestos simples; ráfagas/concurrencia 2, renovaciones y abandonos pendientes de contrastar. No subir límites automáticamente. Participantes, zona, horario y responsable técnico preguntados; fecha de lanzamiento aún no fijada.
+
+Sólo documentación y contraste aritmético; git diff --check, no benchmark ni suite. Detalle en docs/MVP-PILOT-PLAN.md.
+
+## Definición del piloto — 2026-10-01
+
+Borrador [MVP-PILOT-PLAN](docs/MVP-PILOT-PLAN.md) preparado; sólo revisión estática y diff --check. Preguntas sobre demanda, participantes/canales y duración pendientes. Limpieza del clon confirmada por propietario, sin comprobación remota por agente. No nuevas pruebas ni autorización de lanzamiento.
+
+## Recuperación — clon activo, pruebas pendientes
+
+## Decisión del propietario: respaldo semanal para inicio del piloto
+
+2026-10-01. El propietario decide mantener **frecuencia semanal (7 días)** durante el inicio, por considerar que todavía no hay actividad relevante que respaldar. Es una decisión de negocio aportada por el propietario, no una conclusión del agente sobre ausencia de datos: la copia comprobada sí contenía historial técnico y económico (1 cuenta/8 movimientos).
+
+**Sustituye el objetivo previo RPO 24 h para esta fase:** con cadencia semanal y copias utilizables, la pérdida potencial alcanza casi siete días de cambios; si una copia falla, puede ser mayor. La frecuencia semanal no garantiza por sí sola un máximo de pérdida. El RTO de 24 h (tiempo para recuperar servicio) no fue cambiado. Revisar frecuencia y retención al incorporar actividad real o aumentar volumen; no se ha programado ningún cambio automático.
+
+**Configuración observada frente a decisión:** la última captura de DigitalOcean mostraba backups diarios habilitados, sin copias automáticas disponibles en ese momento. No se modificó ese ajuste; semanal es la decisión aprobada, no un estado remoto verificado. El snapshot se restauró satisfactoriamente con las adaptaciones documentadas; no demuestra que futuras copias automáticas se completen.
+
+El ensayo de restauración de esa copia queda cerrado satisfactoriamente en su alcance. La discrepancia semanal/RPO 24 h deja de tratarse como bloqueo de decisión porque el propietario cambió el objetivo. No implica cierre de otros pendientes del piloto, ni nueva evidencia sobre custodia, alertas o calendario efectivo. Retirada del clon pendiente de confirmación.
+
+
+## Resultado funcional del ensayo — 2026-10-01
+
+**SATISFACTORIO en el alcance comprobado por el propietario; recuperación operativa integral aún no cerrada.** Evidencia recibida por chat, comandos ejecutados por propietario sólo en mandaria-restore-test, sin conexión remota del agente:
+
+- PostgreSQL 17 y Redis arrancaron; 29 migraciones finalizadas, ninguna sin finalizar.
+- Backend healthy y GET loopback /health: status ok/database up.
+- Frontend reiniciado una vez tras recuperar backend; HTTP 308 y después **HTTPS 200**, usando mandaria.com.mx resuelto exclusivamente a 127.0.0.1, sin -k ni seguimiento de redirecciones. Prueba raíz/TLS, no todas las pantallas ni operación comercial.
+- Clave recuperada descifra el único secreto almacenado: checked 1, decrypted 1, failed 0. No envío de webhook ni prueba del receptor.
+- Lectura transaccional de créditos: **1 cuenta, 8 movimientos, 0 saldos negativos, 0 diferencias saldo/ledger y 0 inconsistencias en cadena**. No auditoría exhaustiva de todas las entidades ni equivalencia con datos vivos posteriores al snapshot.
+
+**Adaptaciones documentadas:** snapshot conserva publicación de backend en IP antigua 10.120.0.3; Docker no podía enlazarla. Override sólo clon cambia a loopback, fija imagen existente, desactiva polling/seed y ejecuta node dist/main.js directamente. No migra ni recrea PostgreSQL/Redis. Por ello se demuestra recuperación con procedimiento, no arranque estándar sin intervención. Frontend dejó de fallar al recuperar backend y reiniciarlo. No reinstalación/build/pull, operaciones comerciales, DNS ni apertura de red.
+
+**Todavía pendiente para el objetivo de recuperación:** fecha UTC exacta del snapshot y antigüedad recuperada; tiempos de creación/inicio y fin para medir RTO; evidencia de copias periódicas utilizables compatible con RPO 24 h; custodia recuperable de configuración/clave fuera del único servidor o con mecanismo de acceso de emergencia comprobado. Clave funcional dentro de snapshot no prueba custodia independiente. RPO/RTO 24 h son objetivos aceptados, no garantías acreditadas automáticamente por este éxito.
+
+**Limpieza:** solicitar última fecha UTC/estado y retirar únicamente el Droplet temporal mandaria-restore-test, conservando producción, snapshot y evidencia. Destrucción todavía no confirmada; mientras exista genera coste incluso apagado. Firewall/etiqueta exclusivos pueden conservarse para próximo ensayo, sin tocar reglas de producción. La pantalla inicial New sin firewall no demuestra ausencia de protección ni garantiza aislamiento desde primer arranque; captura posterior mostró regla SSH y ninguna salida visible.
+
+Dictamen de piloto continúa **NO LISTO** por los pendientes operativos documentados. No repetir suites técnicas para cerrar este ensayo. Los registros siguientes conservan su estado histórico.
+
+
+### Clave recuperada y redirección frontend
+
+Evidencia del propietario: frontend reiniciado una vez después del backend, Up 5 seconds health starting, GET HTTP loopback devuelve 308 (redirección, no página HTTPS final). Descifrado read-only en memoria sobre copia: checked=1, decrypted=1, failed=0, verified=true usando clave recuperada y helper existente. Acredita compatibilidad de clave con el secreto de la copia; no custodia externa independiente ni HMAC remoto/Coita. Falta HTTPS local con dominio correcto, consistencia acotada y tiempos/antigüedad exactos. Se pregunta dominio para --resolve loopback; no DNS/producción.
+
+
+### Backend recuperado en clon
+
+Propietario ejecuta override sólo en clon: compose up backend Healthy en 6.0 s; después backend Up 11 s healthy, PostgreSQL/Redis Up 11 min healthy, frontend aún Restarting (1). GET local /health devuelve status ok y database up. Recuperación parcial de aplicación acreditada con adaptación de IP y entrypoint directo; no arranque estándar ni integridad de negocio aún. Próximo: un reinicio controlado frontend ahora que existe upstream y descifrado en memoria de ciphertext del clon mediante helper existente, sin env/secretos/salidas externas.
+
+
+### Diagnóstico confirmado del arranque
+
+Causa confirmada por State.Error del clon: backend no arranca porque Docker intenta publicar 10.120.0.3:3000/tcp y esa IP no está asignada en clon (cannot assign requested address). Frontend muestra 19 ocurrencias de host not found in upstream; falta identificar upstream, compatible con backend ausente pero no confirmado aún. No defecto de producto ni corrupción demostrado. Ajuste mínimo propuesto sólo en clon: publicación loopback o IP propia según Compose real, desactivar polling automático en override de ensayo y conservar firewall; primero identificar archivos/servicio Compose sin exponer configuración completa.
+
+
+### Lectura del primer arranque
+
+Salida SSH del propietario, 2026-10-01 06:55:06 UTC: hostname mandaria-restore-test e interfaces coinciden con clon. PostgreSQL postgres:17-bookworm y Redis redis:7-alpine Up 5 minutes (healthy); backend mandaria-backend:latest Exited (255), frontend mandaria-frontend:latest Restarting (1). Recuperación de aplicación NO acreditada; causa desconocida, no atribuir a firewall/RAM/snapshot sin diagnóstico. No reinicios ni salidas autorizados en este paso. Siguiente: metadatos de estado y lectura acotada de migraciones de la copia, sin secretos.
+
+
+Clon activo confirmado por captura del propietario: mandaria-restore-test en SFO2/sfo2-vpc-01, snapshot ubuntu-s-mandaria-1790834827410. Networking muestra firewall mandaria-restore-isolated, entrada SSH desde una sola IP y tabla de salida sin reglas visibles. Se retoma ensayo tras aceptación del coste temporal; eliminar únicamente clon al concluir, no producción/snapshot. Esto acredita configuración mostrada actual, no prueba ausencia de tráfico desde primer arranque ni recuperación PostgreSQL. Próximo paso: SSH del propietario al clon, identidad/red y listado acotado de contenedores; no abrir salidas.
+
+Sin comandos remotos por agente; actualización documental y diff --check.
+
+## Recuperación — snapshot candidato identificado
+
+**Segunda captura 2026-10-01:** identifica `ubuntu-s-mandaria`, región SFO2, y snapshot listado `ubuntu-s-mandaria-1790834827410`, tamaño mostrado 15.87 GB, creado «hace 2 minutos» al capturar. Hay un snapshot candidato para ensayo; backups automáticos diarios aún indican ninguna copia disponible. El tamaño mostrado del snapshot no acredita tamaño mínimo del disco de destino. Fecha UTC exacta, ID de imagen, consistencia recuperable, destino y aislamiento previo pendientes. No se ha creado/restaurado ningún recurso por el agente. Esta evidencia supera la falta de identidad/copia candidata de la captura anterior, conservada abajo.
+
+Sólo lectura visual y git diff --check; restauración no ejecutada.
+
+## Recuperación — evidencia visual nueva
+
+**Captura aportada 2026-10-01:** pantalla muestra Automated Daily Backups enabled, ventana diaria 00:00–04:00 UTC, No backups available y próximo inicio estimado dentro de 17 horas respecto al momento de la captura. No muestra identidad del Droplet, copia completada, retención ni tamaño del disco. Frecuencia diaria visible; declaración anterior de semanal/copia «hoy» no describe esta pantalla. No se infiere eliminación de copias ni cambio de plan; confirmar que corresponde a Mandaria. Aún no hay copia visible para el ensayo. RPO/RTO 24 h continúan sin acreditar; programación diaria no equivale a copia completada ni garantiza por sí sola esos objetivos.
+
+Sin comandos remotos, cambios de plan ni restauraciones. Sólo lectura de captura y git diff --check; estados posteriores conservan historial.
+
+## Recuperación — preparación 2026-10-01
+
+[Ensayo de recuperación](docs/MVP-RECOVERY-REHEARSAL.md) preparado mediante inspección estática y documentación oficial; sólo diff --check ejecutado. RPO 24 h y RTO 24 h confirmados por el propietario; cumplimiento no acreditado. Falta identificar copia/destino. Sin restauración, DB, configuración operativa ni prueba de recuperación ejecutadas.
+
+# Seguimiento de preparación del piloto
+
+## Resumen vigente de preparación para el piloto
+
+**NO LISTO para autorizar el piloto con la evidencia disponible.** No hay un nuevo defecto de producto confirmado; faltan comprobaciones y acuerdos operativos. Fuente de esta actualización: resumen aportado por el propietario; las comprobaciones VM fueron ejecutadas por él y revisadas mediante sus salidas en el seguimiento anterior. Esta actualización es documental: no ejecuta nuevas pruebas ni accede a la VM.
+
+### Comprobado y procedencia
+
+- Build aprobado y archivo B2B completo: **15/15** en la verificación local anterior.
+- **7/7 huellas históricas reconciliadas**, diferencias de finales de línea sin cambios de contenido; evidencia conservada en `docs/checks/mvp-closure-fingerprint-reconciliation.json`. Ya no constituyen un bloqueo.
+- Checkout backend VM coincide con la revisión validada y está limpio; lock de imagen semánticamente equivalente al del repositorio. Esto no prueba identidad completa del artefacto ejecutado.
+- **29/29 migraciones finalizadas**, hashes coincidentes entre PostgreSQL, imagen y SQL local normalizado, según evidencia del operador.
+- Política de límites reconstruida coincide con la guardada en PostgreSQL. No equivale a inspección directa de la memoria del proceso.
+- Worker habilitado: dos lecturas muestran avance del polling, cero pendientes/agotados y siete envíos registrados como entregados. No prueba procesamiento correcto ni deduplicación del receptor.
+- PostgreSQL guarda datos en el **disco principal del Droplet**, según el propietario. Confirma backup automático **semanal**, con última copia realizada «hoy» al aportar el resumen; no se recibió aquí un timestamp para sustituir esa fecha relativa. La frecuencia semanal corrige cualquier declaración previa de frecuencia diaria. Restauración aún no probada.
+
+### Pendientes que bloquean la autorización
+
+| Área | Acción concreta | Responsable por rol |
+|---|---|---|
+| Recuperación | Probar restauración aislada; confirmar recuperación segura de configuración y clave maestra de webhooks; acordar pérdida de datos y tiempo de recuperación aceptables. Una copia semanal puede dejar sin recuperar cambios posteriores a la última copia, hasta casi siete días bajo cadencia regular y copias utilizables; evaluar protección adicional según prioridad del propietario. | Propietario y operación técnica |
+| Límites del piloto | Definir pedidos/día, pico/minuto, duración y canales. Comparar demanda de precotizaciones, renovaciones y concurrencia con **10/min, 500/día y 2 simultáneas por cliente**, y presupuesto global MPQ **1.000 unidades routing/día**. No equiparar pedidos con precotizaciones. | Negocio y operación |
+| Responsables y alertas | Designar atención técnica, respaldos y recuperación; comprobar alertas de errores, límites y webhooks. Concretar contacto y procedimiento de pagos/devoluciones del restaurante, responsable comercial indicado. | Operación, negocio y restaurante |
+| Trazabilidad e integración | Completar identidad del artefacto backend ejecutado y frontend desplegado; correlacionar casos integrados con versiones; acreditar deduplicación/recuperación de Coita y pantallas del piloto; confirmar reversión compatible con esquema actual. | Mandaria operación/Frontend y Coita Backend/Web/Mobile |
+
+El archivo pendiente y la reconciliación de huellas de C4 están subsanados. La causa de abortos antiguos sigue sin demostrarse; resultados históricos **no son una nueva ejecución de toda la suite**. El verificador A3 sigue aparcado. No se autoriza cambio operativo, restauración sobre principal ni aceptación de riesgos. Los diagnósticos históricos que siguen deben interpretarse con este resumen vigente.
+
+
+---
+
+# Revisión MVP integrado — 2026-09-30
+
+Revisión MVP 2026-09-30: **NO LISTO para autorizar piloto con la evidencia disponible**. Nuevo build exit 0 y `delivery-requests-b2b.e2e-spec.ts` completo **15/15, exit 0**, en PostgreSQL 18.6 temporal aislado (detenido). Sin cambios de producto/pruebas, `.env` o principal. Preparación fallida conservada; no aborto nativo nuevo ni causa histórica resuelta.
+
+Históricos reutilizados: **403 unitarias/35 archivos y 743 E2E/33 archivos** C4/D; combinado con 15 nuevos: **758 E2E/34 archivos únicos**, no suite completa ejecutada ahora. Pendiente de ejecución C4 subsanado; **PARTIAL por procedencia histórica limitada**: siete huellas del baseline no reconciliadas pese a continuidad Git. A3 aparcado.
+
+Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no verificados aquí, sin acreditar dinero real. Faltan identidad/configuración por instancia, capacidad/presupuesto, workers, recuperación y acuerdos/responsables. Informe: `docs/MVP-INTEGRATED-TECHNICAL-CLOSURE.md`; índices `docs/checks/mvp-closure-{provenance,local,postgres}.json`. Sin commit/push/despliegue ni autorización de riesgos.
+
+Los apartados siguientes conservan evidencia histórica.
+
+---
+
 # V1.13-D — Verificación proporcional de instrucciones financieras (2026-09-29)
 
 **Backend D implementado y validado localmente; interfaces pendientes, flujo sin activar.** C4 permanece PARTIAL, no se retoma su diagnóstico ni se ejecuta su archivo pendiente. No se abre otro CHECK.
@@ -2169,3 +2311,6 @@ Los comandos reproducibles, endpoints y alcance futuro están en README.md.
 ## 2026-09-25 — Correo por API HTTPS de Resend
 
 Cambio posterior al CHECK FINAL histórico: SMTP y Nodemailer sustituidos por Resend sin fallback. Todos los envíos existentes pasan por MailModule. Build, lint, TypeScript y docs:check pasan; 285/285 unitarias completas y después 19/19 del adaptador/módulo (tres casos nuevos de wiring). E2E de invitaciones 24/24 con PostgreSQL local y transporte falso, pool threads. Error inicial del fixture de wiring corregido haciendo ConfigModule global como en producción. Pruebas cubren solicitud HTTPS, aceptación con id, rechazo HTTP y JSON inválido, timeout y sanitización; no acreditan entrega real en Resend. No Docker, envío real, migraciones, cambios de .env ni acceso a otros proyectos. Despliegue y prueba real pendientes.
+# Seguimiento MVP — reconciliación documental (2026-09-30)
+
+Las siete huellas pendientes del informe MVP quedan reconciliadas: SHA-256 histórico reconstruido exactamente desde Git mediante finales de línea mixtos, sin diferencias de contenido normalizado. Ver `docs/checks/mvp-closure-fingerprint-reconciliation.json` y `scripts/reconcile-mvp-fingerprints.mjs`. Verificador y consolidación documental exit 0. Sin nuevas pruebas funcionales ni verificaciones remotas; se mantienen conteos históricos y el B2B 15/15 de la tarea anterior. Dictamen global NO LISTO por preparación operativa, no por estas siete huellas. No se acredita causa de abortos históricos. El estado PARTIAL de informes previos se conserva como histórico; sus pendientes locales de archivo B2B y huellas están subsanados por los seguimientos MVP.

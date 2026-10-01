@@ -1,0 +1,195 @@
+{
+  "scope": "Disposable PostgreSQL 18 cluster on loopback:55439; installed service untouched",
+  "database": "mandaria_mvp_20261001_test",
+  "attempts": [
+    {
+      "label": "init",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\initdb.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -U mvp_review -A trust --encoding=UTF8 --locale=C",
+      "startedAt": "2026-10-01T04:47:20.897Z",
+      "endedAt": "2026-10-01T04:47:26.771Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-init.txt"
+    },
+    {
+      "label": "start",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -l C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated.log -o -h 127.0.0.1 -p 55439 -w start",
+      "startedAt": "2026-10-01T04:47:26.778Z",
+      "endedAt": "2026-10-01T04:51:07.382Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-start.txt"
+    },
+    {
+      "label": "create",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\createdb.exe -h 127.0.0.1 -p 55439 -U mvp_review mandaria_mvp_20261001_test",
+      "startedAt": "2026-10-01T04:51:07.385Z",
+      "endedAt": "2026-10-01T04:51:12.709Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-create.txt"
+    },
+    {
+      "label": "stop",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -m fast -w stop",
+      "startedAt": "2026-10-01T04:51:12.712Z",
+      "endedAt": "2026-10-01T04:51:12.750Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-stop.txt"
+    },
+    {
+      "label": "start",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -l C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated.log -o -h 127.0.0.1 -p 55439 -w start",
+      "startedAt": "2026-10-01T04:51:46.908Z",
+      "endedAt": "2026-10-01T04:51:49.366Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-start-resume.txt"
+    },
+    {
+      "label": "create",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\createdb.exe -h 127.0.0.1 -p 55439 -U mvp_review mandaria_mvp_20261001_test",
+      "startedAt": "2026-10-01T04:51:49.380Z",
+      "endedAt": "2026-10-01T04:51:54.876Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-create-resume.txt"
+    },
+    {
+      "label": "migrate",
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "startedAt": "2026-10-01T04:51:54.885Z",
+      "endedAt": "2026-10-01T04:51:58.173Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-migrate-resume.txt"
+    },
+    {
+      "label": "stop",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -m fast -w stop",
+      "startedAt": "2026-10-01T04:51:58.181Z",
+      "endedAt": "2026-10-01T04:51:58.891Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-stop-resume.txt"
+    },
+    {
+      "label": "start",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -l C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated.log -o -h 127.0.0.1 -p 55439 -w start",
+      "startedAt": "2026-10-01T04:52:27.621Z",
+      "endedAt": "2026-10-01T04:52:28.193Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-start-attempt-9.txt"
+    },
+    {
+      "label": "migrate",
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts",
+      "startedAt": "2026-10-01T04:52:28.198Z",
+      "endedAt": "2026-10-01T04:52:29.978Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-migrate-attempt-10.txt"
+    },
+    {
+      "label": "stop",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -m fast -w stop",
+      "startedAt": "2026-10-01T04:52:29.984Z",
+      "endedAt": "2026-10-01T04:52:30.148Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-stop-attempt-11.txt"
+    },
+    {
+      "label": "start",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -l C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated.log -o -h 127.0.0.1 -p 55439 -w start",
+      "startedAt": "2026-10-01T04:52:53.196Z",
+      "endedAt": "2026-10-01T04:52:53.625Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-start-attempt-12.txt"
+    },
+    {
+      "label": "migrate",
+      "command": "node node_modules/prisma/build/index.js migrate deploy --config prisma.config.ts",
+      "startedAt": "2026-10-01T04:52:53.631Z",
+      "endedAt": "2026-10-01T04:52:57.375Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-migrate-attempt-13.txt"
+    },
+    {
+      "label": "version",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe -X -w -h 127.0.0.1 -p 55439 -U mvp_review -d mandaria_mvp_20261001_test -c SELECT current_database(), version();",
+      "startedAt": "2026-10-01T04:52:57.381Z",
+      "endedAt": "2026-10-01T04:52:57.498Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-version-attempt-14.txt"
+    },
+    {
+      "label": "threads",
+      "command": "node scripts/review-mvp-local.mjs threads",
+      "startedAt": "2026-10-01T04:52:57.503Z",
+      "endedAt": "2026-10-01T04:52:58.642Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-threads-attempt-15.txt"
+    },
+    {
+      "label": "forks-diagnostic",
+      "command": "node scripts/review-mvp-local.mjs forks",
+      "startedAt": "2026-10-01T04:52:58.648Z",
+      "endedAt": "2026-10-01T04:52:59.349Z",
+      "exit": 1,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-forks-diagnostic-attempt-16.txt"
+    },
+    {
+      "label": "stop",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -m fast -w stop",
+      "startedAt": "2026-10-01T04:52:59.355Z",
+      "endedAt": "2026-10-01T04:52:59.727Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-stop-attempt-17.txt"
+    },
+    {
+      "label": "start",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -l C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated.log -o -h 127.0.0.1 -p 55439 -w start",
+      "startedAt": "2026-10-01T04:53:28.131Z",
+      "endedAt": "2026-10-01T04:53:28.756Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-start-attempt-18.txt"
+    },
+    {
+      "label": "version",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe -X -w -h 127.0.0.1 -p 55439 -U mvp_review -d mandaria_mvp_20261001_test -c SELECT current_database(), version();",
+      "startedAt": "2026-10-01T04:53:28.762Z",
+      "endedAt": "2026-10-01T04:53:28.894Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-version-attempt-19.txt"
+    },
+    {
+      "label": "threads",
+      "command": "node scripts/review-mvp-local.mjs threads",
+      "startedAt": "2026-10-01T04:53:28.900Z",
+      "endedAt": "2026-10-01T04:53:44.116Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-threads-attempt-20.txt"
+    },
+    {
+      "label": "stop",
+      "command": "C:\\Program Files\\PostgreSQL\\18\\bin\\pg_ctl.exe -D C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\mvp\\pg-isolated -m fast -w stop",
+      "startedAt": "2026-10-01T04:53:44.122Z",
+      "endedAt": "2026-10-01T04:53:44.369Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/checks/mvp-closure-pg-stop-attempt-21.txt"
+    }
+  ]
+}

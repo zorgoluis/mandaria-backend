@@ -1,0 +1,17 @@
+Loaded Prisma config from prisma.test.config.ts.
+
+Prisma config detected, skipping environment variable loading.
+Prisma schema loaded from prisma\schema.prisma
+Error: Prisma schema validation - (get-config wasm)
+Error code: P1012
+error: Environment variable not found: DATABASE_URL.
+  -->  prisma\schema.prisma:6
+   | 
+ 5 |   provider = "postgresql"
+ 6 |   url = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+[Context: getConfig]
+
+Prisma CLI Version : 6.19.3

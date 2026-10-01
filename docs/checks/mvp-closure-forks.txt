@@ -1,0 +1,17 @@
+failed to load config from C:\Users\zorgl\Documents\mandaria-backend\vitest.config.e2e.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Startup Error ⎯⎯⎯⎯⎯⎯⎯⎯
+Error: Test database must differ from DATABASE_URL
+    at testDatabaseUrl (file:///C:/Users/zorgl/Documents/mandaria-backend/node_modules/.vite-temp/vitest.config.e2e.ts.timestamp-1790830379258-659a8d8675f21.mjs:13:129)
+    at file:///C:/Users/zorgl/Documents/mandaria-backend/node_modules/.vite-temp/vitest.config.e2e.ts.timestamp-1790830379258-659a8d8675f21.mjs:17:33
+    at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+    at async node:internal/modules/esm/loader:639:26
+    at async loadConfigFromBundledFile (file:///C:/Users/zorgl/Documents/mandaria-backend/node_modules/vite/dist/node/chunks/node.js:37499:12)
+    at async bundleAndLoadConfigFile (file:///C:/Users/zorgl/Documents/mandaria-backend/node_modules/vite/dist/node/chunks/node.js:37345:21)
+    at async loadConfigFromFile (file:///C:/Users/zorgl/Documents/mandaria-backend/node_modules/vite/dist/node/chunks/node.js:37305:42)
+    at async resolveConfig (file:///C:/Users/zorgl/Documents/mandaria-backend/node_modules/vite/dist/node/chunks/node.js:36906:22)
+    at async _createServer (file:///C:/Users/zorgl/Documents/mandaria-backend/node_modules/vite/dist/node/chunks/node.js:24268:65)
+    at async createViteServer (file:///C:/Users/zorgl/Documents/mandaria-backend/node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:8902:17)
+
+
+

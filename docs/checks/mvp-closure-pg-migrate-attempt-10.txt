@@ -1,0 +1,1 @@
+Failed to load config file "C:\Users\zorgl\Documents\mandaria-backend" as a TypeScript/JavaScript module. Error: Error: Test database must differ from DATABASE_URL
