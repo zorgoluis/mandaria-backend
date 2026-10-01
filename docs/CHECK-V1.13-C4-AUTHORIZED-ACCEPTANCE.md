@@ -1,5 +1,9 @@
 # CHECK V1.13-C4 — Aceptación autorizada
 
+> Seguimiento vigente 2026-10-01: B2B 15/15 y siete huellas reconciliadas; evidencia VM y restauración aportadas por propietario. Los pendientes históricos siguientes no representan todos el estado actual. Consultar [cierre MVP](MVP-INTEGRATED-TECHNICAL-CLOSURE.md) y [piloto](MVP-PILOT-PLAN.md); apertura no autorizada.
+
+> Actualización 2026-09-30: [revisión MVP](MVP-INTEGRATED-TECHNICAL-CLOSURE.md). Archivo B2B acreditado 15/15 nuevo; causa nativa no resuelta. PARTIAL por siete huellas históricas no reconciliadas. Operador reporta activación/casos integrados; VM no verificada. Contenido posterior histórico.
+
 2026-09-29 UTC. **PARTIAL**: aceptación autorizada y gates locales comprobados, pero falta acreditar un archivo de la regresión E2E completa. V1.13-C no se declara cerrada.
 
 Seguimiento posterior limitado al archivo pendiente: **PARTIAL conservado**, dos intentos autorizados agotados el 2026-09-29 a las 15:06 UTC. Véase la adenda final y [evidencia nueva](checks/v1.13-c4-completion-attempts.json). Las cifras y verificaciones del CHECK original siguientes son históricas respecto a este seguimiento.

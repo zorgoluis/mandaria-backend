@@ -1,0 +1,91 @@
+{
+  "head": "7d988d351d87fabd519ffe21251950ec64828636",
+  "node": "v24.15.0",
+  "versions": {
+    "vitest": "4.1.11",
+    "prisma": "6.19.3",
+    "typescript": "6.0.3",
+    "@nestjs/core": "11.2.4"
+  },
+  "database": "mandaria_mvp_20261001_test",
+  "attempts": [
+    {
+      "mode": "build",
+      "command": "node node_modules/@nestjs/cli/bin/nest.js build",
+      "startedAt": "2026-10-01T04:36:45.845Z",
+      "endedAt": "2026-10-01T04:36:59.386Z",
+      "exit": 0,
+      "signal": null,
+      "complete": true,
+      "cases": 0,
+      "passed": 0,
+      "log": "docs/checks/mvp-closure-build.txt",
+      "testOverrides": {
+        "flags": "all false",
+        "mail": "local_outbox",
+        "webhookLoop": "off"
+      }
+    },
+    {
+      "mode": "threads",
+      "database": "mandaria_mvp_20261001_test",
+      "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/mvp/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-requests-b2b.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/mvp-closure-threads.json",
+      "startedAt": "2026-10-01T04:52:57.584Z",
+      "endedAt": "2026-10-01T04:52:58.617Z",
+      "exit": 1,
+      "signal": null,
+      "complete": false,
+      "cases": 0,
+      "passed": 0,
+      "log": "docs/checks/mvp-closure-threads.txt",
+      "report": "docs/checks/mvp-closure-threads.json",
+      "observer": "docs/checks/mvp-closure-threads-events.jsonl",
+      "testOverrides": {
+        "flags": "all false",
+        "mail": "local_outbox",
+        "webhookLoop": "off"
+      }
+    },
+    {
+      "mode": "forks",
+      "database": "mandaria_mvp_20261001_test",
+      "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/mvp/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-requests-b2b.e2e-spec.ts --pool=forks --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/mvp-closure-forks.json",
+      "startedAt": "2026-10-01T04:52:58.729Z",
+      "endedAt": "2026-10-01T04:52:59.325Z",
+      "exit": 1,
+      "signal": null,
+      "complete": false,
+      "cases": 0,
+      "passed": 0,
+      "log": "docs/checks/mvp-closure-forks.txt",
+      "report": "docs/checks/mvp-closure-forks.json",
+      "observer": "docs/checks/mvp-closure-forks-events.jsonl",
+      "testOverrides": {
+        "flags": "all false",
+        "mail": "local_outbox",
+        "webhookLoop": "off"
+      }
+    },
+    {
+      "mode": "threads",
+      "database": "mandaria_mvp_20261001_test",
+      "command": "node --report-on-fatalerror --report-exclude-env --report-exclude-network --report-directory=.tmp/mvp/native node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/delivery-requests-b2b.e2e-spec.ts --pool=threads --maxWorkers=1 --hookTimeout=30000 --reporter=json --reporter=./scripts/c4-runner-observer.mjs --outputFile=docs/checks/mvp-closure-threads-environment-corrected.json",
+      "startedAt": "2026-10-01T04:53:29.005Z",
+      "endedAt": "2026-10-01T04:53:44.096Z",
+      "exit": 0,
+      "signal": null,
+      "complete": true,
+      "cases": 15,
+      "passed": 15,
+      "log": "docs/checks/mvp-closure-threads-environment-corrected.txt",
+      "report": "docs/checks/mvp-closure-threads-environment-corrected.json",
+      "observer": "docs/checks/mvp-closure-threads-environment-corrected-events.jsonl",
+      "testOverrides": {
+        "flags": "all false",
+        "mail": "local_outbox",
+        "webhookLoop": "off"
+      }
+    }
+  ],
+  "databaseNote": "Fresh disposable cluster for new E2E; build did not access a database. Earlier planned C4 database was not used."
+}

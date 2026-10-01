@@ -1,0 +1,2 @@
+pg_ctl: PID file "C:/Users/zorgl/Documents/mandaria-backend/.tmp/mvp/pg-isolated/postmaster.pid" does not exist
+Is server running?

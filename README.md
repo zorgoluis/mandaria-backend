@@ -1,5 +1,7 @@
 # Mandaria — V1.12-E Webhook Operations & Observability
 
+> Revisión MVP (2026-09-30): [informe](docs/MVP-INTEGRATED-TECHNICAL-CLOSURE.md). B2B 15/15 y huellas reconciliadas; evidencia VM aportada por operador. Ensayo de restauración cerrado; [piloto definido](docs/MVP-PILOT-PLAN.md). Pendientes de responsables/alertas, capacidad operativa y trazabilidad/integración: apertura aún no autorizada.
+
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
 ## Integridad económica y frontera histórica — V1.10-D correctiva

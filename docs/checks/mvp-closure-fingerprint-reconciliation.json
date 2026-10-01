@@ -1,0 +1,153 @@
+{
+  "at": "2026-10-01T05:03:57.847Z",
+  "head": "7d988d351d87fabd519ffe21251950ec64828636",
+  "baselineHead": "69f757b8c5049771d6a893c77506bb81242001a9",
+  "baselineManifestSha256": "613b11dd2c0b0f6f3c7ab5be0ef38fd0be2f67bc29a006998372df54c16183de",
+  "method": "Reconstruct exact historical bytes from committed content and explicit per-line endings; require SHA-256 equality with preserved baseline and LF-normalized equality with current file.",
+  "results": [
+    {
+      "file": "src/common/public-id.ts",
+      "baselineSha256": "1641029e96e40d6927fdb93e702367572dfeac28f1797940aeba1b3c2ffd0253",
+      "reconstructedSha256": "1641029e96e40d6927fdb93e702367572dfeac28f1797940aeba1b3c2ffd0253",
+      "currentRawSha256": "0299f0d0d7bbfe0e9b54756371c4f3e116d6cd8eef953190ace1f27ef5c86160",
+      "gitBlobSha256": "5f5630f610a3a0e5254fa36bab7042587119d4ec7b476158234567c7f2332aa0",
+      "normalizedSha256": "5f5630f610a3a0e5254fa36bab7042587119d4ec7b476158234567c7f2332aa0",
+      "reconstruction": {
+        "source": "69f757b8c5049771d6a893c77506bb81242001a9:src/common/public-id.ts",
+        "defaultEnding": "LF",
+        "crlfLines": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ]
+      },
+      "contentEqual": true,
+      "result": "RECONCILED_EOL_ONLY"
+    },
+    {
+      "file": "prisma/migrations/20260928000100_prequote_persistence/migration.sql",
+      "baselineSha256": "7bc0f5f586b5c94e30899cc1215f3d39820f789011999b0ccf9b740c0c738687",
+      "reconstructedSha256": "7bc0f5f586b5c94e30899cc1215f3d39820f789011999b0ccf9b740c0c738687",
+      "currentRawSha256": "046ac61147b41e8e1cc75c965933d6a2aa44aae871e4630f137cac79860ec8df",
+      "gitBlobSha256": "13b602d0d3a61ac8cb6020295809cb0f3a1a1d36d7cee89ab7b6d16c68e5fec7",
+      "normalizedSha256": "13b602d0d3a61ac8cb6020295809cb0f3a1a1d36d7cee89ab7b6d16c68e5fec7",
+      "reconstruction": {
+        "source": "69f757b8c5049771d6a893c77506bb81242001a9:prisma/migrations/20260928000100_prequote_persistence/migration.sql",
+        "defaultEnding": "LF",
+        "crlfLines": [
+          217
+        ]
+      },
+      "contentEqual": true,
+      "result": "RECONCILED_EOL_ONLY"
+    },
+    {
+      "file": "prisma/migrations/20260928000200_prequote_execution_hardening/migration.sql",
+      "baselineSha256": "db6c700c5072af43cbda823957aa772c08e88ffb105b940d41c8ae6689898353",
+      "reconstructedSha256": "db6c700c5072af43cbda823957aa772c08e88ffb105b940d41c8ae6689898353",
+      "currentRawSha256": "660b45a2767d1e733c26b917a5e5667a556b8b266c4c5f0f886782052aa6a709",
+      "gitBlobSha256": "6929c4e8cb1b5be9b616f3c84b0f540f2147d13017b0273bb30da9372823edfb",
+      "normalizedSha256": "6929c4e8cb1b5be9b616f3c84b0f540f2147d13017b0273bb30da9372823edfb",
+      "reconstruction": {
+        "source": "69f757b8c5049771d6a893c77506bb81242001a9:prisma/migrations/20260928000200_prequote_execution_hardening/migration.sql",
+        "defaultEnding": "LF",
+        "crlfLines": [
+          9
+        ]
+      },
+      "contentEqual": true,
+      "result": "RECONCILED_EOL_ONLY"
+    },
+    {
+      "file": "prisma/migrations/20260928000300_prequote_consumption/migration.sql",
+      "baselineSha256": "42e23009cd07d558dc113321c6bf9e25897cfeaf0c6d4bb932259df8dc17bbae",
+      "reconstructedSha256": "42e23009cd07d558dc113321c6bf9e25897cfeaf0c6d4bb932259df8dc17bbae",
+      "currentRawSha256": "114242a0f011cc377af8b38967244fc594ad62b12676b6a70a67534d62793ad3",
+      "gitBlobSha256": "232fb33d545f0e64ed7da76d431715aa442b71525bf847357b7cf55b2593e062",
+      "normalizedSha256": "232fb33d545f0e64ed7da76d431715aa442b71525bf847357b7cf55b2593e062",
+      "reconstruction": {
+        "source": "69f757b8c5049771d6a893c77506bb81242001a9:prisma/migrations/20260928000300_prequote_consumption/migration.sql",
+        "defaultEnding": "LF",
+        "crlfLines": [
+          56
+        ]
+      },
+      "contentEqual": true,
+      "result": "RECONCILED_EOL_ONLY"
+    },
+    {
+      "file": "prisma/migrations/20260928000400_prequote_conversion/migration.sql",
+      "baselineSha256": "08e4bf88f2cc477e38c210d5b04363659f1fbf9384dc3a3bbe458a9a67fb169c",
+      "reconstructedSha256": "08e4bf88f2cc477e38c210d5b04363659f1fbf9384dc3a3bbe458a9a67fb169c",
+      "currentRawSha256": "6ec76940d4e22f8001382885b2aa55ba9fd43901549eaeef9f0fcf66ac350c7d",
+      "gitBlobSha256": "02b8ceacdf73aefa1f465c71b95d09a2d4d5e59ee08efcc481f498190fd9f5f0",
+      "normalizedSha256": "02b8ceacdf73aefa1f465c71b95d09a2d4d5e59ee08efcc481f498190fd9f5f0",
+      "reconstruction": {
+        "source": "69f757b8c5049771d6a893c77506bb81242001a9:prisma/migrations/20260928000400_prequote_conversion/migration.sql",
+        "defaultEnding": "LF",
+        "crlfLines": [
+          206
+        ]
+      },
+      "contentEqual": true,
+      "result": "RECONCILED_EOL_ONLY"
+    },
+    {
+      "file": "prisma/migrations/20260929000100_authorized_quote_acceptance/migration.sql",
+      "baselineSha256": "0b6ed2e6bb734a6ec87926477de766c5d182caba47d75c174a21dc9bf268f26d",
+      "reconstructedSha256": "0b6ed2e6bb734a6ec87926477de766c5d182caba47d75c174a21dc9bf268f26d",
+      "currentRawSha256": "4eb06a432d5b0dae0c4c089b4769c99c06d15b61ba945f975a39a2ab6cad26c2",
+      "gitBlobSha256": "03065ffc782fa8845caac0f96eae95ce2e83c70325adc69aa31f008f8e6fcee3",
+      "normalizedSha256": "03065ffc782fa8845caac0f96eae95ce2e83c70325adc69aa31f008f8e6fcee3",
+      "reconstruction": {
+        "source": "69f757b8c5049771d6a893c77506bb81242001a9:prisma/migrations/20260929000100_authorized_quote_acceptance/migration.sql",
+        "defaultEnding": "LF",
+        "crlfLines": [
+          201
+        ]
+      },
+      "contentEqual": true,
+      "result": "RECONCILED_EOL_ONLY"
+    },
+    {
+      "file": "scripts/check-prequote-a6-load.mjs",
+      "baselineSha256": "30235973ed8e94876ccf278c22ec767fb4341355eaff166398f286a42483e872",
+      "reconstructedSha256": "30235973ed8e94876ccf278c22ec767fb4341355eaff166398f286a42483e872",
+      "currentRawSha256": "b2f3667e987cefd351f41d61c992a9aaf652c7e57c2befbceb154aec1293776c",
+      "gitBlobSha256": "3c3eba063e8320bfed1e0ad8c01fd7e2dd2226318609a5968d85b5614c1e631a",
+      "normalizedSha256": "3c3eba063e8320bfed1e0ad8c01fd7e2dd2226318609a5968d85b5614c1e631a",
+      "reconstruction": {
+        "source": "69f757b8c5049771d6a893c77506bb81242001a9:scripts/check-prequote-a6-load.mjs",
+        "defaultEnding": "LF",
+        "crlfLines": [
+          66
+        ]
+      },
+      "contentEqual": true,
+      "result": "RECONCILED_EOL_ONLY"
+    }
+  ],
+  "reconciled": 7,
+  "unresolved": 0,
+  "limits": "No functional tests or remote verification. Does not establish VM artifact identity, applied migration checksums or cause of historic runner aborts."
+}
