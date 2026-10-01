@@ -1,3 +1,46 @@
+## Contrato público B2B — cierre local, 2026-10-01
+
+**Resultado: contrato y guías completados en el alcance solicitado; frontend y publicación pendientes.** Node v24.15.0, npm 11.12.1, Windows local. Versión del paquete intacta (1.12.0). No es una nueva acreditación del piloto ni de un receptor externo.
+
+### Cambios y evidencia estática
+
+- Exportador con 15 operaciones explícitas método+ruta, seguridad efectiva explícita/heredada y rechazo de combinaciones ambiguas. Detecta operaciones nuevas con autenticación/scopes B2B y anónimas en sus espacios de rutas; excluye los alias administrativos humanos `/integrations`. Copia referencias transitivas válidas y parámetros de path/operación; descarta componentes no usados y extensiones internas, rechaza referencias externas/callbacks y prosa no revisada. La revisión de privacidad de futuros campos sigue siendo necesaria.
+- `docs/openapi-b2b.json`, guías `B2B-PUBLIC-GUIDE.md` y `B2B-WEBHOOKS.md`, ejemplos ficticios JSON/HMAC y entrega interna `B2B-FRONTEND-HANDOFF.md`. Inventario administrativo contrastado con controller, DTOs, servicios y filtro; no invocado por HTTP.
+- En producto sólo metadata Swagger: sustituir “Durante B” por aceptación autorizada vigente y corregir `deliveryQuotePublicId` para admitir string/null, conforme al vínculo que ya devuelve el servicio. No cambios de lógica de negocio, tablas ni endpoints.
+- Política de reintentos, firma, rotación e idempotencia documentadas por lectura del código. Deduplicación persistente es responsabilidad del receptor; no se implementó ni probó Coita. 2xx es recepción de transporte, no procesamiento comercial ni cobro.
+- Swagger completo sigue sin guard en `/docs`; defaults de dependencia `/docs-json` y `/docs-yaml`. Lectura local de nginx del frontend confirma proxy por prefijo `/docs`, sin modificación ni comprobación remota. Propuesta de restricción separada; publicar el contrato filtrado no restringe Swagger.
+
+### Ejecuciones nuevas (no evidencia histórica)
+
+| Comando / comprobación | Resultado |
+|---|---|
+| `npm run docs:b2b` | Exit 0: Nest build, OpenAPI completo/matriz y artefacto público generados |
+| `npm run docs:b2b:check` | Exit 0: documentación completa y pública actualizadas |
+| `npm run test:public-b2b` | Exit 0, **32/32**, 2 archivos íntegros, 0 omitidos/cancelados: 28 exportador + 4 firma |
+| `npx tsc --noEmit -p tsconfig.json` | Exit 0 en ejecución final secuencial |
+| `npx tsc --noEmit -p tsconfig.build.json` | Exit 0 |
+| `npm run lint` | Exit 0; advertencia preexistente `readFileSync` no usado en `scripts/verify-authorized-acceptance-c3-regression.mjs:4` |
+| `npx oxlint docs/examples/verify-mandaria-webhook.mjs` | Exit 0 |
+| `npm run lint:eslint` | Exit 0 (src, test, prisma) |
+| Ejemplos JSON con Node local, `normalizePrequoteConditions` y `validateSync(plainToInstance(...), {whitelist:true, forbidNonWhitelisted:true})` sobre ConvertPrequoteDto/AcceptDeliveryQuoteDto compilados | Precotización normalizada; conversión y aceptación sin errores DTO. No verifica cobertura, precio, TTL contra reloj DB ni estados reales |
+| `git diff --check` | Exit 0; sólo avisos Git de conversión LF/CRLF, sin errores de whitespace |
+
+El comando Node usa `--test-isolation=none` para estas dos suites puras: ejecución completa sin procesos hijos. No cambia Vitest ni configura E2E; no demuestra la causa del EPERM histórico. Las ejecuciones previas de 27/31 casos se sustituyen por el consolidado final de 32, no se suman.
+
+Durante el desarrollo hubo fallos de aserción/exportación por una fixture de seguridad heredada y por considerar B2B los alias administrativos humanos; corregidos y cubiertos por regresión. Hubo prosa nueva pendiente de catálogo antes de completarlo. Una ejecución inicial de tipos coincidió con `docs:check`, que reconstruye dist, y reportó imports dist ausentes; repetición secuencial aprobada. La primera comprobación ad hoc intentó class-validator sobre CreatePrequoteDto y obtuvo unknownValue: esa clase es sólo documentación; se corrigió el procedimiento usando su normalizador real. Ningún intento fallido cuenta como aprobado. No hubo aborto EPERM en las ejecuciones actuales.
+
+### Archivos de esta entrega
+
+Modificados: `scripts/export-public-b2b.mjs`, `scripts/export-public-b2b.test.mjs`, `package.json`, `README.md`, `BITACORA.md`, `VERIFICATION.md`, `docs/openapi.json`, `docs/openapi-b2b.json`, `src/delivery-prequotes/prequote-conversion.controller.ts`, `src/delivery-prequotes/prequote-conversion.dto.ts`, `src/delivery-prequotes/prequotes.dto.ts`. `docs/API_ACCESS.md` regenerado sin diferencias semánticas.
+
+Nuevos: `scripts/public-b2b-prose.json`, `scripts/webhook-signature-example.test.mjs`, `docs/B2B-PUBLIC-GUIDE.md`, `docs/B2B-WEBHOOKS.md`, `docs/B2B-FRONTEND-HANDOFF.md`, `docs/examples/b2b-flow.json`, `docs/examples/verify-mandaria-webhook.mjs`.
+
+### Límites y pendientes
+
+No se ejecutaron suites unitarias/E2E generales, DB, migraciones, servicios externos ni Docker. No cambios de frontend, configuración operativa, .env, versión, commit, push o despliegue. El borrador temporal de UI y el archivo preexistente `nul` se conservan intactos. `docs/API_ACCESS.md` se regeneró, sin cambio semántico.
+
+Frontend debe integrar portal y administración, verificar permisos/secretos efímeros/descargas y realizar build y revisión visual. Operación debe confirmar origen API absoluto y decidir restricciones de Swagger completo. El origen `https://api.mandaria.example` es ficticio. Permanecen separados los pendientes del piloto, C/A históricos y la deuda DNS rebinding ya documentada. Guía reproducible e inventario: [entrega frontend](docs/B2B-FRONTEND-HANDOFF.md).
+
 ## Piloto — confirmación funcional del operador, 2026-10-01
 
 El propietario confirma pruebas en Android e iOS de Coita Eats 2.1.0, instrucciones correctas en Mandaria web y transmisión por llamada del administrador al repartidor. Confirmación funcional de canales e instrucciones recibida; no ejecución nueva del agente ni identificación de builds/artefactos. No acredita manejo de webhooks duplicados, recuperación de respuesta perdida ni cancelación concurrente.

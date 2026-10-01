@@ -87,7 +87,7 @@ export class PrequoteResponse {
   convertedAt!: string | null;
   @ApiProperty({ type: String, nullable: true })
   deliveryRequestPublicId!: string | null;
-  @ApiProperty({ type: String, nullable: true, enum: [null] })
+  @ApiProperty({ type: String, nullable: true })
   deliveryQuotePublicId!: string | null;
   @ApiProperty({
     enum: [false],

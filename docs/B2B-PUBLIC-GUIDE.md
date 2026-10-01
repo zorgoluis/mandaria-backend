@@ -1,0 +1,93 @@
+# Mandaria — guía pública B2B
+
+Contrato descargable: [openapi-b2b.json](openapi-b2b.json). Ejemplos ficticios; no representan una cuenta, precio garantizado o servicio disponible. Integración exclusivamente servidor a servidor: nunca guardar clientSecret ni el secreto de webhook en la app móvil o JavaScript público.
+
+## Autenticación y permisos
+
+Administración provisiona clientId/clientSecret. POST `/api/v1/integrations/token` recibe ambos y responde `accessToken`, `tokenType: Bearer`, `expiresIn`. Usar `Authorization: Bearer <token>` en peticiones posteriores. Pedir otro token cuando expire; no existe refresh token B2B. La revocación de credencial o suspensión del cliente impide acceso aunque el JWT aún tenga firma válida. El secreto de firma de webhooks es independiente.
+
+| Operación | Scopes necesarios |
+|---|---|
+| POST `/delivery-prequotes` | `prequotes:create` |
+| GET `/delivery-prequotes/{publicId}` | `prequotes:read` |
+| POST `/delivery-prequotes/{publicId}/convert` | **todos**: `prequotes:convert`, `deliveries:create`, `quotes:create` |
+| POST `/delivery-quotes/{publicId}/accept` | `quotes:accept` |
+| Consultar cotizaciones | `quotes:read` |
+| Consultar/listar MDR y `/status` | `deliveries:read` |
+| Cancelar MDR | `deliveries:cancel` |
+
+Las rutas abreviadas de esta guía llevan prefijo `/api/v1`. Los permisos no se conceden automáticamente. La disponibilidad de emisión, conversión y aceptación autorizada se habilita por separado en cada entorno; documentación publicada no equivale a habilitación.
+
+## Flujo vigente de comida prepagada
+
+1. Emitir MPQ con `conditionsVersion: 1`, `LOCAL_DELIVERY`, dos stops PICKUP/1 y DROPOFF/2, paquetes FOOD. No enviar direcciones/contactos ni datos de pago a la precotización. Usar una Idempotency-Key estable para esta intención.
+2. Leer importe decimal, moneda y expiresAt. El precio sólo corresponde al envío. La MPQ no reserva capacidad; la duración de ruta no es una promesa de llegada.
+3. Con ingreso de comida y pedido confirmados por el restaurante, convertir MPQ vigente con otra key estable. Enviar solicitud definitiva PREPAID/MXN/FOOD, condiciones físicas coincidentes y referencias opacas de confirmación. No enviar comprobantes ni datos bancarios. Mandaria recibe declaraciones; no verifica el banco.
+4. Conversión crea **una MDR y una MQ OFFERED**, atómicamente. Conserva precio y vencimiento originales: no obtiene quince minutos adicionales ni calcula otro precio. Una MPQ consumida no se libera al cancelar.
+5. Obtener consentimiento del cliente sobre la **MQ exacta después de la conversión**. El integrador conserva evidencia y atestigua MQ, importe, moneda, vencimiento y fecha de autorización; Mandaria no verifica directamente ese consentimiento.
+6. Aceptar MQ antes de expiresAt, con key propia de aceptación y `customerAuthorization`. Publicación del servicio y aceptación son atómicas. No asegura que ya exista repartidor ni confirma cobro.
+7. Consultar MDR `/status`; procesar `delivery.completed` conforme a la [guía de webhooks](B2B-WEBHOOKS.md).
+
+PREPAID significa comida pagada al restaurante. No adelantar ni volver a cobrar comida. La instrucción persistida es cobrar **sólo envío**, al destinatario, en efectivo, al entregar. Aceptación, entrega física y confirmación financiera de cobro son hechos distintos. Mandaria no ofrece aquí recibos, conciliación ni reembolsos de comida/envío.
+
+Cuerpos completos ficticios: [b2b-flow.json](examples/b2b-flow.json). Las condiciones físicas de emisión y conversión coinciden; los textos/contactos se agregan sólo en conversión. Usar keys distintas como `prequote-demo-order-101-v1`, `convert-demo-order-101-v1` y `accept-demo-order-101-v1`.
+
+### Ejemplo de aceptación (datos ficticios)
+
+Supone MQ-000101 creada a las 12:00Z, vigente hasta las 12:15Z y consentimiento a las 12:01Z; esas fechas ilustran el contrato y no deben reutilizarse para una petición real. Copiar amount/currency/expiresAt de la MQ real, sin redondearlos ni reconstruirlos.
+
+```http
+POST /api/v1/delivery-quotes/MQ-000101/accept
+Authorization: Bearer <token-temporal>
+Idempotency-Key: accept-demo-order-101-v1
+Content-Type: application/json
+```
+
+```json
+{
+  "customerAuthorization": {
+    "version": 1,
+    "status": "AUTHORIZED_BY_CUSTOMER",
+    "reference": "consent-demo-101",
+    "authorizedAt": "2026-10-01T12:01:00Z",
+    "quotePublicId": "MQ-000101",
+    "amount": "25.00",
+    "currency": "MXN",
+    "expiresAt": "2026-10-01T12:15:00Z"
+  }
+}
+```
+
+El JSON descargable contiene cuerpos y restricciones de emisión/conversión y ejemplos sintéticos. En conversión `merchantConfirmation` exige `goodsPaymentStatus=CONFIRMED_BY_MERCHANT`, `goodsPaymentReference`, `goodsPaymentConfirmedAt`, `orderAcceptanceStatus=ACCEPTED_BY_MERCHANT`, `orderAcceptanceReference`, `orderAcceptedAt`. La instrucción es:
+
+```json
+{"payer":"RECIPIENT","method":"CASH","dueAt":"DELIVERY","components":["DELIVERY_FEE"]}
+```
+
+## Vencimiento y nueva secuencia
+
+Si vence después de convertir, no recotizar esa MDR ni modificar precio/expiry. Cancelar la MDR anterior y confirmar **MDR CANCELLED con cancelledAt**, después **status CANCELLED/EXPIRED con deliveredAt null**. El 200 de cancelación no basta: una entrega física previa puede conservar estado público DELIVERED. Ante carrera cancelación/aceptación, consultar el resultado definitivo; no iniciar sucesor si el resultado es incierto o DELIVERED.
+
+Sólo entonces iniciar nueva MPQ → conversión → consentimiento sobre nueva MQ → aceptación. El integrador serializa por pedido y comprueba que siga vigente con el restaurante. `externalReference` NO es única y no impide por sí sola dos envíos. Reiniciar envío no exige otra transferencia de comida ni implica reembolso; la confirmación del restaurante y las devoluciones comerciales se gestionan fuera de Mandaria. No hay sustitución enlazada y atómica.
+
+## Idempotencia y respuestas inciertas
+
+Persistir en el backend cliente la key y el cuerpo de cada intención antes de enviar. Emisión, conversión y aceptación son intenciones diferentes: usar keys distintas entre operaciones. El namespace de creación directa/emisión/conversión es compartido; no reutilizar una key para otra operación. Keys visibles ASCII de 8 a 255 caracteres según contrato.
+
+| Situación | Acción |
+|---|---|
+| Timeout/red sin respuesta en emisión o conversión | Repetir misma key y mismo cuerpo; no inventar otra intención. Consultar recurso si ya se conoce el ID |
+| Aceptación convertida incierta | Repetir key y atestación exactas; consultar MQ y estado MDR. No cambiar authorizedAt al reintentar |
+| Replay emisión/conversión | 200 en vez de 201; mismos vínculos/vigencia, no capacidad nueva |
+| Replay aceptación convertida | 200, `Idempotent-Replayed: true`; no reabre aun tras vencimiento/cancelación o deshabilitación; credencial B2B y scopes vigentes requeridos (no un consentimiento nuevo) |
+| Cancelación incierta | Reintentar sobre misma MDR; conserva fecha/razón si ya estaba cancelada. Confirmar además estado público antes de reemplazar |
+| 409 | Leer `code`, no asumir vencimiento. Key incompatible, intención en curso y conflicto de autorización requieren respuestas diferentes |
+| 429 o `PREQUOTE_IN_PROGRESS` | Respetar `Retry-After` cuando exista; no garantiza éxito al vencer la espera |
+| 503 transitorio | Reintento acotado de la misma intención, sin plazo inventado; no bucle infinito |
+| Intención terminal (`ATTEMPTS_EXHAUSTED`, errores de condiciones/ruta) | Reconciliar estado y corregir causa; no tratarla como timeout que deba repetirse indefinidamente |
+
+Conservar `statusCode`, `code`, `requestId` y cabecera `X-Request-Id` para soporte. No reducir todos los errores a REMOTE_ERROR ni registrar tokens o cuerpos completos. No todo 409 es transitorio. Un replay puede devolver estados actuales vencidos/cancelados: 200 no ordena reiniciar la operación comercial.
+
+## Flujo directo existente
+
+POST MDR → POST cotización → accept sin atestación sigue disponible para el flujo directo permitido. Atestación de aceptación convertida enviada al origen directo se rechaza. CASH/COURIER_ADVANCE conservan sus reglas; no aplicar la instrucción de comida prepagada a todos los pedidos. Las guías no habilitan nuevas capacidades ni modifican sus cálculos.

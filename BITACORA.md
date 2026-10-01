@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación Git autorizada (2026-10-01):** el propietario solicita commit y push del cierre del contrato público B2B en la rama actual `v1.12-B2B_webhook_delivery`. Se prepara el conjunto verificado; se excluye el archivo preexistente `nul`. No se repiten las pruebas de la tarea anterior ni se autoriza despliegue. El resultado del commit/push se confirma mediante Git al finalizar el turno.
+
+- **Contrato público B2B cerrado localmente (2026-10-01):** solicitud posterior autoriza completar exportador y documentación. 15 operaciones aprobadas explícitas, seguridad/referencias/editorial endurecidas; contrato público, guías y entrega interna frontend preparados. 32/32 pruebas específicas, build, docs check, ambos tipos y linters exit 0 (una advertencia Oxlint preexistente). Sólo metadata Swagger en producto; sin frontend, DB, .env, versión, commit/push ni despliegue. Pendientes: implementación UI/portal, origen API y decisión de acceso a Swagger completo; no autoriza piloto. Detalle en VERIFICATION y docs/B2B-FRONTEND-HANDOFF.md. El estado anterior de borrador se conserva como histórico.
+
 - **Webhooks web y portal B2B, cambio de modalidad (2026-10-01):** el propietario indica continuar mediante análisis y prompts para el agente responsable. Implementación detenida. Quedan borradores locales sin integrar: scripts/export-public-b2b.mjs, scripts/export-public-b2b.test.mjs, docs/openapi-b2b.json y .tmp/web-platform/webhooks.tsx (temporal). Frontend sin modificar en esta tarea. Exportación ejecutada; pruebas Node abortadas por EPERM de creación de proceso, no aprobadas. Pendiente revisión y ejecución por agente responsable; sin commit, push ni despliegue.
 
 - **Roadmap consolidado presentado (2026-10-01):** listado original conservado por capacidades y numeración histórica, incorporando V1.13 A–D, cierre local/VM, ensayo de recuperación cerrado y definición reciente del piloto. Apps, ejecución detallada, GPS/tracking y expansión siguen pendientes; numeración futura desplazada no se reasigna sin decisión. Lectura documental, sin nuevas pruebas ni autorización de apertura.
@@ -420,6 +424,22 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-01 — Commit y push solicitados del contrato público B2B
+
+- **Solicitud:** commitear y subir los cambios a la rama actual.
+- **Cambios:** consolidación de exportador, pruebas, contrato, guías, metadata Swagger y continuidad de la tarea anterior; archivo `nul` ajeno excluido.
+- **Verificaciones actuales:** lectura de continuidad, estado/rama/remoto y `git diff --check` aprobado. Resultados 32/32, build, tipos y linters corresponden a la implementación anterior; no se presentan como nuevas ejecuciones.
+- **Resultado:** conjunto preparado para commit/push autorizado; confirmación final por salida Git.
+- **Pendientes:** frontend, origen API y restricción de Swagger permanecen separados. Sin despliegue, cambios de configuración ni activación.
+
+### 2026-10-01 — Cierre del contrato público B2B
+
+- **Solicitud:** completar exportador público, documentación vigente y webhook, comandos y pruebas; entrega para frontend sin implementarlo.
+- **Cambios:** lista explícita de 15 operaciones; seguridad heredada/expresa, rechazo de nuevas operaciones y combinaciones ambiguas; referencias transitivas, exclusión de componentes internos/no usados y catálogo editorial; guías de flujo y webhook, ejemplos ficticios, inventario administrativo y recomendación de origen API. Tres archivos de producto cambian sólo metadata Swagger (aceptación vigente y MQ nullable string). Scripts npm nuevos sin versión ni dependencias nuevas.
+- **Verificaciones actuales:** docs:b2b (incluye build), docs:b2b:check, test:public-b2b 32/32, tsc sin emisión para ambos configs, Oxlint y ESLint exit 0; una advertencia Oxlint preexistente. Ejemplos contrastados con normalizador/DTOs locales sin DB. Diff revisado y diff --check al cierre. Fallos intermedios y repetición secuencial de tipos registrados en VERIFICATION; no se cuentan como éxitos ni se reutiliza el EPERM histórico.
+- **Resultado:** contrato listo para integración de frontend; Swagger completo continúa expuesto según configuración local, propuesta de restricción separada. Lecturas estáticas no equivalen a verificaciones HTTP ni acreditan receptor Coita.
+- **Pendientes:** UI/portal y sus pruebas visuales, origen API aprobado, decisión operativa de acceso Swagger; piloto y verificaciones históricas fuera de alcance. Sin Docker, DB, configuración, .env, commit, push ni despliegue; borrador temporal y archivo nul previo preservados.
 
 ### 2026-10-01 — Roadmap completo actualizado
 
