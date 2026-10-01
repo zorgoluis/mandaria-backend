@@ -32,7 +32,9 @@ Cambiar un endpoint público exige revisar lista explícita en `scripts/export-p
 
 ## Origen de la API y publicación
 
-`servers[0].url` contiene `https://api.mandaria.example`, dominio deliberadamente ficticio. Antes de publicar, definir un origen API absoluto confirmado por operación, sin `/api/v1` porque las rutas ya incluyen el prefijo. Si el portal está en otro dominio, **no usar `/` como servidor**: apuntaría al portal. El frontend puede configurar el visor con el origen aprobado del entorno conservando el artefacto descargable y avisando que su server es un placeholder; si ofrece una descarga adaptada, producirla explícitamente y mantener su trazabilidad. No adivinar el dominio de QA/producción.
+Propietario confirma web **https://mandaria.com.mx** y API **https://mandaria.com.mx/api/v1**. El artefacto usa `servers[0].url=https://mandaria.com.mx`, sin `/api/v1`, porque cada path ya incluye ese prefijo. URL resultante de ejemplo: `https://mandaria.com.mx/api/v1/integrations/token`. No usar una base API prefijada al concatenar paths OpenAPI.
+
+**Frontend debe sincronizar nuevamente `docs/openapi-b2b.json` y estas guías**, retirando cualquier override del dominio ficticio anterior. El visor y la descarga deben conservar el origen absoluto confirmado incluso si el portal se publica en otro dominio; no usar `/` como servidor. Para un entorno distinto, adaptar explícitamente el origen y mantener trazabilidad, sin adivinar dominios. Confirmación del propietario, no verificación remota nueva.
 
 Portal anónimo separado de Protected/AdminLayout y de restauración obligatoria de sesión. No enviar JWT humano, clientSecret o secreto HMAC desde el portal. Recomendación inicial: referencia y ejemplos copiables sin Try it out contra producción. Publicar JSON como `application/json`, no fallback de SPA, comprobar enlaces directos y descarga sin sesión. Versionar artefacto por revisión/build además del número de paquete, que no cambia aquí. La guía de webhooks acompaña al OpenAPI: el JSON 3.0 de rutas entrantes no representa por sí solo el callback saliente.
 
@@ -75,7 +77,14 @@ Configuración no prueba conectividad. Habilitar no garantiza worker activo ni s
 
 `src/setup.ts` registra Swagger completo en `/docs` sin guard explícito. La dependencia instalada sirve además `/docs-json` y `/docs-yaml` por defecto. Lectura actual de `../mandaria-frontend/nginx.conf`: `location /docs` hace proxy al backend y también abarca esas dos rutas, sin restricción de acceso en ese bloque. No se verificó exposición remota en esta tarea. El contrato filtrado no protege esa ruta ni sus recursos JSON por sí solo.
 
-Propuesta para decisión de operación: reservar Swagger completo a acceso administrativo/red privada, restringiendo tanto UI como JSON/YAML y recursos asociados en backend/proxy, y comprobar también acceso directo al puerto backend. Publicar sólo el artefacto filtrado en el portal. No basta ocultar un enlace. Definir acceso de soporte antes de aplicar restricciones; **no se modifica setup de acceso ni nginx aquí**.
+### Propuesta concreta para producción (no aplicada)
+
+1. **Cerrar Swagger completo en el ingreso público:** sustituir en una tarea autorizada el proxy público por denegación (404) de `/docs`, `/docs/` y todos sus recursos, `/docs-json` y `/docs-yaml`. Reservar el prefijo `/docs` para uso interno y bloquear cualquier variante/alias que lo publique. No modificar `/api/v1` ni sus guards.
+2. **Conservar acceso de soporte por túnel SSH:** permitir Swagger completo sólo por la interfaz privada/loopback del backend, accesible mediante túnel de un operador autorizado. El puerto backend no debe admitir conexiones públicas que eludan nginx: comprobar binding y firewall antes de considerar aplicada la restricción. Conservar autenticación SSH individual y revocación de acceso; no introducir claves compartidas en el portal. Estas condiciones son requisitos propuestos, no garantías de la VM actual.
+3. **Portal anónimo separado:** proponer `/developers` y `/developers/openapi-b2b.json` como rutas de publicación, todavía no implementadas. Servir allí sólo el artefacto filtrado y las dos guías públicas, sin login, sin proxy a Swagger completo y sin publicar este handoff administrativo ni `docs/openapi.json`. Descarga JSON real, no fallback HTML. Visor sin ejecución automática ni secretos; inicialmente sin Try it out contra producción.
+4. **Verificación antes de habilitar el cambio:** desde fuera, UI completa, JSON/YAML y assets no disponibles (404); puerto directo inaccesible. Desde túnel, soporte autorizado puede consultar Swagger. Portal y descarga públicos funcionan sin sesión, contienen sólo las 15 operaciones aprobadas y apuntan al origen confirmado. Comprobar HTTPS, rutas directas y que no quede copia del contrato completo en archivos estáticos, CDN o caché pública; invalidar copias administradas si existieran.
+
+La decisión pendiente es aprobar ese modelo de soporte por SSH y designar sus operadores. En esta tarea **no se cambia setup, exposición, nginx, firewall ni frontend**, ni se prueban esos controles remotamente. Ocultar un enlace o el candado Bearer del visor no restringe la descarga del documento.
 
 ## Pruebas pendientes de frontend
 

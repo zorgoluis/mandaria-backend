@@ -2,6 +2,12 @@
 
 Contrato descargable: [openapi-b2b.json](openapi-b2b.json). Ejemplos ficticios; no representan una cuenta, precio garantizado o servicio disponible. Integración exclusivamente servidor a servidor: nunca guardar clientSecret ni el secreto de webhook en la app móvil o JavaScript público.
 
+## Direcciones confirmadas
+
+El propietario confirmó la web https://mandaria.com.mx y la API https://mandaria.com.mx/api/v1. En OpenAPI, `servers.url` es **https://mandaria.com.mx**: todas las rutas ya comienzan con `/api/v1`. Ejemplo: `POST https://mandaria.com.mx/api/v1/integrations/token`. No concatenar la base terminada en `/api/v1` con otra ruta que ya contenga ese prefijo.
+
+El contrato conserva el origen absoluto aunque el portal de documentación se aloje en otro dominio. La confirmación del propietario no constituye una prueba nueva de disponibilidad HTTP/TLS. Los cuerpos, IDs, fechas y credenciales ilustrativas siguen siendo ficticios; no ejecutar ejemplos automáticamente contra producción.
+
 ## Autenticación y permisos
 
 Administración provisiona clientId/clientSecret. POST `/api/v1/integrations/token` recibe ambos y responde `accessToken`, `tokenType: Bearer`, `expiresIn`. Usar `Authorization: Bearer <token>` en peticiones posteriores. Pedir otro token cuando expire; no existe refresh token B2B. La revocación de credencial o suspensión del cliente impide acceso aunque el JWT aún tenga firma válida. El secreto de firma de webhooks es independiente.
@@ -38,6 +44,7 @@ Supone MQ-000101 creada a las 12:00Z, vigente hasta las 12:15Z y consentimiento 
 
 ```http
 POST /api/v1/delivery-quotes/MQ-000101/accept
+Host: mandaria.com.mx
 Authorization: Bearer <token-temporal>
 Idempotency-Key: accept-demo-order-101-v1
 Content-Type: application/json

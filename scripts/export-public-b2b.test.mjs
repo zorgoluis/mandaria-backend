@@ -43,7 +43,7 @@ test('exact independently specified public operations; original source unchanged
   assert.deepEqual(Object.keys(d.components.securitySchemes), [
     'integration-bearer',
   ]);
-  assert.equal(d.servers[0].url, 'https://api.mandaria.example');
+  assert.equal(d.servers[0].url, 'https://mandaria.com.mx');
 });
 for (const [m, p] of [
   ['get', '/api/v1/internal-secret'],
@@ -329,4 +329,21 @@ test('explicit malformed root security is not treated as absent', () => {
   s.security = null;
   delete op(s).security;
   assert.throws(() => publicB2bDocument(s), /Invalid security/);
+});
+
+test('confirmed origin composes every route with exactly one API prefix', () => {
+  const d = publicB2bDocument(source());
+  assert.equal(d.servers.length, 1);
+  assert.equal(new URL(d.servers[0].url).pathname, '/');
+  for (const route of Object.keys(d.paths)) {
+    assert.ok(route.startsWith('/api/v1/'));
+    const endpoint = new URL(d.servers[0].url + route);
+    assert.equal(endpoint.origin, 'https://mandaria.com.mx');
+    assert.equal(decodeURIComponent(endpoint.pathname), route);
+    assert.equal(endpoint.pathname.split('/api/v1').length - 1, 1);
+  }
+  assert.equal(
+    d.servers[0].url + '/api/v1/integrations/token',
+    'https://mandaria.com.mx/api/v1/integrations/token',
+  );
 });

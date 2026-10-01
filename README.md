@@ -6,7 +6,7 @@ Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comp
 
 ## Contrato público B2B y entrega a Frontend
 
-[OpenAPI público descargable](docs/openapi-b2b.json), [guía vigente](docs/B2B-PUBLIC-GUIDE.md), [webhooks salientes](docs/B2B-WEBHOOKS.md) y [entrega administrativa interna a Frontend](docs/B2B-FRONTEND-HANDOFF.md). Ejemplos ficticios; el origen API del JSON es un placeholder explícito. No publica el portal ni cambia acceso al Swagger completo.
+[OpenAPI público descargable](docs/openapi-b2b.json), [guía vigente](docs/B2B-PUBLIC-GUIDE.md), [webhooks salientes](docs/B2B-WEBHOOKS.md) y [entrega administrativa interna a Frontend](docs/B2B-FRONTEND-HANDOFF.md). Web confirmada: https://mandaria.com.mx. API confirmada: https://mandaria.com.mx/api/v1. El JSON usa `servers.url=https://mandaria.com.mx`, porque sus rutas ya incluyen `/api/v1`. Los datos de los ejemplos siguen siendo ficticios. No publica el portal ni cambia acceso al Swagger completo.
 
 - `npm run docs:b2b`: build, OpenAPI completo y exportación pública revisada.
 - `npm run docs:b2b:check`: verifica vigencia contra el código y ambos artefactos, sin sobrescribirlos.

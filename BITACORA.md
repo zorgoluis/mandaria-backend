@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Commit/push del origen confirmado autorizados (2026-10-01):** se prepara la actualización del contrato y guías en `v1.12-B2B_webhook_delivery`. Verificación actual: estado Git y diff --check; 33/33 y build corresponden a la tarea anterior. Confirmación final del envío por salida Git. Frontend debe sincronizar nuevamente; sin despliegue ni cambios de exposición Swagger.
+
+- **Origen público B2B confirmado (2026-10-01):** propietario confirma web https://mandaria.com.mx y API https://mandaria.com.mx/api/v1. Exportador y artefacto usan `servers.url=https://mandaria.com.mx` porque todas las rutas incluyen `/api/v1`. Guía, README y handoff actualizados; frontend debe sincronizar nuevamente contrato y guías. Build/generación, comprobación documental y 33/33 pruebas del contrato/firma aprobados; Oxlint exit 0 con una advertencia preexistente. Propuesta concreta de Swagger privado por túnel SSH y portal B2B público documentada, no aplicada. Sin comprobación remota, cambios frontend/nginx/configuración ni despliegue. Los registros previos de dominio pendiente son históricos.
+
 - **Publicación Git autorizada (2026-10-01):** el propietario solicita commit y push del cierre del contrato público B2B en la rama actual `v1.12-B2B_webhook_delivery`. Se prepara el conjunto verificado; se excluye el archivo preexistente `nul`. No se repiten las pruebas de la tarea anterior ni se autoriza despliegue. El resultado del commit/push se confirma mediante Git al finalizar el turno.
 
 - **Contrato público B2B cerrado localmente (2026-10-01):** solicitud posterior autoriza completar exportador y documentación. 15 operaciones aprobadas explícitas, seguridad/referencias/editorial endurecidas; contrato público, guías y entrega interna frontend preparados. 32/32 pruebas específicas, build, docs check, ambos tipos y linters exit 0 (una advertencia Oxlint preexistente). Sólo metadata Swagger en producto; sin frontend, DB, .env, versión, commit/push ni despliegue. Pendientes: implementación UI/portal, origen API y decisión de acceso a Swagger completo; no autoriza piloto. Detalle en VERIFICATION y docs/B2B-FRONTEND-HANDOFF.md. El estado anterior de borrador se conserva como histórico.
@@ -424,6 +428,22 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-01 — Publicación Git del origen B2B confirmado
+
+- **Solicitud:** commit y push a la rama actual.
+- **Cambios:** consolidar los ocho archivos de origen público, prueba de prefijo, guías y continuidad; excluir `nul` preexistente.
+- **Verificaciones actuales:** lectura de continuidad, rama/remoto/estado y diff --check aprobado. Sin repetir pruebas de la implementación anterior.
+- **Resultado:** conjunto preparado para commit y push autorizados; resultado definitivo comprobado mediante Git al finalizar el turno.
+- **Pendientes:** sincronización frontend y aprobación de restricción Swagger; sin despliegue ni activación.
+
+### 2026-10-01 — Origen público confirmado y propuesta de restricción Swagger
+
+- **Solicitud:** sustituir dominio ficticio por el origen aprobado, comprobar prefijo, regenerar/verificar contrato y concretar propuesta Swagger sin aplicarla.
+- **Cambios:** exportador, prueba de composición URL sin prefijo duplicado, artefacto público, guía B2B, handoff y README. Web/API confirmadas por propietario; ejemplos de negocio siguen ficticios. Se propone negar `/docs*` en ingreso público, acceso de soporte por túnel SSH y publicar sólo contrato filtrado en `/developers` (ruta propuesta, no implementada).
+- **Verificaciones actuales:** `npm run docs:b2b` (incluye build), `npm run test:public-b2b` 33/33, `npm run docs:b2b:check`, `npm run lint`: exit 0; Oxlint conserva advertencia ajena en verificador C3. Revisión del diff y `git diff --check`. Primer intento del nuevo test falló por codificación URL de llaves del parámetro; aserción corregida para comparar pathname decodificado. Sin EPERM ni casos omitidos.
+- **Resultado:** contrato actualizado localmente, conserva 15 operaciones; frontend debe volver a sincronizar el artefacto y retirar override del dominio ficticio.
+- **Pendientes:** implementar/verificar frontend y aprobar modelo de acceso interno Swagger. No cambia exposición actual ni nginx; sin servicios externos, DB, Docker, versión, commit, push o despliegue.
 
 ### 2026-10-01 — Commit y push solicitados del contrato público B2B
 

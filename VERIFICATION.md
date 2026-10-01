@@ -1,3 +1,25 @@
+## Origen público B2B confirmado — 2026-10-01
+
+**Actualización local aprobada.** Fuente de direcciones: confirmación del propietario, no prueba HTTP/TLS remota. Web https://mandaria.com.mx; base API https://mandaria.com.mx/api/v1. Se verificó que todas las rutas OpenAPI ya contienen `/api/v1`; `servers.url` queda en `https://mandaria.com.mx`. Las 15 operaciones, seguridad y esquemas no cambian.
+
+Archivos modificados: `scripts/export-public-b2b.mjs`, `scripts/export-public-b2b.test.mjs`, `docs/openapi-b2b.json`, `docs/B2B-PUBLIC-GUIDE.md`, `docs/B2B-FRONTEND-HANDOFF.md`, `README.md`, `BITACORA.md`, `VERIFICATION.md`. OpenAPI completo y API_ACCESS regenerados sin diferencias semánticas.
+
+Verificaciones **ejecutadas en esta tarea**:
+
+| Comando | Resultado |
+|---|---|
+| `npm run docs:b2b` | Exit 0, incluye Nest build y generación |
+| `npm run test:public-b2b` | Exit 0, 33/33: 29 exportador + 4 firma, sin omitidos/cancelados |
+| `npm run docs:b2b:check` | Exit 0, documentación completa y pública vigentes |
+| `npm run lint` | Exit 0; advertencia preexistente `readFileSync` sin uso en verificador C3 |
+| `git diff --check` | Exit 0 al cierre |
+
+El test nuevo comprueba composición de todas las rutas con el origen confirmado y un único `/api/v1`; la primera ejecución dio 32/33 por comparar llaves de plantilla con su codificación URL `%7B/%7D`. Se corrigió la aserción con pathname decodificado y se ejecutaron ambos archivos completos: 33/33. No se suma el intento fallido al consolidado ni se atribuye a EPERM. Tipos/ESLint/E2E generales no se repitieron: no cambió TypeScript de producto; resultados anteriores quedan históricos.
+
+Propuesta, **no aplicada**: ingreso público niega Swagger completo UI/JSON/YAML/assets; soporte accede por túnel SSH a backend privado sin puerto público que eluda el proxy; portal y descarga filtrada permanecen anónimos en rutas propuestas `/developers`. Criterios de verificación y aprobación pendientes en el handoff. No modificaciones de nginx, setup, frontend, .env, versión ni base; sin servicios reales, Docker, commit/push/despliegue.
+
+**Frontend debe sincronizar nuevamente contrato y guías**, conservar el origen absoluto incluso en otro dominio y retirar overrides ficticios. La confirmación de origen resuelve ese pendiente del informe anterior; no resuelve exposición Swagger ni acredita el piloto. Historial anterior conservado a continuación.
+
 ## Contrato público B2B — cierre local, 2026-10-01
 
 **Resultado: contrato y guías completados en el alcance solicitado; frontend y publicación pendientes.** Node v24.15.0, npm 11.12.1, Windows local. Versión del paquete intacta (1.12.0). No es una nueva acreditación del piloto ni de un receptor externo.

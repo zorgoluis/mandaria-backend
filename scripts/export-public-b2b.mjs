@@ -412,9 +412,9 @@ export function publicB2bDocument(source) {
     },
     servers: [
       {
-        url: 'https://api.mandaria.example',
+        url: 'https://mandaria.com.mx',
         description:
-          'Origen ficticio. Sustituir por el origen API confirmado del entorno, sin /api/v1; las rutas ya incluyen ese prefijo.',
+          'Origen público confirmado por el propietario. Las rutas ya incluyen /api/v1; no añadir ese prefijo a servers.url.',
       },
     ],
     paths,
