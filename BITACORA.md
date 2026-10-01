@@ -4,6 +4,11 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Corrección de restauración de precotizaciones (2026-10-01):** nueva migración `20261001000100_prequote_restore_search_path` fija `pg_catalog, public` para validador y canonicalizador recursivo. No modifica datos ni migraciones históricas. Regresión local PostgreSQL 18.6 aislado: cuatro comprobaciones aprobadas (reproducción, corrección, dump/restore normal con fila sintética y rechazo de fila inválida); clúster detenido. Pendiente aplicar en VM PostgreSQL 17 mediante despliegue, sin nuevo reset. Sin commit/push ni acceso remoto.
+- **Evidencia del operador, sesión 2026-10-01:** reset QA ejecutado con respaldo cifrado externo recuperado; restauración de ensayo requirió corregir search_path en dos funciones, conteos/migraciones coincidentes, créditos sin incidencias y 1/1 secreto descifrado. Base original recreada, 29/29 migraciones, conteos comerciales consultados cero y un SUPER_ADMIN; backend/frontend healthy. Propietario pidió retirar mantenimiento: tres flags PREQUOTE true y polling configurado 15 s. Son resultados aportados por operador, no ejecuciones locales de esta tarea. Los registros de preparación siguientes son históricos.
+
+- **Reinicio QA en VM — preparación (2026-10-01):** propietario autoriza preparar reinicio completo, sin ejecutarlo. Runbook en docs/PRODUCTION-QA-DATABASE-RESET-RUNBOOK.md: identidad cluster/base/OID, congelación de escritores, backup externo cifrado y restauración previa, DROP sólo de la base confirmada, migraciones explícitas y bootstrap SUPER_ADMIN real, conservación de máximos MDR/MQ/MPQ, validación y rollback. No uso Redis acreditado; no FLUSH. Entry point migra automáticamente, seeds logísticos locales no aptos. Reapertura separada de reset; pendientes inventario/configuración efectiva y gates en VM. Revisión estática y sintaxis Bash de 16 bloques únicamente, sin comandos operativos ejecutados.
+
 - **Commit/push del origen confirmado autorizados (2026-10-01):** se prepara la actualización del contrato y guías en `v1.12-B2B_webhook_delivery`. Verificación actual: estado Git y diff --check; 33/33 y build corresponden a la tarea anterior. Confirmación final del envío por salida Git. Frontend debe sincronizar nuevamente; sin despliegue ni cambios de exposición Swagger.
 
 - **Origen público B2B confirmado (2026-10-01):** propietario confirma web https://mandaria.com.mx y API https://mandaria.com.mx/api/v1. Exportador y artefacto usan `servers.url=https://mandaria.com.mx` porque todas las rutas incluyen `/api/v1`. Guía, README y handoff actualizados; frontend debe sincronizar nuevamente contrato y guías. Build/generación, comprobación documental y 33/33 pruebas del contrato/firma aprobados; Oxlint exit 0 con una advertencia preexistente. Propuesta concreta de Swagger privado por túnel SSH y portal B2B público documentada, no aplicada. Sin comprobación remota, cambios frontend/nginx/configuración ni despliegue. Los registros previos de dominio pendiente son históricos.
@@ -428,6 +433,14 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-01 — Preparación de reinicio completo QA sin ejecución
+
+- **Solicitud:** diseñar reinicio de la base Mandaria en VM con respaldo verificado, parada segura, bootstrap, limpieza acotada y recuperación; sin intervención remota.
+- **Cambios:** runbook por etapas y enlace README. Incluye condiciones de parada, comparación de migraciones (29 en checkout), aislamiento, custodia de configuración/clave maestra, ensayo de restauración con conteos/invariantes/descifrado, reset exclusivo de base y comandos de recuperación. Preservar sólo máximos de secuencias públicas evita reutilizar referencias; no presupone datos comerciales válidos en seeds.
+- **Verificaciones actuales:** lectura de migraciones/schema/seeds/entrypoint/Dockerfile/Compose/configuración/workers/mail/dependencias; 16 bloques Bash analizados con bash -n (sin ejecución), diff --check. Primer intento de parser bloqueado por señal/Win32 error 5 del sandbox; ejecución local con permisos ampliados aprobó sintaxis. No validación SQL ni Docker/PostgreSQL reales.
+- **Resultado:** procedimiento preparado, NO ejecutado y condicionado a verificaciones del entorno efectivo. Compose local difiere de antecedentes VM; no inferir topología actual. No cliente Redis encontrado; mantenerlo intacto salvo evidencia futura de claves exclusivas.
+- **Pendientes:** ventana y coordinación de integradores por propietario; identidad/imagen/backup/clave/espacio verificados; recreación comercial y acceso real de admin; aprobación de reapertura. Sin .env, datos, archivos operativos, Docker, Coita, remoto, commit, push o despliegue modificados/ejecutados.
 
 ### 2026-10-01 — Publicación Git del origen B2B confirmado
 
@@ -1911,3 +1924,16 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Cambios: borrador de exportador OpenAPI público filtrado, pruebas del exportador, contrato generado y componente webhook temporal sin integrar. Actualización de continuidad para traspaso; no se modificó el repositorio frontend.
 - Verificaciones actuales: lectura de continuidad, contratos backend y estructura frontend; ejecución del exportador completada. Intento de pruebas Node abortado por EPERM al crear proceso; no acredita pruebas aprobadas. No build ni comprobación visual de estos borradores.
 - Resultado: implementación detenida conforme a la nueva modalidad. Preparar prompts revisables, conservar borradores como trabajo incompleto. Pendientes: revisar filtrado y referencias del contrato, documentación V1.13, integrar UI, pruebas y build por el agente responsable. Sin Docker, acceso a Coita, commit, push ni despliegue.
+
+### 2026-10-01 — Corrección permanente del search_path de precotizaciones
+
+- Solicitud: corregir directamente y con verificación acotada el fallo observado al restaurar el respaldo QA.
+- Cambios: nueva migración ALTER FUNCTION, regresión reproducible aislada y continuidad README/VERIFICATION/estado actual. Conservados cambios previos del runbook y archivo nul.
+- Verificación: cuatro comprobaciones de regresión PostgreSQL 18.6 aprobadas con dump/restore real del fixture; Oxlint y diff --check. Intentos de infraestructura fallidos distinguidos en VERIFICATION.
+- Resultado: corrección local lista, sin alterar datos ni relajar CHECK. Pendiente commit/push y despliegue autorizado en VM PG17; no hace falta resetear otra vez. No Docker, Coita ni acciones remotas.
+
+### 2026-10-01 — Commit y push de corrección de restauración
+
+- Solicitud: propietario autoriza commit y push en la rama actual main.
+- Alcance: migración correctiva, regresión aislada, continuidad y runbook de reinicio QA previamente preparado. Archivo nul excluido.
+- Verificación actual: revisión de estado/diff y diff --check; pruebas PostgreSQL corresponden a la tarea inmediatamente anterior, no repetidas. Resultado de commit/push se confirmará por Git. Sin despliegue ni cambios en VM.

@@ -1,3 +1,23 @@
+## Preparación de reinicio QA en VM — 2026-10-01
+
+**DOCUMENTACIÓN PREPARADA; OPERACIÓN NO EJECUTADA.** Runbook: [PRODUCTION-QA-DATABASE-RESET-RUNBOOK.md](docs/PRODUCTION-QA-DATABASE-RESET-RUNBOOK.md). Archivos cambiados: ese documento nuevo, README, BITACORA y VERIFICATION.
+
+### Evidencia estática actual
+
+29 directorios de migración; triggers/constraints hacen inapropiado truncar/limpiar ledger. Entry point aplica migrate deploy con reintentos y bootstrap opcional. Bootstrap real sólo crea SUPER_ADMIN, no cambia contraseña existente; seeds logísticos son LOCAL/TEST ONLY. Imagen conserva CLI Prisma y bootstrap compilado, no devDependencies/config TS de Prisma. Defaults del Compose local no garantizan producción y su topología no coincide íntegramente con antecedentes VM. Polling=0 no evita nudges/envío manual: detener escritores y cerrar ingreso. No Redis/Bull encontrado en código/dependencias; colas/idempotencia/consumos persistidos en PG. Secuencias públicas reiniciadas pueden colisionar con referencias QA: runbook conserva máximos sin restaurar negocio.
+
+### Comprobaciones ejecutadas
+
+- Lecturas locales selectivas de código/configuración de ejemplo, sin .env ni secretos.
+- `bash --noprofile --norc -n` sobre los **16 bloques Bash** del documento, alimentados por stdin: exit 0. No ejecuta Docker, SQL ni contenido de los bloques. Primer intento restringido falló por creación de signal pipe/Win32 error 5; no fue un error de sintaxis. Revisión local posterior con permisos ampliados completada.
+- `git diff --check` y comprobación de whitespace del documento nuevo al cierre.
+
+No build, tests de aplicación, conexión PostgreSQL, Docker, ejecución remota, dump, restore, reset, cambio de configuración operativa, commit/push o despliegue. Sintaxis Bash no acredita validez operativa ni permisos/SQL en la VM. La evidencia histórica de restauración no sustituye ensayo del nuevo respaldo de corte.
+
+### Pendientes antes de intervenir
+
+Confirmar host/cluster/OID/base e imagen, todas las réplicas/jobs y Compose efectivos; custodiar config y claves fuera de VM; parar escritores; restaurar backup recuperado del almacenamiento externo y verificar conteos/migraciones/ledger/descifrado. Parar ante metadata DB no soportada por la variante, discrepancias o servicios desconocidos. Gate destructivo manual independiente; vuelta a servicio sólo con admin real, configuración comercial recreada y coordinación del integrador. No acceso a Coita ni aceptación de riesgo implícita.
+
 ## Origen público B2B confirmado — 2026-10-01
 
 **Actualización local aprobada.** Fuente de direcciones: confirmación del propietario, no prueba HTTP/TLS remota. Web https://mandaria.com.mx; base API https://mandaria.com.mx/api/v1. Se verificó que todas las rutas OpenAPI ya contienen `/api/v1`; `servers.url` queda en `https://mandaria.com.mx`. Las 15 operaciones, seguridad y esquemas no cambian.
@@ -2379,3 +2399,11 @@ Cambio posterior al CHECK FINAL histórico: SMTP y Nodemailer sustituidos por Re
 # Seguimiento MVP — reconciliación documental (2026-09-30)
 
 Las siete huellas pendientes del informe MVP quedan reconciliadas: SHA-256 histórico reconstruido exactamente desde Git mediante finales de línea mixtos, sin diferencias de contenido normalizado. Ver `docs/checks/mvp-closure-fingerprint-reconciliation.json` y `scripts/reconcile-mvp-fingerprints.mjs`. Verificador y consolidación documental exit 0. Sin nuevas pruebas funcionales ni verificaciones remotas; se mantienen conteos históricos y el B2B 15/15 de la tarea anterior. Dictamen global NO LISTO por preparación operativa, no por estas siete huellas. No se acredita causa de abortos históricos. El estado PARTIAL de informes previos se conserva como histórico; sus pendientes locales de archivo B2B y huellas están subsanados por los seguimientos MVP.
+
+## 2026-10-01 — Regresión de restauración de precotizaciones
+
+- Cambio: nueva migración 20261001000100_prequote_restore_search_path. ALTER FUNCTION fija search_path = pg_catalog, public en prequote_canonical_json(jsonb) y prequote_conditions_valid(jsonb). Sin cambios de datos, definición del CHECK, funciones históricas ni versión de paquete.
+- Comando ejecutado: node scripts/test-prequote-restore.mjs "C:/Program Files/PostgreSQL/18/bin". Exit 0, cuatro comprobaciones aprobadas: reproduce fallo con búsqueda vacía; aplica migración sobre fila existente; pg_dump -Fc y pg_restore --single-transaction sin adaptar el dump; conserva JSON y rechaza cantidad inválida mediante CHECK.
+- Alcance: PostgreSQL 18.6 local, clúster temporal en loopback y puerto efímero, datos sintéticos, dos funciones históricas y tabla mínima con el CHECK real. No es una suite integral ni prueba de todas las migraciones/tabla productiva. Clúster detenido; base principal, .env y VM intactos. Producción usa PG17 y queda pendiente aplicar la migración allí.
+- Intentos previos no aprobados: EPERM en sandbox; tuberías heredadas de pg_ctl en Windows (corregidas, clúster detenido); un fallo UNKNOWN al iniciar pg_dump. Verificado binario y repetición final completa exit 0.
+- Oxlint del script y git diff --check ejecutados. No build de aplicación: cambio SQL y herramienta de regresión, sin cambios TypeScript.
