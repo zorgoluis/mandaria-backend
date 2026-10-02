@@ -80,11 +80,14 @@ export const driverDispatchSelect = {
     },
   },
   deliveryAssignments: {
-    where: { status: 'ACTIVE' },
+    where: { status: { in: ['ACTIVE', 'COMPLETED', 'RETURNED'] } },
+    orderBy: { assignedAt: 'desc' },
     take: 1,
     select: {
       id: true,
       mode: true,
+      custodyResolutionId: true,
+      status: true,
       assignedAt: true,
       driverId: true,
       vehicle: {
@@ -117,7 +120,10 @@ export function driverDispatchView(
   now = new Date(),
 ) {
   const status = effectiveDispatchStatus(dispatch, now);
-  const owner = dispatch.claimedByIndependentDriverId === driverId;
+  const receiver = dispatch.deliveryAssignments[0];
+  const owner = receiver?.custodyResolutionId
+    ? receiver.mode === 'INDEPENDENT' && receiver.driverId === driverId
+    : dispatch.claimedByIndependentDriverId === driverId;
   const access: 'OWNER' | 'OFFER' = owner ? 'OWNER' : 'OFFER';
   const quote = dispatch.deliveryQuote;
   const request = dispatch.deliveryRequest;
@@ -161,7 +167,9 @@ export function driverDispatchView(
     creditCost: creditCostFor(dispatch.creditSnapshots, 'INDEPENDENT_DRIVER'),
     // Only ever my own assignment: a driver never learns who else is executing a service.
     assignment:
-      owner && assignment?.driverId === driverId
+      owner &&
+      assignment?.driverId === driverId &&
+      assignment.status === 'ACTIVE'
         ? {
             id: assignment.id,
             mode: assignment.mode,

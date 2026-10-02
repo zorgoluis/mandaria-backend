@@ -34602,6 +34602,7 @@
             "schema": {
               "type": "string",
               "enum": [
+                "RETURNED",
                 "OPEN",
                 "CLAIMED",
                 "EXPIRED",
@@ -37036,6 +37037,7 @@
             "schema": {
               "type": "string",
               "enum": [
+                "RETURNED",
                 "OPEN",
                 "CLAIMED",
                 "EXPIRED",
@@ -56196,6 +56198,908 @@
           "quotes:create"
         ]
       }
+    },
+    "/api/v1/admin/custody-incidents": {
+      "get": {
+        "operationId": "AdminExecutionController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "OPEN",
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "RESOLVED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cola persistente de incidencias abiertas; sin envío automático de correo",
+        "tags": [
+          "Admin Custody"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/dispatches/{dispatchId}/custody-incidents/{incidentId}": {
+      "get": {
+        "operationId": "AdminExecutionController_incident",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentDetailResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Auditoría privada de incidencia y resolución; sólo SUPER_ADMIN",
+        "tags": [
+          "Admin Custody"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/dispatches/{dispatchId}/custody-transfer-candidates": {
+      "get": {
+        "operationId": "AdminExecutionController_candidates",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "mode",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "FLEET",
+              "type": "string",
+              "enum": [
+                "FLEET",
+                "INDEPENDENT"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferCandidatePageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pares elegibles de conductor y vehículo; disponibilidad revalidada al resolver",
+        "tags": [
+          "Admin Custody"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/dispatches/{dispatchId}/execution": {
+      "get": {
+        "operationId": "AdminExecutionController_detail",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionDetailResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Auditar progreso sin suplantar al ejecutor",
+        "tags": [
+          "Admin Custody"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/dispatches/{dispatchId}/custody-incidents": {
+      "post": {
+        "operationId": "AdminExecutionController_report",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID durable por intención. Repetir exactamente tras respuesta incierta.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportCustodyIncidentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentCreatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, revisión, campos o confirmaciones inválidos."
+          },
+          "401": {
+            "description": "Autenticación humana requerida."
+          },
+          "403": {
+            "description": "Rol o membership no autorizado."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "Sin efectos parciales: EXECUTION_CONFLICT, EXECUTION_TRANSITION_INVALID, CUSTODY_INCIDENT_REQUIRED, CUSTODY_INCIDENT_OPEN, INCIDENT_ALREADY_OPEN, INCIDENT_ALREADY_RESOLVED, CUSTODY_RECIPIENT_NOT_ELIGIBLE, IDEMPOTENCY_KEY_REUSED. Consultar estado y reutilizar clave y cuerpo ante respuesta incierta."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar escalamiento recibido de custodia",
+        "tags": [
+          "Admin Custody"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/dispatches/{dispatchId}/custody-incidents/{incidentId}/resolve": {
+      "post": {
+        "operationId": "AdminExecutionController_resolve",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "incidentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID durable por intención. Repetir exactamente tras respuesta incierta.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveCustodyIncidentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolutionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, revisión, campos o confirmaciones inválidos."
+          },
+          "401": {
+            "description": "Autenticación humana requerida."
+          },
+          "403": {
+            "description": "Rol o membership no autorizado."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "Sin efectos parciales: EXECUTION_CONFLICT, EXECUTION_TRANSITION_INVALID, CUSTODY_INCIDENT_REQUIRED, CUSTODY_INCIDENT_OPEN, INCIDENT_ALREADY_OPEN, INCIDENT_ALREADY_RESOLVED, CUSTODY_RECIPIENT_NOT_ELIGIBLE, IDEMPOTENCY_KEY_REUSED. Consultar estado y reutilizar clave y cuerpo ante respuesta incierta."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolver por devolución confirmada o transferencia; sin cargo/refund automático",
+        "tags": [
+          "Admin Custody"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/driver/dispatches/{dispatchId}/execution": {
+      "get": {
+        "operationId": "DriverExecutionController_detail",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionDetailResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar progreso independiente propio",
+        "tags": [
+          "Independent Execution"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
+    "/api/v1/driver/dispatches/{dispatchId}/execution-events": {
+      "post": {
+        "operationId": "DriverExecutionController_advance",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID durable por intención. Repetir exactamente tras respuesta incierta.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceExecutionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, revisión, campos o confirmaciones inválidos."
+          },
+          "401": {
+            "description": "Autenticación humana requerida."
+          },
+          "403": {
+            "description": "Rol o membership no autorizado."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "Sin efectos parciales: EXECUTION_CONFLICT, EXECUTION_TRANSITION_INVALID, CUSTODY_INCIDENT_REQUIRED, CUSTODY_INCIDENT_OPEN, INCIDENT_ALREADY_OPEN, INCIDENT_ALREADY_RESOLVED, CUSTODY_RECIPIENT_NOT_ELIGIBLE, IDEMPOTENCY_KEY_REUSED. Consultar estado y reutilizar clave y cuerpo ante respuesta incierta."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar siguiente hito del independiente",
+        "tags": [
+          "Independent Execution"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
+    "/api/v1/driver/dispatches/{dispatchId}/custody-incidents": {
+      "post": {
+        "operationId": "DriverExecutionController_report",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID durable por intención. Repetir exactamente tras respuesta incierta.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportCustodyIncidentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentCreatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, revisión, campos o confirmaciones inválidos."
+          },
+          "401": {
+            "description": "Autenticación humana requerida."
+          },
+          "403": {
+            "description": "Rol o membership no autorizado."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "Sin efectos parciales: EXECUTION_CONFLICT, EXECUTION_TRANSITION_INVALID, CUSTODY_INCIDENT_REQUIRED, CUSTODY_INCIDENT_OPEN, INCIDENT_ALREADY_OPEN, INCIDENT_ALREADY_RESOLVED, CUSTODY_RECIPIENT_NOT_ELIGIBLE, IDEMPOTENCY_KEY_REUSED. Consultar estado y reutilizar clave y cuerpo ante respuesta incierta."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reportar incidencia del independiente bajo custodia",
+        "tags": [
+          "Independent Execution"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
+    "/api/v1/provider/dispatches/{dispatchId}/execution": {
+      "get": {
+        "operationId": "ProviderExecutionController_detail",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "UUID del proveedor; requerido si el operador tiene múltiples memberships.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionDetailResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Progreso e historial del ejecutor vigente",
+        "tags": [
+          "Provider Execution"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/provider/dispatches/{dispatchId}/execution-events": {
+      "post": {
+        "operationId": "ProviderExecutionController_advance",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID durable por intención. Repetir exactamente tras respuesta incierta.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "UUID del proveedor; requerido si el operador tiene múltiples memberships.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceExecutionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, revisión, campos o confirmaciones inválidos."
+          },
+          "401": {
+            "description": "Autenticación humana requerida."
+          },
+          "403": {
+            "description": "Rol o membership no autorizado."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "Sin efectos parciales: EXECUTION_CONFLICT, EXECUTION_TRANSITION_INVALID, CUSTODY_INCIDENT_REQUIRED, CUSTODY_INCIDENT_OPEN, INCIDENT_ALREADY_OPEN, INCIDENT_ALREADY_RESOLVED, CUSTODY_RECIPIENT_NOT_ELIGIBLE, IDEMPOTENCY_KEY_REUSED. Consultar estado y reutilizar clave y cuerpo ante respuesta incierta."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar siguiente hito reportado por teléfono; no acredita cobro",
+        "tags": [
+          "Provider Execution"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/provider/dispatches/{dispatchId}/custody-incidents": {
+      "post": {
+        "operationId": "ProviderExecutionController_report",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID durable por intención. Repetir exactamente tras respuesta incierta.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "UUID del proveedor; requerido si el operador tiene múltiples memberships.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportCustodyIncidentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentCreatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, revisión, campos o confirmaciones inválidos."
+          },
+          "401": {
+            "description": "Autenticación humana requerida."
+          },
+          "403": {
+            "description": "Rol o membership no autorizado."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "Sin efectos parciales: EXECUTION_CONFLICT, EXECUTION_TRANSITION_INVALID, CUSTODY_INCIDENT_REQUIRED, CUSTODY_INCIDENT_OPEN, INCIDENT_ALREADY_OPEN, INCIDENT_ALREADY_RESOLVED, CUSTODY_RECIPIENT_NOT_ELIGIBLE, IDEMPOTENCY_KEY_REUSED. Consultar estado y reutilizar clave y cuerpo ante respuesta incierta."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reportar incidencia postrecogida y mantener custodia",
+        "tags": [
+          "Provider Execution"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
     }
   },
   "info": {
@@ -57777,6 +58681,72 @@
           "vehicle"
         ]
       },
+      "ExecutionResponse": {
+        "type": "object",
+        "properties": {
+          "trackingMode": {
+            "type": "string",
+            "enum": [
+              "DETAILED"
+            ]
+          },
+          "revision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "TO_PICKUP",
+              "AT_PICKUP",
+              "PICKED_UP",
+              "TO_DROPOFF",
+              "AT_DROPOFF"
+            ],
+            "nullable": true
+          },
+          "activeAssignmentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "custodyStatus": {
+            "type": "string",
+            "enum": [
+              "NOT_COLLECTED",
+              "HELD",
+              "RETURNED",
+              "DELIVERED"
+            ]
+          },
+          "openIncidentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "allowedActions": {
+            "description": "Acciones autorizadas para esta superficie; no acredita cobro. Revalidar siempre en servidor.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lastRecordedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "trackingMode",
+          "revision",
+          "phase",
+          "activeAssignmentId",
+          "custodyStatus",
+          "openIncidentId",
+          "allowedActions",
+          "lastRecordedAt"
+        ]
+      },
       "CollectionDeliveryFeeResponse": {
         "type": "object",
         "properties": {
@@ -57873,6 +58843,22 @@
       "DriverSelfActiveDeliveryAssignmentResponse": {
         "type": "object",
         "properties": {
+          "execution": {
+            "description": "Ausente en legacy. Repartidor de flotilla consulta con allowedActions vacío; reporta por teléfono a su administrador.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExecutionResponse"
+              }
+            ]
+          },
+          "collectionActionAllowed": {
+            "type": "boolean",
+            "description": "Instrucción vigente de cobro, no confirmación de pago."
+          },
+          "advanceToOriginAllowed": {
+            "type": "boolean",
+            "description": "false desde recogida; no repetir adelantos históricos."
+          },
           "collectionInstructions": {
             "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
             "allOf": [
@@ -58885,6 +59871,60 @@
           "items"
         ]
       },
+      "PublicExecutionProgressResponse": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "TO_PICKUP",
+              "AT_PICKUP",
+              "PICKED_UP",
+              "TO_DROPOFF",
+              "AT_DROPOFF"
+            ],
+            "nullable": true
+          },
+          "revision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "registeredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "attentionRequired": {
+            "type": "boolean",
+            "description": "Requiere atención operativa. No expone motivo, actores ni contactos privados."
+          }
+        },
+        "required": [
+          "phase",
+          "revision",
+          "registeredAt",
+          "attentionRequired"
+        ]
+      },
+      "PublicExecutionOutcomeResponse": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "RETURNED_TO_ORIGIN"
+            ]
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Devolución física declarada; no implica devolución de dinero o créditos."
+          }
+        },
+        "required": [
+          "type",
+          "occurredAt"
+        ]
+      },
       "PublicExecutionNameResponse": {
         "type": "object",
         "properties": {
@@ -58939,6 +59979,26 @@
       "DeliveryStatusResponse": {
         "type": "object",
         "properties": {
+          "executionProgress": {
+            "nullable": true,
+            "description": "Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar revision para evitar retrocesos entre respuestas.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicExecutionProgressResponse"
+              }
+            ]
+          },
+          "executionOutcome": {
+            "nullable": true,
+            "description": "RETURNED_TO_ORIGIN acompaña CANCELLED y deliveredAt=null. Consultar por polling; no se emite delivery.completed ni nuevos webhooks.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicExecutionOutcomeResponse"
+              }
+            ]
+          },
           "publicId": {
             "type": "string",
             "example": "MDR-000123",
@@ -60971,6 +62031,22 @@
       "ProviderDispatchResponse": {
         "type": "object",
         "properties": {
+          "execution": {
+            "description": "Sólo ejecutor vigente de asignación detallada; ausente en legacy y ofertas.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExecutionResponse"
+              }
+            ]
+          },
+          "collectionActionAllowed": {
+            "type": "boolean",
+            "description": "Acción logística de cobrar habilitada sólo en AT_DROPOFF sin incidencia. No confirma pago."
+          },
+          "advanceToOriginAllowed": {
+            "type": "boolean",
+            "description": "false después de recogida, incluida transferencia. Los importes de adelanto siguen siendo históricos."
+          },
           "collectionInstructions": {
             "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
             "allOf": [
@@ -60995,6 +62071,7 @@
           "status": {
             "type": "string",
             "enum": [
+              "RETURNED",
               "OPEN",
               "CLAIMED",
               "EXPIRED",
@@ -61484,6 +62561,7 @@
           "status": {
             "type": "string",
             "enum": [
+              "RETURNED",
               "OPEN",
               "CLAIMED",
               "EXPIRED",
@@ -62407,6 +63485,8 @@
           "status": {
             "type": "string",
             "enum": [
+              "RETURNED",
+              "TRANSFERRED",
               "ACTIVE",
               "REASSIGNED",
               "CANCELLED",
@@ -62555,6 +63635,8 @@
           "status": {
             "type": "string",
             "enum": [
+              "RETURNED",
+              "TRANSFERRED",
               "ACTIVE",
               "REASSIGNED",
               "CANCELLED",
@@ -62864,6 +63946,8 @@
           "status": {
             "type": "string",
             "enum": [
+              "RETURNED",
+              "TRANSFERRED",
               "ACTIVE",
               "REASSIGNED",
               "CANCELLED",
@@ -63536,6 +64620,22 @@
       "DriverDispatchResponse": {
         "type": "object",
         "properties": {
+          "execution": {
+            "description": "Sólo ejecutor vigente de asignación detallada; ausente en legacy y ofertas.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExecutionResponse"
+              }
+            ]
+          },
+          "collectionActionAllowed": {
+            "type": "boolean",
+            "description": "Acción logística de cobrar habilitada sólo en AT_DROPOFF sin incidencia. No confirma pago."
+          },
+          "advanceToOriginAllowed": {
+            "type": "boolean",
+            "description": "false después de recogida, incluida transferencia. Los importes de adelanto siguen siendo históricos."
+          },
           "collectionInstructions": {
             "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
             "allOf": [
@@ -63560,6 +64660,7 @@
           "status": {
             "type": "string",
             "enum": [
+              "RETURNED",
               "OPEN",
               "CLAIMED",
               "EXPIRED",
@@ -65102,6 +66203,644 @@
           "deliveryCollectionInstruction",
           "quote",
           "availabilityGuaranteed"
+        ]
+      },
+      "IncidentSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dispatchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reportedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reasonCode": {
+            "type": "string"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "dispatchId",
+          "reportedAt",
+          "reasonCode",
+          "resolvedAt"
+        ]
+      },
+      "IncidentPageResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "example": 20
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 1
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 1,
+            "description": "Cero cuando no hay resultados."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IncidentSummaryResponse"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "totalPages",
+          "items"
+        ]
+      },
+      "IncidentRecordResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dispatchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reportedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reasonCode": {
+            "type": "string"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chainId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reportedByUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reasonDetail": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "id",
+          "dispatchId",
+          "reportedAt",
+          "reasonCode",
+          "resolvedAt",
+          "assignmentId",
+          "chainId",
+          "reportedByUserId",
+          "reasonDetail"
+        ]
+      },
+      "CustodyRecipientDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "FLEET",
+              "INDEPENDENT"
+            ]
+          },
+          "providerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "driverId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "vehicleId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "mode",
+          "driverId",
+          "vehicleId"
+        ]
+      },
+      "ResolveCustodyIncidentDto": {
+        "type": "object",
+        "properties": {
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "RETURN_TO_ORIGIN",
+              "TRANSFER"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "confirmationMethod": {
+            "type": "string",
+            "enum": [
+              "PHONE"
+            ]
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/CustodyRecipientDto"
+          },
+          "custodianConfirmed": {
+            "type": "boolean"
+          },
+          "originConfirmed": {
+            "type": "boolean"
+          },
+          "originContactLabel": {
+            "type": "string"
+          },
+          "originContactRole": {
+            "type": "string"
+          },
+          "releasingCustodianConfirmed": {
+            "type": "boolean"
+          },
+          "receivingCustodianConfirmed": {
+            "type": "boolean"
+          },
+          "atCurrentStageLocation": {
+            "type": "boolean"
+          },
+          "recipientProviderAdminUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientProviderAdminConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assignmentId",
+          "expectedRevision",
+          "type",
+          "reason",
+          "occurredAt",
+          "confirmationMethod"
+        ]
+      },
+      "ResolutionAuditResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "incidentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dispatchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromAssignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "toAssignmentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "RETURN_TO_ORIGIN",
+              "TRANSFER"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "actorUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "confirmations": {
+            "description": "Atestación privada inmutable; nunca publicar en B2B.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResolveCustodyIncidentDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "incidentId",
+          "dispatchId",
+          "fromAssignmentId",
+          "toAssignmentId",
+          "type",
+          "reason",
+          "actorUserId",
+          "occurredAt",
+          "recordedAt",
+          "confirmations"
+        ]
+      },
+      "IncidentDetailResponse": {
+        "type": "object",
+        "properties": {
+          "incident": {
+            "$ref": "#/components/schemas/IncidentRecordResponse"
+          },
+          "resolution": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResolutionAuditResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "incident",
+          "resolution"
+        ]
+      },
+      "TransferCandidateResponse": {
+        "type": "object",
+        "properties": {
+          "driverId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "driverName": {
+            "type": "string"
+          },
+          "vehicleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "vehicleIdentifier": {
+            "type": "string"
+          },
+          "providerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "FLEET",
+              "INDEPENDENT"
+            ]
+          }
+        },
+        "required": [
+          "driverId",
+          "driverName",
+          "vehicleId",
+          "vehicleIdentifier",
+          "providerId",
+          "mode"
+        ]
+      },
+      "TransferCandidatePageResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "example": 20
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 1
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 1,
+            "description": "Cero cuando no hay resultados."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferCandidateResponse"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "totalPages",
+          "items"
+        ]
+      },
+      "ExecutionEventResponse": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ASSIGNED",
+              "ADVANCED",
+              "INCIDENT",
+              "TRANSFER",
+              "RETURN",
+              "DELIVERED",
+              "ENDED"
+            ]
+          },
+          "phase": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5,
+            "description": "0 sin hito; 1..5 siguen el orden de phase en ExecutionResponse."
+          },
+          "revision": {
+            "type": "number"
+          },
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actorUserId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "actorRole": {
+            "type": "string",
+            "nullable": true,
+            "description": "Rol histórico del registrador; null en cierre B2B/sistema sin suplantación humana."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "PHONE_REPORT",
+              "SELF_REPORT",
+              "ADMIN_RESOLUTION",
+              "SYSTEM_CANCELLATION"
+            ]
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "kind",
+          "phase",
+          "revision",
+          "assignmentId",
+          "actorUserId",
+          "actorRole",
+          "source",
+          "recordedAt"
+        ]
+      },
+      "ExecutionEventPage": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "example": 20
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 1
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 1,
+            "description": "Cero cuando no hay resultados."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExecutionEventResponse"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "totalPages",
+          "items"
+        ]
+      },
+      "ExecutionDetailResponse": {
+        "type": "object",
+        "properties": {
+          "execution": {
+            "$ref": "#/components/schemas/ExecutionResponse"
+          },
+          "events": {
+            "$ref": "#/components/schemas/ExecutionEventPage"
+          }
+        },
+        "required": [
+          "execution",
+          "events"
+        ]
+      },
+      "ReportCustodyIncidentDto": {
+        "type": "object",
+        "properties": {
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reasonCode": {
+            "type": "string",
+            "enum": [
+              "RECIPIENT_UNAVAILABLE",
+              "DELIVERY_REFUSED",
+              "VEHICLE_FAILURE",
+              "SAFETY_CONCERN",
+              "OTHER"
+            ]
+          },
+          "reasonDetail": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "assignmentId",
+          "expectedRevision",
+          "reasonCode",
+          "reasonDetail"
+        ]
+      },
+      "IncidentCreatedResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "execution": {
+            "$ref": "#/components/schemas/ExecutionResponse"
+          }
+        },
+        "required": [
+          "id",
+          "execution"
+        ]
+      },
+      "ResolutionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "execution": {
+            "$ref": "#/components/schemas/ExecutionResponse"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "RETURN_TO_ORIGIN",
+              "TRANSFER"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha física declarada por SUPER_ADMIN; no es evidencia de pago."
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fromAssignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "toAssignmentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "execution",
+          "type",
+          "occurredAt",
+          "recordedAt",
+          "fromAssignmentId",
+          "toAssignmentId"
+        ]
+      },
+      "AdvanceExecutionDto": {
+        "type": "object",
+        "properties": {
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "TO_PICKUP",
+              "AT_PICKUP",
+              "PICKED_UP",
+              "TO_DROPOFF",
+              "AT_DROPOFF"
+            ]
+          }
+        },
+        "required": [
+          "assignmentId",
+          "expectedRevision",
+          "phase"
         ]
       }
     }

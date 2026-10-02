@@ -1,3 +1,10 @@
+import { ConfigService } from '@nestjs/config';
+import {
+  initializeExecution,
+  executionView,
+  lockExecutionDispatch,
+  withExecutionInstructions,
+} from '../delivery-execution/execution.persistence.js';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
@@ -66,6 +73,7 @@ export class IndependentDispatchesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly webhooks: B2bWebhooksService,
+    private readonly executionConfig: ConfigService = new ConfigService(),
   ) {}
 
   /** The driver's own capability, as returned inside GET /driver/me. */
@@ -95,6 +103,9 @@ export class IndependentDispatchesService {
       // A driver busy as fleet cannot take an independent service either, and vice versa (§29).
       canTakeServices: driver.independentProfile.status === 'APPROVED' && !busy,
       activeAssignment: busy,
+      execution: busy
+        ? await executionView(this.prisma, busy.dispatchId)
+        : null,
     };
   }
 
@@ -147,8 +158,21 @@ export class IndependentDispatchesService {
 
   /** Detail of a dispatch this driver may take or already took; anything else is a 404. */
   async get(userId: string, dispatchId: string) {
-    const { driverId } = await this.approvedDriver(this.prisma, userId);
-    return this.viewFor(driverId, dispatchId);
+    const owned = await this.prisma.driver.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!owned) throw new NotFoundException('Driver not found');
+    const current = await this.prisma.deliveryAssignment.findFirst({
+      where: {
+        dispatchId,
+        driverId: owned.id,
+        mode: 'INDEPENDENT',
+        status: { in: ['ACTIVE', 'COMPLETED', 'RETURNED'] },
+      },
+    });
+    if (!current) await this.approvedDriver(this.prisma, userId);
+    return this.viewFor(owned.id, dispatchId);
   }
 
   /**
@@ -162,7 +186,27 @@ export class IndependentDispatchesService {
       where: {
         id: dispatchId,
         OR: [
-          { claimedByIndependentDriverId: driverId },
+          {
+            claimedByIndependentDriverId: driverId,
+            NOT: {
+              deliveryAssignments: {
+                some: {
+                  custodyResolutionId: { not: null },
+                  status: { in: ['ACTIVE', 'COMPLETED', 'RETURNED'] },
+                  driverId: { not: driverId },
+                },
+              },
+            },
+          },
+          {
+            deliveryAssignments: {
+              some: {
+                driverId,
+                mode: 'INDEPENDENT',
+                status: { in: ['ACTIVE', 'COMPLETED', 'RETURNED'] },
+              },
+            },
+          },
           {
             status: 'OPEN',
             deliveryQuote: { serviceType: { in: independentServiceTypes } },
@@ -172,7 +216,11 @@ export class IndependentDispatchesService {
       select: driverDispatchSelect,
     });
     if (!dispatch) throw new NotFoundException('Dispatch not found');
-    return driverDispatchView(dispatch, driverId, now);
+    return withExecutionInstructions(
+      this.prisma,
+      dispatchId,
+      driverDispatchView(dispatch, driverId, now),
+    );
   }
 
   /**
@@ -249,6 +297,12 @@ export class IndependentDispatchesService {
           },
           select: { id: true },
         });
+        await initializeExecution(
+          tx,
+          assignment.id,
+          this.executionConfig.get<boolean>('DETAILED_EXECUTION_ENABLED') ===
+            true,
+        );
         // Charged last, with the claim and the assignment already written in this transaction: the
         // guard in PostgreSQL only accepts a charge from the driver holding the dispatch, and a
         // rejection here rolls back the take, the assignment and the debit together.
@@ -650,6 +704,7 @@ export class IndependentDispatchesService {
   }
 
   private async lock(tx: Prisma.TransactionClient, dispatchId: string) {
+    await lockExecutionDispatch(tx, dispatchId);
     const [row] = await tx.$queryRaw<
       LockedDispatch[]
     >`SELECT d.id, d.status, d."expiresAt", d."claimedByProviderId", d."claimedByIndependentDriverId", d."creditMode", d."claimedAt", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;

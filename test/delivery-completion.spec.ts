@@ -43,7 +43,16 @@ const claimed = (extra: object = {}) => ({
 type UpdateCall = { where: { id: string }; data: Record<string, unknown> };
 function txDouble(rawRows: unknown[][]) {
   const queryRaw = vi.fn<(...args: unknown[]) => Promise<unknown[]>>(
-    async () => rawRows.shift() ?? [],
+    async (strings) => {
+      const sql = (strings as TemplateStringsArray).join('?');
+      if (
+        sql.includes('FROM "DeliveryExecution"') ||
+        sql.startsWith('SELECT r.id FROM "DeliveryRequest"') ||
+        sql.startsWith('SELECT id FROM "Dispatch"')
+      )
+        return [];
+      return rawRows.shift() ?? [];
+    },
   );
   const assignmentUpdate = vi.fn<(call: UpdateCall) => Promise<{ id: string }>>(
     async () => ({ id: ASSIGNMENT }),
@@ -179,10 +188,15 @@ describe('V1.11-A provider completion', () => {
     const sql = t.queryRaw.mock.calls.map((c) =>
       (c[0] as unknown as { join(s: string): string }).join('?'),
     );
-    expect(sql[0]).toMatch(/FROM "Dispatch".*FOR UPDATE OF d/s);
-    expect(sql[1]).toMatch(
-      /FROM "DeliveryAssignment".*status = 'ACTIVE'.*FOR UPDATE/s,
+    expect(sql[0]).toMatch(/FROM "DeliveryRequest".*FOR UPDATE OF r/s);
+    const dispatchLock = sql.findIndex((q) =>
+      /FROM "Dispatch".*FOR UPDATE OF d/s.test(q),
     );
+    const assignmentLock = sql.findIndex((q) =>
+      /FROM "DeliveryAssignment".*status = 'ACTIVE'.*FOR UPDATE/s.test(q),
+    );
+    expect(dispatchLock).toBeGreaterThan(0);
+    expect(assignmentLock).toBeGreaterThan(dispatchLock);
   });
   it('refuses a dispatch claimed by another provider without writing anything', async () => {
     const t = txDouble([[claimed({ claimedByProviderId: 'someone-else' })]]);
@@ -353,7 +367,8 @@ describe('V1.11-A completion writes nothing economic', () => {
     ).resolves.toMatchObject({ kind: 'completed' });
     expect(t.assignmentUpdate).toHaveBeenCalledTimes(1);
     expect(t.dispatchUpdate).toHaveBeenCalledTimes(1);
-    expect(t.queryRaw).toHaveBeenCalledTimes(2);
+    // Request/Dispatch locks and legacy execution lookup are reads, never economic writes.
+    expect(t.queryRaw).toHaveBeenCalledTimes(6);
     // V1.12-B adds exactly one more write, and it is the event: still nothing economic.
     expect(t.eventCreate).toHaveBeenCalledTimes(1);
   });
@@ -436,7 +451,16 @@ describe('V1.11-A the independent completion does not re-run the approval gate',
       [{ id: ASSIGNMENT }],
     ];
     const client = {
-      $queryRaw: vi.fn(async () => rows.shift() ?? []),
+      $queryRaw: vi.fn(async (strings: TemplateStringsArray) => {
+        const sql = strings.join('?');
+        if (
+          sql.includes('FROM "DeliveryExecution"') ||
+          sql.startsWith('SELECT r.id FROM "DeliveryRequest"') ||
+          sql.startsWith('SELECT id FROM "Dispatch"')
+        )
+          return [];
+        return rows.shift() ?? [];
+      }),
       driver: { findUnique: vi.fn(async () => ({ id: DRIVER })) },
       deliveryAssignment: { update: vi.fn(async () => ({ id: ASSIGNMENT })) },
       deliveryRequest: {

@@ -47,6 +47,10 @@ model User {
   independentProfilesRejected IndependentDriverProfile[] @relation("IndependentProfileRejecter")
   webhookEndpointsCreated B2bWebhookEndpoint[] @relation("WebhookEndpointCreatedBy")
   webhookEndpointsUpdated B2bWebhookEndpoint[] @relation("WebhookEndpointUpdatedBy")
+  DeliveryCustodyIncident      DeliveryCustodyIncident[]
+  DeliveryCustodyResolution    DeliveryCustodyResolution[]
+  DeliveryExecutionCommand     DeliveryExecutionCommand[]
+  DeliveryExecutionEvent       DeliveryExecutionEvent[]
 }
 model RefreshToken {
   id String @id @default(uuid()) @db.Uuid
@@ -590,6 +594,7 @@ enum DispatchStatus {
   EXPIRED
   CANCELLED
   DELIVERED
+  RETURNED
 }
 enum DispatchCandidateStatus {
   OFFERED
@@ -649,6 +654,8 @@ model Dispatch {
   @@unique([id, deliveryRequestId])
   @@index([status, deliveredAt])
   @@index([createdAt, id])
+  DeliveryExecution            DeliveryExecution?
+  DeliveryExecutionCommand     DeliveryExecutionCommand[]
 }
 
 /// Immutable migration evidence: an award that existed before DB credit enforcement.
@@ -693,6 +700,8 @@ enum DeliveryAssignmentStatus {
   REASSIGNED
   CANCELLED
   COMPLETED
+  RETURNED
+  TRANSFERRED
 }
 enum DeliveryAssignmentEndReason {
   DRIVER_UNAVAILABLE
@@ -746,6 +755,13 @@ model DeliveryAssignment {
   @@index([independentDriverProfileId, status, assignedAt])
   @@index([driverId, assignedAt])
   @@index([vehicleId, assignedAt])
+  custodyResolutionId                                                                         String?                      @unique @db.Uuid
+  DeliveryCustodyResolution_DeliveryAssignment_custodyResolutionIdToDeliveryCustodyResolution DeliveryCustodyResolution?   @relation("DeliveryAssignment_custodyResolutionIdToDeliveryCustodyResolution", fields: [custodyResolutionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  DeliveryCustodyIncident                                                                     DeliveryCustodyIncident[]
+  DeliveryCustodyResolution_DeliveryCustodyResolution_toAssignmentIdToDeliveryAssignment      DeliveryCustodyResolution?   @relation("DeliveryCustodyResolution_toAssignmentIdToDeliveryAssignment")
+  DeliveryCustodyResolution_DeliveryCustodyResolution_fromAssignmentIdToDeliveryAssignment    DeliveryCustodyResolution?   @relation("DeliveryCustodyResolution_fromAssignmentIdToDeliveryAssignment")
+  DeliveryExecution                                                                           DeliveryExecution[]
+  DeliveryExecutionEvent                                                                      DeliveryExecutionEvent[]
 }
 
 /// V1.10: who a CreditAccount belongs to. A fleet driver never has one: it works on its provider's.
@@ -1275,4 +1291,88 @@ model AuthorizedQuoteAcceptance {
   dispatch Dispatch @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
   record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   credential IntegrationCredential @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+}
+
+model DeliveryExecution {
+  dispatchId                String                      @id @db.Uuid
+  chainId                   String                      @db.Uuid
+  assignmentId              String                      @db.Uuid
+  revision                  Int
+  phase                     Int                         @default(0)
+  recordedAt                DateTime                    @default(dbgenerated("(clock_timestamp() AT TIME ZONE 'UTC'::text)"))
+  DeliveryCustodyIncident   DeliveryCustodyIncident[]
+  DeliveryCustodyResolution DeliveryCustodyResolution[]
+  DeliveryAssignment        DeliveryAssignment          @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Dispatch                  Dispatch                    @relation(fields: [dispatchId], references: [id], onUpdate: NoAction)
+  DeliveryExecutionEvent    DeliveryExecutionEvent[]
+}
+
+model DeliveryExecutionEvent {
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dispatchId         String             @db.Uuid
+  chainId            String             @db.Uuid
+  assignmentId       String             @db.Uuid
+  revision           Int
+  phase              Int
+  kind               String
+  actorUserId        String?            @db.Uuid
+  actorRole          Role?
+  source             String
+  recordedAt         DateTime           @default(dbgenerated("(clock_timestamp() AT TIME ZONE 'UTC'::text)"))
+  User               User?              @relation(fields: [actorUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  DeliveryAssignment DeliveryAssignment @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  DeliveryExecution  DeliveryExecution  @relation(fields: [dispatchId], references: [dispatchId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([dispatchId, revision])
+}
+
+model DeliveryExecutionCommand {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dispatchId  String   @db.Uuid
+  actorUserId String   @db.Uuid
+  operation   String
+  key         String   @db.Uuid
+  hash        String
+  response    Json
+  recordedAt  DateTime @default(dbgenerated("(clock_timestamp() AT TIME ZONE 'UTC'::text)"))
+  User        User     @relation(fields: [actorUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Dispatch    Dispatch @relation(fields: [dispatchId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([dispatchId, actorUserId, operation, key])
+}
+
+model DeliveryCustodyIncident {
+  id                        String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dispatchId                String                     @db.Uuid
+  assignmentId              String                     @db.Uuid
+  chainId                   String                     @db.Uuid
+  reasonCode                String
+  reasonDetail              String
+  reportedByUserId          String                     @db.Uuid
+  reportedAt                DateTime                   @default(dbgenerated("(clock_timestamp() AT TIME ZONE 'UTC'::text)"))
+  resolvedAt                DateTime?
+  DeliveryAssignment        DeliveryAssignment         @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  DeliveryExecution         DeliveryExecution          @relation(fields: [dispatchId], references: [dispatchId], onDelete: NoAction, onUpdate: NoAction)
+  User                      User                       @relation(fields: [reportedByUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  DeliveryCustodyResolution DeliveryCustodyResolution?
+}
+
+model DeliveryCustodyResolution {
+  id                                                                                   String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  incidentId                                                                           String                  @unique @db.Uuid
+  dispatchId                                                                           String                  @db.Uuid
+  fromAssignmentId                                                                     String                  @unique @db.Uuid
+  toAssignmentId                                                                       String?                 @unique @db.Uuid
+  type                                                                                 String
+  reason                                                                               String
+  actorUserId                                                                          String                  @db.Uuid
+  occurredAt                                                                           DateTime
+  recordedAt                                                                           DateTime                @default(dbgenerated("(clock_timestamp() AT TIME ZONE 'UTC'::text)"))
+  confirmations                                                                        Json
+  DeliveryAssignment_DeliveryAssignment_custodyResolutionIdToDeliveryCustodyResolution DeliveryAssignment?     @relation("DeliveryAssignment_custodyResolutionIdToDeliveryCustodyResolution")
+  DeliveryAssignment_DeliveryCustodyResolution_toAssignmentIdToDeliveryAssignment      DeliveryAssignment?     @relation("DeliveryCustodyResolution_toAssignmentIdToDeliveryAssignment", fields: [toAssignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "CustodyResolution_recipient")
+  User                                                                                 User                    @relation(fields: [actorUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  DeliveryExecution                                                                    DeliveryExecution       @relation(fields: [dispatchId], references: [dispatchId], onDelete: NoAction, onUpdate: NoAction)
+  DeliveryAssignment_DeliveryCustodyResolution_fromAssignmentIdToDeliveryAssignment    DeliveryAssignment      @relation("DeliveryCustodyResolution_fromAssignmentIdToDeliveryAssignment", fields: [fromAssignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  DeliveryCustodyIncident                                                              DeliveryCustodyIncident @relation(fields: [incidentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

@@ -1,3 +1,4 @@
+import { ExecutionModule } from './delivery-execution/execution.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -43,6 +44,7 @@ import { PrequotesModule } from './delivery-prequotes/prequotes.module.js';
     CreditPoliciesModule,
     B2bWebhooksModule,
     PrequotesModule,
+    ExecutionModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

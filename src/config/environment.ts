@@ -5,6 +5,10 @@ const optional = <T extends z.ZodTypeAny>(type: T) =>
   z.preprocess((v) => (v === '' ? undefined : v), type.optional());
 
 const schema = z.object({
+  DETAILED_EXECUTION_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),

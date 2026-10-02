@@ -1,3 +1,8 @@
+import { ConfigService } from '@nestjs/config';
+import {
+  initializeExecution,
+  lockExecutionDispatch,
+} from '../delivery-execution/execution.persistence.js';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
@@ -48,7 +53,10 @@ type Actor = { providerId: string; userId: string };
 @Injectable()
 export class DeliveryAssignmentsService {
   private readonly logger = new Logger(DeliveryAssignmentsService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService = new ConfigService(),
+  ) {}
 
   /**
    * Assigns a driver and vehicle of the claim owner. Locks, in this order, the dispatch row (one
@@ -65,7 +73,7 @@ export class DeliveryAssignmentsService {
           'Dispatch already has an active assignment; reassign it instead',
         );
       await this.lockEligibleResources(tx, actor.providerId, input);
-      return tx.deliveryAssignment.create({
+      const created = await tx.deliveryAssignment.create({
         data: {
           dispatchId,
           providerId: actor.providerId,
@@ -75,6 +83,12 @@ export class DeliveryAssignmentsService {
         },
         select: deliveryAssignmentSelect,
       });
+      await initializeExecution(
+        tx,
+        created.id,
+        this.config.get<boolean>('DETAILED_EXECUTION_ENABLED') === true,
+      );
+      return created;
     });
     this.logger.log({
       event: 'DELIVERY_ASSIGNMENT_CREATED',
@@ -134,6 +148,11 @@ export class DeliveryAssignmentsService {
         },
         select: deliveryAssignmentSelect,
       });
+      await initializeExecution(
+        tx,
+        assignment.id,
+        this.config.get<boolean>('DETAILED_EXECUTION_ENABLED') === true,
+      );
       return { previous, assignment };
     });
     this.logger.log({
@@ -188,7 +207,14 @@ export class DeliveryAssignmentsService {
       where: { dispatchId_providerId: { dispatchId, providerId } },
       select: { id: true },
     });
-    if (!offered) throw new NotFoundException('Dispatch not found');
+    if (
+      !offered &&
+      !(await this.prisma.deliveryAssignment.findFirst({
+        where: { dispatchId, providerId, custodyResolutionId: { not: null } },
+        select: { id: true },
+      }))
+    )
+      throw new NotFoundException('Dispatch not found');
     return this.prisma.deliveryAssignment.findMany({
       where: { dispatchId, providerId },
       select: deliveryAssignmentSelect,
@@ -342,6 +368,7 @@ export class DeliveryAssignmentsService {
     dispatchId: string,
     providerId: string,
   ) {
+    await lockExecutionDispatch(tx, dispatchId);
     const [row] = await tx.$queryRaw<
       { status: DispatchStatus; claimedByProviderId: string | null }[]
     >`SELECT d.status, d."claimedByProviderId" FROM "Dispatch" d WHERE d.id = ${dispatchId}::uuid AND EXISTS (SELECT 1 FROM "DispatchCandidate" c WHERE c."dispatchId" = d.id AND c."providerId" = ${providerId}::uuid) FOR UPDATE OF d`;

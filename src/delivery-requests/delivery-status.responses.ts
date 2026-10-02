@@ -10,6 +10,30 @@ import type {
 
 const dateTime = { format: 'date-time' } as const;
 
+export class PublicExecutionProgressResponse {
+  @ApiProperty({
+    enum: ['TO_PICKUP', 'AT_PICKUP', 'PICKED_UP', 'TO_DROPOFF', 'AT_DROPOFF'],
+    nullable: true,
+  })
+  phase!: string | null;
+  @ApiProperty({ minimum: 1 }) revision!: number;
+  @ApiProperty({ format: 'date-time' }) registeredAt!: Date;
+  @ApiProperty({
+    description:
+      'Requiere atención operativa. No expone motivo, actores ni contactos privados.',
+  })
+  attentionRequired!: boolean;
+}
+export class PublicExecutionOutcomeResponse {
+  @ApiProperty({ enum: ['RETURNED_TO_ORIGIN'] }) type!: string;
+  @ApiProperty({
+    format: 'date-time',
+    description:
+      'Devolución física declarada; no implica devolución de dinero o créditos.',
+  })
+  occurredAt!: Date;
+}
+
 export class PublicExecutionNameResponse {
   @ApiProperty({
     example: 'Nombre público',
@@ -47,6 +71,20 @@ export class DeliveryExecutionResponse {
  * Prisma row — so nothing new leaks into the B2B surface by accident.
  */
 export class DeliveryStatusResponse {
+  @ApiPropertyOptional({
+    type: PublicExecutionProgressResponse,
+    nullable: true,
+    description:
+      'Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar revision para evitar retrocesos entre respuestas.',
+  })
+  executionProgress?: PublicExecutionProgressResponse | null;
+  @ApiPropertyOptional({
+    type: PublicExecutionOutcomeResponse,
+    nullable: true,
+    description:
+      'RETURNED_TO_ORIGIN acompaña CANCELLED y deliveredAt=null. Consultar por polling; no se emite delivery.completed ni nuevos webhooks.',
+  })
+  executionOutcome?: PublicExecutionOutcomeResponse | null;
   @ApiProperty({
     example: 'MDR-000123',
     description:

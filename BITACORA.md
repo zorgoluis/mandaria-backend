@@ -4,6 +4,12 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación de ejecución detallada autorizada (2026-10-02):** el propietario solicita commit y push en QA. Se prepara implementación, migraciones incrementales, contrato, handoff y evidencia; se excluyen `nul` y temporales. Verificación de esta tarea: revisión del conjunto Git y diff --check; los resultados funcionales pertenecen a la implementación anterior y no se repiten. El resultado del envío se confirma mediante Git. No autoriza despliegue ni activación.
+
+- **Ejecución detallada implementada localmente (2026-10-02):** cinco hitos, historial/actor real, barreras de custodia, incidencias y resoluciones SUPER_ADMIN RETURNED/transferencia atómica. Cargo original preservado; B2B aditivo sin nuevos webhooks; legacy sin hitos inventados. [Handoff](docs/DETAILED-EXECUTION-HANDOFF.md) y [verificación](docs/DETAILED-EXECUTION-VERIFICATION.md). En esta tarea: 403 unitarias, 135 E2E de ocho archivos, 34 contrato público; build, tipos, linters, migración limpia e incremental locales aprobados. Intentos incompletos excluidos y límites documentados. Flag false por defecto; pendientes Frontend y responsable/suplente/plazo SUPER_ADMIN. Sin activación, commit/push ni despliegue. El registro de diseño previo siguiente queda histórico.
+
+- **Diseño de ejecución y excepciones cerrado 2026-10-02:** [propuesta](docs/DETAILED-EXECUTION-PROPOSAL.md) incorpora decisiones aprobadas: cinco hitos consecutivos, bloqueo ordinario postrecogida, incidencia con custodia retenida y resolución SUPER_ADMIN por devolución física o transferencia documentada; B2B consulta, sin nuevos webhooks. Define RETURNED terminal, cambio atómico de ejecutor conservando pagador/progreso, DTOs, garantías SQL, migración futura y handoff. Sólo documentación; falta implementación y designación operativa de cobertura SUPER_ADMIN. Configuración comercial post-reset completada/probada según propietario. Checkout actual QA no contenía propuesta anterior: recuperada como antecedente desde 4f2e846 sin cambiar rama ni importar código.
+
 - **Commit/push del origen confirmado autorizados (2026-10-01):** se prepara la actualización del contrato y guías en `v1.12-B2B_webhook_delivery`. Verificación actual: estado Git y diff --check; 33/33 y build corresponden a la tarea anterior. Confirmación final del envío por salida Git. Frontend debe sincronizar nuevamente; sin despliegue ni cambios de exposición Swagger.
 
 - **Origen público B2B confirmado (2026-10-01):** propietario confirma web https://mandaria.com.mx y API https://mandaria.com.mx/api/v1. Exportador y artefacto usan `servers.url=https://mandaria.com.mx` porque todas las rutas incluyen `/api/v1`. Guía, README y handoff actualizados; frontend debe sincronizar nuevamente contrato y guías. Build/generación, comprobación documental y 33/33 pruebas del contrato/firma aprobados; Oxlint exit 0 con una advertencia preexistente. Propuesta concreta de Swagger privado por túnel SSH y portal B2B público documentada, no aplicada. Sin comprobación remota, cambios frontend/nginx/configuración ni despliegue. Los registros previos de dominio pendiente son históricos.
@@ -428,6 +434,14 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-02 — Decisiones aprobadas y diseño técnico de custodia excepcional
+
+- **Solicitud:** actualizar propuesta, handoff y continuidad con decisiones del propietario; definir devolución/transferencia, permisos, integridad, endpoints, migración y pruebas sin implementar.
+- **Cambios:** docs/DETAILED-EXECUTION-PROPOSAL.md recuperado desde el antecedente 4f2e846 y revisado en QA; BITACORA y VERIFICATION. No se cambió rama ni se trasladaron cambios de producto de main.
+- **Verificación actual:** lectura de instrucciones/continuidad y contraste estático de cierre, asignaciones, adjudicación/ledger/refunds, proyección B2B e instrucciones financieras; git diff --check documental. No pruebas de producto, consultas DB, migraciones, build, Docker o acceso remoto. Historial anterior no cuenta como ejecución actual.
+- **Resultado:** diseño técnico cerrado para implementación futura; retorno distinto de entrega, transferencia conserva cadena y adjudicación económica original, sin cobros/refunds automáticos. Contratos y guards descritos son propuestos, no existentes.
+- **Pendientes:** implementación/verificación por etapas y cobertura operativa SUPER_ADMIN para custodia retenida. Sin nueva versión, commit, push, despliegue ni activación.
 
 ### 2026-10-01 — Publicación Git del origen B2B confirmado
 
@@ -1911,3 +1925,19 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Cambios: borrador de exportador OpenAPI público filtrado, pruebas del exportador, contrato generado y componente webhook temporal sin integrar. Actualización de continuidad para traspaso; no se modificó el repositorio frontend.
 - Verificaciones actuales: lectura de continuidad, contratos backend y estructura frontend; ejecución del exportador completada. Intento de pruebas Node abortado por EPERM al crear proceso; no acredita pruebas aprobadas. No build ni comprobación visual de estos borradores.
 - Resultado: implementación detenida conforme a la nueva modalidad. Preparar prompts revisables, conservar borradores como trabajo incompleto. Pendientes: revisar filtrado y referencias del contrato, documentación V1.13, integrar UI, pruebas y build por el agente responsable. Sin Docker, acceso a Coita, commit, push ni despliegue.
+
+## 2026-10-02 — Implementación autorizada de ejecución detallada
+
+- Solicitud: implementar diseño recuperado/decisiones aprobadas, custodia, excepciones atómicas y contrato Frontend; sin activación ni publicación Git.
+- Cambios: módulo delivery-execution, cinco modelos Prisma y dos migraciones incrementales, guards SQL de cadena/custodio/resolución/award; integración de asignación, cierre, cancelación y proyecciones. Hitos y recibos idempotentes, actor real, resolución RETURNED o transferencia sin nuevo cargo/refund. Contrato B2B aditivo, OpenAPI, guía, handoff y continuidad. Conservados cambios previos; ninguna contradicción de negocio material introducida.
+- Verificaciones ejecutadas: build; tsc raíz/build; Oxlint/ESLint; Prisma generate/validate/status; migración limpia 31 y upgrade 29→31 con solicitud anterior preservada; 403 unitarias, 135 E2E de ocho archivos, 34 públicas; comprobación documental. Detalle/errores corregidos/intentados excluidos en docs/DETAILED-EXECUTION-VERIFICATION.md. No se cuenta dos veces ningún caso ni se acredita aborto.
+- Resultado: backend comprobado localmente en ese alcance; flag false por defecto. Handoff incluye cuerpos, estados, errores, permisos, recuperación e instrucciones de despliegue coordinado. Sin frontend ni ejecución remota; sin commit/push.
+- Pendientes: implementar y probar interfaces, responsable/suplente/plazo SUPER_ADMIN, autorización operativa de activación. Matriz ampliada no totalmente ejecutada; causa de reporte parcial del runner no demostrada. Cluster sintético local detenido al cierre, evidencia retenida; archivos y servicios ajenos intactos.
+
+## 2026-10-02 — Commit y push de ejecución detallada autorizados
+
+- Solicitud: publicar el trabajo terminado en la rama actual QA.
+- Cambios: consolidación de implementación, dos migraciones nuevas, pruebas, OpenAPI, diseño/handoff y continuidad; archivo ajeno nul y temporales excluidos.
+- Verificación actual: revisión de rama, estado, archivos y git diff --check. Las 403 unitarias, 135 E2E y 34 pruebas públicas son evidencia de la tarea anterior, no nuevas ejecuciones.
+- Resultado: publicación preparada; éxito de commit y push a confirmar con la salida Git al finalizar. Sin despliegue ni activación.
+- Pendientes: Frontend, cobertura SUPER_ADMIN y autorización operativa conservados.

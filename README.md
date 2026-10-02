@@ -12,6 +12,12 @@ Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comp
 - `npm run docs:b2b:check`: verifica vigencia contra el código y ambos artefactos, sin sobrescribirlos.
 - `npm run test:public-b2b`: pruebas Node completas del exportador y ejemplo de firma, en un proceso sin aislamiento por subprocess. Sin base ni credenciales reales.
 
+## Ejecución detallada y custodia
+
+Implementación local: [contrato para Frontend y operación](docs/DETAILED-EXECUTION-HANDOFF.md), [diseño aprobado](docs/DETAILED-EXECUTION-PROPOSAL.md) y [resultados ejecutados](docs/DETAILED-EXECUTION-VERIFICATION.md). `DETAILED_EXECUTION_ENABLED=false` por defecto; habilitarlo admite nuevas asignaciones con cinco hitos consecutivos, sin reconstruir hitos legacy. Deshabilitarlo posteriormente no elimina reglas ni historial de servicios detallados existentes.
+
+Desde recogida se bloquean cancelación, liberación y reasignación ordinarias. Incidencias conservan custodia y recursos; SUPER_ADMIN puede confirmar devolución física (RETURNED terminal) o transferencia atómica conservando progreso y cargo original. No implica cobro, refund ni entrega ficticia. B2B consulta progreso aditivo y conserva únicamente `delivery.completed` al cierre real. Dos migraciones incrementales; despliegue coordinado sin escritores antiguos. Frontend, responsable, suplente y plazo de atención SUPER_ADMIN son requisitos previos a activación, aún pendientes.
+
 
 ## Integridad económica y frontera histórica — V1.10-D correctiva
 

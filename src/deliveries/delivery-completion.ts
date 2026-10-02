@@ -1,3 +1,9 @@
+import {
+  assertExecutionCompletion,
+  executionHead,
+  executionEvent,
+  lockExecutionDispatch,
+} from '../delivery-execution/execution.persistence.js';
 import { NotFoundException } from '@nestjs/common';
 import type { DispatchStatus, Prisma } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
@@ -103,11 +109,23 @@ export async function completeDelivery(
   actor: CompletionActor,
   actorUserId: string,
 ): Promise<CompletionOutcome> {
+  await lockExecutionDispatch(tx, dispatchId);
+  const head = await executionHead(tx, dispatchId);
   const [dispatch] = await tx.$queryRaw<
     LockedDispatch[]
   >`SELECT d.status, d."deliveryRequestId", d."claimedByProviderId", d."claimedByIndependentDriverId", d."deliveredAt", d."deliveredByUserId" FROM "Dispatch" d WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
   if (!dispatch) throw new NotFoundException('Dispatch not found');
-  if (!owns(dispatch, actor)) throw notOwner(actor);
+  const current = head
+    ? await tx.deliveryAssignment.findUniqueOrThrow({
+        where: { id: head.assignmentId },
+      })
+    : null;
+  const owner = current
+    ? actor.mode === 'FLEET'
+      ? current.mode === 'FLEET' && current.providerId === actor.providerId
+      : current.mode === 'INDEPENDENT' && current.driverId === actor.driverId
+    : owns(dispatch, actor);
+  if (!owner) throw notOwner(actor);
   if (dispatch.status === 'DELIVERED')
     return {
       kind: 'already',
@@ -125,6 +143,7 @@ export async function completeDelivery(
       'NO_ACTIVE_ASSIGNMENT',
       'Assign a driver and a vehicle before completing the delivery',
     );
+  await assertExecutionCompletion(tx, dispatchId);
   const deliveredAt = new Date();
   // Order matters and is enforced in SQL: the assignment ends first, then the dispatch resolves.
   await tx.deliveryAssignment.update({
@@ -146,6 +165,7 @@ export async function completeDelivery(
       deliveredByUserId: actorUserId,
     },
   });
+  if (head) await executionEvent(tx, head, active.id, actorUserId, 'DELIVERED');
   // V1.12-B: the B2B fact, written here and not after the transaction, so a delivered service and
   // its event are the same commit. `deliveredAt` is handed over rather than read again, which is
   // what makes the event's clock the delivery's own. If this insert fails, the delivery does not

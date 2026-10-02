@@ -1,3 +1,18 @@
+## Ejecución detallada implementada — 2026-10-02
+
+QA `cfc8773` como base; pruebas **nuevas de esta tarea**, exclusivamente PostgreSQL 18 temporal local. [Informe completo](docs/DETAILED-EXECUTION-VERIFICATION.md), [casos y hashes](docs/checks/detailed-execution/results.json), [contrato Frontend/despliegue](docs/DETAILED-EXECUTION-HANDOFF.md).
+
+- Unitarias 403/403; E2E 135/135 en ocho archivos completos (9 nuevos + 126 regresión), todos exit 0. Contrato público 34/34. No suite E2E total ni resultados históricos presentados como nuevos.
+- Build, tipos raíz/build, Oxlint y ESLint exit 0; una advertencia Oxlint previa. Prisma generate/validate/status y migraciones limpias 31/31; upgrade incremental 29→31 conserva MDR sintético exacto y no crea hitos históricos.
+- OpenAPI completo/público y API_ACCESS regenerados y comprobados. Última generación tuvo un fallo de apertura local tras build; reintento de generación y check exitosos. Aborto parcial de B2B excluido, único intento aislado posterior 21/21; no se afirma resolver su causa. Interferencia de build/fixtures separada en informe.
+- Sólo admisión nueva depende de `DETAILED_EXECUTION_ENABLED` (default false); continuidad detallada permanece protegida. Sin .env, datos reales, migraciones históricas modificadas, versión, frontend, Docker, commit/push ni despliegue. Cobertura SUPER_ADMIN y UI pendientes antes de activar; escenarios no dedicados en la matriz y compatibilidad de versiones documentados.
+
+## Diseño de ejecución y excepciones de custodia — 2026-10-02
+
+Sólo documentación: [propuesta y handoff](docs/DETAILED-EXECUTION-PROPOSAL.md), BITACORA y este registro. Checkout QA `cfc8773`; propuesta anterior recuperada de `4f2e846` como antecedente, sin cambiar rama ni traer implementación. Decisiones aprobadas incorporadas y contratos propuestos de retorno/transferencia definidos contra restricciones reales de asignaciones, adjudicación, refund, cierre, identidad y outbox.
+
+Verificación actual: lectura estática de código/SQL/documentación y `git diff --check`; ninguna prueba de producto, migración, consulta de datos, build, revisión visual o ejecución remota. La matriz de pruebas y migración del documento es trabajo futuro. Configuración comercial probada por el propietario, no por esta revisión. No se declara capacidad implementada ni autoriza activación; falta implementación y cobertura operativa de incidencias SUPER_ADMIN.
+
 ## Origen público B2B confirmado — 2026-10-01
 
 **Actualización local aprobada.** Fuente de direcciones: confirmación del propietario, no prueba HTTP/TLS remota. Web https://mandaria.com.mx; base API https://mandaria.com.mx/api/v1. Se verificó que todas las rutas OpenAPI ya contienen `/api/v1`; `servers.url` queda en `https://mandaria.com.mx`. Las 15 operaciones, seguridad y esquemas no cambian.

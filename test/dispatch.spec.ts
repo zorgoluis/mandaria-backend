@@ -396,6 +396,8 @@ describe('DispatchService authorization inside the transaction', () => {
   const service = (candidate: unknown, eligible: string[] = ['A']) => {
     const queryRaw = vi
       .fn()
+      .mockResolvedValueOnce([]) // Request lock precedes Dispatch for cancellation races.
+      .mockResolvedValueOnce([]) // Shared Dispatch lock helper; domain projection follows.
       .mockResolvedValueOnce([
         {
           id: 'd1',

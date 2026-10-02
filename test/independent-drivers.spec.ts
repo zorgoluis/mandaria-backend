@@ -21,7 +21,16 @@ import type { B2bWebhooksService } from '../dist/b2b-webhooks/b2b-webhooks.servi
 /** Minimal transaction double: raw row-lock queries return the queued rows in order. */
 function prismaDouble(rawRows: unknown[][], tx: Record<string, unknown> = {}) {
   const queryRaw = vi.fn<(...args: unknown[]) => Promise<unknown[]>>(
-    async () => rawRows.shift() ?? [],
+    async (strings) => {
+      const sql = (strings as TemplateStringsArray).join('?');
+      if (
+        sql.includes('FROM "DeliveryExecution"') ||
+        sql.startsWith('SELECT r.id FROM "DeliveryRequest"') ||
+        sql.startsWith('SELECT id FROM "Dispatch"')
+      )
+        return [];
+      return rawRows.shift() ?? [];
+    },
   );
   const client = { $queryRaw: queryRaw, ...tx };
   return {

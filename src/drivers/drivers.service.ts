@@ -1,3 +1,4 @@
+import { withExecutionInstructions } from '../delivery-execution/execution.persistence.js';
 import {
   collectionInstructionFields,
   collectionSourceSelect,
@@ -236,10 +237,31 @@ export class DriversService {
         dispatch: { select: collectionSourceSelect },
       },
     });
+    const operational = activeAssignment
+      ? await withExecutionInstructions(
+          this.prisma,
+          activeAssignment.dispatchId,
+          { access: 'OWNER' as const },
+          activeAssignment.id,
+        )
+      : null;
+    if (
+      operational &&
+      operational.execution &&
+      activeAssignment?.mode === 'FLEET'
+    )
+      operational.execution.allowedActions = [];
     return {
       ...withCurrentAssignment(rest),
       activeDeliveryAssignment: activeAssignment
         ? {
+            ...(operational && 'execution' in operational
+              ? {
+                  execution: operational.execution,
+                  collectionActionAllowed: operational.collectionActionAllowed,
+                  advanceToOriginAllowed: operational.advanceToOriginAllowed,
+                }
+              : {}),
             id: activeAssignment.id,
             mode: activeAssignment.mode,
             dispatchId: activeAssignment.dispatchId,

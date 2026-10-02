@@ -98,3 +98,11 @@ Conservar `statusCode`, `code`, `requestId` y cabecera `X-Request-Id` para sopor
 ## Flujo directo existente
 
 POST MDR → POST cotización → accept sin atestación sigue disponible para el flujo directo permitido. Atestación de aceptación convertida enviada al origen directo se rechaza. CASH/COURIER_ADVANCE conservan sus reglas; no aplicar la instrucción de comida prepagada a todos los pedidos. Las guías no habilitan nuevas capacidades ni modifican sus cálculos.
+
+## Progreso logístico detallado (aditivo, sin activación)
+
+GET `/api/v1/delivery-requests/{publicId}/status` conserva sus estados existentes. Para asignaciones detalladas en estado ASSIGNED puede incluir `executionProgress` con `phase`, `revision`, `registeredAt` y `attentionRequired`. Fases: TO_PICKUP, AT_PICKUP, PICKED_UP, TO_DROPOFF, AT_DROPOFF; phase puede ser null antes del primer hito. Consultar periódicamente y evitar reemplazar una revisión reciente por otra atrasada. Los servicios legacy no reciben hitos inventados.
+
+Después de recogida, una cancelación ordinaria responde 409 `CUSTODY_OPERATION_FORBIDDEN`: corresponde atención operativa, no comenzar otro envío a ciegas. Una incidencia mantiene custodia; sus motivos, actores y confirmaciones son privados. La devolución física confirmada termina en CANCELLED, con `executionProgress=null` y `executionOutcome={"type":"RETURNED_TO_ORIGIN","occurredAt":"2026-10-02T18:00:00.000Z"}` (fecha ficticia). No se notifica como entrega.
+
+No se añaden webhooks. `delivery.completed` conserva contrato y sólo corresponde a cierre DELIVERED real. Avance, aceptación, entrega o retorno no confirman cobro ni reembolso de comida/envío. Contrato descargable actualizado: [openapi-b2b.json](openapi-b2b.json). Capacidad backend local no acredita activación ni integración del consumidor.

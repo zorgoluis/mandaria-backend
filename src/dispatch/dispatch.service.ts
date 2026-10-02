@@ -1,3 +1,7 @@
+import {
+  lockExecutionDispatch,
+  withExecutionInstructions,
+} from '../delivery-execution/execution.persistence.js';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
@@ -124,11 +128,34 @@ export class DispatchService {
             candidates: { some: { providerId, status: 'OFFERED' } },
           }
         : query.view === 'CLAIMED'
-          ? { status: 'CLAIMED', claimedByProviderId: providerId }
+          ? {
+              status: 'CLAIMED',
+              OR: [
+                { claimedByProviderId: providerId },
+                {
+                  deliveryAssignments: {
+                    some: {
+                      providerId,
+                      status: 'ACTIVE',
+                      custodyResolutionId: { not: null },
+                    },
+                  },
+                },
+              ],
+            }
           : {};
     const where: Prisma.DispatchWhereInput = {
       AND: [
-        { candidates: { some: { providerId } } },
+        {
+          OR: [
+            { candidates: { some: { providerId } } },
+            {
+              deliveryAssignments: {
+                some: { providerId, custodyResolutionId: { not: null } },
+              },
+            },
+          ],
+        },
         view,
         statusWhere(query.status, now),
       ],
@@ -141,8 +168,14 @@ export class DispatchService {
           : [{ createdAt: 'desc' }, { id: 'desc' }],
     });
     return pageResult(
-      items.map((d) =>
-        providerDispatchView(d, providerId, now, this.deadline(d, now)),
+      await Promise.all(
+        items.map((d) =>
+          withExecutionInstructions(
+            this.prisma,
+            d.id,
+            providerDispatchView(d, providerId, now, this.deadline(d, now)),
+          ),
+        ),
       ),
       total,
       query,
@@ -151,17 +184,31 @@ export class DispatchService {
 
   async getForProvider(dispatchId: string, providerId: string) {
     const dispatch = await this.prisma.dispatch.findFirst({
-      where: { id: dispatchId, candidates: { some: { providerId } } },
+      where: {
+        id: dispatchId,
+        OR: [
+          { candidates: { some: { providerId } } },
+          {
+            deliveryAssignments: {
+              some: { providerId, custodyResolutionId: { not: null } },
+            },
+          },
+        ],
+      },
       select: dispatchSelect,
     });
     // Non-candidates get the same 404 as an unknown id: ids cannot be probed.
     if (!dispatch) throw new NotFoundException('Dispatch not found');
     const now = new Date();
-    return providerDispatchView(
-      dispatch,
-      providerId,
-      now,
-      this.deadline(dispatch, now),
+    return withExecutionInstructions(
+      this.prisma,
+      dispatchId,
+      providerDispatchView(
+        dispatch,
+        providerId,
+        now,
+        this.deadline(dispatch, now),
+      ),
     );
   }
 
@@ -367,7 +414,24 @@ export class DispatchService {
       this.prisma.$transaction(async (tx) => {
         // Same visibility rule as claim and release: a non-candidate cannot tell this dispatch
         // from a missing one, so ids stay unprobeable.
-        await this.candidate(tx, dispatchId, providerId);
+        // Completion resolves the current execution owner, including transfers.
+        if (
+          !(await tx.dispatch.findFirst({
+            where: {
+              id: dispatchId,
+              OR: [
+                { candidates: { some: { providerId } } },
+                {
+                  deliveryAssignments: {
+                    some: { providerId, custodyResolutionId: { not: null } },
+                  },
+                },
+              ],
+            },
+            select: { id: true },
+          }))
+        )
+          throw new NotFoundException('Dispatch not found');
         return completeDelivery(
           tx,
           dispatchId,
@@ -521,6 +585,7 @@ export class DispatchService {
   }
 
   private async lock(tx: Prisma.TransactionClient, dispatchId: string) {
+    await lockExecutionDispatch(tx, dispatchId);
     const [row] = await tx.$queryRaw<
       LockedDispatch[]
     >`SELECT d.id, d.status, d."expiresAt", d."claimedByProviderId", d."creditMode", d."claimedAt", q."serviceZoneId", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;

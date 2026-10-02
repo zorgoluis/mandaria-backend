@@ -15,6 +15,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/credit-policies/{id} | bearer | SUPER_ADMIN | — | Consultar una versión de política de créditos |
 | POST | /api/v1/admin/credit-policies/{id}/versions | bearer | SUPER_ADMIN | — | Crear una nueva versión de una política de créditos |
 | GET | /api/v1/admin/credit-policies/calculation | bearer | SUPER_ADMIN | — | Calcular el costo en créditos de un servicio |
+| GET | /api/v1/admin/custody-incidents | bearer | SUPER_ADMIN | — | Cola persistente de incidencias abiertas; sin envío automático de correo |
 | GET | /api/v1/admin/delivery-quotes | bearer | SUPER_ADMIN | — | Listar Quotes |
 | GET | /api/v1/admin/delivery-quotes/{publicId} | bearer | SUPER_ADMIN | — | Consultar cualquier Quote |
 | GET | /api/v1/admin/delivery-requests | bearer | SUPER_ADMIN | — | Listar todas las DeliveryRequests |
@@ -24,6 +25,11 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/dispatches | bearer | SUPER_ADMIN | — | Listar Dispatches |
 | GET | /api/v1/admin/dispatches/{dispatchId} | bearer | SUPER_ADMIN | — | Consultar Dispatch |
 | GET | /api/v1/admin/dispatches/{dispatchId}/assignments | bearer | SUPER_ADMIN | — | Historial de asignaciones de un Dispatch |
+| POST | /api/v1/admin/dispatches/{dispatchId}/custody-incidents | bearer | SUPER_ADMIN | — | Registrar escalamiento recibido de custodia |
+| GET | /api/v1/admin/dispatches/{dispatchId}/custody-incidents/{incidentId} | bearer | SUPER_ADMIN | — | Auditoría privada de incidencia y resolución; sólo SUPER_ADMIN |
+| POST | /api/v1/admin/dispatches/{dispatchId}/custody-incidents/{incidentId}/resolve | bearer | SUPER_ADMIN | — | Resolver por devolución confirmada o transferencia; sin cargo/refund automático |
+| GET | /api/v1/admin/dispatches/{dispatchId}/custody-transfer-candidates | bearer | SUPER_ADMIN | — | Pares elegibles de conductor y vehículo; disponibilidad revalidada al resolver |
+| GET | /api/v1/admin/dispatches/{dispatchId}/execution | bearer | SUPER_ADMIN | — | Auditar progreso sin suplantar al ejecutor |
 | GET | /api/v1/admin/drivers/{driverId}/independent | bearer | SUPER_ADMIN | — | Consultar el perfil independiente de un Driver |
 | POST | /api/v1/admin/drivers/{driverId}/independent | bearer | SUPER_ADMIN | — | Habilitar un Driver existente como independiente |
 | GET | /api/v1/admin/drivers/{driverId}/independent/credits | bearer | SUPER_ADMIN | — | Consultar la cuenta de créditos de un repartidor independiente |
@@ -122,7 +128,10 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/driver/credits | bearer | DRIVER | — | Mi saldo de créditos como repartidor independiente |
 | GET | /api/v1/driver/credits/ledger | bearer | DRIVER | — | Mi historial de créditos |
 | GET | /api/v1/driver/dispatches/{dispatchId} | bearer | DRIVER | — | Detalle de un servicio ofrecido o tomado por mí |
+| POST | /api/v1/driver/dispatches/{dispatchId}/custody-incidents | bearer | DRIVER | — | Reportar incidencia del independiente bajo custodia |
 | POST | /api/v1/driver/dispatches/{dispatchId}/deliver | bearer | DRIVER | — | Confirmar la entrega de un servicio que tomé |
+| GET | /api/v1/driver/dispatches/{dispatchId}/execution | bearer | DRIVER | — | Consultar progreso independiente propio |
+| POST | /api/v1/driver/dispatches/{dispatchId}/execution-events | bearer | DRIVER | — | Registrar siguiente hito del independiente |
 | POST | /api/v1/driver/dispatches/{dispatchId}/release | bearer | DRIVER | — | Liberar un servicio que tomé |
 | POST | /api/v1/driver/dispatches/{dispatchId}/take | bearer | DRIVER | — | Tomar un servicio |
 | GET | /api/v1/driver/dispatches/available | bearer | DRIVER | — | Servicios que puedo tomar |
@@ -152,7 +161,10 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/provider/dispatches/{dispatchId}/available-drivers | bearer | PROVIDER_ADMIN | — | Drivers asignables para mi Dispatch |
 | GET | /api/v1/provider/dispatches/{dispatchId}/available-vehicles | bearer | PROVIDER_ADMIN | — | Vehicles asignables para mi Dispatch |
 | POST | /api/v1/provider/dispatches/{dispatchId}/claim | bearer | PROVIDER_ADMIN | — | Reclamar Dispatch para mi proveedor |
+| POST | /api/v1/provider/dispatches/{dispatchId}/custody-incidents | bearer | PROVIDER_ADMIN | — | Reportar incidencia postrecogida y mantener custodia |
 | POST | /api/v1/provider/dispatches/{dispatchId}/deliver | bearer | PROVIDER_ADMIN | — | Confirmar la entrega de un Dispatch de mi proveedor |
+| GET | /api/v1/provider/dispatches/{dispatchId}/execution | bearer | PROVIDER_ADMIN | — | Progreso e historial del ejecutor vigente |
+| POST | /api/v1/provider/dispatches/{dispatchId}/execution-events | bearer | PROVIDER_ADMIN | — | Registrar siguiente hito reportado por teléfono; no acredita cobro |
 | POST | /api/v1/provider/dispatches/{dispatchId}/release | bearer | PROVIDER_ADMIN | — | Liberar Dispatch reclamado por mi proveedor |
 | GET | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Listar invitaciones de repartidores de mi proveedor |
 | POST | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Invitar repartidor a mi proveedor |

@@ -1,0 +1,2596 @@
+{
+  "date": "2026-10-02",
+  "branch": "QA",
+  "base": "cfc8773",
+  "node": "v24.15.0",
+  "postgres": "18 (local 127.0.0.1:55439, disposable cluster)",
+  "scope": "New executions in this task; full passing files only. Repeated attempts excluded. No production data.",
+  "reports": [
+    {
+      "source": ".tmp/execution-check/unit-final.json",
+      "sha256": "580c6977e7047b6761e96ac71c219006c7d2d048c52aee4156d09098358aba19",
+      "exitCode": 0,
+      "startTime": 1790968491618,
+      "total": 403,
+      "passed": 403,
+      "files": [
+        {
+          "file": "authorized-acceptance.spec.ts",
+          "status": "passed",
+          "startTime": 1790968531447,
+          "endTime": 1790968531458.3032,
+          "cases": [
+            {
+              "name": "authorized quote acceptance contract keeps legacy empty payload and validates exact attestation structure",
+              "status": "passed"
+            },
+            {
+              "name": "authorized quote acceptance contract rejects malformed/untrusted input 0",
+              "status": "passed"
+            },
+            {
+              "name": "authorized quote acceptance contract rejects malformed/untrusted input 1",
+              "status": "passed"
+            },
+            {
+              "name": "authorized quote acceptance contract rejects malformed/untrusted input 2",
+              "status": "passed"
+            },
+            {
+              "name": "authorized quote acceptance contract rejects malformed/untrusted input 3",
+              "status": "passed"
+            },
+            {
+              "name": "authorized quote acceptance contract rejects malformed/untrusted input 4",
+              "status": "passed"
+            },
+            {
+              "name": "authorized quote acceptance contract rejects malformed/untrusted input 5",
+              "status": "passed"
+            },
+            {
+              "name": "authorized quote acceptance contract only maps exact recognized SQL business errors",
+              "status": "passed"
+            },
+            {
+              "name": "authorized quote acceptance contract maps known transaction timeout, not arbitrary database failure, to retryable service error",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "b2b-outbox.spec.ts",
+          "status": "passed",
+          "startTime": 1790968536232,
+          "endTime": 1790968536239.34,
+          "cases": [
+            {
+              "name": "V1.12-B delivery.completed event names the event delivery.completed on the wire",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-B delivery.completed event carries the public contract of V1.12-A, serialized as JSON renders it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-B delivery.completed event is the same payload for an independent delivery except for the execution mode",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-B delivery.completed event keeps externalReference exactly as the client sent it, including when absent",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-B delivery.completed event exposes exactly the seven public keys, and never an internal identifier",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-B delivery.completed event says DELIVERED and carries the delivery timestamp, which is the event clock",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-B delivery.completed event keeps the delivery in the snapshot even if the request is cancelled afterwards",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-B delivery.completed event logs the event without its payload: ids, type and time only",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-B delivery.completed event the event id is its own identity, never the delivery public id",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "b2b-webhook-operations.spec.ts",
+          "status": "passed",
+          "startTime": 1790968534975,
+          "endTime": 1790968534981.1418,
+          "cases": [
+            {
+              "name": "V1.12-E transport state as an operator reads it reports the persisted state when the handover is tracked",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-E transport state as an operator reads it says a worker is holding it right now, which is why nothing seems to move",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-E transport state as an operator reads it an untracked event is NO_DELIVERY and says why, and none of the reasons is a fault",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-E transport state as an operator reads it never invents a state that is not in the contract",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-E transport state as an operator reads it the disabled endpoint of a tracked handover does not change its state",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-E the vocabulary an operator is shown shows the public event name, never the internal enum",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-E the vocabulary an operator is shown a manual request says what happened, not merely that the call returned 200",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-E the vocabulary an operator is shown a delivered handover is never reported as merely scheduled",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "b2b-webhook-reliability.spec.ts",
+          "status": "passed",
+          "startTime": 1790968505822,
+          "endTime": 1790968505873.6545,
+          "cases": [
+            {
+              "name": "V1.12-D retry policy spreads five attempts over a curve that is stated once, in code",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D retry policy walks the whole schedule without waiting an hour for it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D retry policy a success ends it and a terminal answer stops it immediately",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D retry policy retries what could work later and refuses to hammer what cannot",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D retry policy retries transient transport failures but not a destination that stopped being valid",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signing secret is generated by the CSPRNG, not chosen",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signing secret round-trips through AES-256-GCM and never stores plaintext",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signing secret encrypts the same secret differently every time",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signing secret refuses a tampered ciphertext and a wrong key, without saying which",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signing secret rejects a master key that is not 32 bytes",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signing secret shows only whether a secret exists, never the secret",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signature contract signs timestamp + \".\" + the exact body, as HMAC-SHA256 in v1=<hex>",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signature contract a receiver verifying the bytes it received gets a match",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signature contract a modified body, timestamp or secret all fail verification",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signature contract a retry carries a new timestamp and signature over the very same event",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signature contract rotating the secret changes what new attempts sign, and nothing else",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-D the signature contract sends no signature header when the endpoint has no secret yet",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "b2b-webhooks.spec.ts",
+          "status": "passed",
+          "startTime": 1790968509628,
+          "endTime": 1790968509661.7388,
+          "cases": [
+            {
+              "name": "V1.12-C webhook target policy requires https in production and says so",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C webhook target policy refuses every scheme that is not http(s)",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C webhook target policy refuses credentials in the URL, which would travel in every request",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C webhook target policy refuses loopback, private, link-local and metadata destinations",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C webhook target policy accepts an ordinary public destination",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C webhook target policy the LOCAL/TEST switch is the only way to reach http and loopback",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C webhook target policy judges the addresses a hostname resolves to, not just its spelling",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C webhook target policy classifies addresses the same way wherever they come from",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C the body carries the recorded event, unchanged sends the envelope and the frozen snapshot, with the public type name",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C the body carries the recorded event, unchanged never leaks the internal enum name to a consumer",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C the body carries the recorded event, unchanged posts JSON with the event id and type in headers",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C what counts as delivered accepts any 2xx, because consumers legitimately answer more than 200",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C what counts as delivered treats every other status as a transport failure, including a redirect",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C what counts as delivered never follows a redirect: that is how an approved URL becomes an internal one",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C what counts as delivered separates a timeout from any other network failure",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C what counts as delivered refuses to call a destination the policy rejects, without any request",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C what counts as delivered refuses a public name that resolves inside the network, without any request",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C what counts as delivered keeps a hostile remote message out of what gets stored",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-C what counts as delivered never keeps the remote response body",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "check-c3-authorized-acceptance.spec.ts",
+          "status": "passed",
+          "startTime": 1790968525497,
+          "endTime": 1790968525511.3826,
+          "cases": [
+            {
+              "name": "C3 exact clock boundaries (simulated DB clock, not physical synchronization) quote expires exactly at DB now: rejects before evidence",
+              "status": "passed"
+            },
+            {
+              "name": "C3 exact clock boundaries (simulated DB clock, not physical synchronization) token expires exactly at DB now: rejects before evidence",
+              "status": "passed"
+            },
+            {
+              "name": "C3 exact clock boundaries (simulated DB clock, not physical synchronization) credential expires exactly at DB now: rejects before evidence",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "collection-instructions.spec.ts",
+          "status": "passed",
+          "startTime": 1790968538413,
+          "endTime": 1790968538418.595,
+          "cases": [
+            {
+              "name": "D collection instructions does not change legacy PREPAID contracts",
+              "status": "passed"
+            },
+            {
+              "name": "D collection instructions does not change legacy COURIER_ADVANCE contracts",
+              "status": "passed"
+            },
+            {
+              "name": "D collection instructions CANCELLED is historical, never a collection command",
+              "status": "passed"
+            },
+            {
+              "name": "D collection instructions EXPIRED is historical, never a collection command",
+              "status": "passed"
+            },
+            {
+              "name": "D collection instructions DELIVERED is historical, never a collection command",
+              "status": "passed"
+            },
+            {
+              "name": "D collection instructions suppresses current action for a cancelled request, including late cancellation after delivery",
+              "status": "passed"
+            },
+            {
+              "name": "D collection instructions distinguishes an offer from current execution and ended assignment history",
+              "status": "passed"
+            },
+            {
+              "name": "D collection instructions expired OPEN offer cannot retain a current instruction",
+              "status": "passed"
+            },
+            {
+              "name": "D collection instructions uses exact quote money and persisted instructions without exposing their source or mutating them",
+              "status": "passed"
+            },
+            {
+              "name": "D collection instructions does not fabricate instructions from an unauthorised or inconsistent conversion",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "credit-consumption.spec.ts",
+          "status": "passed",
+          "startTime": 1790968528350,
+          "endTime": 1790968528364.8542,
+          "cases": [
+            {
+              "name": "V1.10-D charge of a dispatch award debits exactly the frozen credits and writes one SERVICE_AWARD",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award accepts an exact balance and leaves zero, which is a valid balance",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award refuses an insufficient balance and writes nothing",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award refuses a zero balance when the service costs credits",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award charges the independent driver account, never a provider one",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award reads the snapshot of its own actor, not of the other one",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award fails closed when a monetized dispatch has no snapshot: never a free service",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award fails when the actor has no credit account instead of creating one",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award skips a legacy dispatch without reading a snapshot or an account",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award turns a duplicated award into a conflict, never a second debit",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award turns a ledger guard rejection into a conflict, not a 500",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-D charge of a dispatch award names only economic refusals for observability",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "credit-policies.spec.ts",
+          "status": "passed",
+          "startTime": 1790968513858,
+          "endTime": 1790968513878.5413,
+          "cases": [
+            {
+              "name": "V1.10-B PER_KM bills whole kilometers rounded up, with integer arithmetic only",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B PER_KM applies the minimum: 1 credit/km, minimum 3",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B PER_KM scales with the rate once the minimum no longer dominates",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B PER_KM refuses a cost above the per-service limit instead of wrapping or truncating",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B FLAT costs the same whatever the distance",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B DISTANCE_RANGE maps every boundary to exactly one range, [min, max)",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B DISTANCE_RANGE fails closed on a corrupt range set instead of guessing",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B configuration rules accepts exactly the fields of each calculation type",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B configuration rules rejects fields of another type instead of ignoring them",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B configuration rules requires valid whole credits for each type",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B configuration rules rejects gaps, overlaps, a first range after 0, a closed last range and open middle ranges",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B canonical distance and determinism rejects distances that are not whole non-negative INTEGER meters",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B canonical distance and determinism gives the same result for the same policy version and inputs, whatever the clock",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B canonical distance and determinism validates admin input: forged fields, generic DRIVER actor, bad distances",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B policy resolution fails closed when there is no ACTIVE policy: never 0 credits",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-B policy resolution resolves only the ACTIVE policy of the combination and touches nothing else (no account, no ledger)",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "credit-refunds.spec.ts",
+          "status": "passed",
+          "startTime": 1790968528994,
+          "endTime": 1790968529003.677,
+          "cases": [
+            {
+              "name": "V1.10-E refund of a dispatch award returns exactly what the award charged, pointing at it and never touching it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E refund of a dispatch award takes the amount from the award, not from any current price",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E refund of a dispatch award locks the account before crediting it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E refund of a dispatch award returns nothing twice: an award already refunded stays refunded once",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E refund of a dispatch award gives nothing back for a legacy dispatch and invents no award",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E refund of a dispatch award gives nothing back for a claim that predates enforcement",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E refund of a dispatch award fails closed when an enforced award is missing instead of passing as free",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E refund of a dispatch award fails closed when the account that paid is gone",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E refund of a dispatch award turns a raced duplicate into a conflict, never a second credit",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E refund of a dispatch award describes each outcome for the audit log",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "credits.spec.ts",
+          "status": "passed",
+          "startTime": 1790968514863,
+          "endTime": 1790968514884.3936,
+          "cases": [
+            {
+              "name": "V1.10-A credit rules keeps every reachable sum inside a 32-bit INTEGER",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A credit rules applies one sign convention per ledger type",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A credit rules never lets a balance go negative or past the maximum",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A credit rules reports every credit conflict as 409 and a missing account as 404",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A credit rules recognizes a PostgreSQL ledger guard or CHECK, not an ordinary failure",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A request validation accepts whole credits only, within limits, and never as text",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A request validation requires a reason only when the recharge method is OTHER",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A request validation rejects control characters that could forge log lines",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A request validation adjustments are signed, never zero, and always explain themselves",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A request validation rejects any attempt to name the account, its owner or its balance",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A request validation requires a well-formed Idempotency-Key and refuses repeated headers",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A views never exposes the request fingerprint, and hides admin internals from owners",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A movements refuses a debit that would leave a negative balance, writing nothing",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A movements writes balanceBefore from the locked row and balanceAfter from the arithmetic",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A movements replays the original entry for the same key and request, without writing",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A movements rejects the same key with a different request",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-A movements turns a ledger guard firing into a 409 conflict, never a 500",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "delivery-assignments.spec.ts",
+          "status": "passed",
+          "startTime": 1790968517210,
+          "endTime": 1790968517230.827,
+          "cases": [
+            {
+              "name": "assignment deadline starts at claimedAt, is independent from the dispatch window and only flags unassigned claims",
+              "status": "passed"
+            },
+            {
+              "name": "assignment deadline reads the TTL of each ServiceType from configuration",
+              "status": "passed"
+            },
+            {
+              "name": "payment context separates delivery fee from goods and states what the driver must advance",
+              "status": "passed"
+            },
+            {
+              "name": "V1.4 pairing consistency rejects a driver or vehicle paired with another resource, allows the paired couple and free ones",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction hides dispatches of other providers and refuses when the claim is not ours",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction refuses a second assignment, ineligible or busy resources and pairing mismatches",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction accepts the paired couple and records who assigned",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction rejects reassigning to the same couple and cancelling without an active assignment",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction ends the previous assignment before creating the new one",
+              "status": "passed"
+            },
+            {
+              "name": "cancelling a delivery ends its active assignments marks them CANCELLED / DELIVERY_CANCELLED and returns them for the audit log",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "delivery-completion.spec.ts",
+          "status": "passed",
+          "startTime": 1790968524398,
+          "endTime": 1790968524416.1216,
+          "cases": [
+            {
+              "name": "V1.11-A completion contract answers every refusal with 409: a completion is never an internal failure",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A completion contract names the audit signal of a delivery",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion ends the assignment as COMPLETED and resolves the dispatch as DELIVERED, atomically",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion closes the assignment without a motive: nothing failed",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion writes the assignment before the dispatch, the only order SQL accepts",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion locks the dispatch row and the active assignment row",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion refuses a dispatch claimed by another provider without writing anything",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion refuses a cancelled dispatch even though its claim owner is still recorded",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion refuses a claim with no driver and vehicle: there is nothing to deliver",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion reports an unknown dispatch as 404, never as a completion error",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion repeats the same answer for the owner without writing again",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion records the B2B event in the same transaction, on the delivery own clock",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion closes the driver assignment and delivers the dispatch",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion refuses a service taken by another driver with the driver-facing code",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion never lets a provider complete a service an independent driver took",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion never lets a driver complete a service a provider claimed",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A completion writes nothing economic touches only the assignment and the dispatch",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A guard rejections turns a PostgreSQL guard into a 409, never a 500",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A guard rejections keeps a decided refusal with its own code",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A guard rejections lets an unrelated failure through untouched",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A DELIVERED is terminal for both execution models stops a provider from claiming a delivered service, including the one that delivered it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A DELIVERED is terminal for both execution models stops an independent driver from taking a delivered service",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A the independent completion does not re-run the approval gate closes the service without ever reading the independent profile",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "delivery-requests.spec.ts",
+          "status": "passed",
+          "startTime": 1790968512757,
+          "endTime": 1790968512773.815,
+          "cases": [
+            {
+              "name": "V1.5 delivery request rules formats sequence values as MDR ids without truncating beyond six digits",
+              "status": "passed"
+            },
+            {
+              "name": "V1.5 delivery request rules accepts exactly PICKUP #1 and DROPOFF #2 in any array order",
+              "status": "passed"
+            },
+            {
+              "name": "V1.5 delivery request rules enforces PREPAID/COURIER_ADVANCE goods value rules and canonical money",
+              "status": "passed"
+            },
+            {
+              "name": "V1.5 delivery request rules applies package defaults so omitted and explicit defaults fingerprint equally",
+              "status": "passed"
+            },
+            {
+              "name": "V1.5 delivery request rules canonical JSON ignores key order and undefined, but not values or array order",
+              "status": "passed"
+            },
+            {
+              "name": "IdempotencyService replays the same payload without opening a transaction and never stores the payload",
+              "status": "passed"
+            },
+            {
+              "name": "IdempotencyService rejects the same key with a different payload (409) without creating",
+              "status": "passed"
+            },
+            {
+              "name": "IdempotencyService A1: the same integration/key cannot cross operation, including a concurrent winner",
+              "status": "passed"
+            },
+            {
+              "name": "IdempotencyService A1: the same integration/key cannot cross resourceType, including a concurrent winner",
+              "status": "passed"
+            },
+            {
+              "name": "IdempotencyService inserts the ledger row before creating, inside one transaction",
+              "status": "passed"
+            },
+            {
+              "name": "IdempotencyService turns a concurrent unique violation into a replay or a conflict",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "delivery-status.spec.ts",
+          "status": "passed",
+          "startTime": 1790968532591,
+          "endTime": 1790968532598.166,
+          "cases": [
+            {
+              "name": "V1.12-A public delivery status a request without a dispatch is REQUESTED, with no execution and no timestamps",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status a request cancelled before any service was published is CANCELLED",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status a published dispatch with no candidates is still OPEN",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status a provider claim reads as ASSIGNED with PROVIDER execution",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status an independent take reads as ASSIGNED with INDEPENDENT execution",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status a driver and vehicle assignment does not change the public status: it is still ASSIGNED",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status a delivered dispatch reads as DELIVERED with its timestamp and execution mode",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status an independent delivery is publicly identical except for the execution mode",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status a cancelled dispatch reads as CANCELLED and keeps the cancellation time",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status an expired dispatch reads as EXPIRED, distinct from a cancellation",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status an OPEN dispatch past its window reads as EXPIRED, like everywhere else in the domain",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status a delivery already completed stays DELIVERED even if the request is cancelled afterwards",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status every internal dispatch state maps to a public one: no UNKNOWN, no undefined",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A public delivery status exposes only the public contract: no internal ids, no credits, no payment context",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "dispatch-credit-snapshots.spec.ts",
+          "status": "passed",
+          "startTime": 1790968533628,
+          "endTime": 1790968533638.4072,
+          "cases": [
+            {
+              "name": "V1.10-C applicable actors derives the actors from the real execution policy (LOCAL_DELIVERY is BOTH)",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-C applicable actors a FLEET-only or INDEPENDENT-only service gets only its own actor",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-C applicable actors does not require the policy of an actor that cannot take the service",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-C applicable actors fails closed when an allowed actor has no ACTIVE policy, never 0 credits",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-C frozen evidence PER_KM: canonical distance, billable km, rate, minimum and result; different per actor",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-C frozen evidence FLAT: no billable km invented",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-C frozen evidence DISTANCE_RANGE: the applied range is identified and its limits frozen",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-C frozen evidence refuses to freeze a zero-credit service (explicit minimum 0 at 0 m)",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-C frozen evidence takes the shared policy lock per actor before reading the ACTIVE policy",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-C frozen evidence picks each actor its own cost; null for a legacy dispatch without snapshots",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "dispatch.spec.ts",
+          "status": "passed",
+          "startTime": 1790968519251,
+          "endTime": 1790968519274.4214,
+          "cases": [
+            {
+              "name": "dispatch TTL and lazy expiration opens for the configured minutes and closes exactly at expiresAt",
+              "status": "passed"
+            },
+            {
+              "name": "dispatch TTL and lazy expiration configures DISPATCH_TTL_MINUTES with a default of 10 and sane bounds",
+              "status": "passed"
+            },
+            {
+              "name": "claim rules allows only OPEN, in-window dispatches for OFFERED candidates",
+              "status": "passed"
+            },
+            {
+              "name": "opening and cancellation inside the caller transaction snapshots every eligible provider as OFFERED with the TTL window",
+              "status": "passed"
+            },
+            {
+              "name": "opening and cancellation inside the caller transaction fails closed when an allowed actor has no ACTIVE credit policy",
+              "status": "passed"
+            },
+            {
+              "name": "opening and cancellation inside the caller transaction still opens the dispatch when no provider is eligible",
+              "status": "passed"
+            },
+            {
+              "name": "opening and cancellation inside the caller transaction cancels OPEN and CLAIMED dispatches of a cancelled request, expiring lapsed OPEN ones",
+              "status": "passed"
+            },
+            {
+              "name": "data exposure per provider relation OFFER shows what is needed to decide, without contacts, instructions, references or client",
+              "status": "passed"
+            },
+            {
+              "name": "data exposure per provider relation OWNER gets full operational detail; others only a summary",
+              "status": "passed"
+            },
+            {
+              "name": "data exposure per provider relation flags OPEN dispatches nobody can claim without a dedicated status",
+              "status": "passed"
+            },
+            {
+              "name": "DispatchService authorization inside the transaction treats a non-candidate like a missing dispatch and never writes",
+              "status": "passed"
+            },
+            {
+              "name": "DispatchService authorization inside the transaction re-checks eligibility before claiming",
+              "status": "passed"
+            },
+            {
+              "name": "DispatchService authorization inside the transaction rejects releases from providers that do not hold the claim",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "http.spec.ts",
+          "status": "passed",
+          "startTime": 1790968497710,
+          "endTime": 1790968497834.0186,
+          "cases": [
+            {
+              "name": "serves health and Swagger through the configured routes",
+              "status": "passed"
+            },
+            {
+              "name": "enforces authentication and rejects unexpected DTO properties",
+              "status": "passed"
+            },
+            {
+              "name": "sanitizes database failures and bounds request bodies",
+              "status": "passed"
+            },
+            {
+              "name": "applies Helmet and only allows configured CORS origins",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "independent-drivers.spec.ts",
+          "status": "passed",
+          "startTime": 1790968522133,
+          "endTime": 1790968522153.3677,
+          "cases": [
+            {
+              "name": "V1.9 service execution policy decides per ServiceType whether independents may execute it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 service execution policy would hide a FLEET-only service from independents without touching the fleet path",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take eligibility rejects in the same order as the provider claim, and only then checks the service policy",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take eligibility maps every driver motive onto the shared V1.8 end-reason enum",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take eligibility every V1.9 conflict is a 409, never a silent success",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 assignment deadline does not apply to an independent claim, whose assignment is created in the same transaction",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling an independent driver requires a real, operational Driver and never creates one",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling an independent driver is a 404 for an unknown driver, so ids cannot be probed",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling an independent driver creates the profile APPROVED with the acting SUPER_ADMIN, and is idempotent",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling an independent driver reapproving a SUSPENDED profile clears the suspension instead of creating a second profile",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 suspension with an active service refuses the suspension instead of cancelling a delivery in progress",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 suspension with an active service suspends a free driver, recording who and why",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 vehicle limit is configurable and counts every vehicle whatever its status",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 vehicle limit creates the vehicle owned by the profile and never by a provider",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 vehicle limit reads the limit from the environment with a safe default",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 driver identity is never taken from the payload rejects a DRIVER without an independent profile",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 driver identity is never taken from the payload rejects a SUSPENDED profile without revealing anything else",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 driver identity is never taken from the payload is a 404 when the user has no Driver profile at all",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 driver identity is never taken from the payload reports canTakeServices false while any assignment is ACTIVE, fleet or independent",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take serializes against suspension locks the profile row together with the driver row",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take serializes against suspension turns a PostgreSQL guard rejection into 409, never a 500",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take serializes against suspension recognises a guard rejection without confusing it with an ordinary failure",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "integration-auth.spec.ts",
+          "status": "passed",
+          "startTime": 1790968515950,
+          "endTime": 1790968515969.1287,
+          "cases": [
+            {
+              "name": "B2B JWT validation rejects expired and malformed claims and intersects current scopes",
+              "status": "passed"
+            },
+            {
+              "name": "B2B JWT validation caps token duration at credential expiry and never returns the secret hash",
+              "status": "passed"
+            },
+            {
+              "name": "IntegrationScopesGuard requires every scope and an authenticated integration principal",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "invitations.spec.ts",
+          "status": "passed",
+          "startTime": 1790968508285,
+          "endTime": 1790968508331.3193,
+          "cases": [
+            {
+              "name": "invitation token is 256 random bits in base64url, unique, and stored only as its SHA-256",
+              "status": "passed"
+            },
+            {
+              "name": "invitation expiration and state expires exactly TTL hours after issuing, with now >= expiresAt already expired",
+              "status": "passed"
+            },
+            {
+              "name": "invitation expiration and state maps every non-activatable state to a stable domain error",
+              "status": "passed"
+            },
+            {
+              "name": "invitation expiration and state derives INVITED/ACTIVE/DISABLED without a status column",
+              "status": "passed"
+            },
+            {
+              "name": "invitation role policy lets SUPER_ADMIN invite PROVIDER_ADMIN/DRIVER, PROVIDER_ADMIN only DRIVER, and nobody else",
+              "status": "passed"
+            },
+            {
+              "name": "invitation role policy reuses the bootstrap password policy",
+              "status": "passed"
+            },
+            {
+              "name": "InvitationsService guards before touching the database refuses role escalation even if a caller bypasses the controller DTO",
+              "status": "passed"
+            },
+            {
+              "name": "InvitationsService guards before touching the database requires role-specific fields and a configured activation URL",
+              "status": "passed"
+            },
+            {
+              "name": "InvitationsService guards before touching the database rejects unknown tokens before opening a transaction",
+              "status": "passed"
+            },
+            {
+              "name": "invitation email builds {MANDARIA_WEB_URL}/activate-account?token=… keeping base paths and encoding the token",
+              "status": "passed"
+            },
+            {
+              "name": "invitation email renders role, link and expiry, escapes HTML and never mentions a password value",
+              "status": "passed"
+            },
+            {
+              "name": "invitation email local outbox writes one private JSON file per message",
+              "status": "passed"
+            },
+            {
+              "name": "V1.6.1 configuration defaults to 24 h TTL, 60 s resend cooldown and the local outbox outside production",
+              "status": "passed"
+            },
+            {
+              "name": "V1.6.1 configuration accepts a complete production mail setup and normalizes the web URL",
+              "status": "passed"
+            },
+            {
+              "name": "V1.6.1 configuration forbids the local outbox, missing Resend settings and non-https links in production",
+              "status": "passed"
+            },
+            {
+              "name": "V1.6.1 configuration rejects invalid ranges and web URLs with query, fragment or credentials",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "local-provider-admins.spec.ts",
+          "status": "passed",
+          "startTime": 1790968533902,
+          "endTime": 1790968533905.225,
+          "cases": [
+            {
+              "name": "local PROVIDER_ADMIN seed protections allows development/test against a local database",
+              "status": "passed"
+            },
+            {
+              "name": "local PROVIDER_ADMIN seed protections refuses production, remote databases and weak or shared passwords",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "logistics.spec.ts",
+          "status": "passed",
+          "startTime": 1790968526543,
+          "endTime": 1790968526554.2312,
+          "cases": [
+            {
+              "name": "V1.4 service rules rejects driver creation at maxDrivers after locking the provider row",
+              "status": "passed"
+            },
+            {
+              "name": "V1.4 service rules requires an active DRIVER user without a previous profile",
+              "status": "passed"
+            },
+            {
+              "name": "V1.4 service rules rejects returning to PENDING and forces OFFLINE when a driver leaves ACTIVE",
+              "status": "passed"
+            },
+            {
+              "name": "V1.4 service rules only allows AVAILABLE/BUSY for ACTIVE drivers of ACTIVE providers",
+              "status": "passed"
+            },
+            {
+              "name": "V1.4 service rules rejects vehicle creation at maxVehicles",
+              "status": "passed"
+            },
+            {
+              "name": "V1.4 service rules blocks assignments for suspended drivers/providers, non-ACTIVE vehicles and busy resources",
+              "status": "passed"
+            },
+            {
+              "name": "V1.4 service rules refuses to lower provider limits below current usage",
+              "status": "passed"
+            },
+            {
+              "name": "V1.4 service rules maps the one-row assignments relation to currentAssignment",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "prequote-conditions.spec.ts",
+          "status": "passed",
+          "startTime": 1790968520411,
+          "endTime": 1790968520426.4875,
+          "cases": [
+            {
+              "name": "Prequote conditions, separate from legacy canonicalizes ordering and omitted/null measurements without removing duplicates",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 0",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 1",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 2",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 3",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 4",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 5",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 6",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 7",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 8",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 9",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 10",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 11",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 12",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy rejects invalid or extraneous conditions 13",
+              "status": "passed"
+            },
+            {
+              "name": "Prequote conditions, separate from legacy accepts six decimal coordinates, finite measurements and preserves exact expiry",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "prequote-consumption.spec.ts",
+          "status": "passed",
+          "startTime": 1790968517964,
+          "endTime": 1790968517977.2578,
+          "cases": [
+            {
+              "name": "A5 durable ledger projection and activation defaults disabled and requires explicit global units to enable",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation rejects invalid global configuration 0",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation rejects invalid global configuration NaN",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation rejects invalid global configuration Infinity",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation rejects invalid global configuration -1",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation rejects invalid global configuration 1.5",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation rejects invalid global configuration 1000001",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation reserves maximum retries rather than one presumed billable call",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation minute boundary is rolling and exclusive at equality",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation day boundary does not reset at UTC midnight",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation uses latest release needed across all blocking limits",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation weighted releases may require more than the earliest row to expire",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation reserved then cancelled has no external consumption; expired reservation releases capacity",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation finish does not prematurely release potentially active slot",
+              "status": "passed"
+            },
+            {
+              "name": "A5 durable ledger projection and activation other integrations have independent quota and slots but share units",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "prequote-conversion.spec.ts",
+          "status": "passed",
+          "startTime": 1790968511359,
+          "endTime": 1790968511382.9243,
+          "cases": [
+            {
+              "name": "B2 normalization and retry identity normalizes dates, monetary values, references and optional physical defaults",
+              "status": "passed"
+            },
+            {
+              "name": "B2 normalization and retry identity physical order is canonical but legacy package order remains part of retry payload",
+              "status": "passed"
+            },
+            {
+              "name": "B2 normalization and retry identity multiplicity is retained, not collapsed into total quantity",
+              "status": "passed"
+            },
+            {
+              "name": "B2 normalization and retry identity textual changes affect fingerprint without repricing physical conditions",
+              "status": "passed"
+            },
+            {
+              "name": "B2 normalization and retry identity source publicId is part of the retry identity",
+              "status": "passed"
+            },
+            {
+              "name": "B2 normalization and retry identity rejects unknown nested financial evidence",
+              "status": "passed"
+            },
+            {
+              "name": "rejects equality at expiry using the DB clock before construction",
+              "status": "passed"
+            },
+            {
+              "name": "does not translate arbitrary Prisma metadata containing a business code",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "prequote-orchestration.spec.ts",
+          "status": "passed",
+          "startTime": 1790968530308,
+          "endTime": 1790968530319.611,
+          "cases": [
+            {
+              "name": "A4 execution configuration defaults to disabled, independent 15 minute TTL and bounded leases/retries",
+              "status": "passed"
+            },
+            {
+              "name": "A4 execution configuration rejects invalid config {\"PREQUOTE_VALIDITY_MS\":0}",
+              "status": "passed"
+            },
+            {
+              "name": "A4 execution configuration rejects invalid config {\"PREQUOTE_VALIDITY_MS\":86400001}",
+              "status": "passed"
+            },
+            {
+              "name": "A4 execution configuration rejects invalid config {\"PREQUOTE_LEASE_MS\":300001}",
+              "status": "passed"
+            },
+            {
+              "name": "A4 execution configuration rejects invalid config {\"PREQUOTE_MAX_ATTEMPTS\":6}",
+              "status": "passed"
+            },
+            {
+              "name": "A4 execution configuration rejects invalid config {\"PREQUOTE_MAX_ATTEMPTS\":0}",
+              "status": "passed"
+            },
+            {
+              "name": "A4 execution configuration rejects invalid config {\"PREQUOTE_ENABLED\":\"1\"}",
+              "status": "passed"
+            },
+            {
+              "name": "A4 execution configuration requires complete routing retries/backoff plus publication margin even when disabled",
+              "status": "passed"
+            },
+            {
+              "name": "A4 execution configuration production permission always denies independently of flags and environment",
+              "status": "passed"
+            },
+            {
+              "name": "A4 execution configuration expiration boundary is exclusive and deterministic",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "pricing.spec.ts",
+          "status": "passed",
+          "startTime": 1790968501118,
+          "endTime": 1790968502202.0486,
+          "cases": [
+            {
+              "name": "service zone geometry rejects malformed GeoJSON boundaries",
+              "status": "passed"
+            },
+            {
+              "name": "service zone geometry covers inside and border points, excludes outside points and holes",
+              "status": "passed"
+            },
+            {
+              "name": "service zone geometry detects overlapping, touching and nested zones but not disjoint or hole-contained ones",
+              "status": "passed"
+            },
+            {
+              "name": "DISTANCE_BANDS uses [min, max) so boundary distances map to exactly one band",
+              "status": "passed"
+            },
+            {
+              "name": "DISTANCE_BANDS rejects gaps, overlaps, bad starts, invalid ranges, non-positive amounts and mixed currencies",
+              "status": "passed"
+            },
+            {
+              "name": "GoogleRoutingProvider normalizes distance/duration and sends the key only in the header with a field mask",
+              "status": "passed"
+            },
+            {
+              "name": "GoogleRoutingProvider maps an empty route list to ROUTE_NOT_FOUND without retrying",
+              "status": "passed"
+            },
+            {
+              "name": "GoogleRoutingProvider retries timeouts, network errors, 429 and 5xx once, then reports ROUTING_UNAVAILABLE",
+              "status": "passed"
+            },
+            {
+              "name": "GoogleRoutingProvider does not retry request/key errors or invalid payloads and never guesses a distance",
+              "status": "passed"
+            },
+            {
+              "name": "GoogleRoutingProvider reports NOT_CONFIGURED without calling Google when the key is missing",
+              "status": "passed"
+            },
+            {
+              "name": "V1.6 configuration and quote views defaults routing settings and forbids fake/unconfigured routing in production",
+              "status": "passed"
+            },
+            {
+              "name": "V1.6 configuration and quote views formats MQ ids and reports stale OFFERED quotes as EXPIRED without changing the snapshot",
+              "status": "passed"
+            },
+            {
+              "name": "Quote transaction runs every lookup on its own connection passes the transaction client to the zone and rate plan lookups",
+              "status": "passed"
+            },
+            {
+              "name": "Quote transaction runs every lookup on its own connection A1: routing stays inside the legacy transaction and TTL starts before routing",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "providers.spec.ts",
+          "status": "passed",
+          "startTime": 1790968523304,
+          "endTime": 1790968523315.2773,
+          "cases": [
+            {
+              "name": "provider defaults and access uses configured defaults by type and respects explicit limits independently",
+              "status": "passed"
+            },
+            {
+              "name": "provider defaults and access rejects invalid environment defaults and supplies documented fallback values",
+              "status": "passed"
+            },
+            {
+              "name": "provider defaults and access does not guess a provider for multiple memberships and uses membership-bound queries",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "public-execution-identity.spec.ts",
+          "status": "passed",
+          "startTime": 1790968537331,
+          "endTime": 1790968537335.398,
+          "cases": [
+            {
+              "name": "V1.12-G public execution contract uses only explicit displayName and never operational/private fallback",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution contract keeps mode for historical delivered services without inventing identities from current profiles",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution contract reads the frozen completed identity and allowlists all nested fields",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution contract Independent execution never publishes the driver parent provider",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution contract OPEN and released services never expose a previous executor or candidates",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution contract the durable payload and retry envelope preserve public identity with the old mode field",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "quote-accept-diagnostics.spec.ts",
+          "status": "passed",
+          "startTime": 1790968504314,
+          "endTime": 1790968504441.9685,
+          "cases": [
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double unexpired replacement rejects missing PROVIDER policy and preserves error code",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double unexpired replacement rejects missing INDEPENDENT_DRIVER policy and preserves error code",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double valid policies and zero candidates accept without balance checks; retry is idempotent",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double old expired identifier differs from fresh replacement",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double exact expiry persists EXPIRED, no dispatch",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double cancelled quote returns QUOTE_NOT_ACCEPTABLE",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double cancelled request returns QUOTE_NOT_ACCEPTABLE",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double raw persistence P2002 is sanitized 500, not a domain 409",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double raw persistence P2003 is sanitized 500, not a domain 409",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double raw persistence P2010 is sanitized 500, not a domain 409",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double raw persistence P2034 is sanitized 500, not a domain 409",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double raw persistence P2028 is sanitized 500, not a domain 409",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double deferred commit failure does not publish accepted state in transaction double",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double missing exact scope returns 403 before the transaction",
+              "status": "passed"
+            },
+            {
+              "name": "accept 409 investigation: real controller/service/filter, transaction double literal double slash does not invoke accept",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "quote-pricing.spec.ts",
+          "status": "passed",
+          "startTime": 1790968520954,
+          "endTime": 1790968520964.3723,
+          "cases": [
+            {
+              "name": "Shared quote pricing — preparation and error precedence resolves pickup, dropoff, then tariff on exactly the supplied transaction",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preserves coverage errors and precedence:  / [object Object]",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preserves coverage errors and precedence: [object Object] / ",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preserves coverage errors and precedence: [object Object],[object Object] / ",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preserves coverage errors and precedence: [object Object],[object Object] / [object Object]",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preserves coverage errors and precedence: [object Object] / [object Object]",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence keeps the missing-plan error",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preparation rejects invalid calculationType before a caller can route",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preparation rejects invalid zoneCurrency before a caller can route",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preparation rejects invalid bandCurrency before a caller can route",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preparation rejects invalid emptyBands before a caller can route",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preparation rejects invalid gap before a caller can route",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — preparation and error precedence preparation rejects invalid amount before a caller can route",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — pure evaluation and explicit snapshot prices 0 meters using band 0 without Decimal conversion",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — pure evaluation and explicit snapshot prices 999 meters using band 0 without Decimal conversion",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — pure evaluation and explicit snapshot prices 1000 meters using band 1 without Decimal conversion",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — pure evaluation and explicit snapshot prices 2999 meters using band 1 without Decimal conversion",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — pure evaluation and explicit snapshot rejects the exclusive maximum with the exact legacy error",
+              "status": "passed"
+            },
+            {
+              "name": "Shared quote pricing — pure evaluation and explicit snapshot uses supplied identifiers, route and issuance/expiry without applying tariff TTL",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "resend-mail.spec.ts",
+          "status": "passed",
+          "startTime": 1790968506992,
+          "endTime": 1790968507036.7727,
+          "cases": [
+            {
+              "name": "Resend HTTPS mail binds Resend in production without requiring SMTP settings",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail never falls back to smtp in production",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail never falls back to local_outbox in production",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail sends the existing template over HTTPS and requires provider acceptance",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail classifies HTTP 302 without leaking response details or retrying",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail classifies HTTP 400 without leaking response details or retrying",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail classifies HTTP 401 without leaking response details or retrying",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail classifies HTTP 403 without leaking response details or retrying",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail classifies HTTP 422 without leaking response details or retrying",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail classifies HTTP 429 without leaking response details or retrying",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail classifies HTTP 500 without leaking response details or retrying",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail classifies HTTP 503 without leaking response details or retrying",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail rejects invalid acceptance response not-json",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail rejects invalid acceptance response {}",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail rejects invalid acceptance response {\"id\":\"\"}",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail rejects invalid acceptance response {\"id\":12}",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail rejects invalid acceptance response null",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail sanitizes network failures",
+              "status": "passed"
+            },
+            {
+              "name": "Resend HTTPS mail bounds the entire request, including reading the response",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "services.spec.ts",
+          "status": "passed",
+          "startTime": 1790968499227,
+          "endTime": 1790968499594.3833,
+          "cases": [
+            {
+              "name": "authentication services accepts correct password and persists only refresh hash",
+              "status": "passed"
+            },
+            {
+              "name": "authentication services rejects wrong password and unknown user",
+              "status": "passed"
+            },
+            {
+              "name": "authentication services rotates and rejects revoked or concurrently consumed refresh",
+              "status": "passed"
+            },
+            {
+              "name": "authentication services revokes the corresponding refresh on logout",
+              "status": "passed"
+            },
+            {
+              "name": "guards and health checks access tokens and rejects disabled users",
+              "status": "passed"
+            },
+            {
+              "name": "guards and health denies roles outside the declared permissions",
+              "status": "passed"
+            },
+            {
+              "name": "guards and health health queries the database and maps failures to 503",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "C:/Users/zorgl/Documents/mandaria-backend/src/config/environment.spec.ts",
+          "status": "passed",
+          "startTime": 1790968517564,
+          "endTime": 1790968517577.155,
+          "cases": [
+            {
+              "name": "environment keeps authorized acceptance disabled unless explicitly enabled",
+              "status": "passed"
+            },
+            {
+              "name": "environment rejects missing critical values",
+              "status": "passed"
+            },
+            {
+              "name": "environment rejects equal secrets and wildcard CORS",
+              "status": "passed"
+            },
+            {
+              "name": "environment normalizes numeric durations",
+              "status": "passed"
+            },
+            {
+              "name": "environment requires a separate B2B signing key and limits token duration",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": ".tmp/execution-check/http-final-nine-v2.json",
+      "sha256": "0949028b2ee3d1dd7d11a6b35bac4f524a91137cb6aba5658047a03205ee24a8",
+      "exitCode": 0,
+      "startTime": 1790968476944,
+      "total": 9,
+      "passed": 9,
+      "files": [
+        {
+          "file": "delivery-execution.e2e-spec.ts",
+          "status": "passed",
+          "startTime": 1790968483630,
+          "endTime": 1790968493108.6992,
+          "cases": [
+            {
+              "name": "Detailed execution HTTP and PostgreSQL requires five consecutive reports; rejects role and duplicate writes; delivers once",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL holds custody, rejects ordinary cancellation, and resolves return once under concurrency",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL transfers fleet custody to independent atomically without another award or fabricated pickup",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL rejects replay changes, forged actors and direct SQL jumps while preserving the original event",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL transfers independent custody to fleet, rejects an ineligible vehicle and rolls back a forced insertion failure",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL serializes pickup against B2B cancellation without a refund under custody",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL permits only one of two concurrent custody transfers to the same recipient",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL starts a fresh chain on ordinary reassignment before pickup, even when new admission is disabled",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL preserves untracked assignments when admission is disabled; legacy delivers without invented milestones",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": ".tmp/execution-check/delivery-assignments-final.json",
+      "sha256": "086645dbefe5ddc1c89034256b170049796cc2a30d9e1d1652bed73756fe409e",
+      "exitCode": 0,
+      "startTime": 1790967320572,
+      "total": 13,
+      "passed": 13,
+      "files": [
+        {
+          "file": "delivery-assignments.e2e-spec.ts",
+          "status": "passed",
+          "startTime": 1790967334989,
+          "endTime": 1790967345188.7583,
+          "cases": [
+            {
+              "name": "Assigning a driver and vehicle to a claimed dispatch lists only assignable resources of the claim owner and assigns one ACTIVE pair with its payment context",
+              "status": "passed"
+            },
+            {
+              "name": "Assigning a driver and vehicle to a claimed dispatch keeps resources inside the provider and the claim owner",
+              "status": "passed"
+            },
+            {
+              "name": "Assigning a driver and vehicle to a claimed dispatch respects the V1.4 driver ↔ vehicle pairing in both directions",
+              "status": "passed"
+            },
+            {
+              "name": "Assigning a driver and vehicle to a claimed dispatch refuses a driver or vehicle already executing another delivery",
+              "status": "passed"
+            },
+            {
+              "name": "Assigning a driver and vehicle to a claimed dispatch blocks changing the V1.4 vehicle pairing while the resources execute a delivery",
+              "status": "passed"
+            },
+            {
+              "name": "Reassignment, release protection and cancellation reassigns atomically keeping history and rejects an unchanged pair",
+              "status": "passed"
+            },
+            {
+              "name": "Reassignment, release protection and cancellation refuses to release a dispatch with an active assignment and allows it after cancelling",
+              "status": "passed"
+            },
+            {
+              "name": "Reassignment, release protection and cancellation cancels the active assignment when the delivery is cancelled, keeping the history",
+              "status": "passed"
+            },
+            {
+              "name": "Reassignment, release protection and cancellation flags an overdue assignment after the configured deadline",
+              "status": "passed"
+            },
+            {
+              "name": "Concurrency and database invariants 10 simultaneous assignments on one dispatch leave exactly one ACTIVE",
+              "status": "passed"
+            },
+            {
+              "name": "Concurrency and database invariants the same driver or vehicle cannot be assigned to two dispatches at once",
+              "status": "passed"
+            },
+            {
+              "name": "Concurrency and database invariants enforces the three ACTIVE invariants and history immutability in PostgreSQL",
+              "status": "passed"
+            },
+            {
+              "name": "Concurrency and database invariants gives SUPER_ADMIN the full history and never leaks secrets in logs",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": ".tmp/execution-check/delivery-completion-final.json",
+      "sha256": "fb02ae2f78dbc90246913a7bf3db1d1bd8bb66faacb4c0d990c122c1a31fb1d5",
+      "exitCode": 0,
+      "startTime": 1790967489371,
+      "total": 29,
+      "passed": 29,
+      "files": [
+        {
+          "file": "delivery-completion.e2e-spec.ts",
+          "status": "passed",
+          "startTime": 1790967495391,
+          "endTime": 1790967504780.4758,
+          "cases": [
+            {
+              "name": "V1.11-A provider completion closes CLAIM -> ASSIGN -> DELIVERED in one call, and records who and when",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion ends the assignment as COMPLETED, with no failure motive and the same instant",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion frees the driver and the vehicle for the next service",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion repeats the same answer without writing again",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion refuses a claim with no driver and vehicle assigned yet",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion rejects any body: the client decides nothing about the delivery",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A only the actor that holds the service can close it refuses every other principal",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A only the actor that holds the service can close it refuses the provider that released the service",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A only the actor that holds the service can close it refuses a cancelled service even to the provider that had it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A DELIVERED is terminal and irreversible admits no release, no reassignment, no cancellation and no new claim",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A DELIVERED is terminal and irreversible survives a later cancellation of its DeliveryRequest",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A DELIVERED is terminal and irreversible is not offered again to an independent driver",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion closes TAKE -> DELIVERED and frees the driver and the vehicle",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion refuses a driver that does not hold the service, and a provider admin",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion cannot be suspended while carrying a service, and can be once it is delivered",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion refuses a released service",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A completion is not an economic event consumes 0 credits and returns 0 to the provider",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A completion is not an economic event consumes 0 credits and returns 0 to the independent driver",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A completion is not an economic event does not recalculate the price, the route or the frozen credit cost",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A completion is not an economic event logs the delivery without exposing tokens or personal data",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A the database enforces completion on its own refuses a DELIVERED dispatch whose assignment is still ACTIVE",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A the database enforces completion on its own refuses a delivery without a stamp, and a stamp without a delivery",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A the database enforces completion on its own refuses to reopen, re-stamp or un-stamp a delivered dispatch",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A the database enforces completion on its own refuses to rewrite a COMPLETED assignment",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A the database enforces completion on its own refuses a COMPLETED assignment that claims a failure motive",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A the database enforces completion on its own never lets a delivered service be refunded",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A concurrency completes exactly once under simultaneous confirmations",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A concurrency never both delivers and releases the same service",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A concurrency never both delivers and takes the same independent service",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": ".tmp/execution-check/collection-instructions-final.json",
+      "sha256": "2e69a928128782981c85d0a05d63a84a5e685935b6c957ea40567d145794b9e3",
+      "exitCode": 0,
+      "startTime": 1790967519525,
+      "total": 5,
+      "passed": 5,
+      "files": [
+        {
+          "file": "collection-instructions.e2e-spec.ts",
+          "status": "passed",
+          "startTime": 1790967525921,
+          "endTime": 1790967529178.1067,
+          "cases": [
+            {
+              "name": "V1.13-D executor financial instructions converted offer, execution and cancellation preserve exact persisted instructions (independent=false)",
+              "status": "passed"
+            },
+            {
+              "name": "V1.13-D executor financial instructions converted offer, execution and cancellation preserve exact persisted instructions (independent=true)",
+              "status": "passed"
+            },
+            {
+              "name": "V1.13-D executor financial instructions release removes current collection instructions and preserves credit refunds (independent=false)",
+              "status": "passed"
+            },
+            {
+              "name": "V1.13-D executor financial instructions release removes current collection instructions and preserves credit refunds (independent=true)",
+              "status": "passed"
+            },
+            {
+              "name": "V1.13-D executor financial instructions delivery is historical, never proof of collection; late cancellation does not reactivate instructions",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": ".tmp/execution-check/credit-refunds-final.json",
+      "sha256": "f5c14f1bdb5564da575dbc292a940889f9e0768d091ceb0eb6bdb1f1c00007a5",
+      "exitCode": 0,
+      "startTime": 1790967530152,
+      "total": 22,
+      "passed": 22,
+      "files": [
+        {
+          "file": "credit-refunds.e2e-spec.ts",
+          "status": "passed",
+          "startTime": 1790967536090,
+          "endTime": 1790967539878.8723,
+          "cases": [
+            {
+              "name": "V1.10-E a reversed award returns its credits provider release returns exactly what the award charged, without touching it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E a reversed award returns its credits returns what was charged even if the policy changed in between",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E a reversed award returns its credits after a release another provider pays its own award",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E a reversed award returns its credits an independent release returns the credits to the driver, never to a provider",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E a reversed award returns its credits cancelling the delivery returns the credits of the provider that had won it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E a reversed award returns its credits cancelling the delivery returns the credits of an independent driver too",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E a reversed award returns its credits cancelling before anybody won it moves nothing at all",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E a reversed award returns its credits reassigning or cancelling only the assignment returns nothing: the provider still owns it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E a reversed award returns its credits keeps money and credits apart",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E one reversal, one refund repeating the release never returns the credits twice",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E one reversal, one refund repeating the cancellation never returns the credits twice",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E one reversal, one refund ten simultaneous reversals produce exactly one refund",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E one reversal, one refund a release racing the cancellation of the delivery refunds once",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E one reversal, one refund a refund racing a recharge and an adjustment keeps the ledger reconstructible",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E one reversal, one refund a refund racing a new claim leaves one of the two valid orders, never another",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E historical boundary and corruption a legacy dispatch returns nothing and says so",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E historical boundary and corruption a pre-enforcement exemption cannot be fabricated to fake a refundable claim",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E historical boundary and corruption an enforced award that lost its debit fails closed instead of reversing for free",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E what PostgreSQL refuses rejects every forged refund written directly in SQL",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E what PostgreSQL refuses refuses to reverse a paid service in SQL without returning its credits",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E what PostgreSQL refuses leaves the economy of this suite consistent",
+              "status": "passed"
+            },
+            {
+              "name": "V1.10-E what PostgreSQL refuses never wrote a secret in a refund log line",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": ".tmp/execution-check/dispatch-final.json",
+      "sha256": "5ed1685f154a9a789a74721d6753bc241fcee16ea77df6202dad0b103b6b751f",
+      "exitCode": 0,
+      "startTime": 1790967540777,
+      "total": 13,
+      "passed": 13,
+      "files": [
+        {
+          "file": "dispatch.e2e-spec.ts",
+          "status": "passed",
+          "startTime": 1790967547616,
+          "endTime": 1790967551698.4492,
+          "cases": [
+            {
+              "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot accepting a quote opens its dispatch automatically with the configured TTL",
+              "status": "passed"
+            },
+            {
+              "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot offers only ACTIVE providers with ACTIVE coverage for the zone and service type",
+              "status": "passed"
+            },
+            {
+              "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot keeps the acceptance when nobody is eligible: OPEN dispatch without candidates, flagged noProviderAvailable",
+              "status": "passed"
+            },
+            {
+              "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot repeated and concurrent acceptances keep 1 ACCEPTED quote and 1 dispatch",
+              "status": "passed"
+            },
+            {
+              "name": "Quote ACCEPTED → Dispatch OPEN with a candidate snapshot is atomic: if the dispatch cannot be created the quote is not accepted",
+              "status": "passed"
+            },
+            {
+              "name": "Provider claiming Provider Admin A lists available work (OFFER view without contacts) and claims it",
+              "status": "passed"
+            },
+            {
+              "name": "Provider claiming blocks non-candidates, wrong memberships, SUPER_ADMIN, DRIVER and IntegrationClient",
+              "status": "passed"
+            },
+            {
+              "name": "Provider claiming release: A claims → A releases → A cannot reclaim → B claims; only the owner releases",
+              "status": "passed"
+            },
+            {
+              "name": "Claim concurrency several providers claiming at once: exactly one winner, consistent database",
+              "status": "passed"
+            },
+            {
+              "name": "Expiration and cancellation an expired dispatch cannot be claimed and is persisted as EXPIRED",
+              "status": "passed"
+            },
+            {
+              "name": "Expiration and cancellation cancelling the delivery request cancels OPEN and CLAIMED dispatches, keeping the claim owner",
+              "status": "passed"
+            },
+            {
+              "name": "Expiration and cancellation enforces dispatch invariants in PostgreSQL",
+              "status": "passed"
+            },
+            {
+              "name": "Audit records dispatch events without tokens, secrets or customer contact data",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": ".tmp/execution-check/independent-isolated.json",
+      "sha256": "523bc6f4d8dd15edb8b2f60dfb6aefcb5900ebb87ebab926ac76a92f2cdabd66",
+      "exitCode": 0,
+      "startTime": 1790967762756,
+      "total": 23,
+      "passed": 23,
+      "files": [
+        {
+          "file": "independent-drivers.e2e-spec.ts",
+          "status": "passed",
+          "startTime": 1790967768575,
+          "endTime": 1790967773923.8555,
+          "cases": [
+            {
+              "name": "V1.9 enabling independent drivers only SUPER_ADMIN can enable; nobody can self-approve",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling independent drivers enables an existing Driver straight to APPROVED, idempotently",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling independent drivers refuses a driver that is not operational and reports unknown ids as 404",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling independent drivers registers vehicles owned by the driver, never by a provider, within the limit",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling independent drivers shows the capability and its own vehicles to the driver",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 taking a service lists eligible dispatches without leaking private data",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 taking a service take is claim + assignment in one step, with OWNER detail and payment context",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 taking a service refuses a vehicle that is not the driver own, in either direction",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 taking a service a suspended independent driver cannot take anything",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 releasing a service release cancels the assignment and reopens the dispatch, atomically",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 releasing a service requires a motive and only the driver holding the service may release it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 releasing a service gives the driver no way to reassign a service to anyone",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 concurrency: exactly one winner a provider CLAIM and an independent TAKE on the same dispatch produce one owner",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 concurrency: exactly one winner several independent drivers competing for one dispatch: exactly one wins",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 concurrency: exactly one winner the same driver taking two dispatches at once ends up busy on exactly one",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 concurrency: exactly one winner the same vehicle on two dispatches at once is used by exactly one",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 one active service per driver and per vehicle, across both models a driver busy with fleet work cannot take an independent service, and the reverse",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 one active service per driver and per vehicle, across both models a vehicle executing a service cannot start another one",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 suspension and vehicle deactivation with a service in progress refuses both instead of leaving an inconsistent delivery",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 database invariants and audit SQL rejects a dispatch owned by both models, whatever the service layer does",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 database invariants and audit SQL rejects an assignment whose dispatch nobody has taken, and unowned vehicles",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 database invariants and audit keeps the V1.8 guarantees and adds the V1.9 ones as database objects",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 database invariants and audit every V1.9 event is audited and no secret reaches the logs",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": ".tmp/execution-check/b2b-isolated.json",
+      "sha256": "cec63d72b25f4e7920b1222ac39293aa6def0f00f8f5450ea9beb1464916582b",
+      "exitCode": 0,
+      "startTime": 1790967780130,
+      "total": 21,
+      "passed": 21,
+      "files": [
+        {
+          "file": "b2b-delivery-status.e2e-spec.ts",
+          "status": "passed",
+          "startTime": 1790967785877,
+          "endTime": 1790967790374.458,
+          "cases": [
+            {
+              "name": "V1.12-A a B2B client can observe its own delivery reports every public state of a provider service, ending in DELIVERED",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A a B2B client can observe its own delivery reports an independent delivery with the same public shape",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A a B2B client can observe its own delivery a request with no accepted quote is REQUESTED, never a 500",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A a B2B client can observe its own delivery a cancelled request reads as CANCELLED with its timestamp",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A a B2B client can observe its own delivery a lapsed dispatch reads as EXPIRED, distinct from a cancellation",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A a B2B client can observe its own delivery exposes only the public contract: no internal ids, no credits, no payment context",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A ownership and authorization another IntegrationClient gets a 404 indistinguishable from a request that does not exist",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A ownership and authorization an unknown request of my own answers with the same rejection",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A ownership and authorization human and missing credentials cannot read the B2B status",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A ownership and authorization a token without deliveries:read cannot read the status",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A ownership and authorization a B2B client has no way to move the delivery itself",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A reading has no consequences repeated reads change nothing: no economy, no dispatch, no assignment, no routing",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A reading has no consequences many simultaneous reads are safe and agree with each other",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-A reading has no consequences a read racing the delivery is coherent: never DELIVERED without its timestamp",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution identity CHECK rejects a forged Outbox identity and rolls back the entire completion including its snapshot",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution identity CHECK configures only explicit public names, validates them and preserves provider isolation",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution identity CHECK claim, assignment, reassignment, completion and later profile changes preserve the right identity",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution identity CHECK missing public identity never falls back to private operational name, including after completion",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution identity CHECK Independent TAKE uses the same explicit Driver identity, with no provider; freezes it at delivery",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution identity CHECK release removes identity; reads racing release never publish the old actor as OPEN",
+              "status": "passed"
+            },
+            {
+              "name": "V1.12-G public execution identity CHECK reads racing reassignment contain one current driver, never a historical row",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

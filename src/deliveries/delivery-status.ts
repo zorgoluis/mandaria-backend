@@ -49,6 +49,7 @@ export const deliveryStatusSelect = {
     orderBy: { createdAt: 'desc' },
     take: 1,
     select: {
+      id: true,
       status: true,
       expiresAt: true,
       claimedByProviderId: true,
@@ -61,13 +62,19 @@ export const deliveryStatusSelect = {
         select: { providerId: true, provider: { select: { name: true } } },
       },
       deliveryAssignments: {
-        where: { status: 'ACTIVE' },
+        where: { status: { in: ['ACTIVE', 'COMPLETED', 'RETURNED'] } },
+        orderBy: { assignedAt: 'desc' },
         take: 1,
-        select: { driver: { select: { displayName: true } } },
+        select: {
+          mode: true,
+          custodyResolutionId: true,
+          provider: { select: { name: true } },
+          driver: { select: { displayName: true } },
+        },
       },
     },
   },
-} as const;
+} satisfies Prisma.DeliveryRequestSelect;
 
 export type DeliveryStatusRecord = Prisma.DeliveryRequestGetPayload<{
   select: typeof deliveryStatusSelect;
@@ -116,6 +123,7 @@ const DISPATCH_STATUS: Record<string, B2bDeliveryStatus> = {
   CLAIMED: 'ASSIGNED',
   DELIVERED: 'DELIVERED',
   CANCELLED: 'CANCELLED',
+  RETURNED: 'CANCELLED',
   EXPIRED: 'EXPIRED',
 };
 
@@ -138,11 +146,18 @@ export function deliveryStatusView(
   now = new Date(),
 ): DeliveryStatusView {
   const dispatch = request.dispatches[0] ?? null;
-  const mode: B2bExecutionMode | null = dispatch?.claimedByProviderId
-    ? 'PROVIDER'
-    : dispatch?.claimedByIndependentDriverId
-      ? 'INDEPENDENT'
-      : null;
+  const transferred = dispatch?.deliveryAssignments?.[0]?.custodyResolutionId
+    ? dispatch.deliveryAssignments[0]
+    : null;
+  const mode: B2bExecutionMode | null = transferred
+    ? transferred.mode === 'FLEET'
+      ? 'PROVIDER'
+      : 'INDEPENDENT'
+    : dispatch?.claimedByProviderId
+      ? 'PROVIDER'
+      : dispatch?.claimedByIndependentDriverId
+        ? 'INDEPENDENT'
+        : null;
   const status: B2bDeliveryStatus = dispatch
     ? DISPATCH_STATUS[effectiveDispatchStatus(dispatch, now)]
     : request.status === 'CANCELLED'
@@ -162,9 +177,12 @@ export function deliveryStatusView(
               provider:
                 mode === 'PROVIDER'
                   ? publicName(
-                      dispatch?.candidates?.find(
-                        (c) => c.providerId === dispatch.claimedByProviderId,
-                      )?.provider.name,
+                      transferred
+                        ? transferred.provider?.name
+                        : dispatch?.candidates?.find(
+                            (c) =>
+                              c.providerId === dispatch.claimedByProviderId,
+                          )?.provider.name,
                     )
                   : null,
               driver: publicName(

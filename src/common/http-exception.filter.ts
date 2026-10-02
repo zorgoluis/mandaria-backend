@@ -7,10 +7,22 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
+import { Prisma } from '@prisma/client';
+import { DomainException } from './domain-error.js';
 @Catch()
 export class HttpErrorFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpErrorFilter.name);
   catch(exception: unknown, host: ArgumentsHost) {
+    if (
+      exception instanceof Prisma.PrismaClientKnownRequestError ||
+      exception instanceof Prisma.PrismaClientUnknownRequestError
+    ) {
+      const code =
+        /\b(CUSTODY_OPERATION_FORBIDDEN|CUSTODY_INCIDENT_OPEN|EXECUTION_TRANSITION_INVALID|EXECUTION_CONFLICT)\b/.exec(
+          exception.message,
+        )?.[1];
+      if (code) exception = new DomainException(code, 409, code);
+    }
     const ctx = host.switchToHttp();
     const parserStatus =
       typeof exception === 'object' &&

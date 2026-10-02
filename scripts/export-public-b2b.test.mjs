@@ -34,6 +34,14 @@ const keys = (doc) =>
     )
     .sort();
 const op = (s) => s.paths[path].post;
+
+test('public execution progress is additive and excludes private custody audit',()=>{
+  const d=publicB2bDocument(source());
+  assert.deepEqual(Object.keys(d.components.schemas.PublicExecutionProgressResponse.properties).sort(),['attentionRequired','phase','registeredAt','revision']);
+  assert.deepEqual(Object.keys(d.components.schemas.PublicExecutionOutcomeResponse.properties).sort(),['occurredAt','type']);
+  for(const name of ['ExecutionResponse','ResolutionAuditResponse','IncidentRecordResponse','ResolveCustodyIncidentDto'])assert.equal(d.components.schemas[name],undefined);
+  assert.equal(Object.keys(d.paths).some(p=>p.includes('custody')||p.includes('execution-events')),false);
+});
 test('exact independently specified public operations; original source unchanged', () => {
   const s = source(),
     before = JSON.stringify(s),

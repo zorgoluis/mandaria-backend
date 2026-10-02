@@ -87,11 +87,15 @@ export const dispatchSelect = {
     },
   },
   deliveryAssignments: {
-    where: { status: 'ACTIVE' },
+    where: { status: { in: ['ACTIVE', 'COMPLETED', 'RETURNED'] } },
+    orderBy: { assignedAt: 'desc' },
     take: 1,
     select: {
       id: true,
       mode: true,
+      providerId: true,
+      custodyResolutionId: true,
+      status: true,
       assignedAt: true,
       assignedByUserId: true,
       driver: { select: { id: true, name: true } },
@@ -144,10 +148,16 @@ export function providerDispatchView(
 ) {
   const status = effectiveDispatchStatus(dispatch, now);
   const mine = dispatch.candidates.find((c) => c.providerId === providerId);
-  const owner = dispatch.claimedByProviderId === providerId;
+  const receiver = dispatch.deliveryAssignments[0];
+  const owner = receiver?.custodyResolutionId
+    ? receiver.mode === 'FLEET' && receiver.providerId === providerId
+    : dispatch.claimedByProviderId === providerId;
   const access: 'OWNER' | 'OFFER' | 'SUMMARY' =
     owner &&
-    (status === 'CLAIMED' || status === 'CANCELLED' || status === 'DELIVERED')
+    (status === 'CLAIMED' ||
+      status === 'CANCELLED' ||
+      status === 'DELIVERED' ||
+      status === 'RETURNED')
       ? 'OWNER'
       : status === 'OPEN' && mine?.status === 'OFFERED'
         ? 'OFFER'
@@ -177,7 +187,17 @@ export function providerDispatchView(
     ),
     creditCost: creditCostFor(dispatch.creditSnapshots, 'PROVIDER'),
     // V1.8: who executes the service; only the claim owner sees it.
-    assignment: owner ? (dispatch.deliveryAssignments[0] ?? null) : null,
+    assignment:
+      owner && receiver?.status === 'ACTIVE'
+        ? {
+            id: receiver.id,
+            mode: receiver.mode,
+            assignedAt: receiver.assignedAt,
+            assignedByUserId: receiver.assignedByUserId,
+            driver: receiver.driver,
+            vehicle: receiver.vehicle,
+          }
+        : null,
     ...deadline,
     myCandidate: mine
       ? {
@@ -306,7 +326,10 @@ export function adminDispatchView(dispatch: DispatchRecord, now = new Date()) {
       amount: dispatch.deliveryQuote.amount.toFixed(2),
       currency: dispatch.deliveryQuote.currency,
     },
-    activeAssignment: dispatch.deliveryAssignments[0] ?? null,
+    activeAssignment:
+      dispatch.deliveryAssignments[0]?.status === 'ACTIVE'
+        ? dispatch.deliveryAssignments[0]
+        : null,
     // Derived signal instead of a status: no provider can currently claim this OPEN dispatch.
     // V1.9 keeps its V1.7 meaning (providers only) so existing consumers do not change; whether
     // the other execution model could still take it is reported separately.

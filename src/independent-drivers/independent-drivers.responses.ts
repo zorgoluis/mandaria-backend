@@ -1,3 +1,4 @@
+import { ExecutionResponse } from '../delivery-execution/execution.responses.js';
 import {
   CollectionInstructionsResponse,
   collectionInstructionsDoc,
@@ -182,6 +183,22 @@ class DriverDispatchZoneResponse {
   @ApiProperty({ example: 'Ocozocoautla de Espinosa' }) name!: string;
 }
 export class DriverDispatchResponse {
+  @ApiPropertyOptional({
+    type: ExecutionResponse,
+    description:
+      'Sólo ejecutor vigente de asignación detallada; ausente en legacy y ofertas.',
+  })
+  execution?: ExecutionResponse;
+  @ApiPropertyOptional({
+    description:
+      'Acción logística de cobrar habilitada sólo en AT_DROPOFF sin incidencia. No confirma pago.',
+  })
+  collectionActionAllowed?: boolean;
+  @ApiPropertyOptional({
+    description:
+      'false después de recogida, incluida transferencia. Los importes de adelanto siguen siendo históricos.',
+  })
+  advanceToOriginAllowed?: boolean;
   @ApiPropertyOptional({
     type: CollectionInstructionsResponse,
     description: collectionInstructionsDoc,

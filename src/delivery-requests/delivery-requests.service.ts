@@ -203,16 +203,54 @@ export class DeliveryRequestsService {
   async deliveryStatus(publicId: string, integrationClientId: string) {
     // Prisma can load relations through several SELECTs. A single database snapshot prevents
     // mixing an old claim with a new assignment during release/reassignment/completion.
-    const request = await this.prisma.$transaction(
-      (tx) =>
-        tx.deliveryRequest.findFirst({
+    return this.prisma.$transaction(
+      async (tx) => {
+        const request = await tx.deliveryRequest.findFirst({
           where: { publicId, integrationClientId },
           select: deliveryStatusSelect,
-        }),
+        });
+        if (!request) throw new NotFoundException('Delivery request not found');
+        const status = deliveryStatusView(request);
+        const dispatchId = request.dispatches[0]?.id;
+        if (!dispatchId) return status;
+        const rows = await tx.$queryRaw<
+          {
+            phase: number;
+            revision: number;
+            recordedAt: Date;
+            attentionRequired: boolean;
+          }[]
+        >`SELECT e.phase,e.revision,e."recordedAt",EXISTS(SELECT 1 FROM "DeliveryCustodyIncident" i WHERE i."dispatchId"=e."dispatchId" AND i."resolvedAt" IS NULL) AS "attentionRequired" FROM "DeliveryExecution" e WHERE e."dispatchId"=${dispatchId}::uuid`;
+        if (!rows[0]) return status;
+        const e = rows[0];
+        const outcome = await tx.$queryRaw<
+          { occurredAt: Date }[]
+        >`SELECT "occurredAt" FROM "DeliveryCustodyResolution" WHERE "dispatchId"=${dispatchId}::uuid AND type='RETURN_TO_ORIGIN'`;
+        return {
+          ...status,
+          executionProgress:
+            status.status === 'ASSIGNED'
+              ? {
+                  phase: [
+                    null,
+                    'TO_PICKUP',
+                    'AT_PICKUP',
+                    'PICKED_UP',
+                    'TO_DROPOFF',
+                    'AT_DROPOFF',
+                  ][e.phase],
+                  revision: e.revision,
+                  registeredAt: e.recordedAt,
+                  attentionRequired: e.attentionRequired,
+                }
+              : null,
+          executionOutcome: outcome[0]
+            ? { type: 'RETURNED_TO_ORIGIN', occurredAt: outcome[0].occurredAt }
+            : null,
+        };
+      },
       { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
     );
-    if (!request) throw new NotFoundException('Delivery request not found');
-    return deliveryStatusView(request);
   }
 
   /** Foreign and missing requests are indistinguishable (404). */

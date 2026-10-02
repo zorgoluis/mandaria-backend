@@ -5804,6 +5804,60 @@
           "items"
         ]
       },
+      "PublicExecutionProgressResponse": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "TO_PICKUP",
+              "AT_PICKUP",
+              "PICKED_UP",
+              "TO_DROPOFF",
+              "AT_DROPOFF"
+            ],
+            "nullable": true
+          },
+          "revision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "registeredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "attentionRequired": {
+            "type": "boolean",
+            "description": "El servicio requiere atención operativa y conserva la custodia del pedido."
+          }
+        },
+        "required": [
+          "phase",
+          "revision",
+          "registeredAt",
+          "attentionRequired"
+        ]
+      },
+      "PublicExecutionOutcomeResponse": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "RETURNED_TO_ORIGIN"
+            ]
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Devolución física declarada al restaurante. No confirma devolución de dinero."
+          }
+        },
+        "required": [
+          "type",
+          "occurredAt"
+        ]
+      },
       "PublicExecutionNameResponse": {
         "type": "object",
         "properties": {
@@ -5858,6 +5912,26 @@
       "DeliveryStatusResponse": {
         "type": "object",
         "properties": {
+          "executionProgress": {
+            "nullable": true,
+            "description": "Progreso reportado del servicio en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar revision para evitar retrocesos entre respuestas.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicExecutionProgressResponse"
+              }
+            ]
+          },
+          "executionOutcome": {
+            "nullable": true,
+            "description": "RETURNED_TO_ORIGIN acompaña CANCELLED y deliveredAt=null. Consultar periódicamente el estado; no se emite delivery.completed por una devolución física.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicExecutionOutcomeResponse"
+              }
+            ]
+          },
           "publicId": {
             "type": "string",
             "example": "MDR-000123",

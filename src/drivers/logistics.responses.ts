@@ -15,6 +15,7 @@ import {
   VehicleType,
 } from '@prisma/client';
 import { PaginationResponse } from '../providers/providers.responses.js';
+import { ExecutionResponse } from '../delivery-execution/execution.responses.js';
 
 const uuid = { format: 'uuid' } as const;
 const dateTime = { format: 'date-time' } as const;
@@ -189,8 +190,22 @@ class DriverSelfIndependentResponse {
   })
   canTakeServices!: boolean;
 }
-/** Exactly the three fields drivers.service selects; there is no assignedAt here. */
+/** Active assignment identity and optional persisted execution instructions. */
 export class DriverSelfActiveDeliveryAssignmentResponse {
+  @ApiPropertyOptional({
+    type: ExecutionResponse,
+    description:
+      'Ausente en legacy. Repartidor de flotilla consulta con allowedActions vacío; reporta por teléfono a su administrador.',
+  })
+  execution?: ExecutionResponse;
+  @ApiPropertyOptional({
+    description: 'Instrucción vigente de cobro, no confirmación de pago.',
+  })
+  collectionActionAllowed?: boolean;
+  @ApiPropertyOptional({
+    description: 'false desde recogida; no repetir adelantos históricos.',
+  })
+  advanceToOriginAllowed?: boolean;
   @ApiPropertyOptional({
     type: CollectionInstructionsResponse,
     description: collectionInstructionsDoc,

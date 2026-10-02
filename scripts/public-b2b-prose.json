@@ -1,4 +1,8 @@
 {
+  "Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar revision para evitar retrocesos entre respuestas.": "Progreso reportado del servicio en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar revision para evitar retrocesos entre respuestas.",
+  "RETURNED_TO_ORIGIN acompaña CANCELLED y deliveredAt=null. Consultar por polling; no se emite delivery.completed ni nuevos webhooks.": "RETURNED_TO_ORIGIN acompaña CANCELLED y deliveredAt=null. Consultar periódicamente el estado; no se emite delivery.completed por una devolución física.",
+  "Requiere atención operativa. No expone motivo, actores ni contactos privados.": "El servicio requiere atención operativa y conserva la custodia del pedido.",
+  "Devolución física declarada; no implica devolución de dinero o créditos.": "Devolución física declarada al restaurante. No confirma devolución de dinero.",
   "Contrato público B2B. Acceso server-to-server; las credenciales se provisionan por administración. Incluye precotización, conversión y aceptación autorizada V1.13.": "Contrato público B2B. Acceso server-to-server; las credenciales se provisionan por administración. Incluye precotización, conversión y aceptación autorizada V1.13.",
   "Origen de tu entorno Mandaria; las rutas incluyen /api/v1.": "Origen de tu entorno Mandaria; las rutas incluyen /api/v1.",
   "": "",
