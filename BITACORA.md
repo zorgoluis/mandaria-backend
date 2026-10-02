@@ -4,6 +4,14 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación documental autorizada 2026-10-02:** se prepara commit y push de propuesta de ejecución detallada y continuidad pendiente en la rama actual `main`; resultado confirmado por Git en esta sesión. Sin implementación ni despliegue.
+
+- **Ejecución detallada — propuesta 2026-10-02:** análisis en [docs/DETAILED-EXECUTION-PROPOSAL.md](docs/DETAILED-EXECUTION-PROPOSAL.md), sin versión asignada ni implementación. Recomienda cinco hitos por asignación, DELIVERED canónico, operación web por administrador/aviso telefónico, barrera de custodia y proyección B2B aditiva. Pendientes de aprobación: granularidad, permisos iniciales, tratamiento de entrega imposible tras recogida y necesidad de eventos de progreso. El propietario confirma configuración comercial posterior al reset completada y probada; sustituye el pendiente de confirmación del resumen anterior, sin constituir pruebas nuevas del agente.
+
+- **Roadmap actualizado 2026-10-02:** se incorporan resultados del operador posteriores a la documentación histórica: portal y UI webhooks publicados/revisión visual confirmada; Swagger bloqueado reversiblemente; integración Coita completada según propietario (aprovisionamiento definitivo posterior al reset por confirmar); reset ejecutado, mantenimiento retirado y corrección search_path aplicada en VM, ambas funciones comprobadas y backend healthy. Pendientes comerciales tras reset no equivalen a desarrollo faltante. Apps/GPS/ejecución detallada y expansión siguen futuras, sin reasignar versiones. Lectura y consolidación, sin pruebas nuevas ni operaciones remotas.
+
+- **Consulta de flag recovery (2026-10-01):** búsqueda de `MANDARIA_RECOVERY_ENABLED` sin coincidencias previas en checkout backend ni frontend revisados, excluyendo .env/secretos, dependencias y build. No declarado en validador de configuración backend ni consumido por código encontrado. No puede atribuirse proceso/requisitos de producción sin identificar archivo o servicio de origen. Configuración intacta; sin acceso VM/Coita.
+
 - **Corrección de restauración de precotizaciones (2026-10-01):** nueva migración `20261001000100_prequote_restore_search_path` fija `pg_catalog, public` para validador y canonicalizador recursivo. No modifica datos ni migraciones históricas. Regresión local PostgreSQL 18.6 aislado: cuatro comprobaciones aprobadas (reproducción, corrección, dump/restore normal con fila sintética y rechazo de fila inválida); clúster detenido. Pendiente aplicar en VM PostgreSQL 17 mediante despliegue, sin nuevo reset. Sin commit/push ni acceso remoto.
 - **Evidencia del operador, sesión 2026-10-01:** reset QA ejecutado con respaldo cifrado externo recuperado; restauración de ensayo requirió corregir search_path en dos funciones, conteos/migraciones coincidentes, créditos sin incidencias y 1/1 secreto descifrado. Base original recreada, 29/29 migraciones, conteos comerciales consultados cero y un SUPER_ADMIN; backend/frontend healthy. Propietario pidió retirar mantenimiento: tres flags PREQUOTE true y polling configurado 15 s. Son resultados aportados por operador, no ejecuciones locales de esta tarea. Los registros de preparación siguientes son históricos.
 
@@ -433,6 +441,28 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-02 — Commit y push de propuesta de ejecución
+
+- **Solicitud:** commitear y subir a la rama actual.
+- **Alcance:** propuesta de ejecución detallada, VERIFICATION y continuidad pendiente (incluye roadmap y consulta recovery). Archivo local `nul` excluido.
+- **Verificación:** revisión del diff y `git diff --check`; sin repetir pruebas por tratarse de documentación. Resultado de publicación se confirma por salida Git. Pendientes las decisiones de negocio de la propuesta; no implementación ni activación.
+
+### 2026-10-02 — Análisis de estados detallados de ejecución
+
+- **Solicitud:** revisar aceptación, adjudicación, asignación, liberación, cancelación y entrega; proponer transiciones, permisos, historia, concurrencia, compatibilidad y handoff sin implementar.
+- **Cambios:** nueva propuesta `docs/DETAILED-EXECUTION-PROPOSAL.md` y continuidad documental. Se conservan cambios previos de BITACORA. Configuración comercial post-reset acreditada por declaración del propietario, sin acceso remoto.
+- **Verificación actual:** lectura de continuidad, schema, servicios/controllers/guards, cierre compartido, proyección B2B, outbox, instrucciones de cobro y migración de cierre; lectura de servicios frontend y localización de sus superficies. Revisión de numeración histórica sin asignar nueva versión. `git diff --check` documental; sin pruebas ejecutadas, migraciones, bases, Docker ni verificación visual.
+- **Resultado:** propuesta para revisión, no funcionalidades implementadas. Barrera postrecogida exige decisión operativa sobre custodia/incidencias; no se confunde entrega con cobro ni se amplían permisos actuales silenciosamente.
+- **Pendientes:** aprobación de decisiones de la propuesta y posterior implementación/verificación por etapas. Sin commit, push, despliegue ni activación.
+
+### 2026-10-01 — Investigación de MANDARIA_RECOVERY_ENABLED
+
+- **Solicitud:** localizar uso, efecto false y requisitos para true en producción, sin cambiar configuración.
+- **Cambios:** sólo esta continuidad documental.
+- **Verificaciones:** búsquedas locales exactas con rg/git grep, lectura de environment.ts y recuperación de permisos MPQ; ninguna referencia previa al flag en los checkouts revisados. Sin tests ni ejecución remota.
+- **Resultado:** no hay comportamiento atribuible a esa variable en Mandaria revisado; no recomendar activación por su nombre. La recuperación de permisos MPQ y polling webhook usan otros mecanismos.
+- **Pendiente:** identificar archivo/servicio donde el propietario vio la variable, sin compartir secretos. Sin cambios de configuración, Docker, Coita, commit, push ni despliegue.
 
 ### 2026-10-01 — Preparación de reinicio completo QA sin ejecución
 
@@ -1937,3 +1967,10 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Solicitud: propietario autoriza commit y push en la rama actual main.
 - Alcance: migración correctiva, regresión aislada, continuidad y runbook de reinicio QA previamente preparado. Archivo nul excluido.
 - Verificación actual: revisión de estado/diff y diff --check; pruebas PostgreSQL corresponden a la tarea inmediatamente anterior, no repetidas. Resultado de commit/push se confirmará por Git. Sin despliegue ni cambios en VM.
+
+### 2026-10-02 — Roadmap completo actualizado
+
+- Solicitud: presentar roadmap completo y desglosado con el estado actual.
+- Cambios: estado e historial de continuidad; consolidación en conversación por capacidades, conservando numeración histórica y separando producto, configuración tras reset y evolución futura.
+- Verificación: lectura README, VERIFICATION, bitácora, plan piloto y documentación frontend; evidencia de despliegue/reset/corrección procede de resultados aportados por el operador. No nuevas suites ni VM/Coita.
+- Resultado: webhooks web, portal e integración no se reabren como desarrollo pendiente; configuración definitiva y comprobaciones operativas pendientes quedan separadas. Sin commit/push/despliegue.

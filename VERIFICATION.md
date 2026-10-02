@@ -1,3 +1,7 @@
+## Análisis de ejecución detallada — 2026-10-02
+
+Sólo revisión estática y propuesta: [DETAILED-EXECUTION-PROPOSAL.md](docs/DETAILED-EXECUTION-PROPOSAL.md). Código de estados, autorización, asignación/cancelación/liberación, cierre y proyección B2B contrastado con schema; frontend consultado parcialmente para handoff, sin build ni revisión visual. Comprobación documental: `git diff --check`. No se ejecutaron tests, migraciones, consultas de datos ni servicios. La matriz de pruebas del documento es trabajo futuro, no evidencia aprobada. Configuración comercial post-reset completada/probada según propietario. Decisiones de custodia y permisos pendientes; no activación ni versión nueva.
+
 ## Preparación de reinicio QA en VM — 2026-10-01
 
 **DOCUMENTACIÓN PREPARADA; OPERACIÓN NO EJECUTADA.** Runbook: [PRODUCTION-QA-DATABASE-RESET-RUNBOOK.md](docs/PRODUCTION-QA-DATABASE-RESET-RUNBOOK.md). Archivos cambiados: ese documento nuevo, README, BITACORA y VERIFICATION.
