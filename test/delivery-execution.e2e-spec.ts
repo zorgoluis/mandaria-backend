@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { randomBytes, randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
@@ -204,6 +205,7 @@ beforeAll(async () => {
     return u.id;
   };
   await user('sa', 'SUPER_ADMIN');
+  await user('sa2', 'SUPER_ADMIN');
   // A and B receive dispatches (both candidates); C has no coverage, so it is never a candidate.
   for (const key of ['A', 'B', 'C'] as const) {
     const provider = await prisma.deliveryProvider.create({
@@ -272,6 +274,7 @@ beforeAll(async () => {
   await app.close();
   app = await bootstrap();
   t.indy = await login(mail('indy'));
+  t.sa2 = await login(mail('sa2'));
   t.otro = await login(mail('otro'));
   const zone = await api()
     .post('/api/v1/admin/service-zones')
@@ -922,6 +925,208 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       app.get(ConfigService).set('DETAILED_EXECUTION_ENABLED', true);
     }
   });
+  for (const scenario of [
+    'lost response',
+    'rollback',
+    'delayed original',
+    'race',
+    'closed replay',
+    'unauthorized',
+    'process restart',
+  ]) {
+    it(`reconciles resolution attempt: ${scenario}`, async () => {
+      const d = await start();
+      for (const phase of phases.slice(0, 3))
+        expect((await step(d.id, phase)).status).toBe(200);
+      const e = await view(d.id);
+      const incident = await api()
+        .post(`/api/v1/provider/dispatches/${d.id}/custody-incidents`)
+        .auth(t.A, bearer)
+        .set('Idempotency-Key', randomUUID())
+        .send({
+          assignmentId: e.activeAssignmentId,
+          expectedRevision: e.revision,
+          reasonCode: 'OTHER',
+          reasonDetail: 'Synthetic reconciliation test',
+        })
+        .expect(201);
+      const base = `/api/v1/admin/dispatches/${d.id}/custody-incidents/${incident.body.id}`;
+      const key = randomUUID();
+      const body = {
+        assignmentId: e.activeAssignmentId,
+        expectedRevision: incident.body.execution.revision,
+        type: 'RETURN_TO_ORIGIN',
+        reason: 'Confirmed synthetic return',
+        occurredAt: new Date().toISOString(),
+        confirmationMethod: 'PHONE',
+        custodianConfirmed: true,
+        originConfirmed: true,
+        originContactLabel: 'Fixture',
+        originContactRole: 'Manager',
+      };
+      const resolve = (k = key) =>
+        api()
+          .post(base + '/resolve')
+          .auth(t.sa, bearer)
+          .set('Idempotency-Key', k)
+          .send(body);
+      const read = () =>
+        api()
+          .get(base + '/resolution-attempt')
+          .auth(t.sa, bearer)
+          .set('Idempotency-Key', key);
+      const close = () =>
+        api()
+          .post(base + '/resolution-attempt/close')
+          .auth(t.sa, bearer)
+          .set('Idempotency-Key', key);
+      expect((await read().expect(200)).body).toEqual({
+        state: 'PENDING_OR_UNKNOWN',
+        resolutionId: null,
+        canStartNewAttempt: false,
+      });
+      expect(
+        await prisma.deliveryExecutionCommand.count({
+          where: { dispatchId: d.id, operation: `RESOLVE:${incident.body.id}` },
+        }),
+      ).toBe(0);
+      if (scenario === 'lost response') {
+        await resolve().expect(200); // The client discards the response; only durable lookup is used.
+        const receipt = (await read().expect(200)).body;
+        expect(receipt.state).toBe('APPLIED');
+        expect(Object.keys(receipt).sort()).toEqual([
+          'canStartNewAttempt',
+          'resolutionId',
+          'state',
+        ]);
+        expect((await close().expect(200)).body).toEqual(receipt);
+      } else if (scenario === 'race') {
+        const [original, closed] = await Promise.all([resolve(), close()]);
+        expect(closed.status).toBe(200);
+        if (closed.body.state === 'APPLIED') expect(original.status).toBe(200);
+        else {
+          expect(closed.body.state).toBe('CLOSED_NO_EFFECTS');
+          expect(original.status).toBe(409);
+        }
+      } else if (scenario === 'rollback') {
+        await prisma.$executeRawUnsafe(
+          `CREATE FUNCTION test_reconciliation_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.operation LIKE 'RESOLVE:%' AND NEW.state='APPLIED' THEN RAISE EXCEPTION 'CONTROLLED_TEST_FAILURE'; END IF; RETURN NEW; END $$`,
+        );
+        await prisma.$executeRawUnsafe(
+          'CREATE TRIGGER test_reconciliation_failure BEFORE INSERT ON "DeliveryExecutionCommand" FOR EACH ROW EXECUTE FUNCTION test_reconciliation_failure()',
+        );
+        try {
+          await resolve().expect(500);
+        } finally {
+          await prisma.$executeRawUnsafe(
+            'DROP TRIGGER test_reconciliation_failure ON "DeliveryExecutionCommand"',
+          );
+          await prisma.$executeRawUnsafe(
+            'DROP FUNCTION test_reconciliation_failure()',
+          );
+        }
+        expect((await read()).body.state).toBe('PENDING_OR_UNKNOWN');
+        expect(
+          await prisma.deliveryCustodyResolution.count({
+            where: { incidentId: incident.body.id },
+          }),
+        ).toBe(0);
+        expect(
+          (
+            await prisma.deliveryAssignment.findUniqueOrThrow({
+              where: { id: e.activeAssignmentId },
+            })
+          ).status,
+        ).toBe('ACTIVE');
+        expect((await close()).body.state).toBe('CLOSED_NO_EFFECTS');
+      } else if (scenario === 'unauthorized') {
+        await api()
+          .get(base + '/resolution-attempt')
+          .auth(t.A, bearer)
+          .set('Idempotency-Key', key)
+          .expect(403);
+        await api()
+          .post(base + '/resolution-attempt/close')
+          .auth(t.b2b, bearer)
+          .set('Idempotency-Key', key)
+          .expect(401);
+        // A different admin's identically named key does not close this actor's attempt.
+        await api()
+          .post(base + '/resolution-attempt/close')
+          .auth(t.sa2, bearer)
+          .set('Idempotency-Key', key)
+          .expect(200);
+        expect((await read()).body.state).toBe('PENDING_OR_UNKNOWN');
+        await resolve().expect(200);
+        expect(
+          (
+            await api()
+              .get(base + '/resolution-attempt')
+              .auth(t.sa2, bearer)
+              .set('Idempotency-Key', key)
+          ).body.state,
+        ).toBe('CLOSED_NO_EFFECTS');
+      } else {
+        const closed = (await close().expect(200)).body;
+        expect(closed).toEqual({
+          state: 'CLOSED_NO_EFFECTS',
+          resolutionId: null,
+          canStartNewAttempt: true,
+        });
+        expect((await close().expect(200)).body).toEqual(closed);
+        if (scenario === 'process restart') {
+          await app.close();
+          const script = `import {PrismaClient} from '@prisma/client'; import {ExecutionService} from './dist/delivery-execution/execution.service.js'; const db=new PrismaClient(); try { console.log(JSON.stringify(await new ExecutionService(db).reconcileResolution(process.argv[1],process.argv[2],{id:process.argv[3],role:'SUPER_ADMIN'},process.argv[4]))); } finally {await db.$disconnect();}`;
+          const durable = execFileSync(
+            process.execPath,
+            [
+              '--input-type=module',
+              '-e',
+              script,
+              d.id,
+              incident.body.id,
+              users.sa,
+              key,
+            ],
+            { encoding: 'utf8', timeout: 15000 },
+          );
+          expect(JSON.parse(durable)).toEqual(closed);
+          app = await bootstrap();
+        }
+        const rejected = await resolve().expect(409);
+        expect(JSON.stringify(rejected.body)).toContain(
+          'EXECUTION_ATTEMPT_CLOSED',
+        );
+        await resolve().expect(409);
+        await api()
+          .post(
+            base.replace(incident.body.id, incident.body.id.toUpperCase()) +
+              '/resolve',
+          )
+          .auth(t.sa, bearer)
+          .set('Idempotency-Key', key.toUpperCase())
+          .send(body)
+          .expect(409);
+      }
+      if (
+        !(await prisma.deliveryCustodyResolution.findUnique({
+          where: { incidentId: incident.body.id },
+        }))
+      )
+        await resolve(randomUUID()).expect(200);
+      expect(
+        await prisma.deliveryCustodyResolution.count({
+          where: { incidentId: incident.body.id },
+        }),
+      ).toBe(1);
+      expect(
+        await prisma.deliveryAssignment.count({
+          where: { dispatchId: d.id, status: 'ACTIVE' },
+        }),
+      ).toBe(0);
+      expect(await refundsOf(d.id)).toBe(0);
+    });
+  }
   it('preserves untracked assignments when admission is disabled; legacy delivers without invented milestones', async () => {
     app.get(ConfigService).set('DETAILED_EXECUTION_ENABLED', false);
     try {

@@ -27,6 +27,8 @@ El detalle/listado operativo del proveedor y el detalle independiente agregan `e
 
 ## Comandos y recuperación
 
+Actualización 2026-10-03: [contrato de consulta y cierre durable del intento](EXECUTION-ATTEMPT-RECONCILIATION.md). Reemplaza el bloqueo ante cuerpo perdido: GET propio no muta; POST close invalida permanentemente una clave no aplicada y se serializa con resolve. Frontend debe integrar estas rutas; no se cambió aquí. Ausencia de recibo continúa siendo incierta.
+
 Todos los POST nuevos requieren `Idempotency-Key: UUID`. Cuerpo común: `assignmentId` vigente y `expectedRevision` de la lectura. Actor/source/fechas de registro salen del servidor; campos ajenos se rechazan.
 
 Avance, ejemplo ficticio:

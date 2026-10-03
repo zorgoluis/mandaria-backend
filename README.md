@@ -14,6 +14,8 @@ Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comp
 
 ## Ejecución detallada y custodia
 
+Reconciliación de respuestas inciertas: [contrato de intento durable](docs/EXECUTION-ATTEMPT-RECONCILIATION.md). SUPER_ADMIN iniciador consulta su recibo o cierra explícitamente una clave no aplicada bajo los mismos locks que la resolución. Ausencia sigue incierta; una clave cerrada nunca puede aplicar después. No confirma ni repite operaciones físicas. Frontend debe integrar el contrato; sin activación.
+
 Implementación local: [contrato para Frontend y operación](docs/DETAILED-EXECUTION-HANDOFF.md), [diseño aprobado](docs/DETAILED-EXECUTION-PROPOSAL.md) y [resultados ejecutados](docs/DETAILED-EXECUTION-VERIFICATION.md). `DETAILED_EXECUTION_ENABLED=false` por defecto; habilitarlo admite nuevas asignaciones con cinco hitos consecutivos, sin reconstruir hitos legacy. Deshabilitarlo posteriormente no elimina reglas ni historial de servicios detallados existentes.
 
 Desde recogida se bloquean cancelación, liberación y reasignación ordinarias. Incidencias conservan custodia y recursos; SUPER_ADMIN puede confirmar devolución física (RETURNED terminal) o transferencia atómica conservando progreso y cargo original. No implica cobro, refund ni entrega ficticia. B2B consulta progreso aditivo y conserva únicamente `delivery.completed` al cierre real. Dos migraciones incrementales; despliegue coordinado sin escritores antiguos. Frontend, responsable, suplente y plazo de atención SUPER_ADMIN son requisitos previos a activación, aún pendientes.

@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación de reconciliación autorizada (2026-10-03):** propietario solicita commit/push del backend a QA. Incluye cierre durable, contrato, migración incremental y evidencia; excluye `nul`, temporales y repositorio frontend. Verificación de esta tarea: revisión Git y diff --check; pruebas funcionales de la implementación anterior, no repetidas. Resultado del envío se confirma con Git. Sin despliegue ni activación.
+
+- **Reconciliación de custodia (2026-10-03):** GET propio APPLIED/PENDING_OR_UNKNOWN/CLOSED_NO_EFFECTS y POST close explícito reutilizan recibos inmutables y locks de resolve. Cierre durable impide originales tardíos; UUID equivalentes no eluden la barrera. Nuevo contrato en docs/EXECUTION-ATTEMPT-RECONCILIATION.md. Verificación local actual: 16 E2E completos, 68 unitarias pertinentes, 34 públicas; migración limpia y upgrade de 251 recibos preservados. Sin frontend, activación, Docker, datos reales, commit/push ni despliegue. Continúan pendientes UI y cobertura SUPER_ADMIN. Los conteos anteriores son históricos.
+
 - **Publicación de ejecución detallada autorizada (2026-10-02):** el propietario solicita commit y push en QA. Se prepara implementación, migraciones incrementales, contrato, handoff y evidencia; se excluyen `nul` y temporales. Verificación de esta tarea: revisión del conjunto Git y diff --check; los resultados funcionales pertenecen a la implementación anterior y no se repiten. El resultado del envío se confirma mediante Git. No autoriza despliegue ni activación.
 
 - **Ejecución detallada implementada localmente (2026-10-02):** cinco hitos, historial/actor real, barreras de custodia, incidencias y resoluciones SUPER_ADMIN RETURNED/transferencia atómica. Cargo original preservado; B2B aditivo sin nuevos webhooks; legacy sin hitos inventados. [Handoff](docs/DETAILED-EXECUTION-HANDOFF.md) y [verificación](docs/DETAILED-EXECUTION-VERIFICATION.md). En esta tarea: 403 unitarias, 135 E2E de ocho archivos, 34 contrato público; build, tipos, linters, migración limpia e incremental locales aprobados. Intentos incompletos excluidos y límites documentados. Flag false por defecto; pendientes Frontend y responsable/suplente/plazo SUPER_ADMIN. Sin activación, commit/push ni despliegue. El registro de diseño previo siguiente queda histórico.
@@ -1941,3 +1945,19 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Verificación actual: revisión de rama, estado, archivos y git diff --check. Las 403 unitarias, 135 E2E y 34 pruebas públicas son evidencia de la tarea anterior, no nuevas ejecuciones.
 - Resultado: publicación preparada; éxito de commit y push a confirmar con la salida Git al finalizar. Sin despliegue ni activación.
 - Pendientes: Frontend, cobertura SUPER_ADMIN y autorización operativa conservados.
+
+## 2026-10-03 — Reconciliación autorizada de resoluciones de custodia
+
+- Solicitud: superar incertidumbre tras perder el formulario, usando marcador mínimo e idempotencia existente; sin cambios frontend ni activación.
+- Cambios: estado terminal inmutable CLOSED_NO_EFFECTS en DeliveryExecutionCommand mediante migración nueva; GET privado propio y POST explícito close, serializados con POST resolve. Ausencia sigue PENDING_OR_UNKNOWN. Clave cerrada responde 409 EXECUTION_ATTEMPT_CLOSED; correlación incluye actor, operación/incidencia, despacho y clave sin sensibilidad a mayúsculas UUID. No efectos físicos/financieros al reconciliar. Contrato/handoff/OpenAPI/README actualizados.
+- Verificación actual: build/generate, migración limpia32 y upgrade de251 recibos sintéticos intactos, 16 E2E completos, 68 unitarias pertinentes, 34 públicas, checks documentales/tipos/linters/diff. Setup inicial429 excluido; límite real intacto. Evidencia y límites en VERIFICATION y docs/checks/execution-reconciliation.json.
+- Resultado: cierre durable del intento localmente comprobado; no nuevo intento a partir de ausencia. Otro SUPER_ADMIN conserva auditoría/resolución propia, sin apropiarse de claves ajenas. Cluster temporal detenido y evidencia conservada al cierre.
+- Pendientes: Frontend debe integrar consulta/cierre y recuperación del marcador; cobertura responsable/suplente/plazo SUPER_ADMIN y autorización operativa antes de activar. Sin datos reales, Docker, Coita, .env, versión, commit/push ni despliegue.
+
+## 2026-10-03 — Publicación Git de reconciliación
+
+- Solicitud: commit y push a QA del backend ya implementado.
+- Cambios: consolidación de reconciliación durable, migración, OpenAPI, pruebas y documentación. Frontend y archivo ajeno nul excluidos.
+- Verificaciones actuales: rama/estado Git y diff --check. Los 16 E2E, 68 unitarios y 34 públicos corresponden a la implementación anterior; no se repitieron.
+- Resultado: commit y envío preparados; confirmación definitiva por salida Git al cierre de la tarea. Sin despliegue ni activación.
+- Pendientes: autorización operativa y cobertura SUPER_ADMIN; publicación/despliegue frontend independiente.

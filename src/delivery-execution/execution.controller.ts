@@ -1,4 +1,5 @@
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger';
+import { ResolutionAttemptResponse } from './execution.responses.js';
 import {
   ExecutionDetailResponse,
   IncidentPageResponse,
@@ -11,6 +12,7 @@ import {
   Controller,
   Get,
   Headers,
+  Header,
   HttpCode,
   Param,
   ParseUUIDPipe,
@@ -188,6 +190,54 @@ export class DriverExecutionController {
 @Roles('SUPER_ADMIN')
 @Controller('admin')
 export class AdminExecutionController {
+  @Get(
+    'dispatches/:dispatchId/custody-incidents/:incidentId/resolution-attempt',
+  )
+  @Header('Cache-Control', 'no-store')
+  @HttpCode(200)
+  @keyHeader()
+  @ApiOkResponse({ type: ResolutionAttemptResponse })
+  @ApiOperation({
+    summary:
+      'Consultar recibo propio; ausencia permanece incierta y GET no cierra el intento',
+  })
+  attempt(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Param('incidentId', new ParseUUIDPipe()) incident: string,
+    @Req() req: AuthenticatedRequest,
+    @Headers('idempotency-key') key: string,
+  ) {
+    return this.execution.reconcileResolution(
+      id,
+      incident,
+      { id: req.user.id, role: 'SUPER_ADMIN' },
+      key,
+    );
+  }
+  @Post(
+    'dispatches/:dispatchId/custody-incidents/:incidentId/resolution-attempt/close',
+  )
+  @HttpCode(200)
+  @keyHeader()
+  @ApiOkResponse({ type: ResolutionAttemptResponse })
+  @ApiOperation({
+    summary:
+      'Cerrar clave propia sin efectos bajo los mismos locks que resolve; devuelve APPLIED si ya confirmó. No resuelve ni realiza operaciones físicas',
+  })
+  closeAttempt(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Param('incidentId', new ParseUUIDPipe()) incident: string,
+    @Req() req: AuthenticatedRequest,
+    @Headers('idempotency-key') key: string,
+  ) {
+    return this.execution.reconcileResolution(
+      id,
+      incident,
+      { id: req.user.id, role: 'SUPER_ADMIN' },
+      key,
+      true,
+    );
+  }
   constructor(
     private readonly execution: ExecutionService,
     private readonly db: PrismaService,

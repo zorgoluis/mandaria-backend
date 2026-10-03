@@ -1,0 +1,416 @@
+{
+  "date": "2026-10-03",
+  "base": "004b750",
+  "node": "v24.15.0",
+  "postgres": "18 local isolated 127.0.0.1:55439",
+  "reports": [
+    {
+      "source": ".tmp/reconciliation-check/e2e-final.json",
+      "sha256": "e20b00efdaf38f4ff6ee896131bfe502c34a918650c61490dc9b574c3d671c50",
+      "exitCode": 0,
+      "passed": 16,
+      "files": [
+        {
+          "file": "delivery-execution.e2e-spec.ts",
+          "startTime": 1791052900709,
+          "endTime": 1791052910545.6582,
+          "status": "passed",
+          "cases": [
+            {
+              "name": "Detailed execution HTTP and PostgreSQL requires five consecutive reports; rejects role and duplicate writes; delivers once",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL holds custody, rejects ordinary cancellation, and resolves return once under concurrency",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL transfers fleet custody to independent atomically without another award or fabricated pickup",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL rejects replay changes, forged actors and direct SQL jumps while preserving the original event",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL transfers independent custody to fleet, rejects an ineligible vehicle and rolls back a forced insertion failure",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL serializes pickup against B2B cancellation without a refund under custody",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL permits only one of two concurrent custody transfers to the same recipient",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL starts a fresh chain on ordinary reassignment before pickup, even when new admission is disabled",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL reconciles resolution attempt: lost response",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL reconciles resolution attempt: rollback",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL reconciles resolution attempt: delayed original",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL reconciles resolution attempt: race",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL reconciles resolution attempt: closed replay",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL reconciles resolution attempt: unauthorized",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL reconciles resolution attempt: process restart",
+              "status": "passed"
+            },
+            {
+              "name": "Detailed execution HTTP and PostgreSQL preserves untracked assignments when admission is disabled; legacy delivers without invented milestones",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": ".tmp/reconciliation-check/unit.json",
+      "sha256": "490b6c26c993245131d4ab077d9422b233799a109aa9280f8925cb94590d6457",
+      "exitCode": 0,
+      "passed": 68,
+      "files": [
+        {
+          "file": "delivery-assignments.spec.ts",
+          "startTime": 1791052909469,
+          "endTime": 1791052909493.005,
+          "status": "passed",
+          "cases": [
+            {
+              "name": "assignment deadline starts at claimedAt, is independent from the dispatch window and only flags unassigned claims",
+              "status": "passed"
+            },
+            {
+              "name": "assignment deadline reads the TTL of each ServiceType from configuration",
+              "status": "passed"
+            },
+            {
+              "name": "payment context separates delivery fee from goods and states what the driver must advance",
+              "status": "passed"
+            },
+            {
+              "name": "V1.4 pairing consistency rejects a driver or vehicle paired with another resource, allows the paired couple and free ones",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction hides dispatches of other providers and refuses when the claim is not ours",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction refuses a second assignment, ineligible or busy resources and pairing mismatches",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction accepts the paired couple and records who assigned",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction rejects reassigning to the same couple and cancelling without an active assignment",
+              "status": "passed"
+            },
+            {
+              "name": "DeliveryAssignmentsService rules inside the transaction ends the previous assignment before creating the new one",
+              "status": "passed"
+            },
+            {
+              "name": "cancelling a delivery ends its active assignments marks them CANCELLED / DELIVERY_CANCELLED and returns them for the audit log",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "delivery-completion.spec.ts",
+          "startTime": 1791052912471,
+          "endTime": 1791052912493.1921,
+          "status": "passed",
+          "cases": [
+            {
+              "name": "V1.11-A completion contract answers every refusal with 409: a completion is never an internal failure",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A completion contract names the audit signal of a delivery",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion ends the assignment as COMPLETED and resolves the dispatch as DELIVERED, atomically",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion closes the assignment without a motive: nothing failed",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion writes the assignment before the dispatch, the only order SQL accepts",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion locks the dispatch row and the active assignment row",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion refuses a dispatch claimed by another provider without writing anything",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion refuses a cancelled dispatch even though its claim owner is still recorded",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion refuses a claim with no driver and vehicle: there is nothing to deliver",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion reports an unknown dispatch as 404, never as a completion error",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion repeats the same answer for the owner without writing again",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A provider completion records the B2B event in the same transaction, on the delivery own clock",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion closes the driver assignment and delivers the dispatch",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion refuses a service taken by another driver with the driver-facing code",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion never lets a provider complete a service an independent driver took",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A independent completion never lets a driver complete a service a provider claimed",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A completion writes nothing economic touches only the assignment and the dispatch",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A guard rejections turns a PostgreSQL guard into a 409, never a 500",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A guard rejections keeps a decided refusal with its own code",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A guard rejections lets an unrelated failure through untouched",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A DELIVERED is terminal for both execution models stops a provider from claiming a delivered service, including the one that delivered it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A DELIVERED is terminal for both execution models stops an independent driver from taking a delivered service",
+              "status": "passed"
+            },
+            {
+              "name": "V1.11-A the independent completion does not re-run the approval gate closes the service without ever reading the independent profile",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "dispatch.spec.ts",
+          "startTime": 1791052907962,
+          "endTime": 1791052907988.5117,
+          "status": "passed",
+          "cases": [
+            {
+              "name": "dispatch TTL and lazy expiration opens for the configured minutes and closes exactly at expiresAt",
+              "status": "passed"
+            },
+            {
+              "name": "dispatch TTL and lazy expiration configures DISPATCH_TTL_MINUTES with a default of 10 and sane bounds",
+              "status": "passed"
+            },
+            {
+              "name": "claim rules allows only OPEN, in-window dispatches for OFFERED candidates",
+              "status": "passed"
+            },
+            {
+              "name": "opening and cancellation inside the caller transaction snapshots every eligible provider as OFFERED with the TTL window",
+              "status": "passed"
+            },
+            {
+              "name": "opening and cancellation inside the caller transaction fails closed when an allowed actor has no ACTIVE credit policy",
+              "status": "passed"
+            },
+            {
+              "name": "opening and cancellation inside the caller transaction still opens the dispatch when no provider is eligible",
+              "status": "passed"
+            },
+            {
+              "name": "opening and cancellation inside the caller transaction cancels OPEN and CLAIMED dispatches of a cancelled request, expiring lapsed OPEN ones",
+              "status": "passed"
+            },
+            {
+              "name": "data exposure per provider relation OFFER shows what is needed to decide, without contacts, instructions, references or client",
+              "status": "passed"
+            },
+            {
+              "name": "data exposure per provider relation OWNER gets full operational detail; others only a summary",
+              "status": "passed"
+            },
+            {
+              "name": "data exposure per provider relation flags OPEN dispatches nobody can claim without a dedicated status",
+              "status": "passed"
+            },
+            {
+              "name": "DispatchService authorization inside the transaction treats a non-candidate like a missing dispatch and never writes",
+              "status": "passed"
+            },
+            {
+              "name": "DispatchService authorization inside the transaction re-checks eligibility before claiming",
+              "status": "passed"
+            },
+            {
+              "name": "DispatchService authorization inside the transaction rejects releases from providers that do not hold the claim",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "independent-drivers.spec.ts",
+          "startTime": 1791052911119,
+          "endTime": 1791052911140.452,
+          "status": "passed",
+          "cases": [
+            {
+              "name": "V1.9 service execution policy decides per ServiceType whether independents may execute it",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 service execution policy would hide a FLEET-only service from independents without touching the fleet path",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take eligibility rejects in the same order as the provider claim, and only then checks the service policy",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take eligibility maps every driver motive onto the shared V1.8 end-reason enum",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take eligibility every V1.9 conflict is a 409, never a silent success",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 assignment deadline does not apply to an independent claim, whose assignment is created in the same transaction",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling an independent driver requires a real, operational Driver and never creates one",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling an independent driver is a 404 for an unknown driver, so ids cannot be probed",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling an independent driver creates the profile APPROVED with the acting SUPER_ADMIN, and is idempotent",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 enabling an independent driver reapproving a SUSPENDED profile clears the suspension instead of creating a second profile",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 suspension with an active service refuses the suspension instead of cancelling a delivery in progress",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 suspension with an active service suspends a free driver, recording who and why",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 vehicle limit is configurable and counts every vehicle whatever its status",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 vehicle limit creates the vehicle owned by the profile and never by a provider",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 vehicle limit reads the limit from the environment with a safe default",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 driver identity is never taken from the payload rejects a DRIVER without an independent profile",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 driver identity is never taken from the payload rejects a SUSPENDED profile without revealing anything else",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 driver identity is never taken from the payload is a 404 when the user has no Driver profile at all",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 driver identity is never taken from the payload reports canTakeServices false while any assignment is ACTIVE, fleet or independent",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take serializes against suspension locks the profile row together with the driver row",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take serializes against suspension turns a PostgreSQL guard rejection into 409, never a 500",
+              "status": "passed"
+            },
+            {
+              "name": "V1.9 take serializes against suspension recognises a guard rejection without confusing it with an ordinary failure",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "upgrade": {
+    "preserved": true,
+    "beforeHash": "5855ca208a09ded7e97abafcb4382cda7cc7c3bc5ba9408833cfbd3e1dd5d70c",
+    "afterHash": "5855ca208a09ded7e97abafcb4382cda7cc7c3bc5ba9408833cfbd3e1dd5d70c",
+    "states": [
+      {
+        "state": "APPLIED",
+        "count": 251
+      }
+    ]
+  },
+  "excludedAttempt": {
+    "source": ".tmp/reconciliation-check/e2e.json",
+    "exitCode": 1,
+    "cause": "Fixture setup exceeded real five-login limit; zero cases executed. Extra admin login moved to existing second application setup; rate limiting unchanged."
+  }
+}

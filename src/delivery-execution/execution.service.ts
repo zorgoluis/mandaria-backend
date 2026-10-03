@@ -65,6 +65,62 @@ async function retryExecution<T>(work: () => Promise<T>): Promise<T> {
 @Injectable()
 export class ExecutionService {
   constructor(private readonly db: PrismaService) {}
+  async reconcileResolution(
+    dispatchId: string,
+    incidentId: string,
+    actor: Actor,
+    key: string,
+    close = false,
+  ) {
+    if (!isUUID(key))
+      throw new BadRequestException('UUID Idempotency-Key required');
+    if (actor.role !== 'SUPER_ADMIN') throw new ForbiddenException();
+    return retryExecution(() =>
+      this.db.$transaction(
+        async (tx) => {
+          if (close) await lockExecutionDispatch(tx, dispatchId);
+          // Same actor lock order as the original command; never accept actor identity from input.
+          if (close)
+            await tx.$queryRaw`SELECT id FROM "User" WHERE id=${actor.id}::uuid FOR SHARE`;
+          const user = await tx.user.findUnique({ where: { id: actor.id } });
+          if (!user?.active || user.role !== 'SUPER_ADMIN')
+            throw new ForbiddenException();
+          const incident = await tx.deliveryCustodyIncident.findFirst({
+            where: { id: incidentId, dispatchId },
+            select: { resolvedAt: true },
+          });
+          if (!incident) throw new NotFoundException('Incident not found');
+          const operation = `RESOLVE:${incidentId}`;
+          const rows = await tx.$queryRaw<
+            { state: string }[]
+          >`SELECT state FROM "DeliveryExecutionCommand" WHERE "dispatchId"=${dispatchId}::uuid AND "actorUserId"=${actor.id}::uuid AND lower(operation)=lower(${operation}) AND key=${key}::uuid`;
+          let state = rows[0]?.state ?? 'PENDING_OR_UNKNOWN';
+          if (close && !rows[0]) {
+            await tx.$executeRaw`INSERT INTO "DeliveryExecutionCommand" ("dispatchId","actorUserId",operation,key,hash,response,state) VALUES (${dispatchId}::uuid,${actor.id}::uuid,${operation},${key}::uuid,'','{}'::jsonb,'CLOSED_NO_EFFECTS')`;
+            state = 'CLOSED_NO_EFFECTS';
+          }
+          // Minimal receipt projection: never return stored body hash, confirmations or response.
+          const resolution =
+            state === 'APPLIED'
+              ? await tx.deliveryCustodyResolution.findUnique({
+                  where: { incidentId },
+                  select: { id: true },
+                })
+              : null;
+          return {
+            state,
+            resolutionId: resolution?.id ?? null,
+            canStartNewAttempt:
+              state === 'CLOSED_NO_EFFECTS' && incident.resolvedAt === null,
+          };
+        },
+        {
+          isolationLevel: close ? 'ReadCommitted' : 'RepeatableRead',
+          timeout: 15000,
+        },
+      ),
+    );
+  }
   private async view(tx: Prisma.TransactionClient, id: string, actor: Actor) {
     const result = await executionView(tx, id);
     if (result && actor.role === 'SUPER_ADMIN')
@@ -238,9 +294,11 @@ export class ExecutionService {
           if (!user?.active || user.role !== actor.role)
             throw new ForbiddenException();
           const receipts = await tx.$queryRaw<
-            { hash: string; response: Prisma.JsonValue }[]
-          >`SELECT hash,response FROM "DeliveryExecutionCommand" WHERE "dispatchId"=${dispatchId}::uuid AND "actorUserId"=${actor.id}::uuid AND operation=${operation} AND key=${key}::uuid`;
+            { hash: string; response: Prisma.JsonValue; state: string }[]
+          >`SELECT hash,response,state FROM "DeliveryExecutionCommand" WHERE "dispatchId"=${dispatchId}::uuid AND "actorUserId"=${actor.id}::uuid AND lower(operation)=lower(${operation}) AND key=${key}::uuid`;
           if (receipts[0]) {
+            if (receipts[0].state === 'CLOSED_NO_EFFECTS')
+              throw executionError('EXECUTION_ATTEMPT_CLOSED');
             if (receipts[0].hash !== hash)
               throw executionError('IDEMPOTENCY_KEY_REUSED');
             return receipts[0].response;

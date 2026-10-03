@@ -1,3 +1,19 @@
+## Reconciliación de intentos — 2026-10-03
+
+Base QA `004b750`; [contrato exacto](docs/EXECUTION-ATTEMPT-RECONCILIATION.md), [evidencia sanitizada](docs/checks/execution-reconciliation.json). Sólo PostgreSQL 18 temporal local; nueva base `mandaria_reconciliation_test` y upgrade en `mandaria_execution_v5_test` sintética anterior. Sin datos reales ni frontend.
+
+Verificaciones nuevas:
+
+- `prisma migrate deploy`: 32 migraciones desde vacío, exit 0. Upgrade 31→32 preservó exactamente id/hash/response/recordedAt de 251 recibos previos; todos APPLIED. Sin reset ni alteración de migraciones históricas.
+- `prisma generate`, `npm run docs:b2b` y build final: exit 0. OpenAPI administrativo añade dos rutas; público sin diferencias.
+- Archivo completo `delivery-execution.e2e-spec.ts`, pool forks, maxWorkers=1: **16/16, exit 0**; nueve regresiones y siete escenarios de reconciliación. Reporte `.tmp/reconciliation-check/e2e-final.json`. Primer intento falló durante setup por sexto login y 429: cero casos acreditados. Fixture movió login extra al segundo arranque existente; no cambió límites ni aserciones. Dos corridas completas posteriores exitosas, no sumadas entre sí.
+- Cuatro archivos unitarios completos (delivery-completion, delivery-assignments, dispatch, independent-drivers): **68/68, exit 0**, reporte unit.json. No suite unitaria/E2E total.
+- `npm run test:public-b2b`: **34/34, exit 0**; `npm run docs:b2b:check`: exit 0.
+- `tsc --noEmit -p tsconfig.json` y `tsconfig.build.json`, Oxlint y ESLint: exit 0; warning Oxlint previo de import sin uso en verificador C3.
+- `git diff --check`: exit 0. Logs locales `.tmp/reconciliation-check/`. Se detiene sólo el cluster temporal al cierre; fixtures/evidencia conservados.
+
+Casos: commit con respuesta descartada, rollback por fallo forzado de inserción del recibo después de mutaciones operativas, petición original tardía, close/resolve concurrentes, replay cerrado incluso con mayúsculas, usuario no autorizado y aislamiento entre SUPER_ADMIN, lectura del cierre desde proceso Node nuevo y replay rechazado en app reiniciada. Mantiene resolución única, recursos y refunds. No se simula red física ni reinicio de VM; no hay prueba visual/frontend ni carga. Conserva datos mínimos, no cuerpos en nuevo contrato. Ningún resultado histórico se presenta como nueva ejecución. Sin activación, commit, push o despliegue.
+
 ## Ejecución detallada implementada — 2026-10-02
 
 QA `cfc8773` como base; pruebas **nuevas de esta tarea**, exclusivamente PostgreSQL 18 temporal local. [Informe completo](docs/DETAILED-EXECUTION-VERIFICATION.md), [casos y hashes](docs/checks/detailed-execution/results.json), [contrato Frontend/despliegue](docs/DETAILED-EXECUTION-HANDOFF.md).

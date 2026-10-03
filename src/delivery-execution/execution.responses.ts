@@ -174,7 +174,18 @@ export function ExecutionContract(kind: 'advance' | 'report' | 'resolve') {
     ApiResponse({
       status: 409,
       description:
-        'Sin efectos parciales: EXECUTION_CONFLICT, EXECUTION_TRANSITION_INVALID, CUSTODY_INCIDENT_REQUIRED, CUSTODY_INCIDENT_OPEN, INCIDENT_ALREADY_OPEN, INCIDENT_ALREADY_RESOLVED, CUSTODY_RECIPIENT_NOT_ELIGIBLE, IDEMPOTENCY_KEY_REUSED. Consultar estado y reutilizar clave y cuerpo ante respuesta incierta.',
+        'Sin efectos parciales: EXECUTION_CONFLICT, EXECUTION_TRANSITION_INVALID, CUSTODY_INCIDENT_REQUIRED, CUSTODY_INCIDENT_OPEN, INCIDENT_ALREADY_OPEN, INCIDENT_ALREADY_RESOLVED, CUSTODY_RECIPIENT_NOT_ELIGIBLE, IDEMPOTENCY_KEY_REUSED, EXECUTION_ATTEMPT_CLOSED. Consultar estado ante respuesta incierta; una clave cerrada nunca vuelve a aplicar efectos.',
     }),
   );
+}
+export class ResolutionAttemptResponse {
+  @ApiProperty({ enum: ['APPLIED', 'PENDING_OR_UNKNOWN', 'CLOSED_NO_EFFECTS'] })
+  state!: string;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true })
+  resolutionId!: string | null;
+  @ApiProperty({
+    description:
+      'Sólo true si la clave quedó cerrada sin efectos y la incidencia seguía abierta al consultar; revalidar estado antes de otra resolución.',
+  })
+  canStartNewAttempt!: boolean;
 }

@@ -27,6 +27,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/dispatches/{dispatchId}/assignments | bearer | SUPER_ADMIN | — | Historial de asignaciones de un Dispatch |
 | POST | /api/v1/admin/dispatches/{dispatchId}/custody-incidents | bearer | SUPER_ADMIN | — | Registrar escalamiento recibido de custodia |
 | GET | /api/v1/admin/dispatches/{dispatchId}/custody-incidents/{incidentId} | bearer | SUPER_ADMIN | — | Auditoría privada de incidencia y resolución; sólo SUPER_ADMIN |
+| GET | /api/v1/admin/dispatches/{dispatchId}/custody-incidents/{incidentId}/resolution-attempt | bearer | SUPER_ADMIN | — | Consultar recibo propio; ausencia permanece incierta y GET no cierra el intento |
+| POST | /api/v1/admin/dispatches/{dispatchId}/custody-incidents/{incidentId}/resolution-attempt/close | bearer | SUPER_ADMIN | — | Cerrar clave propia sin efectos bajo los mismos locks que resolve; devuelve APPLIED si ya confirmó. No resuelve ni realiza operaciones físicas |
 | POST | /api/v1/admin/dispatches/{dispatchId}/custody-incidents/{incidentId}/resolve | bearer | SUPER_ADMIN | — | Resolver por devolución confirmada o transferencia; sin cargo/refund automático |
 | GET | /api/v1/admin/dispatches/{dispatchId}/custody-transfer-candidates | bearer | SUPER_ADMIN | — | Pares elegibles de conductor y vehículo; disponibilidad revalidada al resolver |
 | GET | /api/v1/admin/dispatches/{dispatchId}/execution | bearer | SUPER_ADMIN | — | Auditar progreso sin suplantar al ejecutor |

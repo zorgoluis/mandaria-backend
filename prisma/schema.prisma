@@ -1327,6 +1327,7 @@ model DeliveryExecutionEvent {
 }
 
 model DeliveryExecutionCommand {
+  state String @default("APPLIED")
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   dispatchId  String   @db.Uuid
   actorUserId String   @db.Uuid
