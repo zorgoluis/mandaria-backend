@@ -1,3 +1,7 @@
+## Limitaciones WEB — 2026-10-04
+
+[Informe y comandos](docs/PROVIDER-HISTORICAL-ATTEMPTS-VERIFICATION.md), [contrato vigente](docs/DRIVER-APP-EXECUTION.md#cierre-de-limitaciones-web--2026-10-04). Evidencia nueva: 86 E2E únicos, 403 unitarias, 34 públicas; build, tsc de ambos proyectos, linters y comprobación documental aprobados. Migración incremental aplicada sin reset en dos bases sintéticas nativas; 80 recibos anteriores acreditados y comando original retrasado rechazado por tombstone. Intentos fallidos documentados y excluidos; no atribuir sus causas a defectos resueltos. Sin Docker, frontend, producción ni activación. Pruebas de la sección anterior se conservan como historia.
+
 ## Adaptación autoridad DRIVER — cierre local
 
 [Informe completo](docs/DRIVER-APP-EXECUTION-VERIFICATION.md), [contrato APP / transición WEB](docs/DRIVER-APP-EXECUTION.md), [huellas y consolidado](docs/checks/driver-app-execution.json). Evidencia nueva de esta tarea: **403 unitarias, 97 E2E únicos en cinco archivos, 34 pruebas públicas**, ejecuciones finales exit 0; build, ambos tsc, ESLint, Oxlint, docs:b2b:check y Prisma validate/status aprobados. Instalación limpia 33 migraciones y actualización desde d440aef sin reset, conservando historia/ledger/recibos y 14 alias recuperables. Se documentan aborto histórico del runner e intentos fallidos, excluidos del conteo; no se declara causa nativa resuelta. PostgreSQL nativo exclusivo; sin Docker, frontend, producción ni activación. Suite E2E total y cliente móvil no ejecutados.

@@ -459,6 +459,118 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
     }).expect(201);
     return d;
   };
+  it('classifies persisted mode without treating unassigned offers as legacy', async () => {
+    const d = await openDispatch();
+    const before = await api()
+      .get('/api/v1/provider/dispatches/' + d.id)
+      .auth(t.A, bearer)
+      .expect(200);
+    expect(before.body.trackingMode).toBeNull();
+    await claim(t.A, d.id).expect(200);
+    expect(
+      (
+        await api()
+          .get('/api/v1/provider/dispatches/' + d.id)
+          .auth(t.A, bearer)
+          .expect(200)
+      ).body.trackingMode,
+    ).toBeNull();
+    await assign(t.A, d.id, {
+      driverId: drivers.ana,
+      vehicleId: vehicles.fleet1,
+    }).expect(201);
+    for (const [path, token] of [
+      ['provider/dispatches/' + d.id, t.A],
+      ['driver/dispatches/' + d.id, t.ana],
+      ['admin/dispatches/' + d.id, t.sa],
+    ]) {
+      expect(
+        (
+          await api()
+            .get('/api/v1/' + path)
+            .auth(token, bearer)
+            .expect(200)
+        ).body.trackingMode,
+      ).toBe('DETAILED');
+    }
+    expect(
+      (await api().get('/api/v1/driver/me').auth(t.ana, bearer).expect(200))
+        .body.activeDeliveryAssignment.trackingMode,
+    ).toBe('DETAILED');
+    for (const phase of phases)
+      expect((await step(d.id, phase)).status).toBe(200);
+    await appDeliver(d.id);
+  });
+  it('closes unknown historical provider advances without restoring authority or exposing another actor', async () => {
+    const d = await start(),
+      key = randomUUID(),
+      path = '/api/v1/provider/dispatches/' + d.id + '/execution-attempt';
+    const e = await view(d.id);
+    expect(
+      (
+        await api()
+          .get(path)
+          .auth(t.A, bearer)
+          .set('Idempotency-Key', key)
+          .expect(200)
+      ).body,
+    ).toEqual({
+      state: 'PENDING_OR_UNKNOWN',
+      appliedRevision: null,
+      canStartNewAttempt: false,
+    });
+    await api()
+      .get(path)
+      .auth(t.B, bearer)
+      .set('Idempotency-Key', key)
+      .expect(404);
+    await api()
+      .get(path)
+      .auth(t.ana, bearer)
+      .set('Idempotency-Key', key)
+      .expect(403);
+    await api()
+      .get(path)
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', key)
+      .expect(403);
+    const oldPost = () =>
+      api()
+        .post('/api/v1/provider/dispatches/' + d.id + '/execution-events')
+        .auth(t.A, bearer)
+        .set('Idempotency-Key', key)
+        .send({
+          assignmentId: e.activeAssignmentId,
+          expectedRevision: e.revision,
+          phase: 'TO_PICKUP',
+        });
+    const [closed, late] = await Promise.all([
+      api()
+        .post(path + '/close')
+        .auth(t.A, bearer)
+        .set('Idempotency-Key', key),
+      oldPost(),
+    ]);
+    expect(closed.status).toBe(200);
+    expect(closed.body.state).toBe('CLOSED_NO_EFFECTS');
+    expect(late.status).toBe(403);
+    await oldPost().expect(403);
+    await app.close();
+    app = await bootstrap();
+    expect(
+      (
+        await api()
+          .get(path)
+          .auth(t.A, bearer)
+          .set('Idempotency-Key', key)
+          .expect(200)
+      ).body.state,
+    ).toBe('CLOSED_NO_EFFECTS');
+    expect((await view(d.id)).revision).toBe(e.revision);
+    for (const phase of phases)
+      expect((await step(d.id, phase)).status).toBe(200);
+    await appDeliver(d.id);
+  });
   it('requires five consecutive reports; rejects role and duplicate writes; delivers once', async () => {
     const d = await start();
     expect((await step(d.id, 'PICKED_UP')).status).toBe(409);
@@ -1442,6 +1554,18 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
     app.get(ConfigService).set('DETAILED_EXECUTION_ENABLED', false);
     try {
       const d = await start();
+      expect(
+        (
+          await api()
+            .get('/api/v1/provider/dispatches/' + d.id)
+            .auth(t.A, bearer)
+            .expect(200)
+        ).body.trackingMode,
+      ).toBe('LEGACY');
+      expect(
+        (await api().get('/api/v1/driver/me').auth(t.ana, bearer).expect(200))
+          .body.activeDeliveryAssignment.trackingMode,
+      ).toBe('LEGACY');
       const a = (await assignmentsOf(d.id))[0];
       const key = randomUUID();
       const send = () =>

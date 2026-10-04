@@ -256,6 +256,7 @@ export class DriversService {
                   advanceToOriginAllowed: operational.advanceToOriginAllowed,
                 }
               : {}),
+            trackingMode: operational?.trackingMode ?? null,
             id: activeAssignment.id,
             mode: activeAssignment.mode,
             dispatchId: activeAssignment.dispatchId,

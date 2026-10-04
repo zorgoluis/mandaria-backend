@@ -1,3 +1,4 @@
+import { executionTrackingMode } from '../delivery-execution/execution.persistence.js';
 import {
   lockExecutionDispatch,
   withExecutionInstructions,
@@ -482,7 +483,12 @@ export class DispatchService {
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     });
     return pageResult(
-      items.map((d) => adminDispatchView(d, now)),
+      await Promise.all(
+        items.map(async (d) => ({
+          ...adminDispatchView(d, now),
+          trackingMode: await executionTrackingMode(this.prisma, d.id),
+        })),
+      ),
       total,
       query,
     );
@@ -494,7 +500,10 @@ export class DispatchService {
       select: dispatchSelect,
     });
     if (!dispatch) throw new NotFoundException('Dispatch not found');
-    return adminDispatchView(dispatch);
+    return {
+      ...adminDispatchView(dispatch),
+      trackingMode: await executionTrackingMode(this.prisma, dispatchId),
+    };
   }
 
   /** One line per economic outcome of an award: charged, or skipped because the dispatch is legacy. */

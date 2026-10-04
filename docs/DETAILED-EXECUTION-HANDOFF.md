@@ -6,6 +6,10 @@
 
 El propietario retira el avance y la entrega detallada al administrador. Contrato vigente para ambos tipos de Driver, recuperación de las tres escrituras y transición legacy: [APP REPARTIDOR](DRIVER-APP-EXECUTION.md). Cambios locales aún sin publicar; la evidencia de 2026-10-02 no acredita esta adaptación.
 
+## Limitaciones WEB subsanadas — 2026-10-04
+
+`trackingMode` superior: LEGACY / DETAILED / null (nunca asignado), derivado de persistencia; ausencia/error no autoriza legacy. Proveedor conserva únicamente cierre legacy con asignación vigente y permisos válidos. Nuevas GET `/provider/dispatches/:dispatchId/execution-attempt` y POST de la misma ruta + `/close` reconcilian sólo ADVANCE histórico propio con la clave original; no permiten otro avance. APPLIED acredita revisión; desconocido requiere conservar marcador; CLOSED_NO_EFFECTS impide petición tardía pero no revierte hechos físicos. Contrato exacto, permisos y protocolo en [APP/WEB, cierre de limitaciones](DRIVER-APP-EXECUTION.md#cierre-de-limitaciones-web--2026-10-04).
+
 ## Lectura y permisos
 
 Prefijo de **todas** las rutas: `/api/v1`. Bearer humano; B2B no puede escribir ejecución. PROVIDER_ADMIN usa su identidad y membership vigente; `?providerId=UUID` selecciona proveedor cuando tiene varios. No se vuelve a exigir elegibilidad comercial al custodio para continuar un servicio ya adjudicado. El receptor nuevo sí debe ser elegible al commit.

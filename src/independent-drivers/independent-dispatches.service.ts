@@ -150,7 +150,15 @@ export class IndependentDispatchesService {
       { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
     );
     return pageResult(
-      items.map((d) => driverDispatchView(d, driverId, now)),
+      await Promise.all(
+        items.map((d) =>
+          withExecutionInstructions(
+            this.prisma,
+            d.id,
+            driverDispatchView(d, driverId, now),
+          ),
+        ),
+      ),
       total,
       query,
     );

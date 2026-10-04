@@ -20,6 +20,8 @@ Fixtures operativos disponibles: MDR-000001 normal, MDR-000002 devolución, MDR-
 
 ## Ejecución detallada y custodia
 
+Cierre WEB (2026-10-04): `trackingMode` explícito LEGACY/DETAILED/null en vistas operativas; null significa nunca asignado, no autorización legacy. Consulta/cierre de recibos ADVANCE históricos del PROVIDER_ADMIN sin restaurar avance. [Contrato y permisos](docs/DRIVER-APP-EXECUTION.md#cierre-de-limitaciones-web--2026-10-04), [verificación focalizada](docs/PROVIDER-HISTORICAL-ATTEMPTS-VERIFICATION.md). Requiere migración incremental 20261004000200 y actualización coordinada; sin activación.
+
 **Autoridad DRIVER (cambio local 2026-10-03):** [contrato APP REPARTIDOR y handoff WEB](docs/DRIVER-APP-EXECUTION.md), [verificaciones](docs/DRIVER-APP-EXECUTION-VERIFICATION.md). Flotilla e independiente registran sus hitos/incidencias/entrega; el administrador pierde avance y entrega detallada, conserva gestión e incidencias. Legacy mantiene cierre explícito compatible. Tres comandos con recibo durable, consulta y cierre técnico. Pendiente construir app, adaptar Web y coordinar despliegue; no activado. Docker no se arrancó y su imagen previa no acredita el contrato nuevo.
 
 Reconciliación de respuestas inciertas: [contrato de intento durable](docs/EXECUTION-ATTEMPT-RECONCILIATION.md). SUPER_ADMIN iniciador consulta su recibo o cierra explícitamente una clave no aplicada bajo los mismos locks que la resolución. Ausencia sigue incierta; una clave cerrada nunca puede aplicar después. No confirma ni repite operaciones físicas. Frontend debe integrar el contrato; sin activación.

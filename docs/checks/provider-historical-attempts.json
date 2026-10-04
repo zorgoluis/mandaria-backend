@@ -1,0 +1,239 @@
+{
+  "base": "94cdde4",
+  "date": "2026-10-04",
+  "historical": {
+    "historicalCommit": "d440aef",
+    "appliedReceipts": 80,
+    "appliedReadAndClose": true,
+    "originalLateCommandCode": "EXECUTION_ATTEMPT_CLOSED",
+    "noOperationalOrLedgerChange": true
+  },
+  "reports": {
+    "e2e-sequential": {
+      "sha256": "e89009fa60ce87fb01d8228f8446da77a9d738e26a480c56c298ce42b66bbd12",
+      "passed": 86,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "file": "delivery-completion.e2e-spec.ts",
+          "status": "passed",
+          "passed": 29
+        },
+        {
+          "file": "delivery-execution.e2e-spec.ts",
+          "status": "passed",
+          "passed": 27
+        },
+        {
+          "file": "driver-self.e2e-spec.ts",
+          "status": "passed",
+          "passed": 7
+        },
+        {
+          "file": "independent-drivers.e2e-spec.ts",
+          "status": "passed",
+          "passed": 23
+        }
+      ]
+    },
+    "unit-sequential": {
+      "sha256": "8f7440079ad19b735bda226f0662e0639383ddebe2426e4462770dd46ccb3021",
+      "passed": 403,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "file": "authorized-acceptance.spec.ts",
+          "status": "passed",
+          "passed": 9
+        },
+        {
+          "file": "b2b-outbox.spec.ts",
+          "status": "passed",
+          "passed": 9
+        },
+        {
+          "file": "b2b-webhook-operations.spec.ts",
+          "status": "passed",
+          "passed": 8
+        },
+        {
+          "file": "b2b-webhook-reliability.spec.ts",
+          "status": "passed",
+          "passed": 17
+        },
+        {
+          "file": "b2b-webhooks.spec.ts",
+          "status": "passed",
+          "passed": 19
+        },
+        {
+          "file": "check-c3-authorized-acceptance.spec.ts",
+          "status": "passed",
+          "passed": 3
+        },
+        {
+          "file": "collection-instructions.spec.ts",
+          "status": "passed",
+          "passed": 10
+        },
+        {
+          "file": "credit-consumption.spec.ts",
+          "status": "passed",
+          "passed": 12
+        },
+        {
+          "file": "credit-policies.spec.ts",
+          "status": "passed",
+          "passed": 16
+        },
+        {
+          "file": "credit-refunds.spec.ts",
+          "status": "passed",
+          "passed": 10
+        },
+        {
+          "file": "credits.spec.ts",
+          "status": "passed",
+          "passed": 17
+        },
+        {
+          "file": "delivery-assignments.spec.ts",
+          "status": "passed",
+          "passed": 10
+        },
+        {
+          "file": "delivery-completion.spec.ts",
+          "status": "passed",
+          "passed": 23
+        },
+        {
+          "file": "delivery-requests.spec.ts",
+          "status": "passed",
+          "passed": 11
+        },
+        {
+          "file": "delivery-status.spec.ts",
+          "status": "passed",
+          "passed": 14
+        },
+        {
+          "file": "dispatch-credit-snapshots.spec.ts",
+          "status": "passed",
+          "passed": 10
+        },
+        {
+          "file": "dispatch.spec.ts",
+          "status": "passed",
+          "passed": 13
+        },
+        {
+          "file": "http.spec.ts",
+          "status": "passed",
+          "passed": 4
+        },
+        {
+          "file": "independent-drivers.spec.ts",
+          "status": "passed",
+          "passed": 22
+        },
+        {
+          "file": "integration-auth.spec.ts",
+          "status": "passed",
+          "passed": 3
+        },
+        {
+          "file": "invitations.spec.ts",
+          "status": "passed",
+          "passed": 16
+        },
+        {
+          "file": "local-provider-admins.spec.ts",
+          "status": "passed",
+          "passed": 2
+        },
+        {
+          "file": "logistics.spec.ts",
+          "status": "passed",
+          "passed": 8
+        },
+        {
+          "file": "prequote-conditions.spec.ts",
+          "status": "passed",
+          "passed": 16
+        },
+        {
+          "file": "prequote-consumption.spec.ts",
+          "status": "passed",
+          "passed": 15
+        },
+        {
+          "file": "prequote-conversion.spec.ts",
+          "status": "passed",
+          "passed": 8
+        },
+        {
+          "file": "prequote-orchestration.spec.ts",
+          "status": "passed",
+          "passed": 10
+        },
+        {
+          "file": "pricing.spec.ts",
+          "status": "passed",
+          "passed": 14
+        },
+        {
+          "file": "providers.spec.ts",
+          "status": "passed",
+          "passed": 3
+        },
+        {
+          "file": "public-execution-identity.spec.ts",
+          "status": "passed",
+          "passed": 6
+        },
+        {
+          "file": "quote-accept-diagnostics.spec.ts",
+          "status": "passed",
+          "passed": 15
+        },
+        {
+          "file": "quote-pricing.spec.ts",
+          "status": "passed",
+          "passed": 19
+        },
+        {
+          "file": "resend-mail.spec.ts",
+          "status": "passed",
+          "passed": 19
+        },
+        {
+          "file": "services.spec.ts",
+          "status": "passed",
+          "passed": 7
+        },
+        {
+          "file": "environment.spec.ts",
+          "status": "passed",
+          "passed": 5
+        }
+      ]
+    }
+  },
+  "finalExecution": {
+    "passed": 27,
+    "sha256": "bc149543af140faa17dd53c0597af333aec76bc0603ff22dee36368187707c95",
+    "exitCode": 0
+  },
+  "quality": {
+    "build": 0,
+    "types": 0,
+    "typesBuild": 0,
+    "oxlint": 0,
+    "eslint": 0,
+    "docsCheck": 0,
+    "publicTests": 34,
+    "diffCheck": 0
+  }
+}

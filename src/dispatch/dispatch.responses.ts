@@ -116,6 +116,14 @@ class ServiceDetailResponse {
   externalReference?: string | null;
 }
 export class ProviderDispatchResponse {
+  @ApiProperty({
+    type: String,
+    enum: ['LEGACY', 'DETAILED'],
+    nullable: true,
+    description:
+      'Estado persistido: DETAILED con DeliveryExecution; LEGACY con historia de asignación sin ejecución; null si nunca hubo asignación. No autoriza cierre por sí solo.',
+  })
+  trackingMode!: 'LEGACY' | 'DETAILED' | null;
   @ApiPropertyOptional({
     type: ExecutionResponse,
     description:
@@ -221,6 +229,14 @@ class AdminQuoteRefResponse {
   @ApiProperty({ example: 'MXN' }) currency!: string;
 }
 export class AdminDispatchResponse {
+  @ApiProperty({
+    type: String,
+    enum: ['LEGACY', 'DETAILED'],
+    nullable: true,
+    description:
+      'Derivado de ejecución/asignaciones persistidas; null cuando nunca hubo asignación. No concede acciones.',
+  })
+  trackingMode!: 'LEGACY' | 'DETAILED' | null;
   @ApiProperty({
     enum: creditEnforcementModes,
     description: creditEnforcementDoc,

@@ -105,7 +105,7 @@ Reutilizar `paymentContext`, `goods` e instrucciones persistidas de `/driver/dis
 
 1. Retirar los botones/formularios de hitos y entrega **detallada** para PROVIDER_ADMIN; convertir timeline en lectura. No intentar otra ruta al recibir 403.
 2. Conservar gestión de asignaciones según `allowedActions` y reporte de incidencias PHONE_REPORT. No cambiar pantalla SUPER_ADMIN de resolución ni su protocolo de reconciliación.
-3. Cierre legacy del proveedor sigue disponible expresamente sólo sin ejecución detallada; etiquetarlo como servicio anterior, sin reconstruir hitos. No decidir legacy por errores HTTP; leer la proyección.
+3. Cierre legacy del proveedor sólo con trackingMode=LEGACY explícito y asignación ACTIVE propia; etiquetarlo como servicio anterior. Ausencia de campo, null o errores HTTP nunca autorizan cierre.
 4. Driver de flotilla e independiente usarán el contrato APP anterior. Hasta construir/verificar ese cliente, no habilitar servicios detallados nuevos. Web no se modificó en esta tarea.
 
 ## Despliegue coordinado, no ejecutado
@@ -118,3 +118,42 @@ Reutilizar `paymentContext`, `goods` e instrucciones persistidas de `/driver/dis
 6. Reversión: detener escritores y usar artefacto compatible con nueva autoridad/recibos; no reinstalar escritor antiguo que ignore tombstones o intente avance por administrador. Desactivar flag no revierte migración ni contrato. Recuperar backup sólo mediante procedimiento aprobado y evaluación de historia posterior.
 
 Evidencia ejecutada y límites: [verificación Driver](DRIVER-APP-EXECUTION-VERIFICATION.md). El contrato público B2B conserva lectura y `delivery.completed`, sin rutas Driver ni webhooks nuevos.
+
+## Cierre de limitaciones WEB — 2026-10-04
+
+### Identificación explícita
+
+Las vistas de despacho de proveedor (detalle/listado), Driver (detalle/listado autorizado), administración (detalle/listado) y `/driver/me.activeDeliveryAssignment` incorporan **trackingMode** al mismo nivel que id:
+
+- `DETAILED`: existe DeliveryExecution persistida, incluso si terminó la asignación, hay incidencia o el flag de admisión está apagado.
+- `LEGACY`: existe al menos una asignación histórica del despacho, pero no DeliveryExecution. No crea hitos ni interpreta PREPAID/créditos como modo de ejecución.
+- `null`: el despacho nunca tuvo una asignación; puede estar OPEN o CLAIMED esperando asignación. No es legacy. Si `/driver/me` no tiene asignación activa, `activeDeliveryAssignment=null` como antes, sin subobjeto ficticio.
+
+`execution.trackingMode=DETAILED` se conserva por compatibilidad, pero el discriminante para clasificar todos los casos es el campo superior. Si faltase el campo por backend/artefacto antiguo, tratar como desconocido y bloquear el cierre legacy. No convertir un 404/403/5xx de lectura en permiso de entrega. Incluso con LEGACY, exigir asignación ACTIVE propia, estado CLAIMED y permisos del flujo; backend vuelve a validarlos. Una historia legacy sin asignación vigente no autoriza cerrar.
+
+### Avances históricos del administrador
+
+Sí existieron: d440aef aceptaba PROVIDER_ADMIN y guardaba recibos APPLIED con operación ADVANCE, actor, despacho y clave. La migración anterior conservó esos recibos originales. La retirada de permiso no prueba que una solicitud previa no hubiese confirmado.
+
+Rutas nuevas (prefijo /api/v1, Bearer humano PROVIDER_ADMIN, Idempotency-Key UUID original):
+
+| Método/ruta | Resultado |
+|---|---|
+| GET `/provider/dispatches/:dispatchId/execution-attempt` | 200 `{state,appliedRevision,canStartNewAttempt:false}`; sólo lectura, no-store. |
+| POST `/provider/dispatches/:dispatchId/execution-attempt/close` | 200 mismo DTO; confirmación explícita en Web, sin body requerido. |
+
+Query opcional `providerId=UUID`, obligatorio si hay varias memberships. Se exige identidad original activa, rol PROVIDER_ADMIN y membership vigente. Se comprueba asignación histórica del proveedor y, para APPLIED, la asignación referida por el recibo. Puede consultar después de transferencia sin recuperar acceso a datos operativos actuales. Otro actor no obtiene el recibo aunque use la misma clave; SUPER_ADMIN/DRIVER no usan estas rutas. No se revelan body, hash, contactos ni respuesta completa guardada.
+
+- APPLIED: acreditar el hito histórico en appliedRevision (entero), refrescar vistas autorizadas y retirar marcador. No reenviar el comando ni realizar otra operación física.
+- PENDING_OR_UNKNOWN: no hay prueba definitiva; conservar marcador y ofrecer consultar o cerrar explícitamente. appliedRevision=null. GET no crea tombstones.
+- CLOSED_NO_EFFECTS: existe tombstone durable en **el namespace original ADVANCE**. Retirar el bloqueo técnico del marcador; **nunca** habilitar otro avance del proveedor. canStartNewAttempt es false en los tres estados.
+- Cierre y comando histórico comparten locks Request→Dispatch→User y el mismo recibo. Si ya confirmó, gana APPLIED. Si el cierre confirma primero, el comando histórico encuentra CLOSED_NO_EFFECTS; el backend actual rechaza cualquier avance del proveedor con 403 aun con otra clave. No se restaura permiso de escritura.
+- Si se pierde la respuesta del cierre, conservar marcador y GET. Cerrar un intento no cancela, revierte ni registra movimiento físico. Si la cuenta/membership ya no está autorizada, mantener el marcador como pendiente de revisión de acceso; otro administrador no puede hacerse pasar por el iniciador.
+
+Errores: 400 clave/UUID inválido, 401 autenticación, 403 rol/cuenta/membership, 404 sin asignación histórica autorizada, 409 conflicto concurrente, 429 límite. La ruta sólo reconcilia ADVANCE; no asumir que sirve para REPORT/DELIVER/resoluciones.
+
+### Migración y coordinación
+
+Aplicar incremental `20261004000200_provider_historical_attempts` antes del nuevo código, con escritores detenidos como en el procedimiento anterior. Sólo amplía la constraint para tombstones ADVANCE; no modifica recibos, tablas financieras ni historia. No admite despliegue mixto: la prueba de una petición tardía de d440aef acredita su protocolo de locks/recibos, no autoriza mantener ese servidor escribiendo. No hacer rollback a versiones que ignoren estos cierres. La UI del proveedor consulta/cierra intentos históricos y conserva el avance detallado exclusivamente en Driver.
+
+Evidencia y límites: [verificación de estas dos limitaciones](PROVIDER-HISTORICAL-ATTEMPTS-VERIFICATION.md).

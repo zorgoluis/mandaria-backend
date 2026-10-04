@@ -116,6 +116,17 @@ export async function assertExecutionCompletion(
     );
 }
 
+/** Persisted classification only; null means no assignment has ever existed. */
+export async function executionTrackingMode(
+  tx: Prisma.TransactionClient,
+  dispatchId: string,
+): Promise<'LEGACY' | 'DETAILED' | null> {
+  const [row] = await tx.$queryRaw<
+    { mode: 'LEGACY' | 'DETAILED' | null }[]
+  >`SELECT CASE WHEN EXISTS(SELECT 1 FROM "DeliveryExecution" WHERE "dispatchId"=${dispatchId}::uuid) THEN 'DETAILED' WHEN EXISTS(SELECT 1 FROM "DeliveryAssignment" WHERE "dispatchId"=${dispatchId}::uuid) THEN 'LEGACY' ELSE NULL END AS mode`;
+  return row.mode;
+}
+
 /** Only enrich authorized operational views; offers and former owners keep their redacted view. */
 export async function withExecutionInstructions<
   T extends { access?: string; assignment?: { id: string } | null },
@@ -126,14 +137,19 @@ export async function withExecutionInstructions<
   expectedAssignmentId?: string,
 ): Promise<
   T & {
+    trackingMode: 'LEGACY' | 'DETAILED' | null;
     execution?: ExecutionView;
     collectionActionAllowed?: boolean;
     advanceToOriginAllowed?: boolean;
   }
 > {
-  if (view.access !== 'OWNER') return view;
+  const classified = {
+    ...view,
+    trackingMode: await executionTrackingMode(tx, dispatchId),
+  };
+  if (view.access !== 'OWNER') return classified;
   const execution = await executionView(tx, dispatchId);
-  if (!execution) return view;
+  if (!execution) return classified;
   execution.allowedActions = execution.allowedActions.filter((action) =>
     'claimedByMe' in view
       ? !['ADVANCE', 'DELIVER'].includes(action)
@@ -146,9 +162,10 @@ export async function withExecutionInstructions<
     (expectedAssignmentId !== undefined || 'assignment' in view) &&
     expected !== execution.activeAssignmentId
   )
-    return view;
+    return { ...classified, trackingMode: 'DETAILED' };
   return {
-    ...view,
+    ...classified,
+    trackingMode: 'DETAILED',
     execution,
     collectionActionAllowed:
       execution.activeAssignmentId !== null &&

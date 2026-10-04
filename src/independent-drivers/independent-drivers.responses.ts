@@ -183,6 +183,14 @@ class DriverDispatchZoneResponse {
   @ApiProperty({ example: 'Ocozocoautla de Espinosa' }) name!: string;
 }
 export class DriverDispatchResponse {
+  @ApiProperty({
+    type: String,
+    enum: ['LEGACY', 'DETAILED'],
+    nullable: true,
+    description:
+      'Estado persistido: DETAILED con DeliveryExecution; LEGACY con historia de asignación sin ejecución; null si nunca hubo asignación. No autoriza cierre por sí solo.',
+  })
+  trackingMode!: 'LEGACY' | 'DETAILED' | null;
   @ApiPropertyOptional({
     type: ExecutionResponse,
     description:

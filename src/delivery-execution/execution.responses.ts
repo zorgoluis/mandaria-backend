@@ -23,6 +23,18 @@ export class ExecutionResponse {
   allowedActions!: string[];
   @ApiProperty({ format: 'date-time' }) lastRecordedAt!: string;
 }
+export class ProviderAdvanceAttemptResponse {
+  @ApiProperty({ enum: ['APPLIED', 'PENDING_OR_UNKNOWN', 'CLOSED_NO_EFFECTS'] })
+  state!: string;
+  @ApiProperty({ type: Number, nullable: true }) appliedRevision!:
+    number | null;
+  @ApiProperty({
+    enum: [false],
+    description:
+      'El permiso de avance del administrador fue retirado; nunca autoriza otro avance.',
+  })
+  canStartNewAttempt!: boolean;
+}
 export class IncidentCreatedResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ type: ExecutionResponse }) execution!: ExecutionResponse;

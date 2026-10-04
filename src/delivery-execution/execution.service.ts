@@ -74,6 +74,73 @@ export class ExecutionService {
     private readonly db: PrismaService,
     @Optional() private readonly webhooks?: B2bWebhooksService,
   ) {}
+  /** Historical provider ADVANCE receipts; never dispatches an advance command. */
+  async reconcileProviderAdvance(
+    dispatchId: string,
+    actor: Actor,
+    key: string,
+    close = false,
+  ) {
+    if (actor.role !== 'PROVIDER_ADMIN' || !actor.providerId)
+      throw new ForbiddenException();
+    if (!isUUID(key))
+      throw new BadRequestException('UUID Idempotency-Key required');
+    return retryExecution(() =>
+      this.db.$transaction(
+        async (tx) => {
+          if (close) {
+            await lockExecutionDispatch(tx, dispatchId);
+            await tx.$queryRaw`SELECT id FROM "User" WHERE id=${actor.id}::uuid FOR SHARE`;
+          }
+          const member = await tx.providerMembership.findFirst({
+            where: {
+              providerId: actor.providerId,
+              userId: actor.id,
+              user: { active: true, role: 'PROVIDER_ADMIN' },
+            },
+          });
+          if (!member) throw new ForbiddenException();
+          const historical = await tx.deliveryAssignment.findFirst({
+            where: { dispatchId, providerId: actor.providerId },
+          });
+          if (!historical)
+            throw new NotFoundException('Historical execution not found');
+          const [receipt] = await tx.$queryRaw<
+            {
+              state: string;
+              revision: number | null;
+              assignmentId: string | null;
+            }[]
+          >`SELECT state,(response->>'revision')::int AS revision,response->>'activeAssignmentId' AS "assignmentId" FROM "DeliveryExecutionCommand" WHERE "dispatchId"=${dispatchId}::uuid AND "actorUserId"=${actor.id}::uuid AND operation='ADVANCE' AND key=${key}::uuid`;
+          if (receipt?.state === 'APPLIED') {
+            const assignment = await tx.deliveryAssignment.findFirst({
+              where: {
+                id: receipt.assignmentId ?? '',
+                dispatchId,
+                providerId: actor.providerId,
+              },
+            });
+            if (!assignment)
+              throw new NotFoundException('Historical execution not found');
+          }
+          let state = receipt?.state ?? 'PENDING_OR_UNKNOWN';
+          if (close && !receipt) {
+            await tx.$executeRaw`INSERT INTO "DeliveryExecutionCommand" ("dispatchId","actorUserId",operation,key,hash,response,state) VALUES (${dispatchId}::uuid,${actor.id}::uuid,'ADVANCE',${key}::uuid,'','{}'::jsonb,'CLOSED_NO_EFFECTS')`;
+            state = 'CLOSED_NO_EFFECTS';
+          }
+          return {
+            state,
+            appliedRevision: receipt?.revision ?? null,
+            canStartNewAttempt: false as const,
+          };
+        },
+        {
+          isolationLevel: close ? 'ReadCommitted' : 'RepeatableRead',
+          timeout: 15000,
+        },
+      ),
+    );
+  }
   /** Driver receipts are assignment-scoped, including after transfer/termination. */
   async reconcileDriver(
     dispatchId: string,

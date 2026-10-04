@@ -1,5 +1,6 @@
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger';
 import { ResolutionAttemptResponse } from './execution.responses.js';
+import { ProviderAdvanceAttemptResponse } from './execution.responses.js';
 import {
   DriverAttemptResponse,
   DriverCompletionResponse,
@@ -74,6 +75,51 @@ const keyHeader = () =>
 @Controller('provider/dispatches')
 export class ProviderExecutionController {
   constructor(private readonly execution: ExecutionService) {}
+  @Get(':dispatchId/execution-attempt')
+  @Header('Cache-Control', 'no-store')
+  @keyHeader()
+  @ApiOkResponse({ type: ProviderAdvanceAttemptResponse })
+  @ApiErrors(400, 401, 403, 404, 429, 500)
+  @ApiOperation({
+    summary: 'Consultar avance histórico propio del administrador',
+    description:
+      'Consulta exclusivamente el recibo ADVANCE del actor y despacho. No devuelve body ni datos privados. Ausencia permanece incierta. Membership vigente requerido incluso tras transferencia; no restaura permiso de avance.',
+  })
+  historicalAttempt(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Req() req: AuthenticatedRequest,
+    @CurrentProvider() p: ProviderProfile,
+    @Headers('idempotency-key') key: string,
+  ) {
+    return this.execution.reconcileProviderAdvance(
+      id,
+      { id: req.user.id, role: 'PROVIDER_ADMIN', providerId: p.id },
+      key,
+    );
+  }
+  @Post(':dispatchId/execution-attempt/close')
+  @HttpCode(200)
+  @keyHeader()
+  @ApiOkResponse({ type: ProviderAdvanceAttemptResponse })
+  @ApiErrors(400, 401, 403, 404, 409, 429, 500)
+  @ApiOperation({
+    summary: 'Cerrar intento histórico de avance sin efectos',
+    description:
+      'Escritura explícita con los locks del comando histórico. Si ya confirmó devuelve APPLIED; de otro modo conserva tombstone CLOSED_NO_EFFECTS. No avanza, no realiza operaciones físicas ni autoriza otro intento del administrador. No habilita despliegue mixto.',
+  })
+  closeHistoricalAttempt(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Req() req: AuthenticatedRequest,
+    @CurrentProvider() p: ProviderProfile,
+    @Headers('idempotency-key') key: string,
+  ) {
+    return this.execution.reconcileProviderAdvance(
+      id,
+      { id: req.user.id, role: 'PROVIDER_ADMIN', providerId: p.id },
+      key,
+      true,
+    );
+  }
   @Get(':dispatchId/execution')
   @ApiOkResponse({ type: ExecutionDetailResponse })
   @ApiOperation({ summary: 'Progreso e historial del ejecutor vigente' })

@@ -169,6 +169,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/provider/dispatches/{dispatchId}/custody-incidents | bearer | PROVIDER_ADMIN | — | Reportar incidencia postrecogida y mantener custodia |
 | POST | /api/v1/provider/dispatches/{dispatchId}/deliver | bearer | PROVIDER_ADMIN | — | Cierre legacy del proveedor; detallado devuelve 403 |
 | GET | /api/v1/provider/dispatches/{dispatchId}/execution | bearer | PROVIDER_ADMIN | — | Progreso e historial del ejecutor vigente |
+| GET | /api/v1/provider/dispatches/{dispatchId}/execution-attempt | bearer | PROVIDER_ADMIN | — | Consultar avance histórico propio del administrador |
+| POST | /api/v1/provider/dispatches/{dispatchId}/execution-attempt/close | bearer | PROVIDER_ADMIN | — | Cerrar intento histórico de avance sin efectos |
 | POST | /api/v1/provider/dispatches/{dispatchId}/execution-events | bearer | PROVIDER_ADMIN | — | Retirado: PROVIDER_ADMIN recibe 403; los hitos pertenecen al Driver asignado |
 | POST | /api/v1/provider/dispatches/{dispatchId}/release | bearer | PROVIDER_ADMIN | — | Liberar Dispatch reclamado por mi proveedor |
 | GET | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Listar invitaciones de repartidores de mi proveedor |
