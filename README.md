@@ -10,6 +10,10 @@ Preparado y levantado con autorización del propietario: [guía de conexión y c
 
 Fixtures operativos disponibles: MDR-000001 normal, MDR-000002 devolución, MDR-000003 transferencia y MDR-000004 legacy. `node scripts/prepare-desktop-execution-fixtures.mjs` prepara/verifica mediante APIs con identidad local obligatoria y conserva los casos al repetir. Cuentas, recorridos, interrupción inicial para admisión legacy y evidencia en la guía local; resoluciones/entrega quedan pendientes para practicar desde Web.
 
+## Seguimiento público B2B versionado
+
+[Contrato y ejemplos](docs/PUBLIC-B2B-TRACKING.md): GET status añade clasificación explícita, asignación vigente, versión durable y resultado terminal, conservando identidad pública y campos anteriores. Migración incremental 20261004000300; disponible en checkout QA, sin despliegue/activación. Polling centralizado con objetivo15s sujeto a carga; sin timeline ni webhooks nuevos. [Verificación](docs/PUBLIC-B2B-TRACKING-VERIFICATION.md).
+
 ## Contrato público B2B y entrega a Frontend
 
 [OpenAPI público descargable](docs/openapi-b2b.json), [guía vigente](docs/B2B-PUBLIC-GUIDE.md), [webhooks salientes](docs/B2B-WEBHOOKS.md) y [entrega administrativa interna a Frontend](docs/B2B-FRONTEND-HANDOFF.md). Web confirmada: https://mandaria.com.mx. API confirmada: https://mandaria.com.mx/api/v1. El JSON usa `servers.url=https://mandaria.com.mx`, porque sus rutas ya incluyen `/api/v1`. Los datos de los ejemplos siguen siendo ficticios. No publica el portal ni cambia acceso al Swagger completo.

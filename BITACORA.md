@@ -4,6 +4,14 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación autorizada del seguimiento público B2B — 2026-10-04:** solicitud de commit/push en rama actual QA. Incluye implementación, migración incremental, pruebas, análisis, guías y corrección Swagger de publicVersion; excluye nul y temporales. Verificación de esta tarea: revisión Git y diff --check; suites funcionales corresponden a las tareas anteriores. El resultado del envío se confirma mediante Git; no implica despliegue ni activación.
+
+- **Corrección editorial del seguimiento B2B — 2026-10-04:** fuente Swagger executionProgress y texto editorial del exportador indican comparar publicVersion numéricamente por solicitud. revision interna/expectedRevision conservadas. Handoff antiguo corregido y análisis previo marcado como histórico; guías públicas vigentes contrastadas. OpenAPI completo/público regenerados desde fuente; regresión editorial incorporada a pruebas públicas. Sin cambios de comportamiento, endpoints ni migraciones; cambios pendientes preservados. Ver resultados nuevos en VERIFICATION; frontend debe resincronizar artefactos.
+
+- **Seguimiento público B2B implementado localmente — 2026-10-04:** GET status conserva campos y añade publicVersion durable, trackingMode, assignmentState y terminalOutcome. Migración incremental 20261004000300, invalidación transaccional y fotografía coherente; identidad vigente y resultado terminal, sin timeline ni eventos nuevos. 52 E2E únicos completos, 59 unitarias y 35 públicas aprobadas; migración limpia y upgrade 34→35 con nueve tablas conservadas. [Contrato/handoff](docs/PUBLIC-B2B-TRACKING.md), [verificación y límites](docs/PUBLIC-B2B-TRACKING-VERIFICATION.md). Intento parcial conservado/excluido; causa del runner no acreditada. QA b4318ce más cambios locales; portal debe sincronizar contrato. Sin frontend, Docker, Coita, producción, commit/push, despliegue ni activación. El análisis siguiente describe el estado previo.
+
+- **Análisis de seguimiento B2B — 2026-10-04:** QA b4318ce revisada estáticamente. [Informe](docs/B2B-TRACKING-ANALYSIS.md): 15 operaciones públicas, matriz completa, presencia/null de progreso/resultado, privacidad y polling frente a webhooks. B2B no incorpora trackingMode operativo; terminales no conservan revisión/hito en executionProgress. Recomendación: fotografía con polling centralizado y completed existente; endurecimiento aditivo sujeto a aprobación. Sin producto/OpenAPI/frontend/DB ni nuevas pruebas funcionales, Docker, commit/push o activación.
+
 - **Publicación autorizada de discriminante e intentos históricos — 2026-10-04:** solicitud de commit/push a QA; incluye implementación, migración incremental, pruebas, contratos y evidencia. Se excluyen nul y temporales privados. Revisión Git y diff --check en esta tarea; verificaciones funcionales de la implementación anterior, sin repetirlas. El resultado del envío se confirma mediante Git; sin despliegue ni activación.
 
 - **Limitaciones WEB cerradas localmente — 2026-10-04:** trackingMode explícito LEGACY/DETAILED/null derivado de persistencia en vistas operativas. Nuevas consulta/cierre de ADVANCE histórico propio de PROVIDER_ADMIN, sin permiso de avance ni reenvío; tombstone en namespace original mediante migración incremental 20261004000200. 80 recibos históricos reales acreditados en base sintética, comando d440aef retrasado rechazado sin efectos. Regresión nueva 86 E2E / 403 unitarias / 34 públicas, build/tipos/lints/contrato vigentes; informes parciales/fallos de infraestructura excluidos y conservados. Contrato APP y handoff WEB actualizados; informe docs/PROVIDER-HISTORICAL-ATTEMPTS-VERIFICATION.md. Base QA 94cdde4 más cambios locales, nul preservado; sin Docker, frontend, producción, commit/push ni activación.
@@ -2023,3 +2031,27 @@ Solicitud: impedir inferir legacy de ausencias/errores y reconciliar avances inc
 ## Publicación autorizada de discriminante e intentos históricos — 2026-10-04
 
 Solicitud: commitear y subir a la rama actual. Cambios: publicar el cierre LEGACY/DETAILED y reconciliación de ADVANCE histórico propio sin restaurar escritura. Verificaciones de publicación: revisión del conjunto, exclusión de archivos privados y git diff --check. Las 86 E2E, 403 unitarias y 34 pruebas públicas corresponden a la tarea anterior. Se procede con commit y push normal a origin/QA, comprobando el resultado al finalizar. Pendientes: migración y despliegue coordinado, integración Web y activación bajo autorización separada. No se ejecutan servicios ni se modifica configuración.
+
+
+## 2026-10-04 — Contrato de seguimiento B2B antes de app
+
+Solicitud: analizar recorrido público e integración sin implementar. Cambios: docs/B2B-TRACKING-ANALYSIS.md con inventario exacto, matriz, ejemplos ficticios actuales, límites de revisión/legacy/identidad, privacidad, actualización e historial y handoff. Verificaciones nuevas: inspección de código/contrato/migraciones, extracción Node de 15 operaciones, validación de referencias documentales y git diff --check. No se ejecutan pruebas funcionales; cifras anteriores siguen históricas. Resultado: consumo actual por polling viable con límites declarados; no acredita producción ni integración Coita. Pendientes: aprobar fotografía vs timeline, frescura/cupo y endurecimiento aditivo; no nuevos webhooks implementados ni activación.
+
+## 2026-10-04 — Implementación de seguimiento público B2B
+
+Solicitud: fotografía consultable, clasificación, ejecutor vigente, versión durable y resultado terminal, conservando privacidad y compatibilidad. Implementación: tabla técnica y triggers incrementales, publicación RepeatableRead con reintentos acotados, cuatro campos aditivos en GET status, expiración observada persistente, OpenAPI público/guía/handoff actualizados; delivery.completed intacto. No nuevas rutas ni timeline.
+
+Verificación nueva: 52 E2E únicos completos en tres archivos, 59 unitarias focalizadas, 35 públicas; generate/validate/status y drift sin diferencias, instalación limpia35 y upgrade34→35 con 25 solicitudes y nueve tablas de historia intactas. Build, comprobación documental y linters; tipos verificados secuencialmente tras detectar interferencia de rebuild de dist. Informes parciales excluidos, diagnóstico final29/29 exit0; no atribuir causa resuelta. Comandos, evidencia y limitaciones en docs/PUBLIC-B2B-TRACKING-VERIFICATION.md y docs/checks/public-b2b-tracking.json.
+
+Resultado: contrato disponible sólo en checkout QA, no desplegado. Pendientes: sincronización del portal/integradores, migración y actualización coordinada autorizadas, evaluación de carga real para polling15s y seguimiento de intermitencia del runner. Conservados historial, cambios previos y nul; sin .env, versión, frontend, Docker, Coita, principal, commit/push ni activación.
+
+## 2026-10-04 — Corrección de orden público en Swagger
+
+Solicitud: retirar recomendación de ordenar fotografías B2B mediante revision, conservando usos internos legítimos. Cambios: descripción fuente en delivery-status.responses.ts, correspondencia editorial en public-b2b-prose.json, regeneración de ambos OpenAPI y regresión en export-public-b2b.test.mjs. Revisadas guías públicas actuales, corregido DETAILED-EXECUTION-HANDOFF y marcado B2B-TRACKING-ANALYSIS como antecedente. Handoff del portal actualizado.
+
+Verificaciones ejecutadas ahora: npm run docs:b2b (build/generación), npm run docs:b2b:check y npm run test:public-b2b, todos exit0; 35/35 pruebas sin pendientes. git diff --check sin errores. Logs ignorados editorial-generate.log, editorial-docs-check.log y editorial-tests.log en .tmp/public-tracking-check. No se repitieron E2E, migraciones ni verificación de DB: los resultados de la implementación anterior siguen históricos. Pendiente: sincronización frontend de OpenAPI público y guías. Sin comportamiento/endpoints/migraciones, Docker, commit/push ni despliegue; cambios previos preservados.
+
+
+## 2026-10-04 — Publicación del seguimiento público B2B
+
+Solicitud: commitear y subir a rama actual QA. Se incluyen los cambios verificados de seguimiento versionado y su corrección editorial; se conservan nul y archivos temporales fuera del commit. Revisión del conjunto y diff --check en esta tarea, sin repetir pruebas históricas. Resultado del commit/push confirmado por Git al finalizar. Pendiente sincronizar portal y procedimiento autorizado de despliegue; sin activación ni cambios remotos de servicios.

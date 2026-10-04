@@ -4,7 +4,7 @@ Configurado por SUPER_ADMIN para cada IntegrationClient. No es una API pública 
 
 ## Evento y sobre
 
-Actualmente se emite **delivery.completed** al completar físicamente una entrega. No se prometen eventos para cada transición. `data` es la instantánea pública congelada al completar, con la forma de `DeliveryStatusResponse`; no se reconstruye al reintentar. Ejemplo ficticio:
+Actualmente se emite **delivery.completed** al completar físicamente una entrega. No se prometen eventos para cada transición. `data` es la instantánea pública congelada al completar, con los campos históricos de `DeliveryStatusResponse`; no se reconstruye al reintentar. Ejemplo ficticio:
 
 ```json
 {
@@ -78,3 +78,8 @@ Mandaria genera el secreto y lo muestra una sola vez por respuesta administrativ
 Rotación reemplaza inmediatamente el secreto anterior, sin convivencia administrada de dos secretos. Cada intento usa el secreto leído para ese intento; una petición en vuelo puede haber sido firmada con el anterior. Coordinar actualización del receptor y la ventana operativa; no prometer rotación sin interrupción. Un fallo de red durante generación puede dejar secreto cambiado sin que el administrador lo reciba: consultar metadata y coordinar nueva rotación explícita, nunca reintentar automáticamente esa acción. No confundir esto con rotación de clientId/clientSecret B2B.
 
 Fuentes de contrato del emisor: `webhook-transport.ts`, `webhook-secret.ts`, `webhook-retry-policy.ts` y `b2b-webhooks.service.ts`. Esta guía no acredita la implementación de ningún receptor externo.
+
+
+### Consulta versionada y compatibilidad
+
+El GET status añade publicVersion/trackingMode/assignmentState/terminalOutcome; delivery.completed conserva su payload previo, sin esos campos y sin executionProgress/executionOutcome. Deduplicar eventId y consultar GET para reconciliar la fotografía versionada; no ordenar por fecha de recepción ni sobrescribir una versión más reciente con payload de webhook. No se añadieron eventos de progreso, atención, transferencia o devolución. [Seguimiento público](PUBLIC-B2B-TRACKING.md).

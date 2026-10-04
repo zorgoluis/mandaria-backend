@@ -70,12 +70,57 @@ export class DeliveryExecutionResponse {
  * V1.12-A public contract. Built field by field from the internal model — never a spread of a
  * Prisma row — so nothing new leaks into the B2B surface by accident.
  */
+export class PublicTerminalOutcomeResponse {
+  @ApiProperty({
+    enum: ['DELIVERED', 'RETURNED_TO_ORIGIN', 'CANCELLED', 'EXPIRED'],
+  })
+  type!: string;
+  @ApiProperty({
+    type: String,
+    format: 'date-time',
+    nullable: true,
+    description:
+      'Fecha persistida del resultado logístico; null si falta evidencia histórica. No acredita cobro.',
+  })
+  occurredAt!: string | null;
+}
+
 export class DeliveryStatusResponse {
+  @ApiProperty({
+    type: String,
+    pattern: '^[1-9][0-9]*$',
+    example: '12',
+    description:
+      'Versión durable monotónica por MDR como entero decimal string. Comparar numéricamente (BigInt); igual versión implica igual fotografía. Puede saltar valores.',
+  })
+  publicVersion!: string;
+  @ApiProperty({
+    type: String,
+    enum: ['LEGACY', 'DETAILED'],
+    nullable: true,
+    description:
+      'Clasificación persistida: null si nunca se asignó; LEGACY sin hitos detallados; DETAILED incluso tras cierre. No inferir clasificación de errores HTTP.',
+  })
+  trackingMode!: string | null;
+  @ApiProperty({
+    enum: ['NONE', 'ACTIVE', 'ENDED'],
+    description:
+      'NONE nunca asignado; ACTIVE asignación vigente; ENDED hubo asignación, ninguna vigente. ASSIGNED también puede significar sólo proveedor a cargo.',
+  })
+  assignmentState!: string;
+  @ApiProperty({
+    type: PublicTerminalOutcomeResponse,
+    nullable: true,
+    description:
+      'Resultado logístico durable, null antes de finalizar. Una devolución al origen mantiene status CANCELLED; no implica devolución financiera.',
+  })
+  terminalOutcome!: PublicTerminalOutcomeResponse | null;
+
   @ApiPropertyOptional({
     type: PublicExecutionProgressResponse,
     nullable: true,
     description:
-      'Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar revision para evitar retrocesos entre respuestas.',
+      'Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar publicVersion numéricamente por solicitud para ordenar fotografías públicas; revision describe únicamente la ejecución interna.',
   })
   executionProgress?: PublicExecutionProgressResponse | null;
   @ApiPropertyOptional({
@@ -139,6 +184,13 @@ export class DeliveryStatusResponse {
 }
 
 const statusExample = (status: string, execution: unknown) => ({
+  publicVersion: '12',
+  trackingMode: status === 'DELIVERED' ? 'LEGACY' : null,
+  assignmentState: status === 'DELIVERED' ? 'ENDED' : 'NONE',
+  terminalOutcome:
+    status === 'DELIVERED'
+      ? { type: 'DELIVERED', occurredAt: '2026-09-28T10:30:00.000Z' }
+      : null,
   publicId: 'MDR-000123',
   externalReference: 'ORDER-4711',
   status,
@@ -148,6 +200,25 @@ const statusExample = (status: string, execution: unknown) => ({
   cancelledAt: null,
 });
 export const PUBLIC_EXECUTION_EXAMPLES = {
+  detailedPickup: {
+    summary: 'detailedPickup',
+    value: {
+      ...statusExample('ASSIGNED', {
+        mode: 'PROVIDER',
+        provider: { displayName: 'Reparto Demo' },
+        driver: { displayName: 'Alex Demo' },
+      }),
+      trackingMode: 'DETAILED',
+      assignmentState: 'ACTIVE',
+      executionProgress: {
+        phase: 'PICKED_UP',
+        revision: 4,
+        registeredAt: '2026-09-28T10:15:00.000Z',
+        attentionRequired: false,
+      },
+      executionOutcome: null,
+    },
+  },
   open: { summary: 'open', value: statusExample('OPEN', null) },
   providerClaimed: {
     summary: 'providerClaimed',
@@ -198,3 +269,12 @@ export const PUBLIC_EXECUTION_EXAMPLES = {
     }),
   },
 };
+
+for (const name of [
+  'providerAssigned',
+  'independent',
+  'identityNotConfigured',
+] as const) {
+  PUBLIC_EXECUTION_EXAMPLES[name].value.trackingMode = 'LEGACY';
+  PUBLIC_EXECUTION_EXAMPLES[name].value.assignmentState = 'ACTIVE';
+}

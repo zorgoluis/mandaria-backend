@@ -1,0 +1,204 @@
+{
+  "date": "2026-10-04",
+  "branch": "QA",
+  "base": "b4318ce",
+  "runtime": {
+    "node": "v24.15.0",
+    "postgres": "18",
+    "prisma": "6.19.3",
+    "vitest": "4.1.2"
+  },
+  "runs": [
+    {
+      "report": ".tmp/public-tracking-check/execution-diagnostic.json",
+      "sha256": "83eaac612d44c541b2be20ef88cdc88fab1f97f6fe8cc7dc78089366a21cfa62",
+      "exitCode": 0,
+      "tests": 29,
+      "passed": 29,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "file": "delivery-execution.e2e-spec.ts",
+          "status": "passed",
+          "tests": 29,
+          "passed": 29
+        }
+      ]
+    },
+    {
+      "report": ".tmp/public-tracking-check/b2b.json",
+      "sha256": "7790ff895217060cc0c9fa817e46f2e0e7b9c0ce5050b44e26baeb8db69b0cfe",
+      "exitCode": 0,
+      "tests": 23,
+      "passed": 23,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "file": "b2b-delivery-status.e2e-spec.ts",
+          "status": "passed",
+          "tests": 21,
+          "passed": 21
+        },
+        {
+          "file": "public-delivery-tracking.e2e-spec.ts",
+          "status": "passed",
+          "tests": 2,
+          "passed": 2
+        }
+      ]
+    },
+    {
+      "report": ".tmp/public-tracking-check/unit-final.json",
+      "sha256": "4e1d0e159dec202caf316d8da821b07438160a3d5245d06ee69a70eb4aa128c5",
+      "exitCode": 0,
+      "tests": 59,
+      "passed": 59,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "file": "b2b-outbox.spec.ts",
+          "status": "passed",
+          "tests": 9,
+          "passed": 9
+        },
+        {
+          "file": "b2b-webhooks.spec.ts",
+          "status": "passed",
+          "tests": 19,
+          "passed": 19
+        },
+        {
+          "file": "delivery-requests.spec.ts",
+          "status": "passed",
+          "tests": 11,
+          "passed": 11
+        },
+        {
+          "file": "delivery-status.spec.ts",
+          "status": "passed",
+          "tests": 14,
+          "passed": 14
+        },
+        {
+          "file": "public-execution-identity.spec.ts",
+          "status": "passed",
+          "tests": 6,
+          "passed": 6
+        }
+      ]
+    }
+  ],
+  "publicContract": {
+    "tests": 35,
+    "passed": 35,
+    "exitCode": 0,
+    "log": ".tmp/public-tracking-check/public-final.log"
+  },
+  "upgrade": {
+    "beforeMigrations": [
+      {
+        "count": 34
+      }
+    ],
+    "afterMigrations": [
+      {
+        "count": 35
+      }
+    ],
+    "history": {
+      "DeliveryRequest": {
+        "count": 25,
+        "hash": "6bbd758672da481877538fd1f06c03c8"
+      },
+      "Dispatch": {
+        "count": 25,
+        "hash": "d5acd26598c7353bb38fa575c58c8a60"
+      },
+      "DeliveryAssignment": {
+        "count": 31,
+        "hash": "1f2c7d9c64892ca1b33dad16202ef8a3"
+      },
+      "DeliveryExecutionEvent": {
+        "count": 160,
+        "hash": "2a317309a8dbebf9e50d84a0194fb437"
+      },
+      "DeliveryCustodyIncident": {
+        "count": 15,
+        "hash": "5048a201ea7e4181168087e0492fb2c0"
+      },
+      "DeliveryCustodyResolution": {
+        "count": 15,
+        "hash": "180211a3fe868ca7a7409c2d36de77f0"
+      },
+      "DeliveryExecutionCommand": {
+        "count": 143,
+        "hash": "37454a5416c04fe2cb9c08de2a4b418e"
+      },
+      "CreditLedgerEntry": {
+        "count": 100,
+        "hash": "041544f9c16982f3de65db8df55b224b"
+      },
+      "B2bOutboxEvent": {
+        "count": 13,
+        "hash": "6e650ff7ec2ca147ff12ef1ac768ca6b"
+      }
+    },
+    "coverage": {
+      "requests": 25,
+      "tracking": 25
+    },
+    "preserved": true
+  },
+  "files": [
+    {
+      "file": "prisma/migrations/20261004000300_public_delivery_tracking/migration.sql",
+      "sha256": "07f5c371ac9354eab838eb3f63a1999291c4e764294bf82d4c21adcf3af15e24"
+    },
+    {
+      "file": "src/delivery-requests/public-delivery-tracking.ts",
+      "sha256": "db64e29b3050494f481db8f1bcc433c5c8a0ea29d3970eb37e1d652a7ab9f1ef"
+    },
+    {
+      "file": "test/delivery-execution.e2e-spec.ts",
+      "sha256": "f71524961ffd69befc5bc3abdd324b56aa56aa465a7b6bcbffffca7a39627ae5"
+    },
+    {
+      "file": "test/b2b-delivery-status.e2e-spec.ts",
+      "sha256": "edc27e7d91e8a91188d9cd88bf945084ec5732a956324503bdd5bcbdef4c8feb"
+    },
+    {
+      "file": "test/public-delivery-tracking.e2e-spec.ts",
+      "sha256": "810e248089ff29a457751cc4b9ea73564aab7311191963e8365b4be26e3eb1e6"
+    },
+    {
+      "file": "docs/openapi-b2b.json",
+      "sha256": "fdc2946e8ba964659c3ed2ec889e691852590d06d6dbe3c39ce76d485a22ad88"
+    }
+  ],
+  "excluded": [
+    "e2e.json: mixed failed/partial",
+    "execution-final.json: exit 1, 8 passed / 21 pending",
+    "execution.json: successful intermediate repetition; not counted twice"
+  ],
+  "limitations": [
+    "No full repository suite or load test",
+    "No production/frontend/Coita verification",
+    "Partial runner cause not established"
+  ],
+  "quality": {
+    "build": 0,
+    "types": 0,
+    "buildTypes": 0,
+    "oxlint": 0,
+    "eslint": 0,
+    "docsCheck": 0,
+    "prismaValidate": 0,
+    "migrateStatus": 0,
+    "drift": 0,
+    "diffCheck": 0
+  },
+  "cleanup": "Dedicated synthetic PostgreSQL cluster stopped; databases preserved. Docker not started."
+}

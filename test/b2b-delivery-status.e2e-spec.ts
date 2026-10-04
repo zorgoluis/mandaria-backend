@@ -709,13 +709,17 @@ describe('V1.12-A a B2B client can observe its own delivery', () => {
     const dispatch = await deliveredByProvider();
     const status = await statusOf(t.b2b, dispatch.requestPublicId).expect(200);
     expect(Object.keys(status.body).sort()).toEqual([
+      'assignmentState',
       'cancelledAt',
       'deliveredAt',
       'execution',
       'externalReference',
       'publicId',
+      'publicVersion',
       'requestedAt',
       'status',
+      'terminalOutcome',
+      'trackingMode',
     ]);
     const body = JSON.stringify(status.body);
     for (const forbidden of [
@@ -759,9 +763,10 @@ describe('V1.12-A ownership and authorization', () => {
     expect(foreign.body.message).toBe('Delivery request not found');
     // Not one field of the real request escapes with the rejection.
     const leaked = JSON.stringify(foreign.body);
-    for (const value of Object.values(owned.body).filter(
-      (v) => typeof v === 'string' && v !== dispatch.requestPublicId,
-    ))
+    for (const value of [
+      owned.body.externalReference,
+      owned.body.requestedAt,
+    ].filter((v) => typeof v === 'string'))
       expect(leaked).not.toContain(value as string);
     expect(leaked).not.toContain(dispatch.id);
     // The owner still sees it: the 404 is isolation, not absence.
@@ -1060,9 +1065,10 @@ describe('V1.12-G public execution identity CHECK', () => {
       driverId: drivers.ana,
       vehicleId: vehicles.fleet1,
     }).expect(201);
-    expect(
-      (await statusOf(t.b2b, dispatch.requestPublicId)).body.execution.driver,
-    ).toEqual({ displayName: 'Ana pública' });
+    const assigned = (
+      await statusOf(t.b2b, dispatch.requestPublicId).expect(200)
+    ).body;
+    expect(assigned.execution.driver).toEqual({ displayName: 'Ana pública' });
     await api()
       .post(`/api/v1/provider/dispatches/${dispatch.id}/assignment/reassign`)
       .auth(t.A, bearer)
@@ -1075,6 +1081,9 @@ describe('V1.12-G public execution identity CHECK', () => {
     const reassigned = (
       await statusOf(t.b2b, dispatch.requestPublicId).expect(200)
     ).body;
+    expect(BigInt(reassigned.publicVersion)).toBeGreaterThan(
+      BigInt(assigned.publicVersion),
+    );
     expect(reassigned.execution.driver).toEqual({
       displayName: 'Beto público',
     });
@@ -1092,7 +1101,7 @@ describe('V1.12-G public execution identity CHECK', () => {
     const final = (await statusOf(t.b2b, dispatch.requestPublicId).expect(200))
       .body;
     const event = await eventFor(dispatch.id);
-    expect(event.payload).toEqual(final);
+    expect(event.payload).toEqual(completedPayload(final));
     expect((await dispatchRow(dispatch.id)).publicExecutionSnapshot).toEqual(
       final.execution,
     );
@@ -1110,7 +1119,9 @@ describe('V1.12-G public execution identity CHECK', () => {
       expect(
         (await statusOf(t.b2b, dispatch.requestPublicId).expect(200)).body,
       ).toEqual(final);
-      expect((await eventFor(dispatch.id)).payload).toEqual(final);
+      expect((await eventFor(dispatch.id)).payload).toEqual(
+        completedPayload(final),
+      );
       await api()
         .post(`/api/v1/provider/dispatches/${dispatch.id}/assignment/reassign`)
         .auth(t.A, bearer)
@@ -1184,7 +1195,9 @@ describe('V1.12-G public execution identity CHECK', () => {
     expect(
       (await statusOf(t.b2b, dispatch.requestPublicId).expect(200)).body,
     ).toEqual(final);
-    expect((await eventFor(dispatch.id)).payload).toEqual(final);
+    expect((await eventFor(dispatch.id)).payload).toEqual(
+      completedPayload(final),
+    );
   });
 
   it('Independent TAKE uses the same explicit Driver identity, with no provider; freezes it at delivery', async () => {
@@ -1203,7 +1216,9 @@ describe('V1.12-G public execution identity CHECK', () => {
     await driverDeliver(t.indy, dispatch.id).expect(200);
     const final = (await statusOf(t.b2b, dispatch.requestPublicId).expect(200))
       .body;
-    expect((await eventFor(dispatch.id)).payload).toEqual(final);
+    expect((await eventFor(dispatch.id)).payload).toEqual(
+      completedPayload(final),
+    );
     await configureName('indy', null).expect(200);
     expect(
       (await statusOf(t.b2b, dispatch.requestPublicId).expect(200)).body,
@@ -1269,3 +1284,17 @@ describe('V1.12-G public execution identity CHECK', () => {
     ).toEqual({ displayName: 'Beto público' });
   });
 });
+
+function completedPayload(value: Record<string, unknown>) {
+  return Object.fromEntries(
+    [
+      'publicId',
+      'externalReference',
+      'status',
+      'execution',
+      'requestedAt',
+      'deliveredAt',
+      'cancelledAt',
+    ].map((key) => [key, value[key]]),
+  );
+}

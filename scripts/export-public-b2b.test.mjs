@@ -35,12 +35,33 @@ const keys = (doc) =>
     .sort();
 const op = (s) => s.paths[path].post;
 
-test('public execution progress is additive and excludes private custody audit',()=>{
-  const d=publicB2bDocument(source());
-  assert.deepEqual(Object.keys(d.components.schemas.PublicExecutionProgressResponse.properties).sort(),['attentionRequired','phase','registeredAt','revision']);
-  assert.deepEqual(Object.keys(d.components.schemas.PublicExecutionOutcomeResponse.properties).sort(),['occurredAt','type']);
-  for(const name of ['ExecutionResponse','ResolutionAuditResponse','IncidentRecordResponse','ResolveCustodyIncidentDto'])assert.equal(d.components.schemas[name],undefined);
-  assert.equal(Object.keys(d.paths).some(p=>p.includes('custody')||p.includes('execution-events')),false);
+test('public execution progress is additive and excludes private custody audit', () => {
+  const d = publicB2bDocument(source());
+  assert.deepEqual(
+    Object.keys(
+      d.components.schemas.PublicExecutionProgressResponse.properties,
+    ).sort(),
+    ['attentionRequired', 'phase', 'registeredAt', 'revision'],
+  );
+  assert.deepEqual(
+    Object.keys(
+      d.components.schemas.PublicExecutionOutcomeResponse.properties,
+    ).sort(),
+    ['occurredAt', 'type'],
+  );
+  for (const name of [
+    'ExecutionResponse',
+    'ResolutionAuditResponse',
+    'IncidentRecordResponse',
+    'ResolveCustodyIncidentDto',
+  ])
+    assert.equal(d.components.schemas[name], undefined);
+  assert.equal(
+    Object.keys(d.paths).some(
+      (p) => p.includes('custody') || p.includes('execution-events'),
+    ),
+    false,
+  );
 });
 test('exact independently specified public operations; original source unchanged', () => {
   const s = source(),
@@ -354,4 +375,46 @@ test('confirmed origin composes every route with exactly one API prefix', () => 
     d.servers[0].url + '/api/v1/integrations/token',
     'https://mandaria.com.mx/api/v1/integrations/token',
   );
+});
+
+test('versioned tracking preserves old fields and excludes internal error vocabulary', () => {
+  const d = publicB2bDocument(source());
+  const schema = d.components.schemas.DeliveryStatusResponse;
+  for (const key of [
+    'publicVersion',
+    'trackingMode',
+    'assignmentState',
+    'terminalOutcome',
+  ]) {
+    assert.ok(schema.required.includes(key));
+    assert.ok(schema.properties[key]);
+  }
+  assert.equal(schema.properties.publicVersion.type, 'string');
+  assert.equal(schema.properties.publicVersion.pattern, '^[1-9][0-9]*$');
+  assert.ok(schema.properties.executionProgress);
+  for (const document of [source(), d]) {
+    const description =
+      document.components.schemas.DeliveryStatusResponse.properties
+        .executionProgress.description;
+    assert.match(
+      description,
+      /Comparar publicVersion numéricamente por solicitud/,
+    );
+    assert.doesNotMatch(description, /Comparar revision/);
+    assert.ok(
+      document.components.schemas.PublicExecutionProgressResponse.properties
+        .revision,
+    );
+  }
+  assert.ok(schema.properties.executionOutcome);
+  assert.ok(
+    d.paths['/api/v1/delivery-requests/{publicId}/cancel'].post.responses[
+      '409'
+    ],
+  );
+  assert.ok(
+    d.paths['/api/v1/delivery-requests/{publicId}/status'].get.responses['503'],
+  );
+  assert.ok(!JSON.stringify(d).includes('/api/v1/admin/providers'));
+  assert.ok(!JSON.stringify(d).includes('maxDrivers'));
 });

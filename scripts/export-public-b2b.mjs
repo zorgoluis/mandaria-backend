@@ -64,7 +64,7 @@ export const APPROVED_OPERATIONS = [
     '/api/v1/delivery-requests/{publicId}/status',
     'requestStatus',
     'Consultar estado logístico',
-    'Estado público e identidad visible de ejecución. DELIVERED significa entrega física, no confirmación de cobro.',
+    'Fotografía pública con publicVersion durable por MDR, trackingMode, assignmentState y terminalOutcome; conserva progreso e identidad pública. DELIVERED significa entrega física, no cobro. Polling desde backend del integrador; objetivo 15s sujeto a límites agregados, no SLA.',
   ],
   [
     'post',
@@ -145,6 +145,7 @@ const schemas = new Set([
   'PublicExecutionNameResponse',
   'PublicExecutionProgressResponse',
   'PublicExecutionOutcomeResponse',
+  'PublicTerminalOutcomeResponse',
   'CancelDeliveryRequestDto',
   'DeliveryQuoteResponse',
   'QuoteZoneResponse',
@@ -266,7 +267,21 @@ export function publicB2bDocument(source) {
     const out = {};
     for (const [key, item] of Object.entries(value)) {
       if (['example', 'default', 'enum', 'const', 'value'].includes(key)) {
-        out[key] = structuredClone(item);
+        // Literal examples are data, not schemas. Only these reviewed shared error examples change.
+        out[key] =
+          key === 'example' &&
+          path.endsWith('/properties/path') &&
+          item === '/api/v1/admin/providers'
+            ? '/api/v1/delivery-requests/MDR-000123/status'
+            : key === 'example' &&
+                path.endsWith('/properties/errors') &&
+                Array.isArray(item)
+              ? item.map((v) =>
+                  v === 'maxDrivers must not be less than 1'
+                    ? 'publicId must match MDR-000000'
+                    : v,
+                )
+              : structuredClone(item);
         continue;
       }
       if (key.startsWith('x-') && key !== 'x-scopes') continue;

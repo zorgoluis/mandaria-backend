@@ -89,3 +89,15 @@ La decisión pendiente es aprobar ese modelo de soporte por SSH y designar sus o
 ## Pruebas pendientes de frontend
 
 Build/tipos, guards y accesos directos por rol; formulario y errores reales; secreto único con logout/respuesta tardía/perdida; tabla y filtros; distinción evento/transporte/intento; destino histórico; lector público sin sesión y API fuera del dominio del portal; JSON descargable; teclado y revisión visual móvil/escritorio. El borrador `.tmp/web-platform/webhooks.tsx` sigue sin integrar ni verificar visualmente. No acredita estas capacidades.
+
+
+## Actualización del portal: seguimiento versionado (2026-10-04)
+
+[Contrato exacto](PUBLIC-B2B-TRACKING.md). Sincronizar nuevamente docs/openapi-b2b.json y guía B2B tras publicar backend. Añadir documentación de publicVersion/string/BigInt, trackingMode nullable, assignmentState y terminalOutcome; ejemplo detallado con recogida y terminales. Conservar rutas/scopes y webhook completed anterior. Documentar409 de cancel bajo custodia,503 de seguimiento, no-store, sondeo centralizado15s sujeto a carga,429/backoff y descarte de respuestas atrasadas. Sólo fotografía: no timeline ni eventos de progreso. No trasladar este inventario administrativo privado al portal.
+
+Estado: implementación en checkout QA; no se verificó despliegue ni se modificó frontend. Consumidores deben distinguir servidores antiguos sin publicVersion; no inventar versiones locales ni interpretar ausencia como legacy. El cambio requiere despliegue coordinado de las instancias que sirven el contrato antes de prometerlo a integradores.
+
+
+### Resincronización editorial — 2026-10-04
+
+Volver a copiar docs/openapi-b2b.json al portal: la descripción de executionProgress ahora indica comparar publicVersion numéricamente para fotografías de la misma solicitud. revision conserva su significado interno; expectedRevision no cambia. docs/openapi.json también se regeneró, pero sigue siendo el contrato completo privado y no debe publicarse en el portal. Guías públicas vigentes: B2B-PUBLIC-GUIDE.md y PUBLIC-B2B-TRACKING.md. No hay cambio funcional ni despliegue en esta corrección.

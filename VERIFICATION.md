@@ -1,3 +1,7 @@
+## Análisis estático de seguimiento B2B — 2026-10-04
+
+[Informe](docs/B2B-TRACKING-ANALYSIS.md), base QA b4318ce. Inventario Node de 15 operaciones del OpenAPI público, contraste estático con proyecciones/guards/triggers y ThrottlerGuard instalado; referencias locales y diff --check. No se regeneró OpenAPI ni ejecutaron build, suites, consultas DB o servicios. Las garantías de runtime se describen desde código; recomendaciones son propuestas y pruebas anteriores permanecen históricas. Sólo documentación y continuidad modificadas.
+
 ## Limitaciones WEB — 2026-10-04
 
 [Informe y comandos](docs/PROVIDER-HISTORICAL-ATTEMPTS-VERIFICATION.md), [contrato vigente](docs/DRIVER-APP-EXECUTION.md#cierre-de-limitaciones-web--2026-10-04). Evidencia nueva: 86 E2E únicos, 403 unitarias, 34 públicas; build, tsc de ambos proyectos, linters y comprobación documental aprobados. Migración incremental aplicada sin reset en dos bases sintéticas nativas; 80 recibos anteriores acreditados y comando original retrasado rechazado por tombstone. Intentos fallidos documentados y excluidos; no atribuir sus causas a defectos resueltos. Sin Docker, frontend, producción ni activación. Pruebas de la sección anterior se conservan como historia.
@@ -2451,3 +2455,11 @@ Cambio posterior al CHECK FINAL histórico: SMTP y Nodemailer sustituidos por Re
 # Seguimiento MVP — reconciliación documental (2026-09-30)
 
 Las siete huellas pendientes del informe MVP quedan reconciliadas: SHA-256 histórico reconstruido exactamente desde Git mediante finales de línea mixtos, sin diferencias de contenido normalizado. Ver `docs/checks/mvp-closure-fingerprint-reconciliation.json` y `scripts/reconcile-mvp-fingerprints.mjs`. Verificador y consolidación documental exit 0. Sin nuevas pruebas funcionales ni verificaciones remotas; se mantienen conteos históricos y el B2B 15/15 de la tarea anterior. Dictamen global NO LISTO por preparación operativa, no por estas siete huellas. No se acredita causa de abortos históricos. El estado PARTIAL de informes previos se conserva como histórico; sus pendientes locales de archivo B2B y huellas están subsanados por los seguimientos MVP.
+
+## Seguimiento público B2B — implementación local 2026-10-04
+
+[Informe ejecutado](docs/PUBLIC-B2B-TRACKING-VERIFICATION.md), [contrato](docs/PUBLIC-B2B-TRACKING.md), [resumen/huellas](docs/checks/public-b2b-tracking.json). Nuevos resultados: 52 E2E completos (29 ejecución +21 estado B2B +2 persistencia), 59 unitarias pertinentes, 35 contrato/firma. Migración limpia35 y upgrade34→35 con historia de nueve tablas preservada. Build, tipos, linters, documentación y Prisma validados al cierre; detalle y advertencia preexistente en informe. Ejecuciones parciales/abortadas no cuentan. La causa de intermitencia del runner continúa sin acreditarse; no se ejecutó toda la suite ni carga. Disponible en checkout QA, no producción; sin frontend, Docker, Coita, commit/push ni activación. El análisis estático anterior queda como antecedente.
+
+## Corrección editorial OpenAPI B2B — 2026-10-04
+
+Nueva ejecución: npm run docs:b2b exit0 (incluye build y regeneración desde Swagger), npm run docs:b2b:check exit0, npm run test:public-b2b exit0 con35/35; git diff --check aprobado. Regresión dentro del test de seguimiento versionado exige publicVersion en la descripción de executionProgress en contratos completo/público, prohíbe la recomendación antigua y conserva revision. Logs: .tmp/public-tracking-check/editorial-{generate,docs-check,tests}.log. Sin nuevas pruebas PostgreSQL ni cambios funcionales; resultados E2E/migración anteriores no se atribuyen a esta tarea. Las huellas previas de docs/checks/public-b2b-tracking.json identifican los artefactos de aquella ejecución, anteriores a esta corrección editorial. Frontend debe resincronizar docs/openapi-b2b.json y usar las guías vigentes enlazadas en el handoff. No se publica el OpenAPI completo en el portal.

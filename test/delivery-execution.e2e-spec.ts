@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import type { INestApplication, LoggerService } from '@nestjs/common';
@@ -459,8 +459,169 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
     }).expect(201);
     return d;
   };
+  const publicStatus = async (publicId: string) => {
+    const r = await api()
+      .get('/api/v1/delivery-requests/' + publicId + '/status')
+      .auth(t.b2b, bearer)
+      .expect(200);
+    expect(r.headers['cache-control']).toBe('private, no-store');
+    expect(r.body.publicVersion).toMatch(/^[1-9][0-9]*$/);
+    for (const key of [
+      'dispatchId',
+      'assignmentId',
+      'actorUserId',
+      'reasonDetail',
+      'confirmations',
+      'contactPhone',
+    ])
+      expect(JSON.stringify(r.body)).not.toContain('"' + key + '"');
+    return r.body;
+  };
+  it('publishes stable concurrent snapshots, visible identity changes and a durable terminal version', async () => {
+    const d = await start();
+    let previous = await publicStatus(d.requestPublicId);
+    expect(previous).toMatchObject({
+      trackingMode: 'DETAILED',
+      assignmentState: 'ACTIVE',
+      terminalOutcome: null,
+      executionProgress: { phase: null },
+    });
+    const repeated = await Promise.all(
+      Array.from({ length: 8 }, () => publicStatus(d.requestPublicId)),
+    );
+    for (const r of repeated) expect(r).toEqual(previous);
+    const oldProviderName = (
+      await prisma.deliveryProvider.findUniqueOrThrow({
+        where: { id: providers.A },
+      })
+    ).name;
+    await prisma.deliveryProvider.update({
+      where: { id: providers.A },
+      data: { name: 'Public Provider Demo' },
+    });
+    const providerRenamed = await publicStatus(d.requestPublicId);
+    expect(providerRenamed.execution.provider.displayName).toBe(
+      'Public Provider Demo',
+    );
+    expect(BigInt(providerRenamed.publicVersion)).toBeGreaterThan(
+      BigInt(previous.publicVersion),
+    );
+    previous = providerRenamed;
+    const oldName = (
+      await prisma.driver.findUniqueOrThrow({ where: { id: drivers.ana } })
+    ).displayName;
+    await prisma.driver.update({
+      where: { id: drivers.ana },
+      data: { displayName: 'Public Demo New' },
+    });
+    const renamed = await publicStatus(d.requestPublicId);
+    expect(renamed.execution.driver.displayName).toBe('Public Demo New');
+    expect(BigInt(renamed.publicVersion)).toBeGreaterThan(
+      BigInt(previous.publicVersion),
+    );
+    // Reversal without an intervening read still invalidates the previously published version.
+    await prisma.driver.update({
+      where: { id: drivers.ana },
+      data: { displayName: 'Interim Demo' },
+    });
+    await prisma.driver.update({
+      where: { id: drivers.ana },
+      data: { displayName: 'Public Demo New' },
+    });
+    previous = await publicStatus(d.requestPublicId);
+    expect(BigInt(previous.publicVersion)).toBeGreaterThan(
+      BigInt(renamed.publicVersion),
+    );
+    for (const phase of phases) {
+      expect((await step(d.id, phase)).status).toBe(200);
+      const current = await publicStatus(d.requestPublicId);
+      expect(current.executionProgress.phase).toBe(phase);
+      expect(BigInt(current.publicVersion)).toBeGreaterThan(
+        BigInt(previous.publicVersion),
+      );
+      // A consumer receiving previous after current must retain current, not order by phase/time.
+      const received = [current, previous].reduce((a, b) =>
+        BigInt(a.publicVersion) > BigInt(b.publicVersion) ? a : b,
+      );
+      expect(received).toEqual(current);
+      previous = current;
+    }
+    await appDeliver(d.id);
+    const terminal = await publicStatus(d.requestPublicId);
+    expect(terminal).toMatchObject({
+      status: 'DELIVERED',
+      assignmentState: 'ENDED',
+      trackingMode: 'DETAILED',
+      executionProgress: null,
+      terminalOutcome: { type: 'DELIVERED' },
+    });
+    expect(BigInt(terminal.publicVersion)).toBeGreaterThan(
+      BigInt(previous.publicVersion),
+    );
+    await prisma.driver.update({
+      where: { id: drivers.ana },
+      data: { displayName: oldName },
+    });
+    expect(await publicStatus(d.requestPublicId)).toEqual(terminal);
+    await prisma.deliveryProvider.update({
+      where: { id: providers.A },
+      data: { name: oldProviderName },
+    });
+    expect(await publicStatus(d.requestPublicId)).toEqual(terminal);
+    const event = await prisma.b2bOutboxEvent.findFirstOrThrow({
+      where: { dispatchId: d.id },
+    });
+    expect(event.payload).not.toHaveProperty('publicVersion');
+  });
+  it('publishes durable expiry on the first expired read without changing Dispatch or inventing assignment', async () => {
+    const d = await openDispatch();
+    const initial = await publicStatus(d.requestPublicId);
+    const row = await dispatchRow(d.id);
+    const req = await prisma.deliveryRequest.findUniqueOrThrow({
+      where: { id: row.deliveryRequestId },
+    });
+    const { publicDeliveryStatus } =
+      await import('../dist/delivery-requests/public-delivery-tracking.js');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    let expired;
+    try {
+      vi.setSystemTime(new Date(row.expiresAt.getTime() + 1));
+      expired = await publicDeliveryStatus(
+        prisma,
+        d.requestPublicId,
+        req.integrationClientId,
+      );
+      expect(expired).toMatchObject({
+        status: 'EXPIRED',
+        trackingMode: null,
+        assignmentState: 'NONE',
+        terminalOutcome: {
+          type: 'EXPIRED',
+          occurredAt: row.expiresAt.toISOString(),
+        },
+      });
+      expect(BigInt(expired.publicVersion)).toBeGreaterThan(
+        BigInt(initial.publicVersion),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(await publicStatus(d.requestPublicId)).toEqual(expired);
+    expect((await dispatchRow(d.id)).status).toBe('OPEN');
+    // The test clock moved only for the public projection; cancel through the actual API for cleanup.
+    await api()
+      .post('/api/v1/delivery-requests/' + d.requestPublicId + '/cancel')
+      .auth(t.b2b, bearer)
+      .send({ reason: 'Synthetic expiry cleanup' })
+      .expect(200);
+  });
   it('classifies persisted mode without treating unassigned offers as legacy', async () => {
     const d = await openDispatch();
+    expect(await publicStatus(d.requestPublicId)).toMatchObject({
+      trackingMode: null,
+      assignmentState: 'NONE',
+      terminalOutcome: null,
+    });
     const before = await api()
       .get('/api/v1/provider/dispatches/' + d.id)
       .auth(t.A, bearer)
@@ -639,6 +800,8 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       })
       .expect(201);
     const v = incident.body.execution;
+    const incidentPublic = await publicStatus(d.requestPublicId);
+    expect(incidentPublic.executionProgress.attentionRequired).toBe(true);
     const body = {
       assignmentId: v.activeAssignmentId,
       expectedRevision: v.revision,
@@ -665,6 +828,16 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
         .send(body);
     const results = await Promise.all([call(), call()]);
     expect(results.map((x) => x.status).sort()).toEqual([200, 409]);
+    const terminal = await publicStatus(d.requestPublicId);
+    expect(terminal).toMatchObject({
+      status: 'CANCELLED',
+      trackingMode: 'DETAILED',
+      assignmentState: 'ENDED',
+      executionProgress: null,
+      terminalOutcome: { type: 'RETURNED_TO_ORIGIN' },
+    });
+    expect(terminal.terminalOutcome.occurredAt).toBe(body.occurredAt);
+    expect(await publicStatus(d.requestPublicId)).toEqual(terminal);
     expect((await dispatchRow(d.id)).status).toBe('RETURNED');
     expect(await refundsOf(d.id)).toBe(0);
     expect(
@@ -672,6 +845,10 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
     ).toBe(0);
   });
   it('transfers fleet custody to independent atomically without another award or fabricated pickup', async () => {
+    await prisma.driver.update({
+      where: { id: drivers.indy },
+      data: { displayName: 'Transferred Demo' },
+    });
     const d = await start();
     for (const phase of phases.slice(0, 3))
       expect((await step(d.id, phase)).status).toBe(200);
@@ -688,6 +865,8 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       })
       .expect(201);
     const v = incident.body.execution;
+    const incidentPublic = await publicStatus(d.requestPublicId);
+    expect(incidentPublic.executionProgress.attentionRequired).toBe(true);
     const body = {
       assignmentId: v.activeAssignmentId,
       expectedRevision: v.revision,
@@ -716,6 +895,19 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       .set('Idempotency-Key', randomUUID())
       .send(body)
       .expect(200);
+    const transferredPublic = await publicStatus(d.requestPublicId);
+    expect(transferredPublic).toMatchObject({
+      execution: {
+        mode: 'INDEPENDENT',
+        provider: null,
+        driver: { displayName: 'Transferred Demo' },
+      },
+      assignmentState: 'ACTIVE',
+      executionProgress: { phase: 'PICKED_UP', attentionRequired: false },
+    });
+    expect(BigInt(transferredPublic.publicVersion)).toBeGreaterThan(
+      BigInt(incidentPublic.publicVersion),
+    );
     expect(resolved.body.execution.phase).toBe('PICKED_UP');
     await api()
       .post('/api/v1/driver/dispatches/' + d.id + '/execution-events')
@@ -850,6 +1042,8 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       })
       .expect(201);
     const v = incident.body.execution;
+    const incidentPublic = await publicStatus(d.requestPublicId);
+    expect(incidentPublic.executionProgress.attentionRequired).toBe(true);
     const body = {
       assignmentId: v.activeAssignmentId,
       expectedRevision: v.revision,
@@ -1595,7 +1789,22 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
         await prisma.deliveryExecution.count({ where: { dispatchId: d.id } }),
       ).toBe(0);
       app.get(ConfigService).set('DETAILED_EXECUTION_ENABLED', true);
+      const legacy = await publicStatus(d.requestPublicId);
+      expect(legacy).toMatchObject({
+        trackingMode: 'LEGACY',
+        assignmentState: 'ACTIVE',
+      });
+      expect(legacy).not.toHaveProperty('executionProgress');
       await deliver(t.A, d.id).expect(200);
+      const done = await publicStatus(d.requestPublicId);
+      expect(done).toMatchObject({
+        trackingMode: 'LEGACY',
+        assignmentState: 'ENDED',
+        terminalOutcome: { type: 'DELIVERED' },
+      });
+      expect(BigInt(done.publicVersion)).toBeGreaterThan(
+        BigInt(legacy.publicVersion),
+      );
       expect(
         await prisma.deliveryExecutionEvent.count({
           where: { dispatchId: d.id },

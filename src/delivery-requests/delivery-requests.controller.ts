@@ -5,6 +5,7 @@ import {
   Get,
   Headers,
   HttpCode,
+  Header,
   Param,
   Post,
   Query,
@@ -165,6 +166,7 @@ export class DeliveryRequestsController {
   }
 
   @Get(':publicId/status')
+  @Header('Cache-Control', 'private, no-store')
   @IntegrationScopes('deliveries:read')
   @publicIdParam
   @ApiOkResponse({
@@ -173,12 +175,13 @@ export class DeliveryRequestsController {
   })
   @ApiErrorDescriptions({
     ...b2bErrors,
+    503: 'Fotografía temporalmente indisponible tras conflictos concurrentes; reintentar GET con backoff, sin inferir resultado logístico.',
     404: 'No existe o pertenece a otro IntegrationClient (no se revela existencia).',
   })
   @ApiOperation({
     summary: 'Consultar el estado logístico de mi DeliveryRequest',
     description:
-      'Requiere deliveries:read. Sólo lectura: Mandaria sigue siendo la única autoridad logística y un IntegrationClient no marca entregas, ni reclama, ni asigna. Devuelve un estado público y estable —REQUESTED, OPEN, ASSIGNED, DELIVERED, CANCELLED o EXPIRED— que no expone el modelo interno de Dispatch: execution.mode (PROVIDER o INDEPENDENT) se amplía con provider/driver nullable y únicamente displayName público. DELIVERED congela la identidad al entregar; no expone IDs internos, datos privados, Vehicle, créditos ni políticas. deliveredAt llega con la entrega y es null antes. Apto para sondeo periódico: la lectura no tiene efectos.',
+      'Requiere deliveries:read. Sólo lectura: Mandaria sigue siendo la única autoridad logística y un IntegrationClient no marca entregas, ni reclama, ni asigna. Devuelve un estado público y estable —REQUESTED, OPEN, ASSIGNED, DELIVERED, CANCELLED o EXPIRED— que no expone el modelo interno de Dispatch: execution.mode (PROVIDER o INDEPENDENT) se amplía con provider/driver nullable y únicamente displayName público. DELIVERED congela la identidad al entregar; no expone IDs internos, datos privados, Vehicle, créditos ni políticas. deliveredAt llega con la entrega y es null antes. Apto para sondeo periódico: sin efectos operativos ni financieros. Materializa internamente la fotografía versionada y el vencimiento observado; publicVersion es monotónica por MDR e incluye cierres e identidad.',
   })
   async status(
     @Req() req: IntegrationRequest,
@@ -197,6 +200,7 @@ export class DeliveryRequestsController {
   @ApiOkResponse({ type: DeliveryRequestResponse })
   @ApiErrorDescriptions({
     ...b2bErrors,
+    409: 'CUSTODY_OPERATION_FORBIDDEN o CUSTODY_INCIDENT_OPEN: custodia impide cancelar. Consultar status y escalar; no crear reemplazo ni inferir devolución. Conflicto concurrente: reconciliar misma MDR antes de reintentar.',
     404: 'No existe o pertenece a otro IntegrationClient.',
   })
   @ApiOperation({

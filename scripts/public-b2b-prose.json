@@ -1,5 +1,5 @@
 {
-  "Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar revision para evitar retrocesos entre respuestas.": "Progreso reportado del servicio en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar revision para evitar retrocesos entre respuestas.",
+  "Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar publicVersion numéricamente por solicitud para ordenar fotografías públicas; revision describe únicamente la ejecución interna.": "Progreso reportado del servicio en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar publicVersion numéricamente por solicitud para ordenar fotografías públicas; revision describe únicamente la ejecución interna.",
   "RETURNED_TO_ORIGIN acompaña CANCELLED y deliveredAt=null. Consultar por polling; no se emite delivery.completed ni nuevos webhooks.": "RETURNED_TO_ORIGIN acompaña CANCELLED y deliveredAt=null. Consultar periódicamente el estado; no se emite delivery.completed por una devolución física.",
   "Requiere atención operativa. No expone motivo, actores ni contactos privados.": "El servicio requiere atención operativa y conserva la custodia del pedido.",
   "Devolución física declarada; no implica devolución de dinero o créditos.": "Devolución física declarada al restaurante. No confirma devolución de dinero.",
@@ -167,5 +167,11 @@
   "independent": "Repartidor independiente",
   "delivered": "Entrega física completada",
   "identityNotConfigured": "Identidad pública no configurada",
-  "historicalDelivery": "Entrega histórica"
+  "historicalDelivery": "Entrega histórica",
+  "Fecha persistida del resultado logístico; null si falta evidencia histórica. No acredita cobro.": "Fecha persistida del resultado logístico; null si falta evidencia histórica. No acredita cobro.",
+  "Versión durable monotónica por MDR como entero decimal string. Comparar numéricamente (BigInt); igual versión implica igual fotografía. Puede saltar valores.": "Versión durable monotónica por MDR como entero decimal string. Comparar numéricamente (BigInt); igual versión implica igual fotografía. Puede saltar valores.",
+  "Clasificación persistida: null si nunca se asignó; LEGACY sin hitos detallados; DETAILED incluso tras cierre. No inferir clasificación de errores HTTP.": "Clasificación persistida: null si nunca se asignó; LEGACY sin hitos detallados; DETAILED incluso tras cierre. No inferir clasificación de errores HTTP.",
+  "NONE nunca asignado; ACTIVE asignación vigente; ENDED hubo asignación, ninguna vigente. ASSIGNED también puede significar sólo proveedor a cargo.": "NONE nunca asignado; ACTIVE asignación vigente; ENDED hubo asignación, ninguna vigente. ASSIGNED también puede significar sólo proveedor a cargo.",
+  "Resultado logístico durable, null antes de finalizar. Una devolución al origen mantiene status CANCELLED; no implica devolución financiera.": "Resultado logístico durable, null antes de finalizar. Una devolución al origen mantiene status CANCELLED; no implica devolución financiera.",
+  "detailedPickup": "Pedido recogido con seguimiento detallado"
 }

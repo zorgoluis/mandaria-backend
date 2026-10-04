@@ -101,8 +101,15 @@ POST MDR → POST cotización → accept sin atestación sigue disponible para e
 
 ## Progreso logístico detallado (aditivo, sin activación)
 
-GET `/api/v1/delivery-requests/{publicId}/status` conserva sus estados existentes. Para asignaciones detalladas en estado ASSIGNED puede incluir `executionProgress` con `phase`, `revision`, `registeredAt` y `attentionRequired`. Fases: TO_PICKUP, AT_PICKUP, PICKED_UP, TO_DROPOFF, AT_DROPOFF; phase puede ser null antes del primer hito. Consultar periódicamente y evitar reemplazar una revisión reciente por otra atrasada. Los servicios legacy no reciben hitos inventados.
+GET `/api/v1/delivery-requests/{publicId}/status` conserva sus estados existentes. Para asignaciones detalladas en estado ASSIGNED puede incluir `executionProgress` con `phase`, `revision`, `registeredAt` y `attentionRequired`. Fases: TO_PICKUP, AT_PICKUP, PICKED_UP, TO_DROPOFF, AT_DROPOFF; phase puede ser null antes del primer hito. Consultar periódicamente y comparar publicVersion como entero decimal, no la revision interna del progreso. Los servicios legacy no reciben hitos inventados.
 
 Después de recogida, una cancelación ordinaria responde 409 `CUSTODY_OPERATION_FORBIDDEN`: corresponde atención operativa, no comenzar otro envío a ciegas. Una incidencia mantiene custodia; sus motivos, actores y confirmaciones son privados. La devolución física confirmada termina en CANCELLED, con `executionProgress=null` y `executionOutcome={"type":"RETURNED_TO_ORIGIN","occurredAt":"2026-10-02T18:00:00.000Z"}` (fecha ficticia). No se notifica como entrega.
 
 No se añaden webhooks. `delivery.completed` conserva contrato y sólo corresponde a cierre DELIVERED real. Avance, aceptación, entrega o retorno no confirman cobro ni reembolso de comida/envío. Contrato descargable actualizado: [openapi-b2b.json](openapi-b2b.json). Capacidad backend local no acredita activación ni integración del consumidor.
+
+
+## Fotografía pública versionada — disponible en checkout QA, no desplegada
+
+GET status añade publicVersion (string decimal durable), trackingMode (LEGACY/DETAILED/null), assignmentState (NONE/ACTIVE/ENDED) y terminalOutcome (DELIVERED/RETURNED_TO_ORIGIN/CANCELLED/EXPIRED o null). Los campos anteriores se conservan. [Contrato, ejemplos, recuperación y límites](PUBLIC-B2B-TRACKING.md).
+
+Sondeo recomendado desde el backend integrador, compartiendo resultados: objetivo15s para entregas activas observadas, sin garantía de capacidad. A15s,4 solicitudes/min por MDR; límite actual100/min por IP/manejador, compartido y en memoria. Aplicar presupuesto agregado, jitter,429/Retry-After y backoff; detener sondeo continuo en terminal confirmado. No inferir legacy de campo ausente ni cobro de entrega física. delivery.completed mantiene su payload anterior; consultar status para obtener versión y reconciliar.

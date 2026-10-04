@@ -7,10 +7,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { closeDispatchesForCancelledRequest } from '../dispatch/dispatch-policy.js';
-import {
-  deliveryStatusSelect,
-  deliveryStatusView,
-} from '../deliveries/delivery-status.js';
+import { publicDeliveryStatus } from './public-delivery-tracking.js';
 import { pageResult } from '../common/pagination.dto.js';
 import { IdempotencyService } from '../idempotency/idempotency.service.js';
 import {
@@ -201,56 +198,7 @@ export class DeliveryRequestsService {
    * deliveryStatusView, the single place that turns internal logistics into the public contract.
    */
   async deliveryStatus(publicId: string, integrationClientId: string) {
-    // Prisma can load relations through several SELECTs. A single database snapshot prevents
-    // mixing an old claim with a new assignment during release/reassignment/completion.
-    return this.prisma.$transaction(
-      async (tx) => {
-        const request = await tx.deliveryRequest.findFirst({
-          where: { publicId, integrationClientId },
-          select: deliveryStatusSelect,
-        });
-        if (!request) throw new NotFoundException('Delivery request not found');
-        const status = deliveryStatusView(request);
-        const dispatchId = request.dispatches[0]?.id;
-        if (!dispatchId) return status;
-        const rows = await tx.$queryRaw<
-          {
-            phase: number;
-            revision: number;
-            recordedAt: Date;
-            attentionRequired: boolean;
-          }[]
-        >`SELECT e.phase,e.revision,e."recordedAt",EXISTS(SELECT 1 FROM "DeliveryCustodyIncident" i WHERE i."dispatchId"=e."dispatchId" AND i."resolvedAt" IS NULL) AS "attentionRequired" FROM "DeliveryExecution" e WHERE e."dispatchId"=${dispatchId}::uuid`;
-        if (!rows[0]) return status;
-        const e = rows[0];
-        const outcome = await tx.$queryRaw<
-          { occurredAt: Date }[]
-        >`SELECT "occurredAt" FROM "DeliveryCustodyResolution" WHERE "dispatchId"=${dispatchId}::uuid AND type='RETURN_TO_ORIGIN'`;
-        return {
-          ...status,
-          executionProgress:
-            status.status === 'ASSIGNED'
-              ? {
-                  phase: [
-                    null,
-                    'TO_PICKUP',
-                    'AT_PICKUP',
-                    'PICKED_UP',
-                    'TO_DROPOFF',
-                    'AT_DROPOFF',
-                  ][e.phase],
-                  revision: e.revision,
-                  registeredAt: e.recordedAt,
-                  attentionRequired: e.attentionRequired,
-                }
-              : null,
-          executionOutcome: outcome[0]
-            ? { type: 'RETURNED_TO_ORIGIN', occurredAt: outcome[0].occurredAt }
-            : null,
-        };
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
-    );
+    return publicDeliveryStatus(this.prisma, publicId, integrationClientId);
   }
 
   /** Foreign and missing requests are indistinguishable (404). */

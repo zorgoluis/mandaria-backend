@@ -18128,7 +18128,7 @@
     },
     "/api/v1/delivery-requests/{publicId}/status": {
       "get": {
-        "description": "Requiere deliveries:read. Sólo lectura: Mandaria sigue siendo la única autoridad logística y un IntegrationClient no marca entregas, ni reclama, ni asigna. Devuelve un estado público y estable —REQUESTED, OPEN, ASSIGNED, DELIVERED, CANCELLED o EXPIRED— que no expone el modelo interno de Dispatch: execution.mode (PROVIDER o INDEPENDENT) se amplía con provider/driver nullable y únicamente displayName público. DELIVERED congela la identidad al entregar; no expone IDs internos, datos privados, Vehicle, créditos ni políticas. deliveredAt llega con la entrega y es null antes. Apto para sondeo periódico: la lectura no tiene efectos.",
+        "description": "Requiere deliveries:read. Sólo lectura: Mandaria sigue siendo la única autoridad logística y un IntegrationClient no marca entregas, ni reclama, ni asigna. Devuelve un estado público y estable —REQUESTED, OPEN, ASSIGNED, DELIVERED, CANCELLED o EXPIRED— que no expone el modelo interno de Dispatch: execution.mode (PROVIDER o INDEPENDENT) se amplía con provider/driver nullable y únicamente displayName público. DELIVERED congela la identidad al entregar; no expone IDs internos, datos privados, Vehicle, créditos ni políticas. deliveredAt llega con la entrega y es null antes. Apto para sondeo periódico: sin efectos operativos ni financieros. Materializa internamente la fotografía versionada y el vencimiento observado; publicVersion es monotónica por MDR e incluye cierres e identidad.",
         "operationId": "DeliveryRequestsController_status",
         "parameters": [
           {
@@ -18151,9 +18151,44 @@
                   "$ref": "#/components/schemas/DeliveryStatusResponse"
                 },
                 "examples": {
+                  "detailedPickup": {
+                    "summary": "detailedPickup",
+                    "value": {
+                      "publicVersion": "12",
+                      "trackingMode": "DETAILED",
+                      "assignmentState": "ACTIVE",
+                      "terminalOutcome": null,
+                      "publicId": "MDR-000123",
+                      "externalReference": "ORDER-4711",
+                      "status": "ASSIGNED",
+                      "execution": {
+                        "mode": "PROVIDER",
+                        "provider": {
+                          "displayName": "Reparto Demo"
+                        },
+                        "driver": {
+                          "displayName": "Alex Demo"
+                        }
+                      },
+                      "requestedAt": "2026-09-28T10:00:00.000Z",
+                      "deliveredAt": null,
+                      "cancelledAt": null,
+                      "executionProgress": {
+                        "phase": "PICKED_UP",
+                        "revision": 4,
+                        "registeredAt": "2026-09-28T10:15:00.000Z",
+                        "attentionRequired": false
+                      },
+                      "executionOutcome": null
+                    }
+                  },
                   "open": {
                     "summary": "open",
                     "value": {
+                      "publicVersion": "12",
+                      "trackingMode": null,
+                      "assignmentState": "NONE",
+                      "terminalOutcome": null,
                       "publicId": "MDR-000123",
                       "externalReference": "ORDER-4711",
                       "status": "OPEN",
@@ -18166,6 +18201,10 @@
                   "providerClaimed": {
                     "summary": "providerClaimed",
                     "value": {
+                      "publicVersion": "12",
+                      "trackingMode": null,
+                      "assignmentState": "NONE",
+                      "terminalOutcome": null,
                       "publicId": "MDR-000123",
                       "externalReference": "ORDER-4711",
                       "status": "ASSIGNED",
@@ -18184,6 +18223,10 @@
                   "providerAssigned": {
                     "summary": "providerAssigned",
                     "value": {
+                      "publicVersion": "12",
+                      "trackingMode": "LEGACY",
+                      "assignmentState": "ACTIVE",
+                      "terminalOutcome": null,
                       "publicId": "MDR-000123",
                       "externalReference": "ORDER-4711",
                       "status": "ASSIGNED",
@@ -18204,6 +18247,10 @@
                   "independent": {
                     "summary": "independent",
                     "value": {
+                      "publicVersion": "12",
+                      "trackingMode": "LEGACY",
+                      "assignmentState": "ACTIVE",
+                      "terminalOutcome": null,
                       "publicId": "MDR-000123",
                       "externalReference": "ORDER-4711",
                       "status": "ASSIGNED",
@@ -18222,6 +18269,13 @@
                   "delivered": {
                     "summary": "delivered",
                     "value": {
+                      "publicVersion": "12",
+                      "trackingMode": "LEGACY",
+                      "assignmentState": "ENDED",
+                      "terminalOutcome": {
+                        "type": "DELIVERED",
+                        "occurredAt": "2026-09-28T10:30:00.000Z"
+                      },
                       "publicId": "MDR-000123",
                       "externalReference": "ORDER-4711",
                       "status": "DELIVERED",
@@ -18242,6 +18296,10 @@
                   "identityNotConfigured": {
                     "summary": "identityNotConfigured",
                     "value": {
+                      "publicVersion": "12",
+                      "trackingMode": "LEGACY",
+                      "assignmentState": "ACTIVE",
+                      "terminalOutcome": null,
                       "publicId": "MDR-000123",
                       "externalReference": "ORDER-4711",
                       "status": "ASSIGNED",
@@ -18258,6 +18316,13 @@
                   "historicalDelivery": {
                     "summary": "historicalDelivery",
                     "value": {
+                      "publicVersion": "12",
+                      "trackingMode": "LEGACY",
+                      "assignmentState": "ENDED",
+                      "terminalOutcome": {
+                        "type": "DELIVERED",
+                        "occurredAt": "2026-09-28T10:30:00.000Z"
+                      },
                       "publicId": "MDR-000123",
                       "externalReference": "ORDER-4711",
                       "status": "DELIVERED",
@@ -18594,6 +18659,59 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Fotografía temporalmente indisponible tras conflictos concurrentes; reintentar GET con backoff, sin inferir resultado logístico.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -18831,6 +18949,59 @@
                     "code": {
                       "type": "string",
                       "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CUSTODY_OPERATION_FORBIDDEN o CUSTODY_INCIDENT_OPEN: custodia impide cancelar. Consultar status y escalar; no crear reemplazo ni inferir devolución. Conflicto concurrente: reconciliar misma MDR antes de reintentar.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
                     },
                     "message": {
                       "type": "string",
@@ -62658,6 +62829,30 @@
           "items"
         ]
       },
+      "PublicTerminalOutcomeResponse": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DELIVERED",
+              "RETURNED_TO_ORIGIN",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Fecha persistida del resultado logístico; null si falta evidencia histórica. No acredita cobro."
+          }
+        },
+        "required": [
+          "type",
+          "occurredAt"
+        ]
+      },
       "PublicExecutionProgressResponse": {
         "type": "object",
         "properties": {
@@ -62766,9 +62961,43 @@
       "DeliveryStatusResponse": {
         "type": "object",
         "properties": {
+          "publicVersion": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "example": "12",
+            "description": "Versión durable monotónica por MDR como entero decimal string. Comparar numéricamente (BigInt); igual versión implica igual fotografía. Puede saltar valores."
+          },
+          "trackingMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY",
+              "DETAILED"
+            ],
+            "nullable": true,
+            "description": "Clasificación persistida: null si nunca se asignó; LEGACY sin hitos detallados; DETAILED incluso tras cierre. No inferir clasificación de errores HTTP."
+          },
+          "assignmentState": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "ACTIVE",
+              "ENDED"
+            ],
+            "description": "NONE nunca asignado; ACTIVE asignación vigente; ENDED hubo asignación, ninguna vigente. ASSIGNED también puede significar sólo proveedor a cargo."
+          },
+          "terminalOutcome": {
+            "nullable": true,
+            "description": "Resultado logístico durable, null antes de finalizar. Una devolución al origen mantiene status CANCELLED; no implica devolución financiera.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicTerminalOutcomeResponse"
+              }
+            ]
+          },
           "executionProgress": {
             "nullable": true,
-            "description": "Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar revision para evitar retrocesos entre respuestas.",
+            "description": "Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar publicVersion numéricamente por solicitud para ordenar fotografías públicas; revision describe únicamente la ejecución interna.",
             "type": "object",
             "allOf": [
               {
@@ -62838,6 +63067,10 @@
           }
         },
         "required": [
+          "publicVersion",
+          "trackingMode",
+          "assignmentState",
+          "terminalOutcome",
           "publicId",
           "status",
           "requestedAt"
