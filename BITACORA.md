@@ -4,6 +4,12 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación del entorno Desktop autorizada (2026-10-03):** el propietario solicita commit/push en la rama actual QA. Incluye Compose aislado, gateway, seed sintético, preparador API, guía y evidencia. Excluye `nul`, archivos privados y temporales. Verificaciones de esta tarea: revisión del conjunto, exclusión de secretos locales y diff --check; las pruebas operativas documentadas son de la tarea anterior y no se repiten. El resultado del envío se confirma con Git, sin despliegue ni cambios en servicios.
+
+- **Fixtures operativos Docker Desktop listos (2026-10-03):** sólo proyecto/base local identificados. Preparador API repetible `scripts/prepare-desktop-execution-fixtures.mjs`; MDR-000001 normal, MDR-000002 devolución e incidencia abierta, MDR-000003 transferencia e incidencia abierta con receptor elegible, MDR-000004 legacy de ejecución. Cinco Drivers/motos, tarifa/cobertura, políticas y saldo ficticio 972 después de cuatro cargos de 7. Dos repeticiones completas exit0 sin duplicados ni cambio de ledger/progreso. DETAILED_EXECUTION_ENABLED=true al terminar, correo simulado y cero endpoints webhook. Guía local ampliada; cierres pendientes para práctica Web, sin revisión visual ni nueva suite de regresión. Cambios previos conservados; sin producto, frontend, producción, commit/push.
+
+- **Docker Desktop local autorizado y saludable (2026-10-03):** solicitud expresa permite Docker en esta PC, sustituyendo la restricción anterior sólo para este entorno. Proyecto `mandaria-local-20261003-execution`, API loopback43130, PostgreSQL55440 mediante gateway fijo; volúmenes nuevos, backend/base en red interna. 32 migraciones finalizadas y cuatro cuentas sintéticas verificadas. DETAILED_EXECUTION_ENABLED=true únicamente en Compose local; correo simulado, routing falso, webhook poll0 y sin salida directa del backend. Credenciales nuevas sólo en archivos ignorados, nunca en documentación. Guía docs/DOCKER-DESKTOP-LOCAL.md. No datos reales, recursos ajenos modificados, commit/push ni despliegue remoto.
+
 - **Publicación de reconciliación autorizada (2026-10-03):** propietario solicita commit/push del backend a QA. Incluye cierre durable, contrato, migración incremental y evidencia; excluye `nul`, temporales y repositorio frontend. Verificación de esta tarea: revisión Git y diff --check; pruebas funcionales de la implementación anterior, no repetidas. Resultado del envío se confirma con Git. Sin despliegue ni activación.
 
 - **Reconciliación de custodia (2026-10-03):** GET propio APPLIED/PENDING_OR_UNKNOWN/CLOSED_NO_EFFECTS y POST close explícito reutilizan recibos inmutables y locks de resolve. Cierre durable impide originales tardíos; UUID equivalentes no eluden la barrera. Nuevo contrato en docs/EXECUTION-ATTEMPT-RECONCILIATION.md. Verificación local actual: 16 E2E completos, 68 unitarias pertinentes, 34 públicas; migración limpia y upgrade de 251 recibos preservados. Sin frontend, activación, Docker, datos reales, commit/push ni despliegue. Continúan pendientes UI y cobertura SUPER_ADMIN. Los conteos anteriores son históricos.
@@ -1961,3 +1967,27 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Verificaciones actuales: rama/estado Git y diff --check. Los 16 E2E, 68 unitarios y 34 públicos corresponden a la implementación anterior; no se repitieron.
 - Resultado: commit y envío preparados; confirmación definitiva por salida Git al cierre de la tarea. Sin despliegue ni activación.
 - Pendientes: autorización operativa y cobertura SUPER_ADMIN; publicación/despliegue frontend independiente.
+
+## 2026-10-03 — Entorno Docker Desktop aislado para FRONTEND
+
+- Solicitud: levantar backend local en Docker autorizado, con proyecto/volúmenes/puertos exclusivos y datos sintéticos, sin recursos existentes ni secretos productivos.
+- Cambios: compose.desktop-local.yml, gateway fijo para ingreso loopback, seed protegido sintético, exclusiones de contexto Docker y documentación. Configuración/credenciales nuevas sólo en .tmp ignorado; no se modifica .env habitual. Gateway necesario porque Desktop no publicaba puertos de red exclusivamente interna.
+- Verificación ejecutada: build y arranque real Docker, tres servicios healthy, 32 migraciones, conexión PostgreSQL desde Windows, cuatro logins/roles, health, Swagger y CORS. Correo local escribible, webhook poll0, backend sin ruta externa. No suites completas ni operaciones reales.
+- Resultado: API http://127.0.0.1:43130/api/v1 disponible; se deja corriendo. Guía de inicio/stop sin borrar datos y configuración FRONTEND en docs/DOCKER-DESKTOP-LOCAL.md.
+- Pendientes: preparar fixtures operativos de vehículos/cobertura/tarifas/créditos/pedidos para ciclos completos. No commit/push/despliegue remoto ni activación productiva. Recursos anteriores intactos.
+
+## 2026-10-03 — Fixtures operativos sintéticos en Docker Desktop
+
+Solicitud: completar exclusivamente el entorno local existente para ejercicios de ejecución detallada desde Web, sin estados/ledger forzados ni duplicación al repetir.
+
+Cambios: nuevo preparador API con identidad estricta, lock, manifiesto privado y claves durables; guía local y evidencia ampliadas. Flotilla ampliada a cinco plazas; cobertura/tarifa y políticas creadas, recarga ficticia, cuatro invitaciones activadas con buzón simulado, cinco motos y cuatro servicios separados. Legacy creado mediante admisión local temporal y asignación API, restaurando true. No se modifican producto, frontend, .env operativo ni recursos ajenos.
+
+Verificaciones: preparación y dos repeticiones completas exit0; consultas API de ejecución/candidatos/ledger; PostgreSQL READ ONLY confirma 4 servicios/asignaciones, 3 ejecuciones detalladas y cero endpoints webhook. Assert de repetibilidad conserva ledger, saldo972, referencias y revisiones. Node syntax y Oxlint JSON 1 archivo/0 diagnósticos exit0; diff --check al cierre. Intentos previos fallidos del preparador se describen en VERIFICATION, no se acreditan como pruebas. Pruebas E2E anteriores siguen históricas.
+
+Resultado: MDR-000001 normal, MDR-000002 devolución, MDR-000003 transferencia, MDR-000004 consulta legacy. Receptor LOCAL-RECIPIENT elegible; cuentas y referencias en guía local, secretos sólo en archivos ignorados. Backend queda healthy con detalle habilitado únicamente local. Pendientes: recorrido visual y cierres por el propietario/frontend; no se efectuaron operaciones físicas, integración externa, commit ni push.
+
+## 2026-10-03 — Publicación del entorno Desktop y fixtures
+
+Solicitud: commit y push a la rama actual. Rama verificada QA, remoto origin del backend. Conjunto: Compose exclusivo, gateway local, seed inicial, preparador API de fixtures, exclusiones del contexto Docker, guía, evidencia y continuidad. Se conservan nul y los secretos/temporales fuera del commit.
+
+Verificaciones de esta tarea: revisión Git y del contenido a publicar, comprobación de ausencia de valores secretos locales en el conjunto, diff --check. No se repiten pruebas operativas históricas ni se reinician servicios. Se procede con commit y push normal, sin force; resultado confirmado al finalizar mediante Git. Pendientes funcionales de Web y activación permanecen intactos.

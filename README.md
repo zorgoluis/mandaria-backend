@@ -4,6 +4,12 @@
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
+## Docker Desktop local aislado — 2026-10-03
+
+Preparado y levantado con autorización del propietario: [guía de conexión y comandos](docs/DOCKER-DESKTOP-LOCAL.md). API `http://127.0.0.1:43130/api/v1`; frontend usa `VITE_API_URL=http://127.0.0.1:43130` sin prefijo. Proyecto/volúmenes exclusivos, datos sintéticos, ejecución detallada sólo local, correo simulado y worker webhook apagado. No sustituye Compose/configuración productivos ni acredita flujo logístico completo.
+
+Fixtures operativos disponibles: MDR-000001 normal, MDR-000002 devolución, MDR-000003 transferencia y MDR-000004 legacy. `node scripts/prepare-desktop-execution-fixtures.mjs` prepara/verifica mediante APIs con identidad local obligatoria y conserva los casos al repetir. Cuentas, recorridos, interrupción inicial para admisión legacy y evidencia en la guía local; resoluciones/entrega quedan pendientes para practicar desde Web.
+
 ## Contrato público B2B y entrega a Frontend
 
 [OpenAPI público descargable](docs/openapi-b2b.json), [guía vigente](docs/B2B-PUBLIC-GUIDE.md), [webhooks salientes](docs/B2B-WEBHOOKS.md) y [entrega administrativa interna a Frontend](docs/B2B-FRONTEND-HANDOFF.md). Web confirmada: https://mandaria.com.mx. API confirmada: https://mandaria.com.mx/api/v1. El JSON usa `servers.url=https://mandaria.com.mx`, porque sus rutas ya incluyen `/api/v1`. Los datos de los ejemplos siguen siendo ficticios. No publica el portal ni cambia acceso al Swagger completo.

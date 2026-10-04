@@ -1,0 +1,39 @@
+{
+  "taskDateLocal": "2026-10-03",
+  "branch": "QA",
+  "baseHead": "1f9cf24",
+  "project": "mandaria-local-20261003-execution",
+  "database": "mandaria_desktop_local",
+  "databaseUser": "mandaria_local",
+  "apiOrigin": "http://127.0.0.1:43130",
+  "identityVerified": true,
+  "externalWebhookEndpoints": 0,
+  "webhookPollSeconds": 0,
+  "mailProvider": "local_outbox",
+  "detailedExecutionEnabledAtEnd": true,
+  "countsFromReadOnlyPostgres": {
+    "requests": 4,
+    "quotes": 4,
+    "dispatches": 4,
+    "activeAssignments": 4,
+    "detailedExecutions": 3,
+    "drivers": 5,
+    "vehicles": 5
+  },
+  "cases": [
+    { "request": "MDR-000001", "quote": "MQ-000001", "scenario": "normal", "phase": null, "revision": 1, "custodyStatus": "NOT_COLLECTED", "incidentOpen": false },
+    { "request": "MDR-000002", "quote": "MQ-000002", "scenario": "return", "phase": "PICKED_UP", "revision": 5, "custodyStatus": "HELD", "incidentOpen": true },
+    { "request": "MDR-000003", "quote": "MQ-000003", "scenario": "transfer", "phase": "PICKED_UP", "revision": 5, "custodyStatus": "HELD", "incidentOpen": true },
+    { "request": "MDR-000004", "quote": "MQ-000004", "scenario": "legacy", "executionProjectionAbsent": true }
+  ],
+  "recipientEligibleViaApi": true,
+  "financial": { "rechargeCount": 1, "rechargeAmount": 1000, "awardCount": 4, "eachAward": -7, "balance": 972 },
+  "repeatVerification": { "exitCode": 0, "sameCases": true, "sameExecutionRevisions": true, "sameLedger": true, "sameBalance": true },
+  "quality": { "nodeSyntaxExitCode": 0, "oxlintExitCode": 0, "oxlintFiles": 1, "oxlintDiagnostics": 0 },
+  "limits": [
+    "Synthetic fixtures prepared through real local APIs; not a full E2E regression suite.",
+    "Return, transfer and delivery remain pending for interactive web exercises.",
+    "No frontend visual validation or external integration.",
+    "Execution legacy created via supported admission flag before API assignment; no historical date or milestone fabricated."
+  ]
+}

@@ -1,3 +1,36 @@
+## Fixtures operativos Desktop — 2026-10-03
+
+Ampliación posterior al arranque: sólo `compose.desktop-local.yml`, proyecto `mandaria-local-20261003-execution`, QA `1f9cf24` con cambios locales de la tarea anterior conservados. [Guía](docs/DOCKER-DESKTOP-LOCAL.md), [resumen de evidencia](docs/checks/desktop-execution-fixtures.json).
+
+Verificaciones nuevas reales:
+
+- Identidad previa a escrituras: etiquetas Docker de los tres servicios, volumen exclusivo pgdata, red Internal=true del backend, publicación loopback43130, URL de base postgres/mandaria_desktop_local, usuario mandaria_local, NODE_ENV development, flag detallado true, mail local_outbox, routing local_fake y poll0. Lectura PostgreSQL `current_database/current_user` coincide.
+- `node scripts/prepare-desktop-execution-fixtures.mjs`: preparación completa exit0 y dos repeticiones completas exit0. Usa APIs para cobertura/tarifa/políticas/recarga/invitaciones/activación/vehículos y todo el ciclo request→quote→accept→claim→assignment→hitos→incidencia. Sin escrituras SQL ni alteración de restricciones. Datos totalmente sintéticos; las cuatro cuentas de conductor adicionales pasan por invitación y correo local.
+- Lectura SQL en transacción READ ONLY: 4 DeliveryRequest, 4 DeliveryQuote, 4 Dispatch, 4 DeliveryAssignment ACTIVE, 3 DeliveryExecution, 5 Drivers, 5 Vehicles y **0 B2bWebhookEndpoint**. Ninguna base ajena consultada. Auditoría temporal `.tmp/docker-desktop-local/audit-fixtures.cjs`.
+- API execution: normal revisión1 sin hito; devolución y transferencia revisión5/PICKED_UP/HELD con incidencia OPEN. Consulta de candidatos acredita pareja LOCAL-RECIPIENT libre y elegible. Legacy sin propiedad execution en detalle del proveedor; su endpoint exclusivo de ejecución no es aplicable.
+- Legacy creado legítimamente por API bajo admisión local false y posterior restauración true, recreando sólo backend del proyecto. No se inventan fechas/hitos anteriores; no se exime de créditos. Estado final confirmado true y `/health` ok/database up, tres contenedores healthy.
+- Ledger API: una recarga +1000 y cuatro SERVICE_AWARD -7; saldo972. Comparación Node con assert.deepEqual entre primera finalización y repetición: mismos cuatro casos, revisiones, ledger completo y saldo. No se repite recarga ni adjudicación. Evidencia privada ignorada operational-verification-first.json / operational-verification.json y manifiesto de reanudación.
+- `node --check scripts/prepare-desktop-execution-fixtures.mjs` exit0; Prettier sobre ese script; Oxlint `--format json` exit0, 1 archivo/96 reglas/0 diagnósticos. `git diff --check` ejecutado al cierre. No se cambió producto ni se ejecutaron build o suites históricas de nuevo.
+
+Intentos de preparación no aprobados, conservados como diagnóstico: contrato de listado array inicialmente tratado como paginado (assert), GET assignments con pageSize no admitido (400), búsqueda de cobertura usando ID en lugar de serviceZone.id (409 sin duplicar), throttling login429 y fetch fallido durante recreación local del backend. Se ajustó únicamente el runner: contratos reales, espera acotada Retry-After, Connection:close y restauración en finally. Se consultó salud/estado tras interrupción antes de continuar; no se atribuye un defecto de producto ni se cuentan esos intentos como pruebas aprobadas.
+
+**Alcance acreditado:** fixtures reales en PostgreSQL Docker local y repetibilidad del preparador. **Pendiente deliberado:** completar cinco hitos/DELIVERED, RETURNED y transferencia desde Mandaria Web; no se consumen los escenarios ni se afirma prueba visual, resolución física, cobro o integración Coita. Correo exclusivamente simulado y webhooks externos apagados. Sin commit/push ni despliegue remoto.
+
+## Docker Desktop local — 2026-10-03 (evidencia histórica de arranque)
+
+Autorización explícita del propietario para Docker en esta PC. Base Git QA `1f9cf24`, sólo cambios de entorno local y documentación. Docker Engine29.3.1 / Compose5.1.0. Compose operativo y .env habitual intactos; `nul` preexistente conservado. Recursos anteriores inspeccionados; no se usaron ni eliminaron sus volúmenes/contenedores.
+
+Ejecutado realmente:
+
+- Compose exclusivo, validación `config --quiet`, build Dockerfile existente (npm ci/build/Prisma Linux) y `up --wait`: exit0. Imágenes node24-bookworm-slim y postgres17-bookworm descargadas; no configuración productiva copiada. `.dockerignore` excluye .tmp/.temp/nul para impedir transferencia de secretos temporales al contexto.
+- Primer arranque con red interna: ambos servicios healthy, pero host no podía conectar y Docker no asignó publicación efectiva. Se incorporó gateway de destinos fijos y red ingress propia; backend/base conservaron red interna. Segundo `up --no-build --pull never --wait`: exit0. Tres servicios healthy; únicos puertos publicados 127.0.0.1:43130 y :55440.
+- 32/32 migraciones finalizadas, verificadas mediante Prisma desde Windows al PostgreSQL nuevo. Sin reset ni seed de producción. Seed sintético protegido por NODE_ENV/host/base creó cuatro cuentas, flotilla/membership y Driver local; logins y roles comprobados vía API, tokens revocados tras comprobación y nunca impresos.
+- GET /health → {status:ok,database:up}; GET /docs →200; OPTIONS /api/v1/auth/login desde http://localhost:5173 →204 con origen correcto.
+- Configuración interna no sensible comprobada: DETAILED_EXECUTION_ENABLED=true, MAIL_PROVIDER=local_outbox, ROUTING_PROVIDER=local_fake, B2B_WEBHOOK_POLL_SECONDS=0; buzón escribible por node. Red Internal=true, backend sin ruta default. Ningún envío externo efectuado.
+- `node --check` scripts locales y `git diff --check`: exit0 al cierre. Evidencia no secreta en .tmp/docker-desktop-local/verification.json y logs de arranque ignorados. Runtime.env y accounts.json ignorados por Git; valores no impresos.
+
+Se deja el entorno **corriendo** para FRONTEND. No se repiten suites históricas ni se acredita ciclo de entregas: faltan vehículos/cobertura/tarifas/créditos y pedidos sintéticos para ese alcance. No integración remota, Coita, commit, push, .env productivo o activación fuera de este Compose. Guía y comandos: docs/DOCKER-DESKTOP-LOCAL.md.
+
 ## Reconciliación de intentos — 2026-10-03
 
 Base QA `004b750`; [contrato exacto](docs/EXECUTION-ATTEMPT-RECONCILIATION.md), [evidencia sanitizada](docs/checks/execution-reconciliation.json). Sólo PostgreSQL 18 temporal local; nueva base `mandaria_reconciliation_test` y upgrade en `mandaria_execution_v5_test` sintética anterior. Sin datos reales ni frontend.

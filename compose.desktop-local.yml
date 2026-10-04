@@ -1,0 +1,74 @@
+name: mandaria-local-20261003-execution
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: mandaria_local
+      POSTGRES_DB: mandaria_desktop_local
+      POSTGRES_PASSWORD: ${LOCAL_DB_PASSWORD:?Use dedicated local env file}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [isolated]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mandaria_local -d mandaria_desktop_local']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+  backend:
+    build: .
+    image: mandaria-local-20261003-execution-backend:local
+    # Explicit local startup: migrations only, no production/bootstrap seed.
+    entrypoint: ['sh', '-c', 'node node_modules/prisma/build/index.js migrate deploy && exec node dist/main.js']
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://mandaria_local:${LOCAL_DB_PASSWORD:?Use dedicated local env file}@postgres:5432/mandaria_desktop_local?schema=public
+      JWT_ACCESS_SECRET: ${LOCAL_ACCESS_SECRET:?Required}
+      JWT_REFRESH_SECRET: ${LOCAL_REFRESH_SECRET:?Required}
+      INTEGRATION_JWT_SECRET: ${LOCAL_INTEGRATION_SECRET:?Required}
+      B2B_WEBHOOK_SECRET_KEY: ${LOCAL_WEBHOOK_SECRET:?Required}
+      DETAILED_EXECUTION_ENABLED: 'true'
+      B2B_WEBHOOK_POLL_SECONDS: '0'
+      B2B_WEBHOOK_ALLOW_INSECURE_TARGETS: 'false'
+      MAIL_PROVIDER: local_outbox
+      LOCAL_MAIL_OUTBOX_DIR: /app/local-outbox
+      MANDARIA_WEB_URL: http://localhost:5173
+      ROUTING_PROVIDER: local_fake
+      RUN_DB_SEED: 'false'
+      PREQUOTE_ENABLED: 'false'
+      PREQUOTE_CONVERSION_ENABLED: 'false'
+      PREQUOTE_AUTHORIZED_ACCEPT_ENABLED: 'false'
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173
+    volumes:
+      - mail_outbox:/app/local-outbox
+      - ./scripts/seed-desktop-local.cjs:/app/seed-desktop-local.cjs:ro
+    networks: [isolated]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    init: true
+  gateway:
+    image: mandaria-local-20261003-execution-backend:local
+    entrypoint: ['node', '/app/local-gateway.cjs']
+    volumes:
+      - ./scripts/docker-desktop-gateway.cjs:/app/local-gateway.cjs:ro
+    ports:
+      - '127.0.0.1:43130:3000'
+      - '127.0.0.1:55440:5432'
+    networks: [isolated, ingress]
+    depends_on:
+      backend:
+        condition: service_healthy
+    init: true
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+volumes:
+  pgdata:
+  mail_outbox:
+networks:
+  isolated:
+    internal: true
+  ingress:
