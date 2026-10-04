@@ -129,11 +129,14 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | PATCH | /api/v1/driver/availability | bearer | DRIVER | — | Cambiar mi disponibilidad |
 | GET | /api/v1/driver/credits | bearer | DRIVER | — | Mi saldo de créditos como repartidor independiente |
 | GET | /api/v1/driver/credits/ledger | bearer | DRIVER | — | Mi historial de créditos |
-| GET | /api/v1/driver/dispatches/{dispatchId} | bearer | DRIVER | — | Detalle de un servicio ofrecido o tomado por mí |
-| POST | /api/v1/driver/dispatches/{dispatchId}/custody-incidents | bearer | DRIVER | — | Reportar incidencia del independiente bajo custodia |
-| POST | /api/v1/driver/dispatches/{dispatchId}/deliver | bearer | DRIVER | — | Confirmar la entrega de un servicio que tomé |
-| GET | /api/v1/driver/dispatches/{dispatchId}/execution | bearer | DRIVER | — | Consultar progreso independiente propio |
-| POST | /api/v1/driver/dispatches/{dispatchId}/execution-events | bearer | DRIVER | — | Registrar siguiente hito del independiente |
+| GET | /api/v1/driver/dispatches/{dispatchId} | bearer | DRIVER | — | Detalle ofrecido al independiente o asignado a mi Driver |
+| GET | /api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/attempt | bearer | DRIVER | — | Consultar intento técnico propio |
+| POST | /api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/attempt/close | bearer | DRIVER | — | Cerrar explícitamente intento técnico propio |
+| POST | /api/v1/driver/dispatches/{dispatchId}/custody-incidents | bearer | DRIVER | — | Reportar incidencia del Driver asignado bajo custodia |
+| POST | /api/v1/driver/dispatches/{dispatchId}/deliver | bearer | DRIVER | — | Compatibilidad legacy independiente; ejecución detallada requiere execution-completion |
+| GET | /api/v1/driver/dispatches/{dispatchId}/execution | bearer | DRIVER | — | Consultar progreso propio de flotilla o independiente |
+| POST | /api/v1/driver/dispatches/{dispatchId}/execution-completion | bearer | DRIVER | — | Confirmar entrega propia |
+| POST | /api/v1/driver/dispatches/{dispatchId}/execution-events | bearer | DRIVER | — | Registrar siguiente hito del Driver asignado |
 | POST | /api/v1/driver/dispatches/{dispatchId}/release | bearer | DRIVER | — | Liberar un servicio que tomé |
 | POST | /api/v1/driver/dispatches/{dispatchId}/take | bearer | DRIVER | — | Tomar un servicio |
 | GET | /api/v1/driver/dispatches/available | bearer | DRIVER | — | Servicios que puedo tomar |
@@ -164,9 +167,9 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/provider/dispatches/{dispatchId}/available-vehicles | bearer | PROVIDER_ADMIN | — | Vehicles asignables para mi Dispatch |
 | POST | /api/v1/provider/dispatches/{dispatchId}/claim | bearer | PROVIDER_ADMIN | — | Reclamar Dispatch para mi proveedor |
 | POST | /api/v1/provider/dispatches/{dispatchId}/custody-incidents | bearer | PROVIDER_ADMIN | — | Reportar incidencia postrecogida y mantener custodia |
-| POST | /api/v1/provider/dispatches/{dispatchId}/deliver | bearer | PROVIDER_ADMIN | — | Confirmar la entrega de un Dispatch de mi proveedor |
+| POST | /api/v1/provider/dispatches/{dispatchId}/deliver | bearer | PROVIDER_ADMIN | — | Cierre legacy del proveedor; detallado devuelve 403 |
 | GET | /api/v1/provider/dispatches/{dispatchId}/execution | bearer | PROVIDER_ADMIN | — | Progreso e historial del ejecutor vigente |
-| POST | /api/v1/provider/dispatches/{dispatchId}/execution-events | bearer | PROVIDER_ADMIN | — | Registrar siguiente hito reportado por teléfono; no acredita cobro |
+| POST | /api/v1/provider/dispatches/{dispatchId}/execution-events | bearer | PROVIDER_ADMIN | — | Retirado: PROVIDER_ADMIN recibe 403; los hitos pertenecen al Driver asignado |
 | POST | /api/v1/provider/dispatches/{dispatchId}/release | bearer | PROVIDER_ADMIN | — | Liberar Dispatch reclamado por mi proveedor |
 | GET | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Listar invitaciones de repartidores de mi proveedor |
 | POST | /api/v1/provider/driver-invitations | bearer | PROVIDER_ADMIN | — | Invitar repartidor a mi proveedor |

@@ -1,0 +1,393 @@
+{
+  "baseline": "d440aef",
+  "branch": "QA",
+  "reports": {
+    "unit": {
+      "sha256": "2d2f479e2e069cf61ceea0042dcd46b582b20d1ad7fa98d4bb289f810bcc9fd0",
+      "success": true,
+      "passed": 403,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "name": "authorized-acceptance.spec.ts",
+          "status": "passed",
+          "passed": 9,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "b2b-outbox.spec.ts",
+          "status": "passed",
+          "passed": 9,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "b2b-webhook-operations.spec.ts",
+          "status": "passed",
+          "passed": 8,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "b2b-webhook-reliability.spec.ts",
+          "status": "passed",
+          "passed": 17,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "b2b-webhooks.spec.ts",
+          "status": "passed",
+          "passed": 19,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "check-c3-authorized-acceptance.spec.ts",
+          "status": "passed",
+          "passed": 3,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "collection-instructions.spec.ts",
+          "status": "passed",
+          "passed": 10,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "credit-consumption.spec.ts",
+          "status": "passed",
+          "passed": 12,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "credit-policies.spec.ts",
+          "status": "passed",
+          "passed": 16,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "credit-refunds.spec.ts",
+          "status": "passed",
+          "passed": 10,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "credits.spec.ts",
+          "status": "passed",
+          "passed": 17,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "delivery-assignments.spec.ts",
+          "status": "passed",
+          "passed": 10,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "delivery-completion.spec.ts",
+          "status": "passed",
+          "passed": 23,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "delivery-requests.spec.ts",
+          "status": "passed",
+          "passed": 11,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "delivery-status.spec.ts",
+          "status": "passed",
+          "passed": 14,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "dispatch-credit-snapshots.spec.ts",
+          "status": "passed",
+          "passed": 10,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "dispatch.spec.ts",
+          "status": "passed",
+          "passed": 13,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "http.spec.ts",
+          "status": "passed",
+          "passed": 4,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "independent-drivers.spec.ts",
+          "status": "passed",
+          "passed": 22,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "integration-auth.spec.ts",
+          "status": "passed",
+          "passed": 3,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "invitations.spec.ts",
+          "status": "passed",
+          "passed": 16,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "local-provider-admins.spec.ts",
+          "status": "passed",
+          "passed": 2,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "logistics.spec.ts",
+          "status": "passed",
+          "passed": 8,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "prequote-conditions.spec.ts",
+          "status": "passed",
+          "passed": 16,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "prequote-consumption.spec.ts",
+          "status": "passed",
+          "passed": 15,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "prequote-conversion.spec.ts",
+          "status": "passed",
+          "passed": 8,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "prequote-orchestration.spec.ts",
+          "status": "passed",
+          "passed": 10,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "pricing.spec.ts",
+          "status": "passed",
+          "passed": 14,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "providers.spec.ts",
+          "status": "passed",
+          "passed": 3,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "public-execution-identity.spec.ts",
+          "status": "passed",
+          "passed": 6,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "quote-accept-diagnostics.spec.ts",
+          "status": "passed",
+          "passed": 15,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "quote-pricing.spec.ts",
+          "status": "passed",
+          "passed": 19,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "resend-mail.spec.ts",
+          "status": "passed",
+          "passed": 19,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "services.spec.ts",
+          "status": "passed",
+          "passed": 7,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "environment.spec.ts",
+          "status": "passed",
+          "passed": 5,
+          "failed": 0,
+          "pending": 0
+        }
+      ]
+    },
+    "e2e-v2": {
+      "sha256": "334e128ff3ac7c3f326cae2c1470b9118e9420670fb1a41952f887bcbabb3cdb",
+      "success": false,
+      "passed": 67,
+      "failed": 1,
+      "pending": 29,
+      "files": [
+        {
+          "name": "delivery-assignments.e2e-spec.ts",
+          "status": "passed",
+          "passed": 13,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "delivery-completion.e2e-spec.ts",
+          "status": "failed",
+          "passed": 0,
+          "failed": 0,
+          "pending": 29
+        },
+        {
+          "name": "delivery-execution.e2e-spec.ts",
+          "status": "passed",
+          "passed": 25,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "driver-self.e2e-spec.ts",
+          "status": "failed",
+          "passed": 6,
+          "failed": 1,
+          "pending": 0
+        },
+        {
+          "name": "independent-drivers.e2e-spec.ts",
+          "status": "passed",
+          "passed": 23,
+          "failed": 0,
+          "pending": 0
+        }
+      ]
+    },
+    "execution-final-cleanup": {
+      "sha256": "a4df3f0548cce16716afadbe32c8bc23addd57f2b28f83de1c1faa0a829c7bb7",
+      "success": true,
+      "passed": 25,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "name": "delivery-execution.e2e-spec.ts",
+          "status": "passed",
+          "passed": 25,
+          "failed": 0,
+          "pending": 0
+        }
+      ]
+    },
+    "compatibility-cleanup": {
+      "sha256": "7108ac33d09180328918c804da37a62d67885ebd3305cc46137d3696cd46a76d",
+      "success": true,
+      "passed": 36,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "name": "delivery-completion.e2e-spec.ts",
+          "status": "passed",
+          "passed": 29,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "name": "driver-self.e2e-spec.ts",
+          "status": "passed",
+          "passed": 7,
+          "failed": 0,
+          "pending": 0
+        }
+      ]
+    },
+    "baseline-retry": {
+      "sha256": "1e9b2c96e870702ed1791cdae1011f241970faeca8f85c350cd3739ce6e7ced3",
+      "success": true,
+      "passed": 16,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "name": "delivery-execution.e2e-spec.ts",
+          "status": "passed",
+          "passed": 16,
+          "failed": 0,
+          "pending": 0
+        }
+      ]
+    },
+    "assignment-independent-final": {
+      "sha256": "7b060d3355f6aa29c34663d40cdff3672d8ca5f68bc483f33aeac7c7f72f9c09",
+      "success": true,
+      "passed": 36,
+      "failed": 0,
+      "pending": 0,
+      "files": [
+        {
+          "name": "delivery-assignments.e2e-spec.ts",
+          "status": "passed",
+          "passed": 13
+        },
+        {
+          "name": "independent-drivers.e2e-spec.ts",
+          "status": "passed",
+          "passed": 23
+        }
+      ]
+    }
+  },
+  "upgrade": {
+    "historyHashesPreserved": true,
+    "originalReceiptCount": 127,
+    "aliases": 14,
+    "allAliasReadsAndClosesApplied": true
+  },
+  "acceptedE2E": {
+    "uniqueCases": 97,
+    "reports": [
+      "execution-final-cleanup",
+      "compatibility-cleanup",
+      "assignment-independent-final"
+    ],
+    "allCommandsExitZero": true
+  }
+}

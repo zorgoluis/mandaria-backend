@@ -195,7 +195,7 @@ export class DriverSelfActiveDeliveryAssignmentResponse {
   @ApiPropertyOptional({
     type: ExecutionResponse,
     description:
-      'Ausente en legacy. Repartidor de flotilla consulta con allowedActions vacío; reporta por teléfono a su administrador.',
+      'Ausente en legacy. Acciones propias del repartidor asignado, de flotilla o independiente; no concede TAKE ni gestión de asignaciones.',
   })
   execution?: ExecutionResponse;
   @ApiPropertyOptional({

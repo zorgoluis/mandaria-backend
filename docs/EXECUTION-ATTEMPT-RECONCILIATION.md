@@ -1,5 +1,7 @@
 # Reconciliación durable de resoluciones de custodia
 
+> Actualización 2026-10-03: la decisión posterior del propietario asigna hitos y entrega detallada a DRIVER de flotilla/independiente. Ver [contrato APP y transición WEB](DRIVER-APP-EXECUTION.md). Se conserva el diseño histórico de custodia y el protocolo SUPER_ADMIN; la reconciliación APP añade ADVANCE/REPORT/DELIVER por asignación y no reutiliza permisos de resolución administrativa.
+
 2026-10-03. Backend local; sin activación ni cambios frontend. Complementa [handoff](DETAILED-EXECUTION-HANDOFF.md). Se leyó `mandaria-frontend/docs/EXECUTION-RECONCILIATION.md`: el marcador mínimo existente contiene los identificadores necesarios; no necesita persistir el formulario privado.
 
 ## Contrato exacto para FRONTEND

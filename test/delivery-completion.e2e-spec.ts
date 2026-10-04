@@ -29,6 +29,8 @@ process.env.DISPATCH_TTL_MINUTES = '60';
 process.env.LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES = '30';
 process.env.INDEPENDENT_DRIVER_MAX_VEHICLES = '2';
 process.env.MAIL_PROVIDER = 'local_outbox';
+// This file verifies the legacy completion contract; detailed flow has its own full suite.
+process.env.DETAILED_EXECUTION_ENABLED = 'false';
 
 const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
 const run = randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
@@ -323,7 +325,10 @@ beforeAll(async () => {
   app = await bootstrap();
   const login = async (email: string) =>
     (
-      await api().post('/api/v1/auth/login').send({ email, password }).expect(200)
+      await api()
+        .post('/api/v1/auth/login')
+        .send({ email, password })
+        .expect(200)
     ).body.accessToken as string;
   t.sa = await login(mail('sa'));
   t.A = await login(mail('adminA'));
@@ -357,7 +362,9 @@ beforeAll(async () => {
       serviceZoneId: zoneId,
       serviceType: 'LOCAL_DELIVERY',
       quoteValidityMinutes: 60,
-      bands: [{ minDistanceMeters: 0, maxDistanceMeters: 100000, amount: '55' }],
+      bands: [
+        { minDistanceMeters: 0, maxDistanceMeters: 100000, amount: '55' },
+      ],
     })
     .expect(201);
   await api()
@@ -557,7 +564,9 @@ describe('V1.11-A provider completion', () => {
     expect(assignment.endReasonDetail).toBeNull();
     expect(assignment.endedByUserId).toBe(users.adminA);
     const row = await dispatchRow(dispatch.id);
-    expect(assignment.endedAt!.toISOString()).toBe(row.deliveredAt!.toISOString());
+    expect(assignment.endedAt!.toISOString()).toBe(
+      row.deliveredAt!.toISOString(),
+    );
     // History is preserved: the row is still there with its driver and vehicle.
     expect(assignment.driverId).toBe(drivers.ana);
     expect(assignment.vehicleId).toBe(vehicles.fleet1);
@@ -800,8 +809,9 @@ describe('V1.11-A independent completion', () => {
     await driverDeliver(t.sa, dispatch.id).expect(403);
     await driverDeliver(t.A, dispatch.id).expect(403);
     await driverDeliver(t.b2b, dispatch.id).expect(401);
-    await driverDeliver(t.indy, dispatch.id, { deliveredAt: '2020-01-01' })
-      .expect(400);
+    await driverDeliver(t.indy, dispatch.id, {
+      deliveredAt: '2020-01-01',
+    }).expect(400);
     expect((await dispatchRow(dispatch.id)).status).toBe('CLAIMED');
   });
 

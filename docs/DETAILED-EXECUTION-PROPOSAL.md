@@ -1,5 +1,7 @@
 # Ejecución detallada y excepciones de custodia
 
+> Actualización 2026-10-03: la decisión posterior del propietario asigna hitos y entrega detallada a DRIVER de flotilla/independiente. Ver [contrato APP y transición WEB](DRIVER-APP-EXECUTION.md). Se conserva el diseño histórico de custodia y el protocolo SUPER_ADMIN; la reconciliación APP añade ADVANCE/REPORT/DELIVER por asignación y no reutiliza permisos de resolución administrativa.
+
 Actualizado: 2026-10-02. **Implementado localmente en QA; no activado.** Contrato final: [handoff](DETAILED-EXECUTION-HANDOFF.md); comprobaciones y límites: [verificación](DETAILED-EXECUTION-VERIFICATION.md). Las secciones siguientes conservan el diseño aprobado y su diagnóstico previo a la implementación; sus referencias a capacidades futuras describen ese antecedente. Sin nueva versión asignada. Sustituye la propuesta de `4f2e846` incorporando decisiones del propietario. El checkout actual es QA (`cfc8773`) y no contenía ese archivo: se recuperó su contenido de Git como antecedente, sin cambiar de rama ni trasladar código de main.
 
 Se leyeron AGENTS, BITACORA, README y VERIFICATION. La configuración comercial post-reset está completada/probada según el propietario; no se volvió a probar aquí. Numeración: package.json 1.12.0 no representa por sí solo todas las entregas V1.13; la continuidad histórica pospuso lifecycle, por lo que este diseño no asigna otra versión.

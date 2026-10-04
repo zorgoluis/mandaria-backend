@@ -2,6 +2,10 @@
 
 2026-10-02. Implementación en QA, sin nueva versión de paquete ni activación. Diseño aprobado: [propuesta](DETAILED-EXECUTION-PROPOSAL.md). Resultados locales y límites: [verificación](DETAILED-EXECUTION-VERIFICATION.md). No se modificó Frontend.
 
+## Cambio de autoridad — 2026-10-03
+
+El propietario retira el avance y la entrega detallada al administrador. Contrato vigente para ambos tipos de Driver, recuperación de las tres escrituras y transición legacy: [APP REPARTIDOR](DRIVER-APP-EXECUTION.md). Cambios locales aún sin publicar; la evidencia de 2026-10-02 no acredita esta adaptación.
+
 ## Lectura y permisos
 
 Prefijo de **todas** las rutas: `/api/v1`. Bearer humano; B2B no puede escribir ejecución. PROVIDER_ADMIN usa su identidad y membership vigente; `?providerId=UUID` selecciona proveedor cuando tiene varios. No se vuelve a exigir elegibilidad comercial al custodio para continuar un servicio ya adjudicado. El receptor nuevo sí debe ser elegible al commit.
@@ -9,19 +13,19 @@ Prefijo de **todas** las rutas: `/api/v1`. Bearer humano; B2B no puede escribir 
 | Método + ruta | Permiso | Resultado |
 |---|---|---|
 | GET `/provider/dispatches/:dispatchId/execution` | Administrador del ejecutor vigente | `{execution,events}`; eventos paginados por `page/pageSize`, más reciente primero |
-| GET `/driver/dispatches/:dispatchId/execution` | Independiente ejecutor vigente | Mismo contrato |
+| GET `/driver/dispatches/:dispatchId/execution` | Driver de flotilla o independiente ejecutor vigente | Mismo contrato |
 | GET `/admin/dispatches/:dispatchId/execution` | SUPER_ADMIN | Auditoría; acciones sólo reportar/resolver incidencia |
-| POST `/provider/dispatches/:dispatchId/execution-events` | Administrador ejecutor | 200 ExecutionView |
-| POST `/driver/dispatches/:dispatchId/execution-events` | Independiente ejecutor | 200 ExecutionView |
+| POST `/provider/dispatches/:dispatchId/execution-events` | Retirado para administrador | 403; usar Driver asignado |
+| POST `/driver/dispatches/:dispatchId/execution-events` | Driver de flotilla o independiente ejecutor | 200 ExecutionView |
 | POST `/provider/dispatches/:dispatchId/custody-incidents` | Administrador ejecutor | 201 `{id,execution}` |
-| POST `/driver/dispatches/:dispatchId/custody-incidents` | Independiente ejecutor | 201 `{id,execution}` |
+| POST `/driver/dispatches/:dispatchId/custody-incidents` | Driver de flotilla o independiente ejecutor | 201 `{id,execution}` |
 | POST `/admin/dispatches/:dispatchId/custody-incidents` | SUPER_ADMIN que recibe el aviso | 201 `{id,execution}` |
 | GET `/admin/custody-incidents` | SUPER_ADMIN | Página `{items,total,page,pageSize,totalPages}`. `status=OPEN` default o `RESOLVED` |
 | GET `/admin/dispatches/:dispatchId/custody-incidents/:incidentId` | SUPER_ADMIN | `{incident,resolution}`; resolución nullable, motivos y confirmaciones privados |
 | GET `/admin/dispatches/:dispatchId/custody-transfer-candidates` | SUPER_ADMIN | Pares Driver/Vehicle; `mode=FLEET` default o `INDEPENDENT`, page/pageSize. No reserva recursos |
 | POST `/admin/dispatches/:dispatchId/custody-incidents/:incidentId/resolve` | SUPER_ADMIN | 200 ResolutionView |
 
-La entrega conserva POST `/provider/dispatches/:dispatchId/deliver` y `/driver/dispatches/:dispatchId/deliver`, body vacío e idempotencia existentes. SUPER_ADMIN no avanza ni entrega por el ejecutor. DRIVER de flotilla continúa reportando por teléfono: su lectura `/driver/me` muestra progreso, con acciones de ejecución vacías.
+La entrega detallada usa POST `/driver/dispatches/:dispatchId/execution-completion`, assignmentId/revisión y clave durable. Los antiguos `/deliver` se conservan sólo para legacy: proveedor de flotilla o independiente según permisos previos. SUPER_ADMIN no avanza ni entrega por el ejecutor. DRIVER de flotilla e independiente registran directamente; el administrador conserva lectura, gestión e incidencias recibidas.
 
 El detalle/listado operativo del proveedor y el detalle independiente agregan `execution` sólo al ejecutor vigente detallado; `/driver/me.activeDeliveryAssignment` también lo incluye. El anterior proveedor queda en SUMMARY, sin contactos/instrucciones actuales; conserva su historial propio en assignment history y la evidencia económica original. El anterior independiente deja de acceder al detalle operativo. Auditoría completa en SUPER_ADMIN. No usar las columnas históricas del claim para decidir quién ejecuta tras una transferencia.
 
@@ -94,7 +98,7 @@ ExecutionView, ejemplo ficticio:
 }
 ```
 
-`custodyStatus`: NOT_COLLECTED / HELD / RETURNED / DELIVERED. Acciones ordinarias sólo antes de recoger; con incidencia, el operador no avanza y SUPER_ADMIN recibe RESOLVE_INCIDENT. El timeline contiene kind, phase numérica (0–5), revision, assignmentId, actorUserId/actorRole históricos, source y recordedAt. PHONE_REPORT identifica al administrador que recibió la llamada; SELF_REPORT al independiente. Cierres ordinarios B2B/sistema sin User se registran ENDED/SYSTEM_CANCELLATION con actor null, sin inventar identidad humana.
+`custodyStatus`: NOT_COLLECTED / HELD / RETURNED / DELIVERED. Acciones ordinarias sólo antes de recoger; con incidencia, el operador no avanza y SUPER_ADMIN recibe RESOLVE_INCIDENT. El timeline contiene kind, phase numérica (0–5), revision, assignmentId, actorUserId/actorRole históricos, source y recordedAt. PHONE_REPORT identifica al administrador que recibió la llamada; SELF_REPORT al Driver de flotilla o independiente. Cierres ordinarios B2B/sistema sin User se registran ENDED/SYSTEM_CANCELLATION con actor null, sin inventar identidad humana.
 
 Misma clave + actor + operación + despacho + body devuelve el resultado original incluso después del cierre/transferencia. Clave repetida con contenido diferente: 409 IDEMPOTENCY_KEY_REUSED. Conservar clave/body hasta resultado definitivo; ante timeout consultar y repetir exactamente. No cambiar de clave para insistir a ciegas. No mostrar éxito optimista: una entrega física por teléfono no puede hacerse atómica con PostgreSQL; ante incertidumbre conservar incidencia y reconciliar con SUPER_ADMIN.
 
@@ -112,6 +116,6 @@ OpenAPI completo: `docs/openapi.json`; público: `docs/openapi-b2b.json`. Sincro
 
 1. Designar responsable, suplente y tiempo de atención SUPER_ADMIN; preparar Frontend y procedimiento de confirmación/incertidumbre. Mantener `DETAILED_EXECUTION_ENABLED=false` hasta autorización expresa.
 2. Verificar backup/restauración y ventana de mantenimiento. Detener todas las instancias escritoras y workers operativos; sin despliegue mixto. No ejecutar seeds/reset ni borrar volúmenes/historia.
-3. Con conexión objetivo previamente identificada por operación, `npm ci`, `npm run db:generate`, `npm run db:deploy`, `npm run build`. Las dos migraciones nuevas separan incorporación de enums de su uso; no modificar migraciones históricas. Reiniciar todas las instancias con el mismo artefacto compatible y flag false.
+3. Con conexión objetivo previamente identificada por operación, `npm ci`, `npm run db:generate`, `npm run db:deploy`, `npm run build`. Las migraciones de ejecución separan enums, integridad y reconciliación; la adaptación Driver agrega `20261004000100_driver_execution_authority`. No modificar migraciones históricas. Reiniciar todas las instancias con el mismo artefacto compatible y flag false.
 4. Verificar salud, migraciones, accesos y servicios legacy. Activación posterior y coordinada sólo cuando Frontend/operación estén listos: nuevas asignaciones ordinarias crean historial detallado; ACTIVE anteriores siguen legacy sin hitos inventados. No activar gradualmente con escritores antiguos.
 5. Desactivar admisión (`false`) conserva reglas y endpoints de las ejecuciones detalladas existentes. No bajar a una versión que ignore custodia/RETURNED/TRANSFERRED. Si falla, detener escritores y restaurar servicio con artefacto compatible; restauración de backup requiere procedimiento de recuperación y evaluación de cambios posteriores, no rollback SQL destructivo automático.

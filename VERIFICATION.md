@@ -1,3 +1,7 @@
+## Adaptación autoridad DRIVER — cierre local
+
+[Informe completo](docs/DRIVER-APP-EXECUTION-VERIFICATION.md), [contrato APP / transición WEB](docs/DRIVER-APP-EXECUTION.md), [huellas y consolidado](docs/checks/driver-app-execution.json). Evidencia nueva de esta tarea: **403 unitarias, 97 E2E únicos en cinco archivos, 34 pruebas públicas**, ejecuciones finales exit 0; build, ambos tsc, ESLint, Oxlint, docs:b2b:check y Prisma validate/status aprobados. Instalación limpia 33 migraciones y actualización desde d440aef sin reset, conservando historia/ledger/recibos y 14 alias recuperables. Se documentan aborto histórico del runner e intentos fallidos, excluidos del conteo; no se declara causa nativa resuelta. PostgreSQL nativo exclusivo; sin Docker, frontend, producción ni activación. Suite E2E total y cliente móvil no ejecutados.
+
 ## Fixtures operativos Desktop — 2026-10-03
 
 Ampliación posterior al arranque: sólo `compose.desktop-local.yml`, proyecto `mandaria-local-20261003-execution`, QA `1f9cf24` con cambios locales de la tarea anterior conservados. [Guía](docs/DOCKER-DESKTOP-LOCAL.md), [resumen de evidencia](docs/checks/desktop-execution-fixtures.json).

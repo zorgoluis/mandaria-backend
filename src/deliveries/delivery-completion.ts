@@ -4,7 +4,7 @@ import {
   executionEvent,
   lockExecutionDispatch,
 } from '../delivery-execution/execution.persistence.js';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import type { DispatchStatus, Prisma } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
 import {
@@ -40,6 +40,7 @@ export const completionError = (code: CompletionErrorCode, message: string) =>
  */
 export type CompletionActor =
   | { mode: 'FLEET'; providerId: string }
+  | { mode: 'DRIVER'; driverId: string }
   | { mode: 'INDEPENDENT'; driverId: string };
 
 type LockedDispatch = {
@@ -108,9 +109,20 @@ export async function completeDelivery(
   dispatchId: string,
   actor: CompletionActor,
   actorUserId: string,
+  appCommand = false,
 ): Promise<CompletionOutcome> {
   await lockExecutionDispatch(tx, dispatchId);
   const head = await executionHead(tx, dispatchId);
+  if (head && actor.mode === 'FLEET')
+    throw new ForbiddenException(
+      'Detailed delivery must be recorded by the assigned driver',
+    );
+  if (head && !appCommand)
+    throw new DomainException(
+      'EXECUTION_COMMAND_REQUIRED',
+      409,
+      'Use the assignment-scoped app completion command',
+    );
   const [dispatch] = await tx.$queryRaw<
     LockedDispatch[]
   >`SELECT d.status, d."deliveryRequestId", d."claimedByProviderId", d."claimedByIndependentDriverId", d."deliveredAt", d."deliveredByUserId" FROM "Dispatch" d WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
@@ -119,11 +131,17 @@ export async function completeDelivery(
     ? await tx.deliveryAssignment.findUniqueOrThrow({
         where: { id: head.assignmentId },
       })
-    : null;
+    : actor.mode === 'DRIVER'
+      ? await tx.deliveryAssignment.findFirst({
+          where: { dispatchId, status: { in: ['ACTIVE', 'COMPLETED'] } },
+          orderBy: { assignedAt: 'desc' },
+        })
+      : null;
   const owner = current
     ? actor.mode === 'FLEET'
       ? current.mode === 'FLEET' && current.providerId === actor.providerId
-      : current.mode === 'INDEPENDENT' && current.driverId === actor.driverId
+      : (actor.mode === 'DRIVER' || current.mode === 'INDEPENDENT') &&
+        current.driverId === actor.driverId
     : owns(dispatch, actor);
   if (!owner) throw notOwner(actor);
   if (dispatch.status === 'DELIVERED')

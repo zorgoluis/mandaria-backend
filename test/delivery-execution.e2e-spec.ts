@@ -166,11 +166,6 @@ const deliver = (token: string, dispatchId: string, body: object = {}) =>
     .post(`/api/v1/provider/dispatches/${dispatchId}/deliver`)
     .auth(token, bearer)
     .send(body);
-const driverDeliver = (token: string, dispatchId: string, body: object = {}) =>
-  api()
-    .post(`/api/v1/driver/dispatches/${dispatchId}/deliver`)
-    .auth(token, bearer)
-    .send(body);
 const take = (token: string, dispatchId: string, vehicleId: string) =>
   api()
     .post(`/api/v1/driver/dispatches/${dispatchId}/take`)
@@ -187,6 +182,48 @@ const refundsOf = (dispatchId: string) =>
   prisma.creditLedgerEntry.count({
     where: { type: 'SERVICE_REFUND', referenceId: dispatchId },
   });
+
+async function assignedToken(id: string) {
+  const a = await prisma.deliveryAssignment.findFirstOrThrow({
+    where: { dispatchId: id, status: { in: ['ACTIVE', 'COMPLETED'] } },
+    orderBy: { assignedAt: 'desc' },
+  });
+  const name = Object.keys(drivers).find((n) => drivers[n] === a.driverId)!;
+  return t[name];
+}
+const completionCalls = new Map<
+  string,
+  {
+    token: string;
+    key: string;
+    body: { assignmentId: string; expectedRevision: number };
+  }
+>();
+async function appDeliver(id: string) {
+  let c = completionCalls.get(id);
+  if (!c) {
+    const token = await assignedToken(id);
+    const r = await api()
+      .get('/api/v1/driver/dispatches/' + id + '/execution')
+      .auth(token, bearer)
+      .expect(200);
+    c = {
+      token,
+      key: randomUUID(),
+      body: {
+        assignmentId: r.body.execution.activeAssignmentId,
+        expectedRevision: r.body.execution.revision,
+      },
+    };
+    completionCalls.set(id, c);
+  }
+  return api()
+    .post('/api/v1/driver/dispatches/' + id + '/execution-completion')
+    .auth(c.token, bearer)
+    .set('Idempotency-Key', c.key)
+    .send(c.body)
+    .expect(200);
+}
 
 beforeAll(async () => {
   // Leftovers of a previous killed run would otherwise collide with these fixtures and with the
@@ -276,6 +313,7 @@ beforeAll(async () => {
   t.indy = await login(mail('indy'));
   t.sa2 = await login(mail('sa2'));
   t.otro = await login(mail('otro'));
+  t.beto = await login(mail('beto'));
   const zone = await api()
     .post('/api/v1/admin/service-zones')
     .auth(t.sa, bearer)
@@ -358,7 +396,12 @@ beforeAll(async () => {
 }, 180000);
 
 afterAll(async () => {
-  // Isolated disposable execution database; fixtures retained for invariant inspection.
+  // Retain history, but release this suite's geographic fixture for other files.
+  if (zoneId)
+    await prisma.serviceZone.update({
+      where: { id: zoneId },
+      data: { status: 'INACTIVE' },
+    });
   await prisma.$disconnect();
 }, 120000);
 
@@ -381,9 +424,26 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
   const step = async (id: string, phase: string, key = randomUUID()) => {
     const e = await view(id);
     return api()
-      .post('/api/v1/provider/dispatches/' + id + '/execution-events')
-      .auth(t.A, bearer)
+      .post('/api/v1/driver/dispatches/' + id + '/execution-events')
+      .auth(await assignedToken(id), bearer)
       .set('Idempotency-Key', key)
+      .send({
+        assignmentId: e.activeAssignmentId,
+        expectedRevision: e.revision,
+        phase,
+      });
+  };
+  const driverStep = async (id: string, token: string, phase: string) => {
+    const e = (
+      await api()
+        .get('/api/v1/driver/dispatches/' + id + '/execution')
+        .auth(token, bearer)
+        .expect(200)
+    ).body.execution;
+    return api()
+      .post('/api/v1/driver/dispatches/' + id + '/execution-events')
+      .auth(token, bearer)
+      .set('Idempotency-Key', randomUUID())
       .send({
         assignmentId: e.activeAssignmentId,
         expectedRevision: e.revision,
@@ -402,7 +462,7 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
   it('requires five consecutive reports; rejects role and duplicate writes; delivers once', async () => {
     const d = await start();
     expect((await step(d.id, 'PICKED_UP')).status).toBe(409);
-    await deliver(t.A, d.id).expect(409);
+    await deliver(t.A, d.id).expect(403);
     const e = await view(d.id),
       key = randomUUID(),
       body = {
@@ -412,8 +472,8 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       };
     const call = () =>
       api()
-        .post('/api/v1/provider/dispatches/' + d.id + '/execution-events')
-        .auth(t.A, bearer)
+        .post('/api/v1/driver/dispatches/' + d.id + '/execution-events')
+        .auth(t.ana, bearer)
         .set('Idempotency-Key', key)
         .send(body);
     const replies = await Promise.all([call(), call()]);
@@ -427,8 +487,8 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       .expect(403);
     for (const phase of phases.slice(1))
       expect((await step(d.id, phase)).status).toBe(200);
-    await deliver(t.A, d.id).expect(200);
-    await deliver(t.A, d.id).expect(200);
+    await appDeliver(d.id);
+    await appDeliver(d.id);
     expect(
       await prisma.b2bOutboxEvent.count({ where: { dispatchId: d.id } }),
     ).toBe(1);
@@ -545,7 +605,26 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       .send(body)
       .expect(200);
     expect(resolved.body.execution.phase).toBe('PICKED_UP');
-    await deliver(t.A, d.id).expect(409);
+    await api()
+      .post('/api/v1/driver/dispatches/' + d.id + '/execution-events')
+      .auth(t.ana, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        assignmentId: e.activeAssignmentId,
+        expectedRevision: resolved.body.execution.revision,
+        phase: 'TO_DROPOFF',
+      })
+      .expect(404);
+    await api()
+      .post('/api/v1/driver/dispatches/' + d.id + '/execution-completion')
+      .auth(t.ana, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        assignmentId: e.activeAssignmentId,
+        expectedRevision: resolved.body.execution.revision,
+      })
+      .expect(409);
+    await deliver(t.A, d.id).expect(403);
     for (const phase of phases.slice(3)) {
       const state = (
         await api()
@@ -564,7 +643,7 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
         })
         .expect(200);
     }
-    await driverDeliver(t.indy, d.id).expect(200);
+    await appDeliver(d.id);
     expect(
       await prisma.creditLedgerEntry.count({
         where: { referenceId: d.id, type: 'SERVICE_AWARD' },
@@ -583,8 +662,8 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
     };
     const call = (payload: object) =>
       api()
-        .post(`/api/v1/provider/dispatches/${d.id}/execution-events`)
-        .auth(t.A, bearer)
+        .post(`/api/v1/driver/dispatches/${d.id}/execution-events`)
+        .auth(t.ana, bearer)
         .set('Idempotency-Key', key)
         .send(payload);
     await call(body).expect(200);
@@ -608,8 +687,8 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
     const current = await view(d.id);
     const next = () =>
       api()
-        .post(`/api/v1/provider/dispatches/${d.id}/execution-events`)
-        .auth(t.A, bearer)
+        .post(`/api/v1/driver/dispatches/${d.id}/execution-events`)
+        .auth(t.ana, bearer)
         .set('Idempotency-Key', randomUUID())
         .send({
           assignmentId: current.activeAssignmentId,
@@ -621,7 +700,7 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
     ).toEqual([200, 409]);
     for (const phase of phases.slice(2))
       expect((await step(d.id, phase)).status).toBe(200);
-    await deliver(t.A, d.id).expect(200);
+    await appDeliver(d.id);
   });
   it('transfers independent custody to fleet, rejects an ineligible vehicle and rolls back a forced insertion failure', async () => {
     const d = await openDispatch();
@@ -740,7 +819,7 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
     expect(provider.body.advanceToOriginAllowed).toBe(false);
     for (const phase of phases.slice(3))
       expect((await step(d.id, phase)).status).toBe(200);
-    await deliver(t.A, d.id).expect(200);
+    await appDeliver(d.id);
     expect(
       await prisma.creditLedgerEntry.count({
         where: { referenceId: d.id, type: 'SERVICE_AWARD' },
@@ -761,8 +840,8 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       expect((await step(d.id, p)).status).toBe(200);
     const e = await view(d.id);
     const pickup = api()
-      .post(`/api/v1/provider/dispatches/${d.id}/execution-events`)
-      .auth(t.A, bearer)
+      .post(`/api/v1/driver/dispatches/${d.id}/execution-events`)
+      .auth(t.ana, bearer)
       .set('Idempotency-Key', randomUUID())
       .send({
         assignmentId: e.activeAssignmentId,
@@ -779,7 +858,7 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       expect(await refundsOf(d.id)).toBe(0);
       for (const phase of phases.slice(3))
         expect((await step(d.id, phase)).status).toBe(200);
-      await deliver(t.A, d.id).expect(200);
+      await appDeliver(d.id);
     } else {
       expect((await dispatchRow(d.id)).status).toBe('CANCELLED');
       expect(await refundsOf(d.id)).toBe(1);
@@ -874,7 +953,7 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
             })
             .expect(200);
         }
-        await driverDeliver(t.indy, c.id).expect(200);
+        await appDeliver(c.id);
       } else {
         await api()
           .post(
@@ -917,9 +996,19 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       expect(current.phase).toBeNull();
       expect(current.revision).toBeGreaterThan(previous.revision);
       expect(current.activeAssignmentId).not.toBe(previous.activeAssignmentId);
+      await api()
+        .post('/api/v1/driver/dispatches/' + d.id + '/execution-events')
+        .auth(t.ana, bearer)
+        .set('Idempotency-Key', randomUUID())
+        .send({
+          assignmentId: previous.activeAssignmentId,
+          expectedRevision: current.revision,
+          phase: 'TO_PICKUP',
+        })
+        .expect(404);
       for (const phase of phases)
         expect((await step(d.id, phase)).status).toBe(200);
-      await deliver(t.A, d.id).expect(200);
+      await appDeliver(d.id);
       expect(await refundsOf(d.id)).toBe(0);
     } finally {
       app.get(ConfigService).set('DETAILED_EXECUTION_ENABLED', true);
@@ -1127,6 +1216,253 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
       expect(await refundsOf(d.id)).toBe(0);
     });
   }
+  it('authorizes fleet driver context while denying provider advancement, unrelated driver and independent TAKE', async () => {
+    const d = await start();
+    const e = await view(d.id);
+    expect(e.allowedActions).not.toContain('ADVANCE');
+    const body = {
+      assignmentId: e.activeAssignmentId,
+      expectedRevision: e.revision,
+      phase: 'TO_PICKUP',
+    };
+    await api()
+      .post(`/api/v1/provider/dispatches/${d.id}/execution-events`)
+      .auth(t.A, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send(body)
+      .expect(403);
+    await api()
+      .post(`/api/v1/driver/dispatches/${d.id}/execution-events`)
+      .auth(t.otro, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send(body)
+      .expect(404);
+    await take(t.ana, d.id, vehicles.fleet1).expect(409);
+    const details = await api()
+      .get(`/api/v1/driver/dispatches/${d.id}`)
+      .auth(t.ana, bearer)
+      .expect(200);
+    expect(details.body.access).toBe('OWNER');
+    expect(details.body.paymentContext).toBeDefined();
+    expect(details.body.execution.allowedActions).toContain('ADVANCE');
+    const me = await api()
+      .get('/api/v1/driver/me')
+      .auth(t.ana, bearer)
+      .expect(200);
+    expect(me.body.activeDeliveryAssignment.dispatchId).toBe(d.id);
+    for (const phase of phases)
+      expect((await step(d.id, phase)).status).toBe(200);
+    await deliver(t.A, d.id).expect(403);
+    await appDeliver(d.id);
+    expect((await dispatchRow(d.id)).deliveredByUserId).toBe(users.ana);
+  });
+
+  for (const mode of ['fleet', 'independent'] as const)
+    for (const operation of ['ADVANCE', 'REPORT', 'DELIVER'] as const) {
+      it(`reconciles ${mode} driver ${operation}: delayed command, closed replay, commit with lost response and durable restart`, async () => {
+        const d = mode === 'fleet' ? await start() : await openDispatch();
+        const token = mode === 'fleet' ? t.ana : t.indy;
+        if (mode === 'independent')
+          await take(token, d.id, vehicles.indy).expect(200);
+        const preparatory =
+          operation === 'REPORT'
+            ? phases.slice(0, 3)
+            : operation === 'DELIVER'
+              ? phases
+              : [];
+        for (const phase of preparatory)
+          expect((await driverStep(d.id, token, phase)).status).toBe(200);
+        const e = (
+          await api()
+            .get(`/api/v1/driver/dispatches/${d.id}/execution`)
+            .auth(token, bearer)
+            .expect(200)
+        ).body.execution;
+        const body = {
+          assignmentId: e.activeAssignmentId,
+          expectedRevision: e.revision,
+          ...(operation === 'ADVANCE'
+            ? { phase: 'TO_PICKUP' }
+            : operation === 'REPORT'
+              ? {
+                  reasonCode: 'OTHER',
+                  reasonDetail: 'Synthetic app uncertainty',
+                }
+              : {}),
+        };
+        const suffix =
+          operation === 'ADVANCE'
+            ? 'execution-events'
+            : operation === 'REPORT'
+              ? 'custody-incidents'
+              : 'execution-completion';
+        const base = `/api/v1/driver/dispatches/${d.id}/assignments/${e.activeAssignmentId}/attempt`;
+        const key = randomUUID();
+        const command = (k: string) =>
+          api()
+            .post(`/api/v1/driver/dispatches/${d.id}/${suffix}`)
+            .auth(token, bearer)
+            .set('Idempotency-Key', k)
+            .send(body);
+        const read = (k: string, reader = token) =>
+          api()
+            .get(`${base}?operation=${operation}`)
+            .auth(reader, bearer)
+            .set('Idempotency-Key', k);
+        expect((await read(key).expect(200)).body.state).toBe(
+          'PENDING_OR_UNKNOWN',
+        );
+        await read(key, t.otro).expect(404);
+        await read(key, t.A).expect(403);
+        const closed = await api()
+          .post(`${base}/close?operation=${operation}`)
+          .auth(token, bearer)
+          .set('Idempotency-Key', key)
+          .expect(200);
+        expect(closed.body.state).toBe('CLOSED_NO_EFFECTS');
+        expect((await command(key).expect(409)).body.code).toBe(
+          'EXECUTION_ATTEMPT_CLOSED',
+        );
+        const applied = randomUUID();
+        const response = await command(applied).expect(
+          operation === 'REPORT' ? 201 : 200,
+        );
+        // Discard the response as the app would after a network timeout; restart the server.
+        await app.close();
+        app = await bootstrap();
+        expect((await read(applied).expect(200)).body.state).toBe('APPLIED');
+        const replay = await command(applied).expect(
+          operation === 'REPORT' ? 201 : 200,
+        );
+        expect(replay.body).toEqual(response.body);
+        expect(
+          (
+            await api()
+              .post(`${base}/close?operation=${operation}`)
+              .auth(token, bearer)
+              .set('Idempotency-Key', applied)
+              .expect(200)
+          ).body.state,
+        ).toBe('APPLIED');
+        if (operation === 'ADVANCE') {
+          for (const phase of phases.slice(1))
+            expect((await driverStep(d.id, token, phase)).status).toBe(200);
+          await appDeliver(d.id);
+        }
+        if (operation === 'REPORT') {
+          const v = (
+            await api()
+              .get(`/api/v1/driver/dispatches/${d.id}/execution`)
+              .auth(token, bearer)
+              .expect(200)
+          ).body.execution;
+          await api()
+            .post(
+              `/api/v1/admin/dispatches/${d.id}/custody-incidents/${v.openIncidentId}/resolve`,
+            )
+            .auth(t.sa, bearer)
+            .set('Idempotency-Key', randomUUID())
+            .send({
+              assignmentId: v.activeAssignmentId,
+              expectedRevision: v.revision,
+              type: 'RETURN_TO_ORIGIN',
+              reason: 'Synthetic confirmed return',
+              occurredAt: new Date().toISOString(),
+              confirmationMethod: 'PHONE',
+              custodianConfirmed: true,
+              originConfirmed: true,
+              originContactLabel: 'Synthetic origin',
+              originContactRole: 'Manager',
+            })
+            .expect(200);
+        }
+        if (operation === 'DELIVER')
+          expect(
+            await prisma.b2bOutboxEvent.count({ where: { dispatchId: d.id } }),
+          ).toBe(1);
+      });
+    }
+
+  it('serializes driver completion against attempt closure and rolls back completion when receipt fails', async () => {
+    const d = await start();
+    for (const phase of phases)
+      expect((await step(d.id, phase)).status).toBe(200);
+    const e = await view(d.id);
+    const key = randomUUID();
+    const body = {
+      assignmentId: e.activeAssignmentId,
+      expectedRevision: e.revision,
+    };
+    const command = () =>
+      api()
+        .post(`/api/v1/driver/dispatches/${d.id}/execution-completion`)
+        .auth(t.ana, bearer)
+        .set('Idempotency-Key', key)
+        .send(body);
+    await prisma.$executeRawUnsafe(
+      `CREATE FUNCTION app_receipt_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.operation LIKE 'APP_DELIVER:%' THEN RAISE EXCEPTION 'synthetic rollback'; END IF; RETURN NEW; END $$`,
+    );
+    await prisma.$executeRawUnsafe(
+      'CREATE TRIGGER app_receipt_fail BEFORE INSERT ON "DeliveryExecutionCommand" FOR EACH ROW EXECUTE FUNCTION app_receipt_fail()',
+    );
+    try {
+      await command().expect(500);
+    } finally {
+      await prisma.$executeRawUnsafe(
+        'DROP TRIGGER app_receipt_fail ON "DeliveryExecutionCommand"',
+      );
+      await prisma.$executeRawUnsafe('DROP FUNCTION app_receipt_fail()');
+    }
+    expect((await dispatchRow(d.id)).status).toBe('CLAIMED');
+    expect(
+      await prisma.b2bOutboxEvent.count({ where: { dispatchId: d.id } }),
+    ).toBe(0);
+    expect((await view(d.id)).revision).toBe(e.revision);
+    const close = () =>
+      api()
+        .post(
+          `/api/v1/driver/dispatches/${d.id}/assignments/${e.activeAssignmentId}/attempt/close?operation=DELIVER`,
+        )
+        .auth(t.ana, bearer)
+        .set('Idempotency-Key', key);
+    const [sent, closed] = await Promise.all([command(), close()]);
+    if (closed.body.state === 'APPLIED') expect(sent.status).toBe(200);
+    else {
+      expect(closed.body.state).toBe('CLOSED_NO_EFFECTS');
+      expect(sent.status).toBe(409);
+      await appDeliver(d.id);
+    }
+    expect(
+      await prisma.b2bOutboxEvent.count({ where: { dispatchId: d.id } }),
+    ).toBe(1);
+    expect(await refundsOf(d.id)).toBe(0);
+  });
+
+  it('allows assigned fleet driver to complete legacy using revision zero and a durable receipt', async () => {
+    app.get(ConfigService).set('DETAILED_EXECUTION_ENABLED', false);
+    try {
+      const d = await start();
+      const a = (await assignmentsOf(d.id))[0];
+      const key = randomUUID();
+      const send = () =>
+        api()
+          .post(`/api/v1/driver/dispatches/${d.id}/execution-completion`)
+          .auth(t.ana, bearer)
+          .set('Idempotency-Key', key)
+          .send({ assignmentId: a.id, expectedRevision: 0 });
+      await send().expect(200);
+      await send().expect(200);
+      expect(
+        await prisma.deliveryExecution.count({ where: { dispatchId: d.id } }),
+      ).toBe(0);
+      expect(
+        await prisma.b2bOutboxEvent.count({ where: { dispatchId: d.id } }),
+      ).toBe(1);
+    } finally {
+      app.get(ConfigService).set('DETAILED_EXECUTION_ENABLED', true);
+    }
+  });
+
   it('preserves untracked assignments when admission is disabled; legacy delivers without invented milestones', async () => {
     app.get(ConfigService).set('DETAILED_EXECUTION_ENABLED', false);
     try {

@@ -1,5 +1,7 @@
 # Backend aislado en Docker Desktop
 
+> Cambio posterior de autoridad (2026-10-03): Docker está apagado y no se ejecutó en esta adaptación. La imagen/fixtures documentados abajo son evidencia histórica. El preparador ahora usa el Driver para los hitos; necesita migración/imagen compatible antes de una futura ejecución autorizada. [Contrato actual](DRIVER-APP-EXECUTION.md).
+
 2026-10-03. Uso de Docker autorizado explícitamente por el propietario para esta PC. No es despliegue remoto. Compose independiente: `compose.desktop-local.yml`; no modificar ni usar el Compose operativo ni el `.env` habitual para este entorno.
 
 ## Conexión FRONTEND
@@ -67,14 +69,14 @@ El preparador comprueba etiquetas del proyecto, contenedores, base/usuario/host,
 
 | Recorrido | Solicitud / cotización | Estado preparado | Operador web / siguiente paso |
 | --- | --- | --- | --- |
-| Cinco hitos y entrega | MDR-000001 / MQ-000001 | Asignada, detallada, sin primer hito, revisión 1 | `provider@mandaria-local.test`: camino a recogida → llegada a recogida → recogido → camino a destino → llegada a destino → entrega existente. Moto LOCAL-NORMAL. |
+| Cinco hitos y entrega | MDR-000001 / MQ-000001 | Asignada, detallada, sin primer hito, revisión 1 | `driver@mandaria-local.test`: camino a recogida → llegada a recogida → recogido → camino a destino → llegada a destino → entrega existente. Moto LOCAL-NORMAL. |
 | Incidencia y devolución | MDR-000002 / MQ-000002 | PICKED_UP, HELD, incidencia OPEN, revisión 5 | `admin@mandaria-local.test` (SUPER_ADMIN): resolución RETURN_TO_ORIGIN, motivo y confirmaciones físicas **simuladas** del custodio/origen; resultado esperado RETURNED, nunca DELIVERED. Moto LOCAL-RETURN. |
-| Transferencia | MDR-000003 / MQ-000003 | PICKED_UP, HELD, incidencia OPEN, revisión 5 | SUPER_ADMIN: elegir receptor Sintetico recipient / LOCAL-RECIPIENT de la misma flotilla y documentar confirmaciones simuladas. Después PROVIDER_ADMIN continúa TO_DROPOFF → AT_DROPOFF → entrega, sin fingir otra recogida. |
+| Transferencia | MDR-000003 / MQ-000003 | PICKED_UP, HELD, incidencia OPEN, revisión 5 | SUPER_ADMIN: elegir receptor Sintetico recipient / LOCAL-RECIPIENT de la misma flotilla y documentar confirmaciones simuladas. Después el DRIVER receptor continúa TO_DROPOFF → AT_DROPOFF → entrega, sin fingir otra recogida. |
 | Consulta legacy | MDR-000004 / MQ-000004 | Asignada sin proyección execution ni hitos inventados | PROVIDER_ADMIN consulta su servicio/historial (LOCAL-LEGACY); SUPER_ADMIN audita. No consumir este caso entregándolo si sólo se quiere consultar. |
 
 Los casos de incidencia ya están reportados por el PROVIDER_ADMIN con identidad propia y origen PHONE_REPORT. El operador puede consultar las incidencias pero no resolverlas; la resolución excepcional corresponde a SUPER_ADMIN. `admin-backup@mandaria-local.test` puede usarse como segundo administrador conforme a las restricciones del contrato de reconciliación; no puede consultar intentos privados ajenos. Las confirmaciones en estos ejercicios son simulación, no evidencia de operación física real ni de pago.
 
-Repartidores: `driver@mandaria-local.test`, `driver-return@mandaria-local.test`, `driver-transfer@mandaria-local.test`, `driver-legacy@mandaria-local.test`, `driver-recipient@mandaria-local.test`. Son DRIVER de flotilla: reportan al operador; **no usar sus cuentas para registrar hitos**. Las cuatro cuentas adicionales se activaron por invitación/API, sin insertar usuarios por SQL en esta ampliación. Contraseñas nuevas sólo en el archivo privado `accounts.json` ya indicado; no publicarlas.
+Repartidores: `driver@mandaria-local.test`, `driver-return@mandaria-local.test`, `driver-transfer@mandaria-local.test`, `driver-legacy@mandaria-local.test`, `driver-recipient@mandaria-local.test`. Son DRIVER de flotilla: ahora son quienes registran los hitos y la entrega de su propia asignación; el operador sólo consulta y recibe incidencias. No hay app construida en esta tarea. Las cuatro cuentas adicionales se activaron por invitación/API, sin insertar usuarios por SQL en esta ampliación. Contraseñas nuevas sólo en el archivo privado `accounts.json` ya indicado; no publicarlas.
 
 IDs de despacho para localizar los detalles desde los listados/API:
 

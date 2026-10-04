@@ -167,7 +167,6 @@ export class IndependentDispatchesService {
       where: {
         dispatchId,
         driverId: owned.id,
-        mode: 'INDEPENDENT',
         status: { in: ['ACTIVE', 'COMPLETED', 'RETURNED'] },
       },
     });
@@ -202,7 +201,6 @@ export class IndependentDispatchesService {
             deliveryAssignments: {
               some: {
                 driverId,
-                mode: 'INDEPENDENT',
                 status: { in: ['ACTIVE', 'COMPLETED', 'RETURNED'] },
               },
             },

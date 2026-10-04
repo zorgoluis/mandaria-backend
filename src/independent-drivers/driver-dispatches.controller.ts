@@ -90,9 +90,9 @@ export class DriverDispatchesController {
   @ApiOkResponse({ type: DriverDispatchResponse })
   @ApiErrorDescriptions({ ...base, 409: notApproved })
   @ApiOperation({
-    summary: 'Detalle de un servicio ofrecido o tomado por mí',
+    summary: 'Detalle ofrecido al independiente o asignado a mi Driver',
     description:
-      'Con access OFFER muestra lo mismo que el listado; con access OWNER (lo tomé yo) agrega contactos, instrucciones, descripciones de paquete y la referencia pública del pedido. Un servicio tomado por un proveedor o por otro repartidor responde 404.',
+      'Con access OFFER muestra lo mismo que el listado; con access OWNER (lo tomé yo) agrega contactos, instrucciones, descripciones de paquete y la referencia pública del pedido. Incluye asignaciones FLEET propias; otro repartidor responde 404. Esta lectura no concede TAKE ni RELEASE al Driver de flotilla.',
   })
   get(
     @Param('dispatchId', new ParseUUIDPipe()) dispatchId: string,
@@ -152,9 +152,10 @@ export class DriverDispatchesController {
     409: 'DISPATCH_NOT_CLAIMED_BY_DRIVER: el servicio no está tomado por este repartidor (nunca lo tomó, lo liberó, o lo tiene otro) | NO_ACTIVE_ASSIGNMENT: el servicio no tiene asignación ACTIVE que cerrar | DELIVERY_CONFLICT: el Dispatch o su asignación cambiaron durante la confirmación; reintentar.',
   })
   @ApiOperation({
-    summary: 'Confirmar la entrega de un servicio que tomé',
+    summary:
+      'Compatibilidad legacy independiente; ejecución detallada requiere execution-completion',
     description:
-      'Sin body (cualquier campo se rechaza con 400): el repartidor sale del JWT y la fecha la pone el servidor. Cierre operativo mínimo del flujo independiente TAKE -> DELIVERED: en una sola transacción mi asignación ACTIVE queda COMPLETED (sin motivo de fin: nada falló) y el Dispatch pasa a DELIVERED con deliveredAt y deliveredByUserId. DELIVERED es terminal e irreversible: el servicio ya no se puede liberar ni volver a tomar, y una cancelación posterior de la DeliveryRequest no lo toca. Yo y mi vehículo quedamos libres de inmediato para otro servicio, conservando el historial. Sólo el repartidor que tomó el servicio: SUPER_ADMIN, PROVIDER_ADMIN, otro repartidor y los clientes B2B no pueden confirmar entregas. Cuesta 0 créditos y no genera SERVICE_REFUND: el cargo hecho al tomarlo es lo que el servicio entregado paga. No recalcula precio, ruta, política ni costo en créditos. A diferencia de tomar un servicio, confirmar la entrega no vuelve a exigir el perfil APPROVED: el trabajo ya se hizo y una suspensión posterior no puede dejar el servicio sin cerrar. Repetir la confirmación devuelve 200 sin cambios.',
+      'Sólo legacy INDEPENDENT: detallado devuelve EXECUTION_COMMAND_REQUIRED. La app usa POST /driver/dispatches/:id/execution-completion con assignmentId, expectedRevision e Idempotency-Key para ambos modos, también legacy (revisión 0). Sin body (cualquier campo se rechaza con 400): el repartidor sale del JWT y la fecha la pone el servidor. Cierre operativo mínimo del flujo independiente TAKE -> DELIVERED: en una sola transacción mi asignación ACTIVE queda COMPLETED (sin motivo de fin: nada falló) y el Dispatch pasa a DELIVERED con deliveredAt y deliveredByUserId. DELIVERED es terminal e irreversible: el servicio ya no se puede liberar ni volver a tomar, y una cancelación posterior de la DeliveryRequest no lo toca. Yo y mi vehículo quedamos libres de inmediato para otro servicio, conservando el historial. Sólo el repartidor que tomó el servicio: SUPER_ADMIN, PROVIDER_ADMIN, otro repartidor y los clientes B2B no pueden confirmar entregas. Cuesta 0 créditos y no genera SERVICE_REFUND: el cargo hecho al tomarlo es lo que el servicio entregado paga. No recalcula precio, ruta, política ni costo en créditos. A diferencia de tomar un servicio, confirmar la entrega no vuelve a exigir el perfil APPROVED: el trabajo ya se hizo y una suspensión posterior no puede dejar el servicio sin cerrar. Repetir la confirmación devuelve 200 sin cambios.',
   })
   deliver(
     @Param('dispatchId', new ParseUUIDPipe()) dispatchId: string,

@@ -1,6 +1,11 @@
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger';
 import { ResolutionAttemptResponse } from './execution.responses.js';
 import {
+  DriverAttemptResponse,
+  DriverCompletionResponse,
+} from './execution.responses.js';
+import { ApiErrors } from '../common/api-errors.decorator.js';
+import {
   ExecutionDetailResponse,
   IncidentPageResponse,
   IncidentDetailResponse,
@@ -42,6 +47,8 @@ import {
   IncidentQueryDto,
   TransferCandidatesQueryDto,
   ProviderExecutionQueryDto,
+  ExecutionCommandDto,
+  DriverAttemptParamsDto,
 } from './execution.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { pageResult, PaginationQueryDto } from '../common/pagination.dto.js';
@@ -92,7 +99,7 @@ export class ProviderExecutionController {
   @keyHeader()
   @ApiOperation({
     summary:
-      'Registrar siguiente hito reportado por teléfono; no acredita cobro',
+      'Retirado: PROVIDER_ADMIN recibe 403; los hitos pertenecen al Driver asignado',
   })
   advance(
     @Param('dispatchId', new ParseUUIDPipe()) id: string,
@@ -129,16 +136,95 @@ export class ProviderExecutionController {
     );
   }
 }
-@ApiTags('Independent Execution')
+@ApiTags('Driver Execution')
+@ApiErrors(400, 401, 403, 404, 429, 500)
 @ApiBearerAuth()
 @UseGuards(AccessGuard, RolesGuard)
 @Roles('DRIVER')
 @Controller('driver/dispatches')
 export class DriverExecutionController {
   constructor(private readonly execution: ExecutionService) {}
+  @Post(':dispatchId/execution-completion')
+  @HttpCode(200)
+  @keyHeader()
+  @ApiOkResponse({ type: DriverCompletionResponse })
+  @ApiErrors(400, 401, 403, 404, 409, 429, 500)
+  @ApiOperation({
+    summary: 'Confirmar entrega propia',
+    description:
+      'El Driver asignado de flotilla o independiente confirma entrega física. Exige assignmentId, expectedRevision e Idempotency-Key. Legacy utiliza revisión 0. Recibo y delivery.completed se confirman atómicamente; no acredita cobro.',
+  })
+  complete(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Req() req: AuthenticatedRequest,
+    @Headers('idempotency-key') key: string,
+    @Body() body: ExecutionCommandDto,
+  ) {
+    return this.execution.driverComplete(
+      id,
+      { id: req.user.id, role: 'DRIVER' },
+      key,
+      body,
+    );
+  }
+  @Get(':dispatchId/assignments/:assignmentId/attempt')
+  @Header('Cache-Control', 'no-store')
+  @keyHeader()
+  @ApiOkResponse({ type: DriverAttemptResponse })
+  @ApiErrors(400, 401, 403, 404, 429, 500)
+  @ApiOperation({
+    summary: 'Consultar intento técnico propio',
+    description:
+      'Consulta durable por actor, despacho, asignación, operación y clave. Devuelve APPLIED, CLOSED_NO_EFFECTS o PENDING_OR_UNKNOWN; ausencia no demuestra fracaso. GET no escribe ni reproduce operaciones físicas.',
+  })
+  attempt(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Param('assignmentId', new ParseUUIDPipe()) assignmentId: string,
+    @Query() q: DriverAttemptParamsDto,
+    @Req() req: AuthenticatedRequest,
+    @Headers('idempotency-key') key: string,
+  ) {
+    return this.execution.reconcileDriver(
+      id,
+      assignmentId,
+      q.operation,
+      { id: req.user.id, role: 'DRIVER' },
+      key,
+    );
+  }
+  @Post(':dispatchId/assignments/:assignmentId/attempt/close')
+  @HttpCode(200)
+  @keyHeader()
+  @ApiOkResponse({ type: DriverAttemptResponse })
+  @ApiErrors(400, 401, 403, 404, 409, 429, 500)
+  @ApiOperation({
+    summary: 'Cerrar explícitamente intento técnico propio',
+    description:
+      'Serializa con el POST original. Si éste confirmó devuelve APPLIED; de lo contrario persiste CLOSED_NO_EFFECTS y bloquea para siempre esa clave. No cancela ni revierte una entrega física. Sólo el actor original puede cerrar su intento.',
+  })
+  close(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Param('assignmentId', new ParseUUIDPipe()) assignmentId: string,
+    @Query() q: DriverAttemptParamsDto,
+    @Req() req: AuthenticatedRequest,
+    @Headers('idempotency-key') key: string,
+  ) {
+    return this.execution.reconcileDriver(
+      id,
+      assignmentId,
+      q.operation,
+      { id: req.user.id, role: 'DRIVER' },
+      key,
+      true,
+    );
+  }
   @Get(':dispatchId/execution')
   @ApiOkResponse({ type: ExecutionDetailResponse })
-  @ApiOperation({ summary: 'Consultar progreso independiente propio' })
+  @ApiOperation({
+    summary: 'Consultar progreso propio de flotilla o independiente',
+    description:
+      'Consulta la asignación vigente del Driver autenticado, su progreso e historial paginado. No concede acceso a servicios ajenos ni permisos de TAKE al Driver de flotilla. Los servicios anteriores permanecen LEGACY_UNTRACKED.',
+  })
   detail(
     @Param('dispatchId', new ParseUUIDPipe()) id: string,
     @Req() req: AuthenticatedRequest,
@@ -150,7 +236,11 @@ export class DriverExecutionController {
   @ExecutionContract('advance')
   @HttpCode(200)
   @keyHeader()
-  @ApiOperation({ summary: 'Registrar siguiente hito del independiente' })
+  @ApiOperation({
+    summary: 'Registrar siguiente hito del Driver asignado',
+    description:
+      'Registra exclusivamente el siguiente hito consecutivo de la asignación vigente. Valida Driver, custodia y revisión esperada. La clave durable permite replay sin duplicar historial; una clave cerrada devuelve EXECUTION_ATTEMPT_CLOSED.',
+  })
   advance(
     @Param('dispatchId', new ParseUUIDPipe()) id: string,
     @Req() req: AuthenticatedRequest,
@@ -168,7 +258,9 @@ export class DriverExecutionController {
   @ExecutionContract('report')
   @keyHeader()
   @ApiOperation({
-    summary: 'Reportar incidencia del independiente bajo custodia',
+    summary: 'Reportar incidencia del Driver asignado bajo custodia',
+    description:
+      'El Driver vigente informa imposibilidad de entrega después de recoger. Conserva custodia y recursos y bloquea avances hasta resolución excepcional. El recibo durable permite recuperar respuestas inciertas sin duplicar incidencias.',
   })
   report(
     @Param('dispatchId', new ParseUUIDPipe()) id: string,

@@ -20,6 +20,8 @@ Fixtures operativos disponibles: MDR-000001 normal, MDR-000002 devolución, MDR-
 
 ## Ejecución detallada y custodia
 
+**Autoridad DRIVER (cambio local 2026-10-03):** [contrato APP REPARTIDOR y handoff WEB](docs/DRIVER-APP-EXECUTION.md), [verificaciones](docs/DRIVER-APP-EXECUTION-VERIFICATION.md). Flotilla e independiente registran sus hitos/incidencias/entrega; el administrador pierde avance y entrega detallada, conserva gestión e incidencias. Legacy mantiene cierre explícito compatible. Tres comandos con recibo durable, consulta y cierre técnico. Pendiente construir app, adaptar Web y coordinar despliegue; no activado. Docker no se arrancó y su imagen previa no acredita el contrato nuevo.
+
 Reconciliación de respuestas inciertas: [contrato de intento durable](docs/EXECUTION-ATTEMPT-RECONCILIATION.md). SUPER_ADMIN iniciador consulta su recibo o cierra explícitamente una clave no aplicada bajo los mismos locks que la resolución. Ausencia sigue incierta; una clave cerrada nunca puede aplicar después. No confirma ni repite operaciones físicas. Frontend debe integrar el contrato; sin activación.
 
 Implementación local: [contrato para Frontend y operación](docs/DETAILED-EXECUTION-HANDOFF.md), [diseño aprobado](docs/DETAILED-EXECUTION-PROPOSAL.md) y [resultados ejecutados](docs/DETAILED-EXECUTION-VERIFICATION.md). `DETAILED_EXECUTION_ENABLED=false` por defecto; habilitarlo admite nuevas asignaciones con cinco hitos consecutivos, sin reconstruir hitos legacy. Deshabilitarlo posteriormente no elimina reglas ni historial de servicios detallados existentes.

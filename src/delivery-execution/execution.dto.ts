@@ -37,6 +37,11 @@ export class ExecutionCommandDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID() assignmentId!: string;
   @ApiProperty({ minimum: 0 }) @IsInt() @Min(0) expectedRevision!: number;
 }
+export class DriverAttemptParamsDto {
+  @ApiProperty({ enum: ['ADVANCE', 'REPORT', 'DELIVER'] })
+  @IsIn(['ADVANCE', 'REPORT', 'DELIVER'])
+  operation!: 'ADVANCE' | 'REPORT' | 'DELIVER';
+}
 export class AdvanceExecutionDto extends ExecutionCommandDto {
   @ApiProperty({ enum: EXECUTION_PHASES })
   @IsIn(EXECUTION_PHASES)

@@ -245,12 +245,6 @@ export class DriversService {
           activeAssignment.id,
         )
       : null;
-    if (
-      operational &&
-      operational.execution &&
-      activeAssignment?.mode === 'FLEET'
-    )
-      operational.execution.allowedActions = [];
     return {
       ...withCurrentAssignment(rest),
       activeDeliveryAssignment: activeAssignment

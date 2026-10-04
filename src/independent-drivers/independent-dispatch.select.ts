@@ -121,8 +121,8 @@ export function driverDispatchView(
 ) {
   const status = effectiveDispatchStatus(dispatch, now);
   const receiver = dispatch.deliveryAssignments[0];
-  const owner = receiver?.custodyResolutionId
-    ? receiver.mode === 'INDEPENDENT' && receiver.driverId === driverId
+  const owner = receiver
+    ? receiver.driverId === driverId
     : dispatch.claimedByIndependentDriverId === driverId;
   const access: 'OWNER' | 'OFFER' = owner ? 'OWNER' : 'OFFER';
   const quote = dispatch.deliveryQuote;
@@ -164,7 +164,10 @@ export function driverDispatchView(
       'INDEPENDENT_DRIVER',
       dispatch.claimedByIndependentDriverId,
     ),
-    creditCost: creditCostFor(dispatch.creditSnapshots, 'INDEPENDENT_DRIVER'),
+    creditCost:
+      receiver?.mode === 'FLEET'
+        ? null
+        : creditCostFor(dispatch.creditSnapshots, 'INDEPENDENT_DRIVER'),
     // Only ever my own assignment: a driver never learns who else is executing a service.
     assignment:
       owner &&

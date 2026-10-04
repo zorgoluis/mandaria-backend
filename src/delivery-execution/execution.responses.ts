@@ -189,3 +189,20 @@ export class ResolutionAttemptResponse {
   })
   canStartNewAttempt!: boolean;
 }
+
+export class DriverAttemptResponse {
+  @ApiProperty({ enum: ['APPLIED', 'PENDING_OR_UNKNOWN', 'CLOSED_NO_EFFECTS'] })
+  state!: string;
+  @ApiProperty({ format: 'uuid' }) assignmentId!: string;
+  @ApiProperty({ enum: ['ADVANCE', 'REPORT', 'DELIVER'] }) operation!: string;
+  @ApiProperty({
+    description:
+      'La clave está cerrada sin efectos y esta asignación seguía ACTIVE; no reserva el servicio ni ordena repetir acciones físicas.',
+  })
+  canStartNewAttempt!: boolean;
+}
+export class DriverCompletionResponse {
+  @ApiProperty({ format: 'uuid' }) assignmentId!: string;
+  @ApiProperty({ enum: ['DELIVERED'] }) status!: string;
+  @ApiProperty({ format: 'date-time' }) deliveredAt!: string;
+}

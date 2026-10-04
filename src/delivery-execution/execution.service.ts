@@ -3,6 +3,8 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Logger,
+  Optional,
 } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
 import { isUUID } from 'class-validator';
@@ -25,6 +27,9 @@ import type {
 import { pageResult, PaginationQueryDto } from '../common/pagination.dto.js';
 import { allowsIndependent } from '../independent-drivers/independent-driver-policy.js';
 import { pairingConflict } from '../delivery-assignments/assignment-policy.js';
+import { completeDelivery } from '../deliveries/delivery-completion.js';
+import type { ExecutionCommandDto } from './execution.dto.js';
+import { B2bWebhooksService } from '../b2b-webhooks/b2b-webhooks.service.js';
 
 type Actor = { id: string; role: Role; providerId?: string };
 type Incident = {
@@ -64,7 +69,148 @@ async function retryExecution<T>(work: () => Promise<T>): Promise<T> {
 }
 @Injectable()
 export class ExecutionService {
-  constructor(private readonly db: PrismaService) {}
+  private readonly logger = new Logger(ExecutionService.name);
+  constructor(
+    private readonly db: PrismaService,
+    @Optional() private readonly webhooks?: B2bWebhooksService,
+  ) {}
+  /** Driver receipts are assignment-scoped, including after transfer/termination. */
+  async reconcileDriver(
+    dispatchId: string,
+    assignmentId: string,
+    operation: 'ADVANCE' | 'REPORT' | 'DELIVER',
+    actor: Actor,
+    key: string,
+    close = false,
+  ) {
+    if (!isUUID(key))
+      throw new BadRequestException('UUID Idempotency-Key required');
+    if (actor.role !== 'DRIVER') throw new ForbiddenException();
+    const scope = `APP_${operation}:${assignmentId.toLowerCase()}`;
+    return retryExecution(() =>
+      this.db.$transaction(
+        async (tx) => {
+          if (close) await lockExecutionDispatch(tx, dispatchId);
+          if (close)
+            await tx.$queryRaw`SELECT id FROM "User" WHERE id=${actor.id}::uuid FOR SHARE`;
+          const user = await tx.user.findUnique({ where: { id: actor.id } });
+          if (!user?.active || user.role !== 'DRIVER')
+            throw new ForbiddenException();
+          const assignment = await tx.deliveryAssignment.findFirst({
+            where: {
+              id: assignmentId,
+              dispatchId,
+              driver: { userId: actor.id },
+            },
+          });
+          if (!assignment) throw new NotFoundException('Assignment not found');
+          const receipts = await tx.$queryRaw<
+            { state: string }[]
+          >`SELECT state FROM "DeliveryExecutionCommand" WHERE "dispatchId"=${dispatchId}::uuid AND "actorUserId"=${actor.id}::uuid AND operation=${scope} AND key=${key}::uuid`;
+          let state = receipts[0]?.state ?? 'PENDING_OR_UNKNOWN';
+          if (close && !receipts[0]) {
+            await tx.$executeRaw`INSERT INTO "DeliveryExecutionCommand" ("dispatchId","actorUserId",operation,key,hash,response,state) VALUES (${dispatchId}::uuid,${actor.id}::uuid,${scope},${key}::uuid,'','{}'::jsonb,'CLOSED_NO_EFFECTS')`;
+            state = 'CLOSED_NO_EFFECTS';
+          }
+          return {
+            state,
+            assignmentId: assignment.id,
+            operation,
+            canStartNewAttempt:
+              state === 'CLOSED_NO_EFFECTS' && assignment.status === 'ACTIVE',
+          };
+        },
+        {
+          isolationLevel: close ? 'ReadCommitted' : 'RepeatableRead',
+          timeout: 15000,
+        },
+      ),
+    );
+  }
+
+  /** Shared completion and outbox in the same transaction as the durable app receipt. */
+  async driverComplete(
+    dispatchId: string,
+    actor: Actor,
+    key: string,
+    body: ExecutionCommandDto,
+  ) {
+    if (actor.role !== 'DRIVER') throw new ForbiddenException();
+    if (!isUUID(key))
+      throw new BadRequestException('UUID Idempotency-Key required');
+    const operation = `APP_DELIVER:${body.assignmentId.toLowerCase()}`;
+    const hash = createHash('sha256').update(canonical(body)).digest('hex');
+    let completed = false;
+    const result = await retryExecution(() =>
+      this.db.$transaction(
+        async (tx) => {
+          completed = false;
+          await lockExecutionDispatch(tx, dispatchId);
+          await tx.$queryRaw`SELECT id FROM "User" WHERE id=${actor.id}::uuid FOR SHARE`;
+          const user = await tx.user.findUnique({ where: { id: actor.id } });
+          if (!user?.active || user.role !== 'DRIVER')
+            throw new ForbiddenException();
+          const receipts = await tx.$queryRaw<
+            { state: string; hash: string; response: Prisma.JsonValue }[]
+          >`SELECT state,hash,response FROM "DeliveryExecutionCommand" WHERE "dispatchId"=${dispatchId}::uuid AND "actorUserId"=${actor.id}::uuid AND operation=${operation} AND key=${key}::uuid`;
+          if (receipts[0]) {
+            if (receipts[0].state === 'CLOSED_NO_EFFECTS')
+              throw executionError('EXECUTION_ATTEMPT_CLOSED');
+            if (receipts[0].hash !== hash)
+              throw executionError('IDEMPOTENCY_KEY_REUSED');
+            return receipts[0].response;
+          }
+          const a = await tx.deliveryAssignment.findFirst({
+            where: {
+              id: body.assignmentId,
+              dispatchId,
+              driver: { userId: actor.id },
+            },
+          });
+          if (!a) throw new NotFoundException('Assignment not found');
+          const driver = await tx.driver.findUniqueOrThrow({
+            where: { id: a.driverId },
+          });
+          if (a.mode === 'FLEET' && a.providerId !== driver.providerId)
+            throw new NotFoundException('Assignment not found');
+          const head = await executionHead(tx, dispatchId);
+          if (
+            a.status !== 'ACTIVE' ||
+            (head && head.assignmentId !== a.id) ||
+            (head?.revision ?? 0) !== body.expectedRevision
+          )
+            throw executionError('EXECUTION_CONFLICT');
+          const outcome = await completeDelivery(
+            tx,
+            dispatchId,
+            { mode: 'DRIVER', driverId: a.driverId },
+            actor.id,
+            true,
+          );
+          const result = {
+            assignmentId: a.id,
+            status: 'DELIVERED',
+            deliveredAt: outcome.deliveredAt.toISOString(),
+          };
+          const response = JSON.stringify(result);
+          await tx.$executeRaw`INSERT INTO "DeliveryExecutionCommand" ("dispatchId","actorUserId",operation,key,hash,response) VALUES (${dispatchId}::uuid,${actor.id}::uuid,${operation},${key}::uuid,${hash},${response}::jsonb)`;
+          completed = true;
+          return result;
+        },
+        { timeout: 15000 },
+      ),
+    );
+    if (completed) {
+      this.logger.log({
+        event: 'DELIVERY_COMPLETED',
+        dispatchId,
+        assignmentId: body.assignmentId,
+        actorUserId: actor.id,
+      });
+      this.webhooks?.nudge();
+    }
+    return result;
+  }
   async reconcileResolution(
     dispatchId: string,
     incidentId: string,
@@ -129,6 +275,14 @@ export class ExecutionService {
         : result.custodyStatus === 'HELD'
           ? ['REPORT_INCIDENT']
           : [];
+    if (result && actor.role === 'PROVIDER_ADMIN')
+      result.allowedActions = result.allowedActions.filter(
+        (a) => !['ADVANCE', 'DELIVER'].includes(a),
+      );
+    if (result && actor.role === 'DRIVER')
+      result.allowedActions = result.allowedActions.filter(
+        (a) => a !== 'ORDINARY_ASSIGNMENT_OPERATIONS',
+      );
     return result;
   }
   async incidentDetail(dispatchId: string, incidentId: string) {
@@ -217,9 +371,12 @@ export class ExecutionService {
       return { e, a };
     if (
       actor.role === 'DRIVER' &&
-      a.mode === 'INDEPENDENT' &&
       (await tx.driver.findFirst({
-        where: { id: a.driverId, userId: actor.id },
+        where: {
+          id: a.driverId,
+          userId: actor.id,
+          ...(a.mode === 'FLEET' ? { providerId: a.providerId ?? '' } : {}),
+        },
       }))
     )
       return { e, a };
@@ -249,7 +406,7 @@ export class ExecutionService {
           skip: (query.page - 1) * query.pageSize,
           take: query.pageSize,
         });
-        const execution = await executionView(tx, dispatchId);
+        const execution = await this.view(tx, dispatchId, actor);
         if (execution && actor.role === 'SUPER_ADMIN')
           execution.allowedActions = execution.openIncidentId
             ? ['RESOLVE_INCIDENT']
@@ -275,6 +432,7 @@ export class ExecutionService {
     operation: string,
     body:
       | AdvanceExecutionDto
+      | ExecutionCommandDto
       | ReportCustodyIncidentDto
       | ResolveCustodyIncidentDto,
     work: (
@@ -332,12 +490,12 @@ export class ExecutionService {
     );
   }
   advance(id: string, actor: Actor, key: string, body: AdvanceExecutionDto) {
-    if (actor.role === 'SUPER_ADMIN') throw new ForbiddenException();
+    if (actor.role !== 'DRIVER') throw new ForbiddenException();
     return this.command(
       id,
       actor,
       key,
-      'ADVANCE',
+      `APP_ADVANCE:${body.assignmentId.toLowerCase()}`,
       body,
       async (tx, { e, a }) => {
         if (EXECUTION_PHASES.indexOf(body.phase) !== e.phase)
@@ -345,7 +503,7 @@ export class ExecutionService {
         if ((await executionView(tx, id))?.openIncidentId)
           throw executionError('CUSTODY_INCIDENT_OPEN');
         await executionEvent(tx, e, a.id, actor.id, 'ADVANCED', e.phase + 1);
-        return executionView(tx, id);
+        return this.view(tx, id, actor);
       },
     );
   }
@@ -359,7 +517,9 @@ export class ExecutionService {
       id,
       actor,
       key,
-      'REPORT',
+      actor.role === 'DRIVER'
+        ? `APP_REPORT:${body.assignmentId.toLowerCase()}`
+        : 'REPORT',
       body,
       async (tx, { e, a }) => {
         if (e.phase < 3) throw executionError('CUSTODY_INCIDENT_REQUIRED');

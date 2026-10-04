@@ -134,6 +134,11 @@ export async function withExecutionInstructions<
   if (view.access !== 'OWNER') return view;
   const execution = await executionView(tx, dispatchId);
   if (!execution) return view;
+  execution.allowedActions = execution.allowedActions.filter((action) =>
+    'claimedByMe' in view
+      ? !['ADVANCE', 'DELIVER'].includes(action)
+      : action !== 'ORDINARY_ASSIGNMENT_OPERATIONS',
+  );
   // An intervening transfer must never attach the new custodian's IDs/actions to an old view.
   const expected = expectedAssignmentId ?? view.assignment?.id;
   if (

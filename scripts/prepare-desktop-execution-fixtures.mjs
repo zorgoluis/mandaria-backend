@@ -540,6 +540,9 @@ async function main() {
       }
     }
     if (name === 'return' || name === 'transfer') {
+      const driverSession = await login(
+        accounts.find((a) => a.email === state.resources[name].email),
+      );
       for (const phase of ['TO_PICKUP', 'AT_PICKUP', 'PICKED_UP']) {
         if (fixture[phase]) continue;
         const { execution } = await api(operator, 'GET', `${dp}/execution`);
@@ -551,9 +554,9 @@ async function main() {
         };
         persist();
         await api(
-          operator,
+          driverSession,
           'POST',
-          `${dp}/execution-events`,
+          `/driver/dispatches/${fixture.dispatchId}/execution-events`,
           fixture.commands[phase],
           key(`${name}-${phase}`),
         );
