@@ -4,6 +4,8 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Solicitudes de socio, Fase 1 (2026-10-04): IMPLEMENTADA, VERIFICADA LOCALMENTE Y PROBADA EN DOCKER LOCAL, sin commit ni despliegue.** Rama `feat/solicitud-repartidor`. Endpoint público `POST /api/v1/public/partner-applications` (202 `SOC-NNNNNN`, honeypot, 5/10 min por IP, deduplicación 30 días con advisory locks) y bandeja SUPER_ADMIN `/api/v1/admin/partner-applications` (lista, detalle, estado, vínculos). La solicitud es un lead y no crea cuentas, Drivers ni proveedores. Migración incremental `20261004000100_partner_applications`. Variables nuevas opcionales `TRUST_PROXY_HOPS` (default 0) y `PARTNER_APPLICATIONS_NOTIFY_EMAIL`. Topología indicada por el propietario: landing `mandaria.com.mx`, admin `app.mandaria.com.mx`, API `api.mandaria.com.mx`; en la VM hace falta `CORS_ORIGINS` con los dos primeros orígenes, `TRUST_PROXY_HOPS=1` y `MANDARIA_WEB_URL=https://app.mandaria.com.mx`. Pendientes del propietario: proveedor que recibe a los independientes aprobados (§9.3), propuestas al contrato compartido (paginación `page`/`pageSize`) y la decisión de mover la API B2B a `api.`. [Handoff](docs/PARTNER-APPLICATIONS-HANDOFF.md).
+
 - **Publicación documental autorizada 2026-10-02:** se prepara commit y push de propuesta de ejecución detallada y continuidad pendiente en la rama actual `main`; resultado confirmado por Git en esta sesión. Sin implementación ni despliegue.
 
 - **Ejecución detallada — propuesta 2026-10-02:** análisis en [docs/DETAILED-EXECUTION-PROPOSAL.md](docs/DETAILED-EXECUTION-PROPOSAL.md), sin versión asignada ni implementación. Recomienda cinco hitos por asignación, DELIVERED canónico, operación web por administrador/aviso telefónico, barrera de custodia y proyección B2B aditiva. Pendientes de aprobación: granularidad, permisos iniciales, tratamiento de entrega imposible tras recogida y necesidad de eventos de progreso. El propietario confirma configuración comercial posterior al reset completada y probada; sustituye el pendiente de confirmación del resumen anterior, sin constituir pruebas nuevas del agente.
@@ -402,6 +404,8 @@ Las entradas siguientes conservan estados históricos; el cierre anterior con D2
 | `src/delivery-assignments/` | V1.8: política, servicio, DTOs/respuestas y controllers de asignación de Driver/Vehicle |
 | `prisma/migrations/20260917000900_delivery_assignments/migration.sql` | Migración V1.8: DeliveryAssignment, índices únicos parciales ACTIVE, CHECK, trigger y dispatch_guard ampliado |
 | `test/delivery-assignments.spec.ts`, `test/delivery-assignments.e2e-spec.ts` | Pruebas V1.8 |
+| `src/partner-applications/`, `prisma/migrations/20261004000100_partner_applications/` | Solicitudes de socio Fase 1: captura pública, honeypot, deduplicación y bandeja SUPER_ADMIN |
+| `test/partner-applications.spec.ts`, `test/partner-applications.e2e-spec.ts`, `docs/PARTNER-APPLICATIONS-HANDOFF.md` | Pruebas y handoff para Frontend |
 | `Dockerfile`, `docker-compose.yml` | Preparación para uso futuro, ejecución pendiente |
 
 ## Verificaciones históricas del Core
@@ -441,6 +445,29 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-04 — Commit y push de solicitudes de socio
+
+- **Solicitud:** commit y push de los cambios a la rama actual `feat/solicitud-repartidor`.
+- **Alcance:** código, migración, pruebas y documentación de la Fase 1. Excluidos el `.env` local (ignorado) y el archivo `nul`. El estado §8 del contrato compartido vive en `mandaria-landing` y no forma parte de este repositorio.
+- **Verificación:** revisión de archivos preparados, búsqueda de secretos en el diff y `git diff --check`; las pruebas son las registradas en las entradas siguientes, sin repetirse. El resultado del push se confirma con la salida de Git.
+
+### 2026-10-04 — Prueba de solicitudes de socio en Docker local
+
+- **Solicitud:** ajustar el entorno y probar en Docker Desktop, abierto por el propietario. Esto autoriza Docker para esta prueba.
+- **Cambios:** `.env` local creado con `init-local` y ajustado para Docker (Postgres en el 5433, CORS de dev para web y landing, outbox local, routing local_fake, `TRUST_PROXY_HOPS=0`, aviso interno local). Ignorado por Git y sin valores en documentación. Sin cambios de código.
+- **Verificaciones actuales:** compose build/up healthy; migraciones aplicadas por el entrypoint; seed de SUPER_ADMIN; smoke público y administrativo completo; CORS desde el origen de la landing local; throttle compartido con 0 saltos y por cliente con 1; aviso sin datos personales; logs sin PII. Detalle en VERIFICATION.
+- **Resultado:** Fase 1 funciona en la imagen Docker. La prueba confirma en la práctica que, detrás de NAT o proxy, sin `TRUST_PROXY_HOPS` el límite es global.
+- **Pendientes:** sin cambios respecto a la entrada siguiente. Contenedores en ejecución con datos de prueba (`docker compose down` para detenerlos; `-v` borraría el volumen).
+
+### 2026-10-04 — Solicitudes de socio, Fase 1
+
+- **Solicitud:** implementar captura y administración de solicitudes de socio según `mandaria-landing/docs/solicitudes-socio/CONTRATO.md`. Incluye confirmar `trust proxy` y responder la pregunta §9.3 (alta de independientes).
+- **Decisiones con el propietario:** Express no tenía `trust proxy`; detrás de nginx todos los clientes compartían la IP del proxy. Se propuso y aplicó la variable opcional `TRUST_PROXY_HOPS` (0–3, default 0, sin cambio de comportamiento hasta configurarla). El propietario indicó la topología: landing en `mandaria.com.mx`, admin en `app.mandaria.com.mx` y API en `api.mandaria.com.mx`.
+- **Cambios:** enums y modelo `PartnerApplication` con back-relations sólo en Prisma; migración con secuencia `SOC` y tres CHECK; `common/public-id.ts` (SOC); módulo `src/partner-applications/` (política pura, DTO con honeypot, interceptor previo a pipes, servicio con advisory locks, controladores público y admin); `MailProvider.sendPartnerApplicationNotice` en Resend, outbox y fake, con plantilla sin datos personales; `environment.ts`, `setup.ts`, `.env.example` y `docker-compose.yml` con las dos variables; OpenAPI y API_ACCESS regenerados; `docs/API-CONTRACT.md`, README, handoff y estado §8 del contrato compartido en la landing.
+- **Verificaciones actuales:** ver VERIFICATION 2026-10-04. Build; 458/458 unitarias (55 nuevas); E2E 26/26 nuevas y 72/72 en 4 archivos con regresión; oxlint y ESLint; `prisma validate`; migración limpia y sobre base existente con datos; docs:check y contrato B2B público vigentes; smoke HTTP real. Todo sobre un PostgreSQL 18.6 temporal aislado, porque el checkout no tiene `.env`.
+- **Resultado:** Fase 1 lista para Frontend y para desplegar con migración incremental. No se crean proveedores sintéticos ni se modifican invitaciones o proveedores existentes.
+- **Pendientes:** decisión §9.3; aprobar las propuestas al contrato (paginación, nota en APPROVED/REJECTED); configurar en la VM `CORS_ORIGINS`, `TRUST_PROXY_HOPS=1`, `MANDARIA_WEB_URL` y opcionalmente `PARTNER_APPLICATIONS_NOTIFY_EMAIL`; prueba desde la landing real; retención de datos personales de solicitudes; E2E completos y Docker no ejecutados.
 
 ### 2026-10-02 — Commit y push de propuesta de ejecución
 

@@ -1,6 +1,13 @@
-import { renderUserInvitation } from './mail-templates.js';
+import {
+  renderPartnerApplicationNotice,
+  renderUserInvitation,
+} from './mail-templates.js';
 import { MailDeliveryError } from './mail.types.js';
-import type { MailProvider, UserInvitationMail } from './mail.types.js';
+import type {
+  MailProvider,
+  PartnerApplicationNoticeMail,
+  UserInvitationMail,
+} from './mail.types.js';
 
 export type ResendSettings = { apiKey: string; from: string };
 
@@ -12,7 +19,18 @@ export class ResendMailProvider implements MailProvider {
     private readonly request: typeof fetch = fetch,
   ) {}
 
-  async sendUserInvitation(mail: UserInvitationMail) {
+  sendUserInvitation(mail: UserInvitationMail) {
+    return this.send(mail.to, renderUserInvitation(mail));
+  }
+
+  sendPartnerApplicationNotice(mail: PartnerApplicationNoticeMail) {
+    return this.send(mail.to, renderPartnerApplicationNotice(mail));
+  }
+
+  private async send(
+    to: string,
+    content: { subject: string; text: string; html: string },
+  ) {
     const signal = AbortSignal.timeout(20_000);
     try {
       const response = await this.request('https://api.resend.com/emails', {
@@ -25,8 +43,8 @@ export class ResendMailProvider implements MailProvider {
         },
         body: JSON.stringify({
           from: this.settings.from,
-          to: [mail.to],
-          ...renderUserInvitation(mail),
+          to: [to],
+          ...content,
         }),
       });
       if (!response.ok) {
