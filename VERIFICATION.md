@@ -1,3 +1,26 @@
+## Solicitudes de socio — filtro de varios estados, 2026-10-04
+
+Cambio: `GET /api/v1/admin/partner-applications?status=RECEIVED,CONTACTED`. Lista separada por comas, normalizada (recorte, mayúsculas, sin duplicados), sin vacíos y con máximo 5; el servicio filtra con `status IN (...)`. Compatible con un solo estado y sin `status`. Sin cambios de orden, paginación, forma de respuesta, estados ni transiciones. Sin commit. Base: el commit `ea64f05` ya publicado en la rama.
+
+| Comprobación ejecutada en esta tarea | Resultado |
+|---|---|
+| `npm run build` | Exit 0 |
+| Unitarias `test/partner-applications.spec.ts` | 69/69 (14 nuevas: un estado, dos, espacios/minúsculas, duplicados, los 5, 5+duplicado, parámetro repetido, omitido; desconocido, coma final, sólo coma, vacío, más de 5, no string) |
+| `npm test` completo | 36 archivos, 472/472 |
+| E2E `test/partner-applications.e2e-spec.ts` (PostgreSQL 18.6 temporal aislado, reiniciado) | 33/33 (7 nuevas), dos corridas con exit 0. Datos sintéticos: 2 RECEIVED, 2 CONTACTED, 1 REJECTED, 1 DISCARDED. `RECEIVED,CONTACTED` con `pageSize=1` → 4 páginas, `total` 4, sólo esas dos clases, orden por fecha descendente; página 5 vacía; `RECEIVED` → 2; sin `status` → 6; cuatro entradas inválidas → 400 |
+| `npm run lint` / `npm run lint:eslint` | Sin errores (advertencia preexistente) / sin hallazgos |
+| `npm run docs:openapi` / `npm run docs:check` | Regenerado (`status` como string con ejemplos) / al día |
+| `git diff --check` | Limpio |
+
+Nota: una corrida intermedia del E2E mostró un resumen truncado («1 passed (33)») por cortar con `grep` la salida coloreada. Se repitió con la salida completa: exit 0, 1 archivo y 33/33.
+
+**Índice (medido, no supuesto):** 20 000 filas sintéticas en una base temporal (2 002 RECEIVED, 2 000 CONTACTED, resto cerradas), `ANALYZE` y `EXPLAIN ANALYZE`:
+- La página 1 del `IN` usa `PartnerApplication_createdAt_id_idx` hacia atrás con filtro: 94 filas leídas para 20, 0.03 ms.
+- El `count` del `IN` usa bitmap sobre `PartnerApplication_status_createdAt_idx`: 0.75 ms.
+- Un solo estado usa `(status, createdAt)` con incremental sort: 0.04 ms.
+
+No se agregó índice. Si las abiertas llegaran a ser una fracción muy pequeña de un histórico grande, conviene volver a medir. Filas sintéticas eliminadas y cluster detenido.
+
 ## Solicitudes de socio — prueba en Docker local, 2026-10-04
 
 **Docker autorizado por el propietario para esta prueba** (Docker Desktop 29.3.1). Se creó un `.env` local con `scripts/init-local.mjs` (secretos aleatorios, ignorado por Git, sin valores en documentación) y se ajustó para Docker: `POSTGRES_PORT=5433` (el 5432 lo usa el servicio PostgreSQL local), `CORS_ORIGINS` con `http://localhost:5173` y `http://localhost:5174` (dev de Mandaria Web y landing), `MAIL_PROVIDER=local_outbox`, `MANDARIA_WEB_URL=http://localhost:5173`, `ROUTING_PROVIDER=local_fake`, `TRUST_PROXY_HOPS=0` y `PARTNER_APPLICATIONS_NOTIFY_EMAIL` local.

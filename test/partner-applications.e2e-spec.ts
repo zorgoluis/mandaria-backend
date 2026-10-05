@@ -561,3 +561,90 @@ describe.sequential('admin review', () => {
     await linkInvalid(fleetRef, { providerId: fleetProvider.id });
   });
 });
+
+describe.sequential('admin status list filter', () => {
+  // Synthetic applications that only this block matches (q = tag): 2 RECEIVED, 2 CONTACTED,
+  // 1 REJECTED and 1 DISCARDED.
+  const tag = `multi${run}`;
+  const refs: Record<string, string[]> = {};
+  const list = (query: string) => admin().get(`?q=${tag}&${query}`).expect(200);
+  const refsOf = (body: { items: { reference: string; status: string }[] }) =>
+    body.items.map((i) => i.reference);
+
+  beforeAll(async () => {
+    const plan = [
+      'RECEIVED',
+      'RECEIVED',
+      'CONTACTED',
+      'CONTACTED',
+      'REJECTED',
+      'DISCARDED',
+    ] as const;
+    for (const target of plan) {
+      const reference = (
+        await post(individual({ contactName: `Filtro ${tag}` })).expect(202)
+      ).body.reference as string;
+      if (target !== 'RECEIVED')
+        await status(reference, {
+          status: target,
+          reviewNote: 'Dato sintético',
+        }).expect(200);
+      (refs[target] ??= []).push(reference);
+    }
+  });
+
+  it('status=RECEIVED,CONTACTED returns exactly both classes, paginated with the right total', async () => {
+    const expected = [...refs.RECEIVED, ...refs.CONTACTED].sort();
+    const seen: string[] = [];
+    for (let page = 1; page <= 4; page++) {
+      const res = await list(
+        `status=RECEIVED,CONTACTED&pageSize=1&page=${page}`,
+      );
+      expect(res.body).toMatchObject({
+        total: 4,
+        totalPages: 4,
+        page,
+        pageSize: 1,
+      });
+      expect(res.body.items).toHaveLength(1);
+      expect(['RECEIVED', 'CONTACTED']).toContain(res.body.items[0].status);
+      seen.push(...refsOf(res.body));
+    }
+    expect(seen.sort()).toEqual(expected);
+    // Same order as without the filter: newest first.
+    const all = await list('status=received,%20CONTACTED,received&pageSize=10');
+    expect(all.body.total).toBe(4);
+    const created = all.body.items.map((i: { createdAt: string }) =>
+      Date.parse(i.createdAt),
+    );
+    expect(created).toEqual([...created].sort((a, b) => b - a));
+    expect(
+      (await list('pageSize=1&page=5&status=RECEIVED,CONTACTED')).body,
+    ).toMatchObject({ items: [], total: 4, totalPages: 4 });
+  });
+
+  it('status=RECEIVED behaves as before', async () => {
+    const res = await list('status=RECEIVED');
+    expect(res.body.total).toBe(2);
+    expect(refsOf(res.body).sort()).toEqual([...refs.RECEIVED].sort());
+  });
+
+  it('without status every state is returned', async () => {
+    const res = await list('pageSize=100');
+    expect(res.body.total).toBe(6);
+    expect(
+      new Set(res.body.items.map((i: { status: string }) => i.status)),
+    ).toEqual(new Set(['RECEIVED', 'CONTACTED', 'REJECTED', 'DISCARDED']));
+  });
+
+  it.each([
+    'status=RECEIVED,OPEN',
+    'status=RECEIVED,',
+    'status=,',
+    'status=RECEIVED,CONTACTED,APPROVED,REJECTED,DISCARDED,OPEN',
+  ])('400 VALIDATION_ERROR for %s', async (query) => {
+    const res = await admin().get(`?${query}`).expect(400);
+    expect(res.body.code).toBe('VALIDATION_ERROR');
+    expect(res.body.errors.join(' ')).toContain('status');
+  });
+});

@@ -56446,7 +56446,7 @@
     },
     "/api/v1/admin/partner-applications": {
       "get": {
-        "description": "Paginación page/pageSize existente, de la más reciente a la más antigua. Filtros status, type y q (referencia, nombre, teléfono, correo, flotilla).",
+        "description": "Paginación page/pageSize existente, de la más reciente a la más antigua. Filtros status (uno o varios separados por comas, p. ej. RECEIVED,CONTACTED para las abiertas), type y q (referencia, nombre, teléfono, correo, flotilla). total y totalPages cuentan todos los estados pedidos.",
         "operationId": "AdminPartnerApplicationsController_list",
         "parameters": [
           {
@@ -56477,15 +56477,20 @@
             "name": "status",
             "required": false,
             "in": "query",
+            "description": "Uno o varios estados separados por comas: RECEIVED, CONTACTED, APPROVED, REJECTED, DISCARDED. Sin distinguir mayúsculas; se recortan espacios y se ignoran duplicados. Sin valores vacíos y como máximo 5. Omitido: todos los estados.",
+            "examples": {
+              "abiertas": {
+                "value": "RECEIVED,CONTACTED",
+                "summary": "Solicitudes abiertas"
+              },
+              "una": {
+                "value": "RECEIVED",
+                "summary": "Un solo estado"
+              }
+            },
             "schema": {
-              "type": "string",
-              "enum": [
-                "RECEIVED",
-                "CONTACTED",
-                "APPROVED",
-                "REJECTED",
-                "DISCARDED"
-              ]
+              "example": "RECEIVED,CONTACTED",
+              "type": "string"
             }
           },
           {
