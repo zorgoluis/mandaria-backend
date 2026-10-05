@@ -19,6 +19,12 @@ Corrección posterior: `20261001000100_prequote_restore_search_path` permite res
 - `npm run test:public-b2b`: pruebas Node completas del exportador y ejemplo de firma, en un proceso sin aislamiento por subprocess. Sin base ni credenciales reales.
 
 
+## Solicitudes de socio — Fase 1 (2026-10-04)
+
+La landing envía `POST /api/v1/public/partner-applications` (pública, 5 envíos / 10 min por IP, honeypot `website`) y responde 202 con una referencia `SOC-NNNNNN`. Las solicitudes son leads: no crean cuentas, Drivers, proveedores ni perfiles independientes. SUPER_ADMIN las revisa en `/api/v1/admin/partner-applications` (lista, detalle, estado y vínculos) y las convierte con los flujos existentes de proveedor e invitación. Duplicados (mismo teléfono o correo, abierta, ≤ 30 días) conservan la referencia. Migración incremental `20261004000100_partner_applications`; variables nuevas `TRUST_PROXY_HOPS` y `PARTNER_APPLICATIONS_NOTIFY_EMAIL`.
+
+Contrato y ejemplos reales para Frontend, conversión de solicitudes INDIVIDUAL (§9.3) y configuración de dominios: [PARTNER-APPLICATIONS-HANDOFF.md](docs/PARTNER-APPLICATIONS-HANDOFF.md). Resumen técnico: [API-CONTRACT](docs/API-CONTRACT.md). Pruebas: `test/partner-applications.spec.ts` y `test/partner-applications.e2e-spec.ts`.
+
 ## Integridad económica y frontera histórica — V1.10-D correctiva
 
 Toda adjudicación **ENFORCED V1.10-D+** requiere exactamente un SERVICE_AWARD válido, por el monto del snapshot y desde la cuenta del ganador, dentro de la misma transacción. PostgreSQL lo comprueba al COMMIT mediante constraints diferidos y también impide débitos sin historial operacional correspondiente.
@@ -236,7 +242,9 @@ La migración `20260915000200_b2b_credentials`:
 | JWT_REFRESH_EXPIRES_IN | Segundos, 3600–2592000; default 604800 |
 | INTEGRATION_JWT_SECRET | **Nueva**, firma B2B, mínimo 32 caracteres |
 | INTEGRATION_ACCESS_TOKEN_EXPIRES_IN | **Nueva**, segundos, 60–3600; default 3600 |
-| CORS_ORIGINS | Orígenes HTTP/HTTPS exactos separados por comas |
+| CORS_ORIGINS | Orígenes HTTP/HTTPS exactos separados por comas. Incluir Mandaria Web y la landing (p. ej. `https://app.mandaria.com.mx,https://mandaria.com.mx`) cuando la API está en otro origen |
+| TRUST_PROXY_HOPS | Proxies inversos confiables delante del backend (0–3, default 0). Con un nginx usar 1 para que los límites por IP usen la IP real del cliente; nunca exponer el puerto del backend sin el proxy |
+| PARTNER_APPLICATIONS_NOTIFY_EMAIL | Opcional; buzón interno avisado de cada solicitud de socio nueva (sólo referencia, tipo y ciudad) |
 | BOOTSTRAP_ADMIN_EMAIL/PASSWORD | Sólo para seed y verificaciones con administrador |
 | LOCAL_PROVIDER_ADMIN_PASSWORD | **LOCAL/TEST ONLY**; cuentas PROVIDER_ADMIN del seed local. Nunca en producción |
 | ROUTING_PROVIDER | `google` (por defecto) o `local_fake` (LOCAL/TEST ONLY; rechazado en producción) |

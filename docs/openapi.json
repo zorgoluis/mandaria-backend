@@ -56196,6 +56196,1824 @@
           "quotes:create"
         ]
       }
+    },
+    "/api/v1/public/partner-applications": {
+      "post": {
+        "description": "Sin autenticación. Crea un lead, nunca una cuenta. Una solicitud abierta (RECEIVED/CONTACTED) de los últimos 30 días con el mismo teléfono o correo absorbe el envío: misma referencia y submissionCount + 1. El honeypot `website` debe venir vacío o ausente.",
+        "operationId": "PublicPartnerApplicationsController_submit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePartnerApplicationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Solicitud recibida. También para un duplicado (misma referencia) y para un honeypot lleno (referencia sin persistir).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerApplicationReceiptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: campos inválidos o desconocidos. La landing no depende del texto de errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Cuerpo mayor a 16 kB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 413
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_413"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de envíos: 5 cada 10 minutos por IP (además del global de 100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Enviar solicitud de socio (landing)",
+        "tags": [
+          "Public Partner Applications"
+        ]
+      }
+    },
+    "/api/v1/admin/partner-applications": {
+      "get": {
+        "description": "Paginación page/pageSize existente, de la más reciente a la más antigua. Filtros status, type y q (referencia, nombre, teléfono, correo, flotilla).",
+        "operationId": "AdminPartnerApplicationsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "RECEIVED",
+                "CONTACTED",
+                "APPROVED",
+                "REJECTED",
+                "DISCARDED"
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "INDIVIDUAL",
+                "FLEET"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Búsqueda parcial sin distinguir mayúsculas en referencia, nombre, teléfono, correo y flotilla.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerApplicationPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: filtros o campos inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de SUPER_ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar solicitudes de socio",
+        "tags": [
+          "Admin Partner Applications"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/partner-applications/{reference}": {
+      "get": {
+        "operationId": "AdminPartnerApplicationsController_get",
+        "parameters": [
+          {
+            "name": "reference",
+            "required": true,
+            "in": "path",
+            "description": "Referencia pública SOC-NNNNNN (no distingue mayúsculas).",
+            "schema": {
+              "example": "SOC-000123",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: filtros o campos inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de SUPER_ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PARTNER_APPLICATION_NOT_FOUND: referencia inexistente o con formato inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalle de una solicitud de socio",
+        "tags": [
+          "Admin Partner Applications"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/partner-applications/{reference}/status": {
+      "post": {
+        "description": "RECEIVED→CONTACTED/REJECTED/DISCARDED; CONTACTED→APPROVED/REJECTED/DISCARDED; APPROVED→REJECTED. REJECTED y DISCARDED son terminales. Registra statusChangedAt y el SUPER_ADMIN que actuó. No crea cuentas, proveedores ni invitaciones.",
+        "operationId": "AdminPartnerApplicationsController_changeStatus",
+        "parameters": [
+          {
+            "name": "reference",
+            "required": true,
+            "in": "path",
+            "description": "Referencia pública SOC-NNNNNN (no distingue mayúsculas).",
+            "schema": {
+              "example": "SOC-000123",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePartnerApplicationStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: filtros o campos inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de SUPER_ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PARTNER_APPLICATION_NOT_FOUND: referencia inexistente o con formato inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "PARTNER_APPLICATION_INVALID_TRANSITION: transición no permitida, APPROVED sin nota ni vínculo, o APPROVED→REJECTED sin nota nueva.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar el estado de una solicitud de socio",
+        "tags": [
+          "Admin Partner Applications"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/partner-applications/{reference}/links": {
+      "post": {
+        "description": "Registra el proveedor (sólo FLEET) y/o la invitación creados con los flujos existentes. Al menos uno es obligatorio; un valor nuevo reemplaza al anterior. No crea ni modifica proveedores o invitaciones.",
+        "operationId": "AdminPartnerApplicationsController_link",
+        "parameters": [
+          {
+            "name": "reference",
+            "required": true,
+            "in": "path",
+            "description": "Referencia pública SOC-NNNNNN (no distingue mayúsculas).",
+            "schema": {
+              "example": "SOC-000123",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkPartnerApplicationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: filtros o campos inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de SUPER_ADMIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PARTNER_APPLICATION_NOT_FOUND: referencia inexistente o con formato inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "PARTNER_APPLICATION_LINK_INVALID: la solicitud no está APPROVED; proveedor inexistente, no FLEET o en solicitud INDIVIDUAL; invitación inexistente, con otro email o de otro proveedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar vínculos de una solicitud aprobada",
+        "tags": [
+          "Admin Partner Applications"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
     }
   },
   "info": {
@@ -65103,6 +66921,354 @@
           "quote",
           "availabilityGuaranteed"
         ]
+      },
+      "CreatePartnerApplicationDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "FLEET"
+            ]
+          },
+          "contactName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "Ana López"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^[0-9]{10}$",
+            "example": "9611234567",
+            "description": "Exactamente 10 dígitos (México, sin lada de país)."
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "example": "ana@example.com",
+            "description": "Se normaliza a minúsculas."
+          },
+          "city": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80,
+            "example": "Tuxtla Gutiérrez"
+          },
+          "vehicleType": {
+            "type": "string",
+            "enum": [
+              "BICYCLE",
+              "MOTORCYCLE",
+              "CAR",
+              "PICKUP",
+              "TRUCK"
+            ],
+            "description": "Bicicleta→BICYCLE, Moto→MOTORCYCLE, Auto→CAR, Camioneta→PICKUP, Camión→TRUCK."
+          },
+          "fleetName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "Mensajería del Sur",
+            "description": "Obligatorio con FLEET; prohibido con INDIVIDUAL."
+          },
+          "fleetUnits": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 10000,
+            "example": 5,
+            "description": "Obligatorio con FLEET; prohibido con INDIVIDUAL."
+          },
+          "privacyAccepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Debe ser literalmente true."
+          },
+          "privacyNoticeVersion": {
+            "type": "string",
+            "maxLength": 20,
+            "example": "2026-10",
+            "description": "Versión del aviso de privacidad aceptado (LFPDPPP)."
+          },
+          "website": {
+            "type": "string",
+            "description": "Honeypot: debe venir vacío o ausente. Un valor no vacío recibe 202 sin persistir nada.",
+            "example": ""
+          }
+        },
+        "required": [
+          "type",
+          "contactName",
+          "phone",
+          "email",
+          "city",
+          "vehicleType",
+          "privacyAccepted",
+          "privacyNoticeVersion"
+        ]
+      },
+      "PartnerApplicationReceiptResponse": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string",
+            "example": "SOC-000123",
+            "pattern": "^SOC-[0-9]{6,}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RECEIVED"
+            ],
+            "example": "RECEIVED"
+          }
+        },
+        "required": [
+          "reference",
+          "status"
+        ]
+      },
+      "PartnerApplicationResponse": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string",
+            "example": "SOC-000123"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "FLEET"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RECEIVED",
+              "CONTACTED",
+              "APPROVED",
+              "REJECTED",
+              "DISCARDED"
+            ]
+          },
+          "contactName": {
+            "type": "string",
+            "example": "Ana López"
+          },
+          "phone": {
+            "type": "string",
+            "example": "9611234567"
+          },
+          "email": {
+            "type": "string",
+            "example": "ana@example.com"
+          },
+          "city": {
+            "type": "string",
+            "example": "Tuxtla Gutiérrez"
+          },
+          "vehicleType": {
+            "type": "string",
+            "enum": [
+              "BICYCLE",
+              "MOTORCYCLE",
+              "CAR",
+              "PICKUP",
+              "VAN",
+              "TRUCK",
+              "OTHER"
+            ]
+          },
+          "fleetName": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "fleetUnits": {
+            "type": "integer",
+            "nullable": true,
+            "example": null
+          },
+          "privacyNoticeVersion": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "privacyAcceptedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "LANDING"
+            ]
+          },
+          "submissionCount": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Envíos recibidos para esta solicitud, incluidos los duplicados absorbidos (mismo teléfono o correo, abierta, ≤ 30 días)."
+          },
+          "lastSubmittedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "reviewNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusChangedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "statusChangedByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "providerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "invitationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "allowedTransitions": {
+            "type": "array",
+            "description": "Transiciones que acepta el estado actual; vacío en REJECTED y DISCARDED.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "RECEIVED",
+                "CONTACTED",
+                "APPROVED",
+                "REJECTED",
+                "DISCARDED"
+              ]
+            }
+          }
+        },
+        "required": [
+          "reference",
+          "type",
+          "status",
+          "contactName",
+          "phone",
+          "email",
+          "city",
+          "vehicleType",
+          "fleetName",
+          "fleetUnits",
+          "privacyNoticeVersion",
+          "privacyAcceptedAt",
+          "source",
+          "submissionCount",
+          "lastSubmittedAt",
+          "reviewNote",
+          "statusChangedAt",
+          "statusChangedByUserId",
+          "providerId",
+          "invitationId",
+          "createdAt",
+          "updatedAt",
+          "allowedTransitions"
+        ]
+      },
+      "PartnerApplicationPageResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "example": 20
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 1
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 1,
+            "description": "Cero cuando no hay resultados."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PartnerApplicationResponse"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "totalPages",
+          "items"
+        ]
+      },
+      "ChangePartnerApplicationStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "RECEIVED",
+              "CONTACTED",
+              "APPROVED",
+              "REJECTED",
+              "DISCARDED"
+            ],
+            "description": "RECEIVED→CONTACTED/REJECTED/DISCARDED; CONTACTED→APPROVED/REJECTED/DISCARDED; APPROVED→REJECTED (con reviewNote). REJECTED y DISCARDED son terminales."
+          },
+          "reviewNote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Nota interna sin datos sensibles. Si se omite se conserva la anterior. APPROVED exige nota o vínculo; APPROVED→REJECTED exige nota nueva."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "LinkPartnerApplicationDto": {
+        "type": "object",
+        "properties": {
+          "providerId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "DeliveryProvider FLEET creado por el flujo existente. Sólo para solicitudes FLEET."
+          },
+          "invitationId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UserInvitation enviada por el flujo existente; su email debe coincidir con el de la solicitud."
+          }
+        }
       }
     }
   }

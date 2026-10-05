@@ -1,6 +1,7 @@
 import { MailDeliveryError } from '../../dist/mail/mail.types.js';
 import type {
   MailProvider,
+  PartnerApplicationNoticeMail,
   UserInvitationMail,
 } from '../../dist/mail/mail.types.js';
 
@@ -11,6 +12,7 @@ import type {
 export class FakeMailProvider implements MailProvider {
   readonly name = 'fake';
   readonly sent: UserInvitationMail[] = [];
+  readonly notices: PartnerApplicationNoticeMail[] = [];
   /** Number of upcoming sends that fail as a transport error would. */
   failNext = 0;
   async sendUserInvitation(mail: UserInvitationMail) {
@@ -19,6 +21,13 @@ export class FakeMailProvider implements MailProvider {
       throw new MailDeliveryError('EFAKE');
     }
     this.sent.push(mail);
+  }
+  async sendPartnerApplicationNotice(mail: PartnerApplicationNoticeMail) {
+    if (this.failNext > 0) {
+      this.failNext--;
+      throw new MailDeliveryError('EFAKE');
+    }
+    this.notices.push(mail);
   }
   to(email: string) {
     return this.sent.filter((mail) => mail.to === email);

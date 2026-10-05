@@ -1,3 +1,50 @@
+## Solicitudes de socio — prueba en Docker local, 2026-10-04
+
+**Docker autorizado por el propietario para esta prueba** (Docker Desktop 29.3.1). Se creó un `.env` local con `scripts/init-local.mjs` (secretos aleatorios, ignorado por Git, sin valores en documentación) y se ajustó para Docker: `POSTGRES_PORT=5433` (el 5432 lo usa el servicio PostgreSQL local), `CORS_ORIGINS` con `http://localhost:5173` y `http://localhost:5174` (dev de Mandaria Web y landing), `MAIL_PROVIDER=local_outbox`, `MANDARIA_WEB_URL=http://localhost:5173`, `ROUTING_PROVIDER=local_fake`, `TRUST_PROXY_HOPS=0` y `PARTNER_APPLICATIONS_NOTIFY_EMAIL` local.
+
+| Comprobación ejecutada | Resultado |
+|---|---|
+| `docker compose up -d --build` | Imagen construida; postgres y backend healthy |
+| Entrypoint del contenedor | `migrate deploy` aplicó las 31 migraciones, incluida `20261004000100_partner_applications`; las 5 rutas nuevas mapeadas |
+| `npm run db:seed` desde el host contra el Postgres del contenedor | SUPER_ADMIN bootstrap completo |
+| Smoke HTTP en `localhost:3000` | Preflight y POST con `Origin: http://localhost:5174` permitidos; 202 nueva (SOC-000001), 202 duplicada con la misma referencia, 202 INDIVIDUAL, 400 VALIDATION_ERROR, honeypot 202 sin fila; login SUPER_ADMIN; lista con `q`, detalle, 409 INVALID_TRANSITION, CONTACTED→APPROVED, proveedor FLEET e invitación creados con los flujos existentes (correo SENT al outbox), 409 LINK_INVALID en solicitud no aprobada, vínculo correcto 200, 401 sin token |
+| Throttle con `TRUST_PROXY_HOPS=0` | Todas las peticiones del host llegan con la IP de la puerta de enlace de Docker: el límite 5/10 min se comparte (6 de 6 → 429 después de los envíos previos). Reproduce el problema descrito para nginx |
+| Throttle con `TRUST_PROXY_HOPS=1` (override sólo del backend) | Cliente A: 400×5 y 429 en el 6.º; cliente B: no afectado |
+| Aviso interno en el outbox del contenedor | Asunto «Nueva solicitud de socio SOC-000003», sólo referencia, tipo y ciudad |
+| Logs del contenedor | Eventos con referencia, requestId y estado; 0 coincidencias de nombre, correo o teléfono enviados |
+
+Se restauró `TRUST_PROXY_HOPS=0` (correcto en local sin proxy). Los contenedores siguen en ejecución con el volumen `mandaria_postgres_data`, que contiene datos de prueba. Al recrear el backend se perdieron el outbox `/tmp` y los logs del contenedor anterior; la revisión de privacidad se repitió en el contenedor vigente. La advertencia «Duplicate DTO ReleaseDispatchDto» al arrancar es preexistente. No se ejecutó la suite E2E dentro de Docker.
+
+## Solicitudes de socio (Fase 1) — 2026-10-04
+
+**Implementado y verificado localmente en esta tarea.** Sin commit, push, despliegue, Docker, VM, `.env` ni cambio de versión (1.12.0). Contrato: `mandaria-landing/docs/solicitudes-socio/CONTRATO.md`. Handoff: [docs/PARTNER-APPLICATIONS-HANDOFF.md](docs/PARTNER-APPLICATIONS-HANDOFF.md).
+
+Entorno: Node v24.15.0, Windows. El checkout no tiene `.env` ni `DATABASE_URL`/`TEST_DATABASE_URL`. Se usó un **cluster PostgreSQL 18.6 temporal aislado** (`initdb` con auth trust, sólo 127.0.0.1, puerto 55432, datos en el scratchpad de la sesión). No se tocó el servicio `postgresql-x64-18` ni bases existentes.
+
+| Comprobación (ejecutada en esta tarea) | Resultado |
+|---|---|
+| `prisma validate` (DATABASE_URL ficticia) | Válido |
+| Migración limpia: `prisma migrate deploy` sobre `mandaria_test` vacía | 31/31 migraciones aplicadas |
+| Migración sobre base existente: 30 migraciones previas + 1 User y 1 DeliveryProvider insertados → deploy | Sólo `20261004000100_partner_applications` aplicada; datos conservados (1/1); `migrate status` al día; `migrate diff` base↔schema: sin diferencias |
+| `npm run build` | Exit 0 |
+| `npm test` (unitarias completas) | 36 archivos, 458/458; incluye 55 nuevas en `test/partner-applications.spec.ts` |
+| E2E `test/partner-applications.e2e-spec.ts` | 26/26 |
+| E2E de regresión junto con el nuevo: `user-invitations`, `core`, `providers`, `partner-applications` | 4 archivos, 72/72 |
+| `npm run lint` (oxlint) | Sin errores; única advertencia preexistente (`readFileSync` sin uso en el verificador C3) |
+| `npm run lint:eslint` | Sin hallazgos |
+| `npm run docs:openapi` / `npm run docs:check` | Generados / «API documentation is up to date» |
+| `node scripts/export-public-b2b.mjs --check` | «Public B2B contract verified» (el contrato B2B público no cambia) |
+| Smoke HTTP con `dist/main.js` sobre base temporal (TRUST_PROXY_HOPS=1, outbox local) | Respuestas reales del handoff; 6.º envío de una IP → 429; preflight CORS desde `https://mandaria.com.mx` → 204 con el origen permitido |
+| Revisión de logs del smoke y del E2E | Sin nombre, teléfono, correo ni cuerpo; honeypot sólo con referencia y requestId; aviso del outbox con referencia, tipo y ciudad |
+
+Cobertura de las unitarias: cada regla del DTO, INDIVIDUAL frente a FLEET (incluye `null` explícito), honeypot (detección e interceptor previo a la validación), matriz completa 5×5 de transiciones, nota obligatoria para APPROVED y APPROVED→REJECTED, deduplicación (orden de locks, ventana de 30 días, sin secuencia ni aviso en duplicados), vínculos, fallo de correo que no falla el envío, plantilla sin datos personales y validación de variables nuevas.
+
+Cobertura del E2E: 202 nueva (sin crear User/Provider) y aviso interno; 202 duplicada por teléfono y por correo con la misma referencia y `submissionCount` 2 y 3; dos envíos simultáneos → una fila; cerrada o con más de 30 días → referencia nueva; 400 por cada campo y por campo desconocido; FLEET sin datos de flotilla; 413; honeypot sin fila ni cuerpo en logs (también con cuerpo inválido); 429 al sexto envío de la misma IP mientras otra IP sigue recibiendo 202; preflight CORS permitido o denegado; CHECK de PostgreSQL; 401/403 en las cuatro rutas admin; lista con paginación y filtros status/type/q; detalle y 404; transiciones válidas e inválidas; vínculos inválidos (no APPROVED, INDIVIDUAL con proveedor, proveedor inexistente o INDEPENDENT, invitación inexistente o con otro email) y válidos, sin modificar la invitación vinculada.
+
+Incidencias: un primer `migrate deploy` con configuración temporal falló por ruta relativa y el deploy completo cayó en la base de actualización vacía; se recreó y se repitió la prueba de actualización. La primera captura con `curl` desde Git Bash envió acentos en ANSI (caracter de reemplazo guardado). Es un artefacto del cliente: el E2E con supertest guarda y compara UTF-8 correctamente, y los ejemplos del handoff se recapturaron con cuerpos en archivo UTF-8.
+
+**No ejecutado:** suite E2E completa (sólo los 4 archivos citados), Docker, nginx real, Resend real, VM, `npm audit`, pruebas desde la landing real. La regresión histórica del resto de E2E queda como evidencia previa.
+
 ## Análisis de ejecución detallada — 2026-10-02
 
 Sólo revisión estática y propuesta: [DETAILED-EXECUTION-PROPOSAL.md](docs/DETAILED-EXECUTION-PROPOSAL.md). Código de estados, autorización, asignación/cancelación/liberación, cierre y proyección B2B contrastado con schema; frontend consultado parcialmente para handoff, sin build ni revisión visual. Comprobación documental: `git diff --check`. No se ejecutaron tests, migraciones, consultas de datos ni servicios. La matriz de pruebas del documento es trabajo futuro, no evidencia aprobada. Configuración comercial post-reset completada/probada según propietario. Decisiones de custodia y permisos pendientes; no activación ni versión nueva.

@@ -1,4 +1,8 @@
-import type { InvitedRole, UserInvitationMail } from './mail.types.js';
+import type {
+  InvitedRole,
+  PartnerApplicationNoticeMail,
+  UserInvitationMail,
+} from './mail.types.js';
 
 export const ROLE_LABELS: Record<InvitedRole, string> = {
   PROVIDER_ADMIN: 'Administrador de proveedor',
@@ -56,6 +60,46 @@ export function renderUserInvitation(mail: UserInvitationMail) {
         </p>
         <p style="margin:0 0 8px;font-size:13px;color:#57534e">La invitación expira el ${escapeHtml(expires)}. El enlace sólo puede usarse una vez.</p>
         <p style="margin:0;font-size:13px;color:#57534e">Si no esperabas este correo, ignóralo: no se creará ningún acceso sin tu contraseña.</p>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+  return { subject, text, html };
+}
+
+const APPLICATION_TYPE_LABELS: Record<
+  PartnerApplicationNoticeMail['type'],
+  string
+> = {
+  INDIVIDUAL: 'Repartidor individual',
+  FLEET: 'Flotilla',
+};
+
+/** Internal notice for operations: reference, type and city only, never contact data. */
+export function renderPartnerApplicationNotice(
+  mail: PartnerApplicationNoticeMail,
+) {
+  const type = APPLICATION_TYPE_LABELS[mail.type];
+  const subject = `Nueva solicitud de socio ${mail.reference}`;
+  const text = [
+    'Llegó una nueva solicitud de socio desde la landing.',
+    '',
+    `Referencia: ${mail.reference}`,
+    `Tipo: ${type}`,
+    `Ciudad: ${mail.city}`,
+    '',
+    'Revísala en Mandaria Web, sección Solicitudes de socio.',
+  ].join('\n');
+  const html = `<!doctype html>
+<html lang="es">
+  <body style="margin:0;padding:24px;background:#f5f5f4;font-family:Arial,Helvetica,sans-serif;color:#1c1917">
+    <table role="presentation" width="100%" style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:8px;padding:32px">
+      <tr><td>
+        <h1 style="font-size:20px;margin:0 0 16px">Nueva solicitud de socio</h1>
+        <p style="margin:0 0 4px"><strong>Referencia:</strong> ${escapeHtml(mail.reference)}</p>
+        <p style="margin:0 0 4px"><strong>Tipo:</strong> ${escapeHtml(type)}</p>
+        <p style="margin:0 0 24px"><strong>Ciudad:</strong> ${escapeHtml(mail.city)}</p>
+        <p style="margin:0;font-size:13px;color:#57534e">Revísala en Mandaria Web, sección Solicitudes de socio.</p>
       </td></tr>
     </table>
   </body>

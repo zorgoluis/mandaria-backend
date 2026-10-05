@@ -21,6 +21,7 @@ import { CreditsModule } from './credits/credits.module.js';
 import { CreditPoliciesModule } from './credit-policies/credit-policies.module.js';
 import { B2bWebhooksModule } from './b2b-webhooks/b2b-webhooks.module.js';
 import { PrequotesModule } from './delivery-prequotes/prequotes.module.js';
+import { PartnerApplicationsModule } from './partner-applications/partner-applications.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
@@ -43,6 +44,7 @@ import { PrequotesModule } from './delivery-prequotes/prequotes.module.js';
     CreditPoliciesModule,
     B2bWebhooksModule,
     PrequotesModule,
+    PartnerApplicationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

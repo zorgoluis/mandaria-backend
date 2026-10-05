@@ -44,3 +44,24 @@ node scripts/scan-award-integrity.mjs
 ```
 
 El verificador de frontera compila los commits históricos B `7881efb` y C `a4daeb5` y usa PostgreSQL/HTTP reales. Crea una base propia `_test`, guarda evidencias en `.tmp/check-v110d` y la conserva para inspección. Requiere permiso `CREATEDB`, commits disponibles y `psql`; `PSQL_PATH` permite indicar su ubicación. El escáner sólo lee la base de `DATABASE_URL` y devuelve conteos/IDs, sin credenciales. No ejecutar Docker ni reset para este flujo.
+
+# Solicitudes de socio — Fase 1 (2026-10-04)
+
+Fuente compartida: `mandaria-landing/docs/solicitudes-socio/CONTRATO.md`. Ejemplos reales, conversión y despliegue: [PARTNER-APPLICATIONS-HANDOFF.md](PARTNER-APPLICATIONS-HANDOFF.md). No cambia autenticación, invitaciones ni proveedores existentes.
+
+| Método | Ruta | Acceso | Éxito |
+|---|---|---|---|
+| POST | `/api/v1/public/partner-applications` | Pública, 5 envíos / 10 min por IP | 202 `{ reference: "SOC-NNNNNN", status: "RECEIVED" }` |
+| GET | `/api/v1/admin/partner-applications` | SUPER_ADMIN | 200 `{ items, total, page, pageSize, totalPages }`; filtros `status`, `type`, `q`, `page`, `pageSize` |
+| GET | `/api/v1/admin/partner-applications/:reference` | SUPER_ADMIN | 200 detalle |
+| POST | `/api/v1/admin/partner-applications/:reference/status` | SUPER_ADMIN | 200 detalle; `{ status, reviewNote? }` |
+| POST | `/api/v1/admin/partner-applications/:reference/links` | SUPER_ADMIN | 200 detalle; `{ providerId?, invitationId? }` |
+
+- **Lead, no cuenta:** ninguna ruta crea User, Driver, DeliveryProvider, UserInvitation ni IndependentDriverProfile.
+- **Duplicados:** una solicitud RECEIVED/CONTACTED de los últimos 30 días con el mismo teléfono o correo absorbe el envío: misma referencia, `submissionCount + 1`, `lastSubmittedAt` actualizado. Advisory locks por teléfono y correo, en orden fijo y dentro de la transacción, resuelven envíos simultáneos a una sola fila.
+- **Honeypot `website`:** con un valor no vacío responde 202 con una referencia de formato válido, antes de validar, sin persistir ni registrar el cuerpo.
+- **Estados:** RECEIVED→CONTACTED/REJECTED/DISCARDED; CONTACTED→APPROVED/REJECTED/DISCARDED; APPROVED→REJECTED con nota nueva. APPROVED exige nota o vínculo. REJECTED y DISCARDED son terminales.
+- **Vínculos:** sólo en APPROVED. `providerId` sólo en solicitudes FLEET y debe ser un proveedor FLEET existente; `invitationId` debe existir con el mismo email. Si hay ambos, la invitación debe ser de ese proveedor.
+- **Errores de dominio:** 404 `PARTNER_APPLICATION_NOT_FOUND`, 409 `PARTNER_APPLICATION_INVALID_TRANSITION`, 409 `PARTNER_APPLICATION_LINK_INVALID`. Validación: 400 `VALIDATION_ERROR`; límite: 429 `HTTP_429`.
+- **PostgreSQL:** `PartnerApplication_fleet_check` (fleetName/fleetUnits sólo y siempre con FLEET, 2–10 000 unidades), `PartnerApplication_values_check` (formato de referencia, teléfono de 10 dígitos, correo en minúsculas, longitudes, `source = LANDING`) y `PartnerApplication_review_check` (vínculos sólo en APPROVED/REJECTED; APPROVED con nota o vínculo; actor y fecha de cambio juntos). Secuencia `PartnerApplication_publicId_seq`.
+- **Configuración:** `TRUST_PROXY_HOPS` (0–3, por defecto 0) y `PARTNER_APPLICATIONS_NOTIFY_EMAIL` (opcional); `CORS_ORIGINS` debe incluir el origen de la landing cuando la API está en otro origen.
