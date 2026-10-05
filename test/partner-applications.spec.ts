@@ -596,3 +596,59 @@ describe('notice template and configuration', () => {
     ).toThrow(/PARTNER_APPLICATIONS_NOTIFY_EMAIL/);
   });
 });
+
+describe('status list filter', () => {
+  const list = (status: unknown) =>
+    validateAs(PartnerApplicationListQueryDto, { status });
+
+  it.each([
+    ['one status', 'RECEIVED', ['RECEIVED']],
+    ['two statuses', 'RECEIVED,CONTACTED', ['RECEIVED', 'CONTACTED']],
+    [
+      'spaces and lowercase',
+      ' received , Contacted ',
+      ['RECEIVED', 'CONTACTED'],
+    ],
+    ['duplicates ignored', 'RECEIVED,received, RECEIVED', ['RECEIVED']],
+    [
+      'all five',
+      'RECEIVED,CONTACTED,APPROVED,REJECTED,DISCARDED',
+      ['RECEIVED', 'CONTACTED', 'APPROVED', 'REJECTED', 'DISCARDED'],
+    ],
+    [
+      'five plus duplicates',
+      'RECEIVED,CONTACTED,APPROVED,REJECTED,DISCARDED,received',
+      ['RECEIVED', 'CONTACTED', 'APPROVED', 'REJECTED', 'DISCARDED'],
+    ],
+    [
+      'repeated parameter',
+      ['RECEIVED', 'contacted'],
+      ['RECEIVED', 'CONTACTED'],
+    ],
+  ])('accepts %s', async (_name, status, expected) => {
+    const { value, errors } = await list(status);
+    expect(errors).toEqual([]);
+    expect(value?.status).toEqual(expected);
+  });
+
+  it('omitted status does not filter', async () => {
+    const { value, errors } = await list(undefined);
+    expect(errors).toEqual([]);
+    expect(value?.status).toBeUndefined();
+  });
+
+  it.each([
+    ['unknown value', 'RECEIVED,OPEN', 'status must be a comma-separated list'],
+    ['trailing comma', 'RECEIVED,', 'status must be a comma-separated list'],
+    ['only a comma', ',', 'status must be a comma-separated list'],
+    ['empty string', '', 'status must be a comma-separated list'],
+    [
+      'more than 5 values',
+      'RECEIVED,CONTACTED,APPROVED,REJECTED,DISCARDED,OPEN',
+      'status must contain no more than 5 elements',
+    ],
+    ['non-string', 5, 'status must be a comma-separated list'],
+  ])('rejects %s', async (_name, status, message) => {
+    expect((await list(status)).errors.join(' ')).toContain(message);
+  });
+});

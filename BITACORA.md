@@ -446,6 +446,20 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 
 ## Historial
 
+### 2026-10-04 — Commit y push del filtro de varios estados
+
+- **Solicitud:** commit y push a `feat/solicitud-repartidor`.
+- **Alcance:** DTO, servicio, descripción Swagger, pruebas y documentación del filtro. Excluidos `.env` (ignorado) y `nul`.
+- **Verificación:** revisión de archivos preparados, búsqueda de secretos en el diff y `git diff --check`; pruebas según la entrada siguiente, sin repetirlas. El resultado del push se confirma con la salida de Git.
+
+### 2026-10-04 — Filtro de varios estados en la bandeja de solicitudes
+
+- **Solicitud:** aceptar varios estados en `status` (`?status=RECEIVED,CONTACTED`) para que Mandaria Web muestre las abiertas en una sola lista. El prompt suponía la rama sin commit; ya tenía `ea64f05` publicado y se trabajó encima sin nuevo commit.
+- **Cambios:** `partner-applications.dto.ts` (`@Transform` de lista, `@ArrayMaxSize(5)`, `@IsIn(each)` y Swagger como string con ejemplos); servicio con `status IN`; descripción del controlador; `docs/API-CONTRACT.md`, handoff, OpenAPI y API_ACCESS regenerados; pruebas unitarias y E2E nuevas.
+- **Verificaciones actuales:** build; 472/472 unitarias (14 nuevas); E2E 33/33 (7 nuevas) sobre PostgreSQL temporal; oxlint, ESLint, docs:check y diff check; plan del `IN` medido con 20 000 filas, sin índice nuevo. Detalle en VERIFICATION.
+- **Resultado:** filtro compatible hacia atrás; orden, paginación y forma de respuesta sin cambios.
+- **Pendientes:** commit/push cuando se autorice. Frontend puede usar `status=RECEIVED,CONTACTED` como vista por defecto. El backend Docker en ejecución sigue con la imagen anterior hasta reconstruirla.
+
 ### 2026-10-04 — Commit y push de solicitudes de socio
 
 - **Solicitud:** commit y push de los cambios a la rama actual `feat/solicitud-repartidor`.

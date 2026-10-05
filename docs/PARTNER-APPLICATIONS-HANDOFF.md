@@ -9,7 +9,7 @@ Una solicitud es un **lead**: no crea `User`, `Driver`, `DeliveryProvider` ni `I
 | Método | Ruta | Acceso | Respuesta |
 |---|---|---|---|
 | POST | `/api/v1/public/partner-applications` | Pública (landing) | 202 `{ reference, status }` |
-| GET | `/api/v1/admin/partner-applications?status=&type=&q=&page=&pageSize=` | SUPER_ADMIN | 200 página |
+| GET | `/api/v1/admin/partner-applications?status=RECEIVED,CONTACTED&type=&q=&page=&pageSize=` | SUPER_ADMIN | 200 página |
 | GET | `/api/v1/admin/partner-applications/:reference` | SUPER_ADMIN | 200 detalle |
 | POST | `/api/v1/admin/partner-applications/:reference/status` | SUPER_ADMIN | 200 detalle |
 | POST | `/api/v1/admin/partner-applications/:reference/links` | SUPER_ADMIN | 200 detalle |
@@ -111,6 +111,8 @@ Respuesta real de `GET /api/v1/admin/partner-applications?type=INDIVIDUAL&page=1
   "totalPages": 2
 }
 ```
+
+Filtro `status`: uno o varios estados separados por comas. Para la vista por defecto de solicitudes abiertas usar `?status=RECEIVED,CONTACTED`. `?status=RECEIVED` filtra un solo estado y sin `status` se devuelven todos. Se recortan espacios, no se distinguen mayúsculas y se ignoran duplicados. Un valor desconocido, una entrada vacía (`RECEIVED,`, `,`) o más de 5 valores responden 400 `VALIDATION_ERROR`. `total` y `totalPages` cuentan todos los estados pedidos; el orden y la forma de la respuesta no cambian.
 
 Orden: de la más reciente a la más antigua. `q` busca sin distinguir mayúsculas en referencia, nombre, teléfono, correo y nombre de flotilla. El detalle (`GET …/:reference`) devuelve el mismo objeto que cada `item`. La respuesta nunca incluye el `id` interno: la clave para Frontend es `reference`.
 

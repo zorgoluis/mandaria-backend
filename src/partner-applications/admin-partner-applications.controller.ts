@@ -62,7 +62,7 @@ export class AdminPartnerApplicationsController {
   @ApiOperation({
     summary: 'Listar solicitudes de socio',
     description:
-      'Paginación page/pageSize existente, de la más reciente a la más antigua. Filtros status, type y q (referencia, nombre, teléfono, correo, flotilla).',
+      'Paginación page/pageSize existente, de la más reciente a la más antigua. Filtros status (uno o varios separados por comas, p. ej. RECEIVED,CONTACTED para las abiertas), type y q (referencia, nombre, teléfono, correo, flotilla). total y totalPages cuentan todos los estados pedidos.',
   })
   list(@Query() query: PartnerApplicationListQueryDto) {
     return this.applications.list(query);

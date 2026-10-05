@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  ArrayMaxSize,
   Equals,
   IsEmail,
   IsIn,
@@ -39,6 +40,16 @@ const trim = ({ value }: { value: unknown }) =>
 const normalizeEmail = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? value.trim().toLowerCase() : value;
 const optional = () => ValidateIf((_o, v) => v !== undefined);
+/**
+ * "received, CONTACTED,received" -> ['RECEIVED', 'CONTACTED']: trimmed, uppercase, duplicates
+ * ignored. Empty entries are kept so validation rejects "RECEIVED," and ",". A repeated query
+ * parameter (?status=A&status=B) arrives as an array and is read the same way.
+ */
+const statusList = ({ value }: { value: unknown }) => {
+  const raw = Array.isArray(value) ? value.join(',') : value;
+  if (typeof raw !== 'string') return raw;
+  return [...new Set(raw.split(',').map((item) => item.trim().toUpperCase()))];
+};
 
 /** fleetName/fleetUnits are required with FLEET and forbidden with INDIVIDUAL. */
 @ValidatorConstraint({ name: 'onlyForFleet' })
@@ -158,10 +169,26 @@ export class CreatePartnerApplicationDto {
 }
 
 export class PartnerApplicationListQueryDto extends PaginationQueryDto {
-  @ApiPropertyOptional({ enum: PARTNER_APPLICATION_STATUSES })
+  @ApiPropertyOptional({
+    type: String,
+    description: `Uno o varios estados separados por comas: ${PARTNER_APPLICATION_STATUSES.join(', ')}. Sin distinguir mayúsculas; se recortan espacios y se ignoran duplicados. Sin valores vacíos y como máximo 5. Omitido: todos los estados.`,
+    examples: {
+      abiertas: {
+        value: 'RECEIVED,CONTACTED',
+        summary: 'Solicitudes abiertas',
+      },
+      una: { value: 'RECEIVED', summary: 'Un solo estado' },
+    },
+    example: 'RECEIVED,CONTACTED',
+  })
+  @Transform(statusList)
   @optional()
-  @IsIn(PARTNER_APPLICATION_STATUSES)
-  status?: PartnerApplicationStatus;
+  @ArrayMaxSize(PARTNER_APPLICATION_STATUSES.length)
+  @IsIn(PARTNER_APPLICATION_STATUSES, {
+    each: true,
+    message: `status must be a comma-separated list of: ${PARTNER_APPLICATION_STATUSES.join(', ')}`,
+  })
+  status?: PartnerApplicationStatus[];
   @ApiPropertyOptional({ enum: PARTNER_APPLICATION_TYPES })
   @optional()
   @IsIn(PARTNER_APPLICATION_TYPES)

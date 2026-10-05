@@ -52,7 +52,7 @@ Fuente compartida: `mandaria-landing/docs/solicitudes-socio/CONTRATO.md`. Ejempl
 | Método | Ruta | Acceso | Éxito |
 |---|---|---|---|
 | POST | `/api/v1/public/partner-applications` | Pública, 5 envíos / 10 min por IP | 202 `{ reference: "SOC-NNNNNN", status: "RECEIVED" }` |
-| GET | `/api/v1/admin/partner-applications` | SUPER_ADMIN | 200 `{ items, total, page, pageSize, totalPages }`; filtros `status`, `type`, `q`, `page`, `pageSize` |
+| GET | `/api/v1/admin/partner-applications` | SUPER_ADMIN | 200 `{ items, total, page, pageSize, totalPages }`; filtros `status` (uno o varios separados por comas, p. ej. `RECEIVED,CONTACTED`; sin vacíos, máximo 5, duplicados ignorados), `type`, `q`, `page`, `pageSize` |
 | GET | `/api/v1/admin/partner-applications/:reference` | SUPER_ADMIN | 200 detalle |
 | POST | `/api/v1/admin/partner-applications/:reference/status` | SUPER_ADMIN | 200 detalle; `{ status, reviewNote? }` |
 | POST | `/api/v1/admin/partner-applications/:reference/links` | SUPER_ADMIN | 200 detalle; `{ providerId?, invitationId? }` |

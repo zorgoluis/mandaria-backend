@@ -149,7 +149,7 @@ export class PartnerApplicationsService {
   async list(query: PartnerApplicationListQueryDto) {
     const q = query.q;
     const where: Prisma.PartnerApplicationWhereInput = {
-      status: query.status,
+      status: query.status ? { in: query.status } : undefined,
       type: query.type,
       ...(q
         ? {
