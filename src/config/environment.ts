@@ -34,6 +34,13 @@ const schema = z.object({
     .max(2592000)
     .default(604800),
   CORS_ORIGINS: z.string().default(''),
+  // Reverse proxies in front of the backend whose X-Forwarded-For is trusted for the client IP
+  // (rate limits). 0 keeps the socket address; 1 for a single nginx. Never more than the real hops.
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(3).default(0),
+  // Optional internal mailbox notified of each new partner application (no personal data sent).
+  PARTNER_APPLICATIONS_NOTIFY_EMAIL: optional(
+    z.string().trim().email().max(254),
+  ),
   // A5 remains disabled by default; enabling also requires explicit shared routing budget.
   PREQUOTE_AUTHORIZED_ACCEPT_ENABLED: z
     .enum(['true', 'false'])

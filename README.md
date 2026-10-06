@@ -4,6 +4,8 @@
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
+> Integración local 2026-10-06: se conservan solicitudes de socios de main y ejecución detallada/seguimiento B2B de QA. Ver verificación del merge en VERIFICATION.md; no implica despliegue ni activación.
+
 ## Docker Desktop local aislado — 2026-10-03
 
 Preparado y levantado con autorización del propietario: [guía de conexión y comandos](docs/DOCKER-DESKTOP-LOCAL.md). API `http://127.0.0.1:43130/api/v1`; frontend usa `VITE_API_URL=http://127.0.0.1:43130` sin prefijo. Proyecto/volúmenes exclusivos, datos sintéticos, ejecución detallada sólo local, correo simulado y worker webhook apagado. No sustituye Compose/configuración productivos ni acredita flujo logístico completo.
@@ -13,6 +15,11 @@ Fixtures operativos disponibles: MDR-000001 normal, MDR-000002 devolución, MDR-
 ## Seguimiento público B2B versionado
 
 [Contrato y ejemplos](docs/PUBLIC-B2B-TRACKING.md): GET status añade clasificación explícita, asignación vigente, versión durable y resultado terminal, conservando identidad pública y campos anteriores. Migración incremental 20261004000300; disponible en checkout QA, sin despliegue/activación. Polling centralizado con objetivo15s sujeto a carga; sin timeline ni webhooks nuevos. [Verificación](docs/PUBLIC-B2B-TRACKING-VERIFICATION.md).
+## Reinicio controlado de la base QA en VM
+
+Corrección posterior: `20261001000100_prequote_restore_search_path` permite restaurar precotizaciones con el search_path vacío de pg_restore, conservando la restricción CHECK. Aplicar por el flujo habitual de migraciones, sin reset. Regresión aislada: `node scripts/test-prequote-restore.mjs "C:/Program Files/PostgreSQL/18/bin"`; requiere binarios PostgreSQL locales y no usa `.env` ni la base principal. Detalle de evidencia en VERIFICATION.md.
+
+[Procedimiento de respaldo, ensayo, reinicio y recuperación](docs/PRODUCTION-QA-DATABASE-RESET-RUNBOOK.md). Preparado a solicitud del propietario; **no ejecutado**. Exige identidad de base/cluster, parada de todos los escritores, backup externo restaurado y custodia de claves antes de borrar. Sólo bootstrap SUPER_ADMIN revisado; no seeds locales. Reiniciar la base no autoriza por sí solo reabrir el servicio.
 
 ## Contrato público B2B y entrega a Frontend
 
@@ -34,6 +41,12 @@ Implementación local: [contrato para Frontend y operación](docs/DETAILED-EXECU
 
 Desde recogida se bloquean cancelación, liberación y reasignación ordinarias. Incidencias conservan custodia y recursos; SUPER_ADMIN puede confirmar devolución física (RETURNED terminal) o transferencia atómica conservando progreso y cargo original. No implica cobro, refund ni entrega ficticia. B2B consulta progreso aditivo y conserva únicamente `delivery.completed` al cierre real. Dos migraciones incrementales; despliegue coordinado sin escritores antiguos. Frontend, responsable, suplente y plazo de atención SUPER_ADMIN son requisitos previos a activación, aún pendientes.
 
+
+## Solicitudes de socio — Fase 1 (2026-10-04)
+
+La landing envía `POST /api/v1/public/partner-applications` (pública, 5 envíos / 10 min por IP, honeypot `website`) y responde 202 con una referencia `SOC-NNNNNN`. Las solicitudes son leads: no crean cuentas, Drivers, proveedores ni perfiles independientes. SUPER_ADMIN las revisa en `/api/v1/admin/partner-applications` (lista, detalle, estado y vínculos) y las convierte con los flujos existentes de proveedor e invitación. Duplicados (mismo teléfono o correo, abierta, ≤ 30 días) conservan la referencia. Migración incremental `20261004000100_partner_applications`; variables nuevas `TRUST_PROXY_HOPS` y `PARTNER_APPLICATIONS_NOTIFY_EMAIL`.
+
+Contrato y ejemplos reales para Frontend, conversión de solicitudes INDIVIDUAL (§9.3) y configuración de dominios: [PARTNER-APPLICATIONS-HANDOFF.md](docs/PARTNER-APPLICATIONS-HANDOFF.md). Resumen técnico: [API-CONTRACT](docs/API-CONTRACT.md). Pruebas: `test/partner-applications.spec.ts` y `test/partner-applications.e2e-spec.ts`.
 
 ## Integridad económica y frontera histórica — V1.10-D correctiva
 
@@ -252,7 +265,9 @@ La migración `20260915000200_b2b_credentials`:
 | JWT_REFRESH_EXPIRES_IN | Segundos, 3600–2592000; default 604800 |
 | INTEGRATION_JWT_SECRET | **Nueva**, firma B2B, mínimo 32 caracteres |
 | INTEGRATION_ACCESS_TOKEN_EXPIRES_IN | **Nueva**, segundos, 60–3600; default 3600 |
-| CORS_ORIGINS | Orígenes HTTP/HTTPS exactos separados por comas |
+| CORS_ORIGINS | Orígenes HTTP/HTTPS exactos separados por comas. Incluir Mandaria Web y la landing (p. ej. `https://app.mandaria.com.mx,https://mandaria.com.mx`) cuando la API está en otro origen |
+| TRUST_PROXY_HOPS | Proxies inversos confiables delante del backend (0–3, default 0). Con un nginx usar 1 para que los límites por IP usen la IP real del cliente; nunca exponer el puerto del backend sin el proxy |
+| PARTNER_APPLICATIONS_NOTIFY_EMAIL | Opcional; buzón interno avisado de cada solicitud de socio nueva (sólo referencia, tipo y ciudad) |
 | BOOTSTRAP_ADMIN_EMAIL/PASSWORD | Sólo para seed y verificaciones con administrador |
 | LOCAL_PROVIDER_ADMIN_PASSWORD | **LOCAL/TEST ONLY**; cuentas PROVIDER_ADMIN del seed local. Nunca en producción |
 | ROUTING_PROVIDER | `google` (por defecto) o `local_fake` (LOCAL/TEST ONLY; rechazado en producción) |

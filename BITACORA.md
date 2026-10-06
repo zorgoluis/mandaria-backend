@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación autorizada del merge — 2026-10-06:** propietario solicita commit y push a QA del merge main 71eb11a con QA a5ceb4d ya resuelto y validado. Se conserva el trabajo de ambas ramas; nul excluido. Comprobación actual: sin conflictos y diff staged limpio; pruebas corresponden a la resolución anterior, no repetidas. Resultado de publicación se confirma mediante Git. Sin despliegue.
+
+- **Integración main → QA (2026-10-06):** resolución del merge ya iniciado entre QA a5ceb4d y main 71eb11a. Se conservan solicitudes de socios/correo/proxy/restauración de main y ejecución DRIVER, reconciliación y seguimiento B2B de QA. Ambas familias de modelos y módulos integradas; OpenAPI regenerado. Propuesta de QA prevalece sobre el diseño anterior de main; historiales de ambas ramas conservados. Validación nueva detallada en VERIFICATION. Sin Docker, base principal, producción ni push; merge preparado para commit.
+
 - **Publicación autorizada del seguimiento público B2B — 2026-10-04:** solicitud de commit/push en rama actual QA. Incluye implementación, migración incremental, pruebas, análisis, guías y corrección Swagger de publicVersion; excluye nul y temporales. Verificación de esta tarea: revisión Git y diff --check; suites funcionales corresponden a las tareas anteriores. El resultado del envío se confirma mediante Git; no implica despliegue ni activación.
 
 - **Corrección editorial del seguimiento B2B — 2026-10-04:** fuente Swagger executionProgress y texto editorial del exportador indican comparar publicVersion numéricamente por solicitud. revision interna/expectedRevision conservadas. Handoff antiguo corregido y análisis previo marcado como histórico; guías públicas vigentes contrastadas. OpenAPI completo/público regenerados desde fuente; regresión editorial incorporada a pruebas públicas. Sin cambios de comportamiento, endpoints ni migraciones; cambios pendientes preservados. Ver resultados nuevos en VERIFICATION; frontend debe resincronizar artefactos.
@@ -38,6 +42,20 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - **Ejecución detallada implementada localmente (2026-10-02):** cinco hitos, historial/actor real, barreras de custodia, incidencias y resoluciones SUPER_ADMIN RETURNED/transferencia atómica. Cargo original preservado; B2B aditivo sin nuevos webhooks; legacy sin hitos inventados. [Handoff](docs/DETAILED-EXECUTION-HANDOFF.md) y [verificación](docs/DETAILED-EXECUTION-VERIFICATION.md). En esta tarea: 403 unitarias, 135 E2E de ocho archivos, 34 contrato público; build, tipos, linters, migración limpia e incremental locales aprobados. Intentos incompletos excluidos y límites documentados. Flag false por defecto; pendientes Frontend y responsable/suplente/plazo SUPER_ADMIN. Sin activación, commit/push ni despliegue. El registro de diseño previo siguiente queda histórico.
 
 - **Diseño de ejecución y excepciones cerrado 2026-10-02:** [propuesta](docs/DETAILED-EXECUTION-PROPOSAL.md) incorpora decisiones aprobadas: cinco hitos consecutivos, bloqueo ordinario postrecogida, incidencia con custodia retenida y resolución SUPER_ADMIN por devolución física o transferencia documentada; B2B consulta, sin nuevos webhooks. Define RETURNED terminal, cambio atómico de ejecutor conservando pagador/progreso, DTOs, garantías SQL, migración futura y handoff. Sólo documentación; falta implementación y designación operativa de cobertura SUPER_ADMIN. Configuración comercial post-reset completada/probada según propietario. Checkout actual QA no contenía propuesta anterior: recuperada como antecedente desde 4f2e846 sin cambiar rama ni importar código.
+- **Solicitudes de socio, Fase 1 (2026-10-04): IMPLEMENTADA, VERIFICADA LOCALMENTE Y PROBADA EN DOCKER LOCAL, sin commit ni despliegue.** Rama `feat/solicitud-repartidor`. Endpoint público `POST /api/v1/public/partner-applications` (202 `SOC-NNNNNN`, honeypot, 5/10 min por IP, deduplicación 30 días con advisory locks) y bandeja SUPER_ADMIN `/api/v1/admin/partner-applications` (lista, detalle, estado, vínculos). La solicitud es un lead y no crea cuentas, Drivers ni proveedores. Migración incremental `20261004000100_partner_applications`. Variables nuevas opcionales `TRUST_PROXY_HOPS` (default 0) y `PARTNER_APPLICATIONS_NOTIFY_EMAIL`. Topología indicada por el propietario: landing `mandaria.com.mx`, admin `app.mandaria.com.mx`, API `api.mandaria.com.mx`; en la VM hace falta `CORS_ORIGINS` con los dos primeros orígenes, `TRUST_PROXY_HOPS=1` y `MANDARIA_WEB_URL=https://app.mandaria.com.mx`. Pendientes del propietario: proveedor que recibe a los independientes aprobados (§9.3), propuestas al contrato compartido (paginación `page`/`pageSize`) y la decisión de mover la API B2B a `api.`. [Handoff](docs/PARTNER-APPLICATIONS-HANDOFF.md).
+
+- **Publicación documental autorizada 2026-10-02:** se prepara commit y push de propuesta de ejecución detallada y continuidad pendiente en la rama actual `main`; resultado confirmado por Git en esta sesión. Sin implementación ni despliegue.
+
+- **Ejecución detallada — propuesta 2026-10-02:** análisis en [docs/DETAILED-EXECUTION-PROPOSAL.md](docs/DETAILED-EXECUTION-PROPOSAL.md), sin versión asignada ni implementación. Recomienda cinco hitos por asignación, DELIVERED canónico, operación web por administrador/aviso telefónico, barrera de custodia y proyección B2B aditiva. Pendientes de aprobación: granularidad, permisos iniciales, tratamiento de entrega imposible tras recogida y necesidad de eventos de progreso. El propietario confirma configuración comercial posterior al reset completada y probada; sustituye el pendiente de confirmación del resumen anterior, sin constituir pruebas nuevas del agente.
+
+- **Roadmap actualizado 2026-10-02:** se incorporan resultados del operador posteriores a la documentación histórica: portal y UI webhooks publicados/revisión visual confirmada; Swagger bloqueado reversiblemente; integración Coita completada según propietario (aprovisionamiento definitivo posterior al reset por confirmar); reset ejecutado, mantenimiento retirado y corrección search_path aplicada en VM, ambas funciones comprobadas y backend healthy. Pendientes comerciales tras reset no equivalen a desarrollo faltante. Apps/GPS/ejecución detallada y expansión siguen futuras, sin reasignar versiones. Lectura y consolidación, sin pruebas nuevas ni operaciones remotas.
+
+- **Consulta de flag recovery (2026-10-01):** búsqueda de `MANDARIA_RECOVERY_ENABLED` sin coincidencias previas en checkout backend ni frontend revisados, excluyendo .env/secretos, dependencias y build. No declarado en validador de configuración backend ni consumido por código encontrado. No puede atribuirse proceso/requisitos de producción sin identificar archivo o servicio de origen. Configuración intacta; sin acceso VM/Coita.
+
+- **Corrección de restauración de precotizaciones (2026-10-01):** nueva migración `20261001000100_prequote_restore_search_path` fija `pg_catalog, public` para validador y canonicalizador recursivo. No modifica datos ni migraciones históricas. Regresión local PostgreSQL 18.6 aislado: cuatro comprobaciones aprobadas (reproducción, corrección, dump/restore normal con fila sintética y rechazo de fila inválida); clúster detenido. Pendiente aplicar en VM PostgreSQL 17 mediante despliegue, sin nuevo reset. Sin commit/push ni acceso remoto.
+- **Evidencia del operador, sesión 2026-10-01:** reset QA ejecutado con respaldo cifrado externo recuperado; restauración de ensayo requirió corregir search_path en dos funciones, conteos/migraciones coincidentes, créditos sin incidencias y 1/1 secreto descifrado. Base original recreada, 29/29 migraciones, conteos comerciales consultados cero y un SUPER_ADMIN; backend/frontend healthy. Propietario pidió retirar mantenimiento: tres flags PREQUOTE true y polling configurado 15 s. Son resultados aportados por operador, no ejecuciones locales de esta tarea. Los registros de preparación siguientes son históricos.
+
+- **Reinicio QA en VM — preparación (2026-10-01):** propietario autoriza preparar reinicio completo, sin ejecutarlo. Runbook en docs/PRODUCTION-QA-DATABASE-RESET-RUNBOOK.md: identidad cluster/base/OID, congelación de escritores, backup externo cifrado y restauración previa, DROP sólo de la base confirmada, migraciones explícitas y bootstrap SUPER_ADMIN real, conservación de máximos MDR/MQ/MPQ, validación y rollback. No uso Redis acreditado; no FLUSH. Entry point migra automáticamente, seeds logísticos locales no aptos. Reapertura separada de reset; pendientes inventario/configuración efectiva y gates en VM. Revisión estática y sintaxis Bash de 16 bloques únicamente, sin comandos operativos ejecutados.
 
 - **Commit/push del origen confirmado autorizados (2026-10-01):** se prepara la actualización del contrato y guías en `v1.12-B2B_webhook_delivery`. Verificación actual: estado Git y diff --check; 33/33 y build corresponden a la tarea anterior. Confirmación final del envío por salida Git. Frontend debe sincronizar nuevamente; sin despliegue ni cambios de exposición Swagger.
 
@@ -424,6 +442,8 @@ Las entradas siguientes conservan estados históricos; el cierre anterior con D2
 | `src/delivery-assignments/` | V1.8: política, servicio, DTOs/respuestas y controllers de asignación de Driver/Vehicle |
 | `prisma/migrations/20260917000900_delivery_assignments/migration.sql` | Migración V1.8: DeliveryAssignment, índices únicos parciales ACTIVE, CHECK, trigger y dispatch_guard ampliado |
 | `test/delivery-assignments.spec.ts`, `test/delivery-assignments.e2e-spec.ts` | Pruebas V1.8 |
+| `src/partner-applications/`, `prisma/migrations/20261004000100_partner_applications/` | Solicitudes de socio Fase 1: captura pública, honeypot, deduplicación y bandeja SUPER_ADMIN |
+| `test/partner-applications.spec.ts`, `test/partner-applications.e2e-spec.ts`, `docs/PARTNER-APPLICATIONS-HANDOFF.md` | Pruebas y handoff para Frontend |
 | `Dockerfile`, `docker-compose.yml` | Preparación para uso futuro, ejecución pendiente |
 
 ## Verificaciones históricas del Core
@@ -471,6 +491,72 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - **Verificación actual:** lectura de instrucciones/continuidad y contraste estático de cierre, asignaciones, adjudicación/ledger/refunds, proyección B2B e instrucciones financieras; git diff --check documental. No pruebas de producto, consultas DB, migraciones, build, Docker o acceso remoto. Historial anterior no cuenta como ejecución actual.
 - **Resultado:** diseño técnico cerrado para implementación futura; retorno distinto de entrega, transferencia conserva cadena y adjudicación económica original, sin cobros/refunds automáticos. Contratos y guards descritos son propuestos, no existentes.
 - **Pendientes:** implementación/verificación por etapas y cobertura operativa SUPER_ADMIN para custodia retenida. Sin nueva versión, commit, push, despliegue ni activación.
+### 2026-10-04 — Commit y push del filtro de varios estados
+
+- **Solicitud:** commit y push a `feat/solicitud-repartidor`.
+- **Alcance:** DTO, servicio, descripción Swagger, pruebas y documentación del filtro. Excluidos `.env` (ignorado) y `nul`.
+- **Verificación:** revisión de archivos preparados, búsqueda de secretos en el diff y `git diff --check`; pruebas según la entrada siguiente, sin repetirlas. El resultado del push se confirma con la salida de Git.
+
+### 2026-10-04 — Filtro de varios estados en la bandeja de solicitudes
+
+- **Solicitud:** aceptar varios estados en `status` (`?status=RECEIVED,CONTACTED`) para que Mandaria Web muestre las abiertas en una sola lista. El prompt suponía la rama sin commit; ya tenía `ea64f05` publicado y se trabajó encima sin nuevo commit.
+- **Cambios:** `partner-applications.dto.ts` (`@Transform` de lista, `@ArrayMaxSize(5)`, `@IsIn(each)` y Swagger como string con ejemplos); servicio con `status IN`; descripción del controlador; `docs/API-CONTRACT.md`, handoff, OpenAPI y API_ACCESS regenerados; pruebas unitarias y E2E nuevas.
+- **Verificaciones actuales:** build; 472/472 unitarias (14 nuevas); E2E 33/33 (7 nuevas) sobre PostgreSQL temporal; oxlint, ESLint, docs:check y diff check; plan del `IN` medido con 20 000 filas, sin índice nuevo. Detalle en VERIFICATION.
+- **Resultado:** filtro compatible hacia atrás; orden, paginación y forma de respuesta sin cambios.
+- **Pendientes:** commit/push cuando se autorice. Frontend puede usar `status=RECEIVED,CONTACTED` como vista por defecto. El backend Docker en ejecución sigue con la imagen anterior hasta reconstruirla.
+
+### 2026-10-04 — Commit y push de solicitudes de socio
+
+- **Solicitud:** commit y push de los cambios a la rama actual `feat/solicitud-repartidor`.
+- **Alcance:** código, migración, pruebas y documentación de la Fase 1. Excluidos el `.env` local (ignorado) y el archivo `nul`. El estado §8 del contrato compartido vive en `mandaria-landing` y no forma parte de este repositorio.
+- **Verificación:** revisión de archivos preparados, búsqueda de secretos en el diff y `git diff --check`; las pruebas son las registradas en las entradas siguientes, sin repetirse. El resultado del push se confirma con la salida de Git.
+
+### 2026-10-04 — Prueba de solicitudes de socio en Docker local
+
+- **Solicitud:** ajustar el entorno y probar en Docker Desktop, abierto por el propietario. Esto autoriza Docker para esta prueba.
+- **Cambios:** `.env` local creado con `init-local` y ajustado para Docker (Postgres en el 5433, CORS de dev para web y landing, outbox local, routing local_fake, `TRUST_PROXY_HOPS=0`, aviso interno local). Ignorado por Git y sin valores en documentación. Sin cambios de código.
+- **Verificaciones actuales:** compose build/up healthy; migraciones aplicadas por el entrypoint; seed de SUPER_ADMIN; smoke público y administrativo completo; CORS desde el origen de la landing local; throttle compartido con 0 saltos y por cliente con 1; aviso sin datos personales; logs sin PII. Detalle en VERIFICATION.
+- **Resultado:** Fase 1 funciona en la imagen Docker. La prueba confirma en la práctica que, detrás de NAT o proxy, sin `TRUST_PROXY_HOPS` el límite es global.
+- **Pendientes:** sin cambios respecto a la entrada siguiente. Contenedores en ejecución con datos de prueba (`docker compose down` para detenerlos; `-v` borraría el volumen).
+
+### 2026-10-04 — Solicitudes de socio, Fase 1
+
+- **Solicitud:** implementar captura y administración de solicitudes de socio según `mandaria-landing/docs/solicitudes-socio/CONTRATO.md`. Incluye confirmar `trust proxy` y responder la pregunta §9.3 (alta de independientes).
+- **Decisiones con el propietario:** Express no tenía `trust proxy`; detrás de nginx todos los clientes compartían la IP del proxy. Se propuso y aplicó la variable opcional `TRUST_PROXY_HOPS` (0–3, default 0, sin cambio de comportamiento hasta configurarla). El propietario indicó la topología: landing en `mandaria.com.mx`, admin en `app.mandaria.com.mx` y API en `api.mandaria.com.mx`.
+- **Cambios:** enums y modelo `PartnerApplication` con back-relations sólo en Prisma; migración con secuencia `SOC` y tres CHECK; `common/public-id.ts` (SOC); módulo `src/partner-applications/` (política pura, DTO con honeypot, interceptor previo a pipes, servicio con advisory locks, controladores público y admin); `MailProvider.sendPartnerApplicationNotice` en Resend, outbox y fake, con plantilla sin datos personales; `environment.ts`, `setup.ts`, `.env.example` y `docker-compose.yml` con las dos variables; OpenAPI y API_ACCESS regenerados; `docs/API-CONTRACT.md`, README, handoff y estado §8 del contrato compartido en la landing.
+- **Verificaciones actuales:** ver VERIFICATION 2026-10-04. Build; 458/458 unitarias (55 nuevas); E2E 26/26 nuevas y 72/72 en 4 archivos con regresión; oxlint y ESLint; `prisma validate`; migración limpia y sobre base existente con datos; docs:check y contrato B2B público vigentes; smoke HTTP real. Todo sobre un PostgreSQL 18.6 temporal aislado, porque el checkout no tiene `.env`.
+- **Resultado:** Fase 1 lista para Frontend y para desplegar con migración incremental. No se crean proveedores sintéticos ni se modifican invitaciones o proveedores existentes.
+- **Pendientes:** decisión §9.3; aprobar las propuestas al contrato (paginación, nota en APPROVED/REJECTED); configurar en la VM `CORS_ORIGINS`, `TRUST_PROXY_HOPS=1`, `MANDARIA_WEB_URL` y opcionalmente `PARTNER_APPLICATIONS_NOTIFY_EMAIL`; prueba desde la landing real; retención de datos personales de solicitudes; E2E completos y Docker no ejecutados.
+
+### 2026-10-02 — Commit y push de propuesta de ejecución
+
+- **Solicitud:** commitear y subir a la rama actual.
+- **Alcance:** propuesta de ejecución detallada, VERIFICATION y continuidad pendiente (incluye roadmap y consulta recovery). Archivo local `nul` excluido.
+- **Verificación:** revisión del diff y `git diff --check`; sin repetir pruebas por tratarse de documentación. Resultado de publicación se confirma por salida Git. Pendientes las decisiones de negocio de la propuesta; no implementación ni activación.
+
+### 2026-10-02 — Análisis de estados detallados de ejecución
+
+- **Solicitud:** revisar aceptación, adjudicación, asignación, liberación, cancelación y entrega; proponer transiciones, permisos, historia, concurrencia, compatibilidad y handoff sin implementar.
+- **Cambios:** nueva propuesta `docs/DETAILED-EXECUTION-PROPOSAL.md` y continuidad documental. Se conservan cambios previos de BITACORA. Configuración comercial post-reset acreditada por declaración del propietario, sin acceso remoto.
+- **Verificación actual:** lectura de continuidad, schema, servicios/controllers/guards, cierre compartido, proyección B2B, outbox, instrucciones de cobro y migración de cierre; lectura de servicios frontend y localización de sus superficies. Revisión de numeración histórica sin asignar nueva versión. `git diff --check` documental; sin pruebas ejecutadas, migraciones, bases, Docker ni verificación visual.
+- **Resultado:** propuesta para revisión, no funcionalidades implementadas. Barrera postrecogida exige decisión operativa sobre custodia/incidencias; no se confunde entrega con cobro ni se amplían permisos actuales silenciosamente.
+- **Pendientes:** aprobación de decisiones de la propuesta y posterior implementación/verificación por etapas. Sin commit, push, despliegue ni activación.
+
+### 2026-10-01 — Investigación de MANDARIA_RECOVERY_ENABLED
+
+- **Solicitud:** localizar uso, efecto false y requisitos para true en producción, sin cambiar configuración.
+- **Cambios:** sólo esta continuidad documental.
+- **Verificaciones:** búsquedas locales exactas con rg/git grep, lectura de environment.ts y recuperación de permisos MPQ; ninguna referencia previa al flag en los checkouts revisados. Sin tests ni ejecución remota.
+- **Resultado:** no hay comportamiento atribuible a esa variable en Mandaria revisado; no recomendar activación por su nombre. La recuperación de permisos MPQ y polling webhook usan otros mecanismos.
+- **Pendiente:** identificar archivo/servicio donde el propietario vio la variable, sin compartir secretos. Sin cambios de configuración, Docker, Coita, commit, push ni despliegue.
+
+### 2026-10-01 — Preparación de reinicio completo QA sin ejecución
+
+- **Solicitud:** diseñar reinicio de la base Mandaria en VM con respaldo verificado, parada segura, bootstrap, limpieza acotada y recuperación; sin intervención remota.
+- **Cambios:** runbook por etapas y enlace README. Incluye condiciones de parada, comparación de migraciones (29 en checkout), aislamiento, custodia de configuración/clave maestra, ensayo de restauración con conteos/invariantes/descifrado, reset exclusivo de base y comandos de recuperación. Preservar sólo máximos de secuencias públicas evita reutilizar referencias; no presupone datos comerciales válidos en seeds.
+- **Verificaciones actuales:** lectura de migraciones/schema/seeds/entrypoint/Dockerfile/Compose/configuración/workers/mail/dependencias; 16 bloques Bash analizados con bash -n (sin ejecución), diff --check. Primer intento de parser bloqueado por señal/Win32 error 5 del sandbox; ejecución local con permisos ampliados aprobó sintaxis. No validación SQL ni Docker/PostgreSQL reales.
+- **Resultado:** procedimiento preparado, NO ejecutado y condicionado a verificaciones del entorno efectivo. Compose local difiere de antecedentes VM; no inferir topología actual. No cliente Redis encontrado; mantenerlo intacto salvo evidencia futura de claves exclusivas.
+- **Pendientes:** ventana y coordinación de integradores por propietario; identidad/imagen/backup/clave/espacio verificados; recreación comercial y acceso real de admin; aprobación de reapertura. Sin .env, datos, archivos operativos, Docker, Coita, remoto, commit, push o despliegue modificados/ejecutados.
 
 ### 2026-10-01 — Publicación Git del origen B2B confirmado
 
@@ -2055,3 +2141,38 @@ Verificaciones ejecutadas ahora: npm run docs:b2b (build/generación), npm run d
 ## 2026-10-04 — Publicación del seguimiento público B2B
 
 Solicitud: commitear y subir a rama actual QA. Se incluyen los cambios verificados de seguimiento versionado y su corrección editorial; se conservan nul y archivos temporales fuera del commit. Revisión del conjunto y diff --check en esta tarea, sin repetir pruebas históricas. Resultado del commit/push confirmado por Git al finalizar. Pendiente sincronizar portal y procedimiento autorizado de despliegue; sin activación ni cambios remotos de servicios.
+### 2026-10-01 — Corrección permanente del search_path de precotizaciones
+
+- Solicitud: corregir directamente y con verificación acotada el fallo observado al restaurar el respaldo QA.
+- Cambios: nueva migración ALTER FUNCTION, regresión reproducible aislada y continuidad README/VERIFICATION/estado actual. Conservados cambios previos del runbook y archivo nul.
+- Verificación: cuatro comprobaciones de regresión PostgreSQL 18.6 aprobadas con dump/restore real del fixture; Oxlint y diff --check. Intentos de infraestructura fallidos distinguidos en VERIFICATION.
+- Resultado: corrección local lista, sin alterar datos ni relajar CHECK. Pendiente commit/push y despliegue autorizado en VM PG17; no hace falta resetear otra vez. No Docker, Coita ni acciones remotas.
+
+### 2026-10-01 — Commit y push de corrección de restauración
+
+- Solicitud: propietario autoriza commit y push en la rama actual main.
+- Alcance: migración correctiva, regresión aislada, continuidad y runbook de reinicio QA previamente preparado. Archivo nul excluido.
+- Verificación actual: revisión de estado/diff y diff --check; pruebas PostgreSQL corresponden a la tarea inmediatamente anterior, no repetidas. Resultado de commit/push se confirmará por Git. Sin despliegue ni cambios en VM.
+
+### 2026-10-02 — Roadmap completo actualizado
+
+- Solicitud: presentar roadmap completo y desglosado con el estado actual.
+- Cambios: estado e historial de continuidad; consolidación en conversación por capacidades, conservando numeración histórica y separando producto, configuración tras reset y evolución futura.
+- Verificación: lectura README, VERIFICATION, bitácora, plan piloto y documentación frontend; evidencia de despliegue/reset/corrección procede de resultados aportados por el operador. No nuevas suites ni VM/Coita.
+- Resultado: webhooks web, portal e integración no se reabren como desarrollo pendiente; configuración definitiva y comprobaciones operativas pendientes quedan separadas. Sin commit/push/despliegue.
+
+
+### 2026-10-06 — Resolución de conflictos main y QA
+
+- Solicitud: conservar las novedades de main y el trabajo de QA al resolver el merge existente.
+- Cambios: siete archivos en conflicto resueltos; esquema y AppModule combinados, documentación histórica conservada, propuesta evolucionada de QA y OpenAPI generado desde ambas capacidades. Dos mocks ajustados al contrato de correo y tipos de llamadas. No se cambian migraciones históricas.
+- Verificación: build/Prisma, 472 unitarias, 64 E2E (33 socios, 29 ejecución, 2 tracking), 35 públicas, tipos raíz/build, Oxlint y documentación. Actualización SQL desde cada padre y esquema limpio de 37 migraciones en PostgreSQL 18.6 temporal. Repetición focalizada de mocks registrada en VERIFICATION.
+- Resultado: conflictos resueltos; capacidades de ambas ramas conservadas. Sin prueba E2E completa, despliegue, commit ni push. PostgreSQL temporal detenido; nul intacto.
+
+
+### 2026-10-06 — Commit y push del merge a QA
+
+- Solicitud: cerrar merge y subir a origin/QA.
+- Cambios: conjunto resuelto de ambas ramas y continuidad; nul fuera del commit.
+- Verificación actual: rama QA, ausencia de archivos sin fusionar y git diff --cached --check. Se conserva la evidencia de pruebas de la tarea anterior.
+- Resultado: preparado para commit de merge y push normal, sin force; confirmación mediante salida Git. No despliegue ni activación.

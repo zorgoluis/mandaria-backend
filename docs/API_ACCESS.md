@@ -58,6 +58,10 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/integrations/{id}/webhook/deliveries | bearer | SUPER_ADMIN | — | Estado de entrega de los eventos de un IntegrationClient |
 | POST | /api/v1/admin/integrations/{id}/webhook/secret | bearer | SUPER_ADMIN | — | Generar o rotar el secreto de firma del webhook |
 | GET | /api/v1/admin/integrations/{id}/webhook/summary | bearer | SUPER_ADMIN | — | Resumen de entregas de un IntegrationClient |
+| GET | /api/v1/admin/partner-applications | bearer | SUPER_ADMIN | — | Listar solicitudes de socio |
+| GET | /api/v1/admin/partner-applications/{reference} | bearer | SUPER_ADMIN | — | Detalle de una solicitud de socio |
+| POST | /api/v1/admin/partner-applications/{reference}/links | bearer | SUPER_ADMIN | — | Registrar vínculos de una solicitud aprobada |
+| POST | /api/v1/admin/partner-applications/{reference}/status | bearer | SUPER_ADMIN | — | Cambiar el estado de una solicitud de socio |
 | GET | /api/v1/admin/providers | bearer | SUPER_ADMIN | — | Listar proveedores con filtros y paginación |
 | POST | /api/v1/admin/providers | bearer | SUPER_ADMIN | — | Crear proveedor FLEET o INDEPENDENT |
 | GET | /api/v1/admin/providers/{id} | bearer | SUPER_ADMIN | — | Consultar proveedor por ID |
@@ -193,5 +197,6 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Consultar vehículo de mi proveedor |
 | PATCH | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Editar vehículo de mi proveedor |
 | GET | /api/v1/provider/vehicles/{vehicleId}/assignments | bearer | PROVIDER_ADMIN | — | Historial de Drivers del vehículo |
+| POST | /api/v1/public/partner-applications | Pública | — | — | Enviar solicitud de socio (landing) |
 | GET | /api/v1/users | bearer | SUPER_ADMIN | — | Listar usuarios |
 | GET | /health | Pública | — | — | HealthController_check |

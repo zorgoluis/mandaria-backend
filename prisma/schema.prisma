@@ -51,6 +51,7 @@ model User {
   DeliveryCustodyResolution    DeliveryCustodyResolution[]
   DeliveryExecutionCommand     DeliveryExecutionCommand[]
   DeliveryExecutionEvent       DeliveryExecutionEvent[]
+  partnerApplicationsStatusChanged PartnerApplication[] @relation("PartnerApplicationStatusChangedBy")
 }
 model RefreshToken {
   id String @id @default(uuid()) @db.Uuid
@@ -126,6 +127,7 @@ model DeliveryProvider {
   serviceCoverages ProviderServiceCoverage[]
   dispatchCandidates DispatchCandidate[]
   deliveryAssignments DeliveryAssignment[]
+  partnerApplications PartnerApplication[]
   /// V1.10: exactly one per provider, created with it (trigger) and never deleted by the API.
   creditAccount CreditAccount?
   @@index([type, status])
@@ -553,6 +555,7 @@ model UserInvitation {
   provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
   createdBy User @relation("InvitationCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
   revokedBy User? @relation("InvitationRevoker", fields: [revokedByUserId], references: [id], onDelete: Restrict)
+  partnerApplications PartnerApplication[]
   @@index([userId, createdAt])
   @@index([providerId, role, status, createdAt])
   @@index([status, expiresAt])
@@ -1385,4 +1388,59 @@ model PublicDeliveryTracking {
   snapshot Json?
   expiryObserved Boolean @default(false)
   deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+}
+
+/// Partner applications (Fase 1): a lead captured by the public landing form. It never creates
+/// User, Driver, DeliveryProvider or IndependentDriverProfile; SUPER_ADMIN converts it through the
+/// existing provider/invitation flows and records the resulting links here.
+enum PartnerApplicationType {
+  INDIVIDUAL
+  FLEET
+}
+enum PartnerApplicationStatus {
+  RECEIVED
+  CONTACTED
+  APPROVED
+  REJECTED
+  DISCARDED
+}
+model PartnerApplication {
+  id String @id @default(uuid()) @db.Uuid
+  /// SOC-000001; generated from sequence "PartnerApplication_publicId_seq".
+  publicId String @unique
+  type PartnerApplicationType
+  status PartnerApplicationStatus @default(RECEIVED)
+  contactName String @db.VarChar(100)
+  /// Exactly 10 digits (Mexico, without country code).
+  phone String @db.Char(10)
+  /// Normalized lowercase email.
+  email String @db.VarChar(254)
+  city String @db.VarChar(80)
+  vehicleType VehicleType
+  /// FLEET only (CHECK PartnerApplication_fleet_check).
+  fleetName String? @db.VarChar(100)
+  fleetUnits Int?
+  privacyNoticeVersion String @db.VarChar(20)
+  privacyAcceptedAt DateTime
+  source String @default("LANDING") @db.VarChar(20)
+  submissionCount Int @default(1)
+  lastSubmittedAt DateTime @default(now())
+  /// Internal note; never sensitive data.
+  reviewNote String? @db.VarChar(500)
+  statusChangedAt DateTime?
+  statusChangedByUserId String? @db.Uuid
+  /// Provider created through the existing flow (FLEET applications only).
+  providerId String? @db.Uuid
+  /// Invitation sent through the existing flow; its email matches this application.
+  invitationId String? @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  statusChangedBy User? @relation("PartnerApplicationStatusChangedBy", fields: [statusChangedByUserId], references: [id], onDelete: Restrict)
+  provider DeliveryProvider? @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  invitation UserInvitation? @relation(fields: [invitationId], references: [id], onDelete: Restrict)
+  @@index([status, createdAt])
+  @@index([phone])
+  @@index([email])
+  @@index([createdAt, id])
 }

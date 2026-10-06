@@ -9,10 +9,16 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { json, urlencoded } from 'express';
 import type { Request, Response, NextFunction } from 'express';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { HttpErrorFilter } from './common/http-exception.filter.js';
 import { randomUUID } from 'node:crypto';
 export function setup(app: INestApplication) {
   const config = app.get(ConfigService);
+  // Behind nginx every request arrives from the proxy's address: without this, rate limits would
+  // be shared by all clients. Only the configured number of hops is trusted.
+  const proxyHops = config.get<number>('TRUST_PROXY_HOPS') ?? 0;
+  if (proxyHops > 0)
+    (app as NestExpressApplication).set('trust proxy', proxyHops);
   // Server-generated correlation only: never trust/log an incoming request-id header.
   app.use((_req: Request, res: Response, next: NextFunction) => {
     res.locals.requestId = randomUUID();

@@ -140,7 +140,11 @@ describe('InvitationsService guards before touching the database', () => {
       $transaction: vi.fn(),
       userInvitation: { findUnique: vi.fn().mockResolvedValue(null) },
     };
-    const sender = { name: 'fake', sendUserInvitation: vi.fn() };
+    const sender = {
+      name: 'fake',
+      sendUserInvitation: vi.fn(),
+      sendPartnerApplicationNotice: vi.fn(),
+    };
     return {
       prisma,
       sender,
