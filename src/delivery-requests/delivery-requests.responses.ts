@@ -1,3 +1,4 @@
+import { OwnedShippingTermsResponse } from '../customers/shipping.responses.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ServiceType,
@@ -72,6 +73,8 @@ class DeliveryRequestBase {
   @ApiProperty(dateTime) updatedAt!: Date;
 }
 class DeliveryRequestContent extends DeliveryRequestBase {
+  @ApiProperty({ type: OwnedShippingTermsResponse, nullable: true })
+  shippingTerms!: OwnedShippingTermsResponse | null;
   @ApiPropertyOptional({ type: String, nullable: true, example: null })
   cancellationReason!: string | null;
   @ApiProperty({ type: DeliveryStopResponse, isArray: true })

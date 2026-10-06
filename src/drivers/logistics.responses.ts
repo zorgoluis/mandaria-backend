@@ -1,3 +1,4 @@
+import { ShippingPaymentResponse } from '../customers/shipping.responses.js';
 import {
   CollectionInstructionsResponse,
   collectionInstructionsDoc,
@@ -219,6 +220,12 @@ export class DriverSelfActiveDeliveryAssignmentResponse {
     description: collectionInstructionsDoc,
   })
   collectionInstructions?: CollectionInstructionsResponse;
+  @ApiPropertyOptional({
+    type: ShippingPaymentResponse,
+    description:
+      'Instrucción de envío separada de mercancía y créditos; consultar allowedActions antes de registrar efectivo.',
+  })
+  shippingPayment?: ShippingPaymentResponse;
   @ApiProperty(uuid) id!: string;
   @ApiProperty({ enum: DeliveryAssignmentMode })
   mode!: DeliveryAssignmentMode;

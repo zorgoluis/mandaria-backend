@@ -7,6 +7,19 @@ import {
   checkPublicB2b,
 } from './export-public-b2b.mjs';
 const source = () => JSON.parse(readFileSync('docs/openapi.json', 'utf8'));
+test('V1.17 exposes B2B terms and consent while excluding human demand, collection and administrative policy',()=>{
+  const full=source(),d=publicB2bDocument(full);
+  assert.ok(full.paths['/api/v1/customer/delivery-prequotes']);
+  assert.ok(full.paths['/api/v1/driver/dispatches/{dispatchId}/shipping-collection']);
+  assert.ok(full.paths['/api/v1/admin/integrations/{id}/shipping-policy']);
+  for(const route of Object.keys(d.paths))assert.doesNotMatch(route,/\/customer|\/driver\/|\/admin\//);
+  assert.deepEqual(d.components.schemas.ShippingTermsResponse.properties.payer.enum,['REQUESTER','RECIPIENT']);
+  assert.ok(d.components.schemas.DeliveryStatusResponse.properties.shippingPayment);
+  assert.deepEqual(d.components.schemas.CustomerAuthorizationDto.properties.version.enum,[1,2]);
+  assert.ok(d.components.schemas.CustomerAuthorizationDto.properties.shippingTermsHash);
+  assert.ok(!d.components.schemas.ShippingPaymentResponse.properties.payerContact);
+  for(const name of ['DirectConversionDto','CustomerProfileViewDto','ShippingCollectionDto','ShippingPolicyDto'])assert.ok(!d.components.schemas[name]);
+});
 const path = '/api/v1/delivery-prequotes';
 const expected = [
   'POST /api/v1/integrations/token',

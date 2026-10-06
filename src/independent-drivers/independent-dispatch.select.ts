@@ -49,6 +49,17 @@ export const driverDispatchSelect = {
     select: {
       status: true,
       prequoteConversion: { select: collectionConversionSelect },
+      shippingTerms: {
+        select: {
+          payer: true,
+          method: true,
+          dueAt: true,
+          component: true,
+          termsVersion: true,
+          termsHash: true,
+          declaration: { select: { recordedAt: true } },
+        },
+      },
       publicId: true,
       stops: {
         orderBy: { sequence: 'asc' },

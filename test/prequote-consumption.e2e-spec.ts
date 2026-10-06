@@ -15,6 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { INestApplication } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import request from 'supertest';
+import * as argon2 from 'argon2';
 import type { DurablePrequoteConsumption } from '../src/delivery-prequotes/durable-prequote-consumption.js';
 import { consumptionRetryAt } from '../src/delivery-prequotes/consumption-policy.js';
 const url = process.env.TEST_DATABASE_URL;
@@ -668,6 +669,47 @@ describe('A5 real durable consumption: two Nest applications, shared PostgreSQL'
       routingReported: false,
     });
     expect(added[0].startedAt).not.toBeNull();
+  });
+  it('customer permits share durable global budget while retaining a separate owner and per-account limit', async () => {
+    const user = await p.user.create({
+      data: {
+        email: 'consumption-' + randomUUID() + '@example.invalid',
+        passwordHash: await argon2.hash(randomBytes(32).toString('hex')),
+        role: 'CUSTOMER',
+        emailVerifiedAt: new Date(),
+      },
+    });
+    const customer = await p.customerAccount.create({
+      data: {
+        userId: user.id,
+        type: 'PERSONAL',
+        displayName: 'Synthetic consumer',
+      },
+    });
+    const owner = { kind: 'CUSTOMER' as const, id: customer.id };
+    const admitted = await services[0].admit(owner);
+    expect(admitted.admitted).toBe(true);
+    if (!admitted.admitted) throw Error('Expected direct admission');
+    await admitted.permit.start();
+    await admitted.permit.assertReady();
+    await admitted.permit.finish({ routingStarted: true, published: false });
+    const direct = await p.prequoteConsumptionPermit.findMany({
+      where: { customerAccountId: customer.id },
+    });
+    expect(direct).toHaveLength(1);
+    expect(direct[0].integrationClientId).toBeNull();
+    expect(direct[0].units).toBeGreaterThan(0);
+    expect(
+      await p.prequoteConsumptionPermit.count({
+        where: { integrationClientId: customer.id },
+      }),
+    ).toBe(0);
+    await expect(
+      p.prequoteConsumptionPermit.update({
+        where: { id: direct[0].id },
+        data: { integrationClientId: clients[0] },
+      }),
+    ).rejects.toThrow();
   });
   it('new flow has no logistics/financial effects and safe event logs', async () => {
     expect(await counts()).toEqual(baseline);

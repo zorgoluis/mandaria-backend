@@ -6,6 +6,7 @@ datasource db {
   url = env("DATABASE_URL")
 }
 enum Role {
+  CUSTOMER
   SUPER_ADMIN
   PROVIDER_ADMIN
   DRIVER
@@ -22,6 +23,8 @@ enum CredentialStatus {
 /// Account state is derived (V1.6.1): active = ACTIVE; inactive without passwordHash = INVITED
 /// (never activated); inactive with passwordHash = DISABLED. A CHECK forbids active without password.
 model User {
+  sessionVersion Int @default(0)
+  customerAccount CustomerAccount?
   id String @id @default(uuid()) @db.Uuid
   email String @unique
   /// null only while the account is INVITED; set exclusively by the account owner on activation.
@@ -80,6 +83,8 @@ model IntegrationClient {
   webhookEndpoint B2bWebhookEndpoint?
   webhookAttempts B2bWebhookDeliveryAttempt[]
   webhookDeliveries B2bWebhookDelivery[]
+ defaultShippingPayer String @default("RECIPIENT")
+ shippingPolicyRevision Int @default(1)
 }
 model IntegrationCredential {
   authorizedAcceptances AuthorizedQuoteAcceptance[]
@@ -311,7 +316,9 @@ model DeliveryRequest {
   id String @id @default(uuid()) @db.Uuid
   /// MDR-000001; generated from sequence "DeliveryRequest_publicId_seq" inside the creation transaction.
   publicId String @unique
-  integrationClientId String @db.Uuid
+  integrationClientId String? @db.Uuid
+  customerAccountId String? @db.Uuid
+  customerAccount CustomerAccount? @relation(fields:[customerAccountId], references:[id], onDelete:Restrict)
   externalReference String?
   /// V1.6: existing V1.5 rows migrate to LOCAL_DELIVERY (the only service offered).
   serviceType ServiceType @default(LOCAL_DELIVERY)
@@ -321,7 +328,7 @@ model DeliveryRequest {
   cancellationReason String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  integrationClient IntegrationClient? @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
   stops DeliveryStop[]
   packages DeliveryPackage[]
   financialContext DeliveryFinancialContext?
@@ -335,6 +342,9 @@ model DeliveryRequest {
   @@index([externalReference])
   @@index([status, requestedAt])
   @@index([requestedAt, id])
+  @@unique([id,customerAccountId])
+ shippingTerms DeliveryShippingTerms?
+ directLifecycle DirectRequestLifecycle?
 }
 /// Address/contact snapshot; never linked to external restaurant or customer tables.
 model DeliveryStop {
@@ -388,15 +398,18 @@ model ApiIdempotencyRecord {
   execution ApiIdempotencyExecution?
   prequote DeliveryPrequote?
   id String @id @default(uuid()) @db.Uuid
-  integrationClientId String @db.Uuid
+  integrationClientId String? @db.Uuid
+  customerAccountId String? @db.Uuid
+  customerAccount CustomerAccount? @relation(fields:[customerAccountId], references:[id], onDelete:Restrict)
   key String
   operation String
   requestHash String @db.Char(64)
   resourceType String
   resourceId String @db.Uuid
   createdAt DateTime @default(now())
-  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  integrationClient IntegrationClient? @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
   @@unique([integrationClientId, key])
+  @@unique([customerAccountId,key])
 }
 
 /// Service catalogue. Only LOCAL_DELIVERY exists in V1.6; ERRAND/INTERCITY/FREIGHT are future values.
@@ -1172,7 +1185,9 @@ model DeliveryPrequote {
   id String @id @db.Uuid
   publicId String @unique
   idempotencyRecordId String @unique @db.Uuid
-  integrationClientId String @db.Uuid
+  integrationClientId String? @db.Uuid
+  customerAccountId String? @db.Uuid
+  customerAccount CustomerAccount? @relation(fields:[customerAccountId], references:[id], onDelete:Restrict)
   conditionsVersion Int
   conditions Json
   serviceType ServiceType
@@ -1191,11 +1206,13 @@ model DeliveryPrequote {
   issuedAt DateTime
   expiresAt DateTime
   record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict)
-  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  integrationClient IntegrationClient? @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
   serviceZone ServiceZone @relation(fields: [serviceZoneId], references: [id], onDelete: Restrict)
   ratePlan RatePlan @relation(fields: [ratePlanId, serviceZoneId], references: [id, serviceZoneId], onDelete: Restrict)
   rateBand RateBand @relation(fields: [rateBandId, ratePlanId], references: [id, ratePlanId], onDelete: Restrict)
   @@index([integrationClientId, issuedAt])
+  @@unique([id,customerAccountId])
+ shippingTerms Json?
 }
 
 enum PrequotePermitState {
@@ -1214,8 +1231,10 @@ model PrequoteConsumptionPolicy {
 /// Single durable authority for reservations and potential MPQ routing consumption.
 model PrequoteConsumptionPermit {
   id String @id @db.Uuid
-  integrationClientId String @db.Uuid
-  integrationClient IntegrationClient @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
+  integrationClientId String? @db.Uuid
+  customerAccountId String? @db.Uuid
+  customerAccount CustomerAccount? @relation(fields:[customerAccountId], references:[id], onDelete:Restrict)
+  integrationClient IntegrationClient? @relation(fields: [integrationClientId], references: [id], onDelete: Restrict)
   ownerHash String @db.VarChar(64)
   policyFingerprint String @db.VarChar(64)
   state PrequotePermitState
@@ -1246,14 +1265,17 @@ model PrequoteConversion {
   deliveryRequestId String @unique @db.Uuid
   deliveryQuoteId String @unique @db.Uuid
   idempotencyRecordId String @unique @db.Uuid
-  integrationClientId String @db.Uuid
+  integrationClientId String? @db.Uuid
+  customerAccountId String? @db.Uuid
+  customerAccount CustomerAccount? @relation(fields:[customerAccountId], references:[id], onDelete:Restrict)
+  origin String @default("B2B_MERCHANT")
   convertedAt DateTime @default(dbgenerated("clock_timestamp()"))
-  goodsPaymentStatus String
-  goodsPaymentReference String
-  goodsPaymentConfirmedAt DateTime
-  orderAcceptanceStatus String
-  orderAcceptanceReference String
-  orderAcceptedAt DateTime
+  goodsPaymentStatus String?
+  goodsPaymentReference String?
+  goodsPaymentConfirmedAt DateTime?
+  orderAcceptanceStatus String?
+  orderAcceptanceReference String?
+  orderAcceptedAt DateTime?
   collectionPayer String
   collectionMethod String
   collectionDueAt String
@@ -1261,8 +1283,8 @@ model PrequoteConversion {
   stopIds String[] @db.Uuid
   packageIds String[] @db.Uuid
   financialContextId String @db.Uuid
-  prequote DeliveryPrequote @relation(fields: [prequoteId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
-  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
+  prequote DeliveryPrequote @relation(fields: [prequoteId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   deliveryQuote DeliveryQuote @relation(fields: [deliveryQuoteId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
   record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 }
@@ -1273,13 +1295,18 @@ model AuthorizedQuoteAcceptance {
   @@unique([deliveryQuoteId, deliveryRequestId])
   @@unique([dispatchId, deliveryRequestId])
   id String @id @db.Uuid
-  conversionId String @unique @db.Uuid
+  conversionId String? @unique @db.Uuid
   deliveryRequestId String @unique @db.Uuid
   deliveryQuoteId String @unique @db.Uuid
-  integrationClientId String @db.Uuid
+  integrationClientId String? @db.Uuid
+  customerAccountId String? @db.Uuid
+  customerAccount CustomerAccount? @relation(fields:[customerAccountId], references:[id], onDelete:Restrict)
   dispatchId String @unique @db.Uuid
   idempotencyRecordId String @unique @db.Uuid
-  credentialId String @db.Uuid
+  credentialId String? @db.Uuid
+  userId String? @db.Uuid
+  evidenceKind String @default("B2B_ATTESTATION")
+  shippingTermsHash String?
   authenticatedTokenExpiresAt DateTime
   authorizationVersion Int
   authorizationStatus String
@@ -1289,12 +1316,12 @@ model AuthorizedQuoteAcceptance {
   authorizedAmount Decimal @db.Decimal(14, 2)
   authorizedCurrency String @db.Char(3)
   authorizedExpiresAt DateTime
-  conversion PrequoteConversion @relation(fields: [conversionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  request DeliveryRequest @relation(fields: [deliveryRequestId, integrationClientId], references: [id, integrationClientId], onDelete: Restrict, onUpdate: Restrict)
+  conversion PrequoteConversion? @relation(fields: [conversionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  request DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   quote DeliveryQuote @relation(fields: [deliveryQuoteId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
   dispatch Dispatch @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
   record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  credential IntegrationCredential @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  credential IntegrationCredential? @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 }
 
 model DeliveryExecution {
@@ -1443,4 +1470,91 @@ model PartnerApplication {
   @@index([phone])
   @@index([email])
   @@index([createdAt, id])
+}
+
+
+enum CustomerType {
+ PERSONAL
+ BUSINESS
+}
+model CustomerAccount {
+ id String @id @default(uuid()) @db.Uuid
+ userId String @unique @db.Uuid
+ user User @relation(fields:[userId], references:[id], onDelete:Restrict)
+ type CustomerType
+ active Boolean @default(true)
+ displayName String @db.VarChar(100)
+ businessName String? @db.VarChar(160)
+ revision Int @default(1)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ requests DeliveryRequest[]
+ prequotes DeliveryPrequote[]
+ receipts ApiIdempotencyRecord[]
+ permits PrequoteConsumptionPermit[]
+ conversions PrequoteConversion[]
+ acceptances AuthorizedQuoteAcceptance[]
+}
+model CustomerChallenge {
+ id String @id @default(uuid()) @db.Uuid
+ email String @db.VarChar(254)
+ purpose String @db.VarChar(20)
+ tokenHash String @unique @db.Char(64)
+ profile Json?
+ expiresAt DateTime
+ consumedAt DateTime?
+ createdAt DateTime @default(now())
+ @@index([email,purpose])
+}
+
+model DeliveryShippingTerms {
+ deliveryRequestId String @id @db.Uuid
+ request DeliveryRequest @relation(fields:[deliveryRequestId],references:[id],onDelete:Restrict)
+ payer String
+ method String @default("CASH")
+ dueAt String
+ component String @default("DELIVERY_FEE")
+ termsVersion Int @default(1)
+ policyRevision Int?
+ termsHash String @db.Char(64)
+ payerContact Json?
+ createdAt DateTime @default(now())
+ declaration ShippingCollectionDeclaration?
+}
+model DirectRequestLifecycle {
+ deliveryRequestId String @id @db.Uuid
+ request DeliveryRequest @relation(fields:[deliveryRequestId],references:[id],onDelete:Restrict)
+ customerAccountId String @db.Uuid
+ personalSlot String? @unique @db.Uuid
+ closedAt DateTime?
+ closureReason String?
+ createdAt DateTime @default(now())
+ @@index([customerAccountId,closedAt])
+}
+model ShippingCollectionDeclaration {
+ deliveryRequestId String @id @db.Uuid
+ terms DeliveryShippingTerms @relation(fields:[deliveryRequestId],references:[deliveryRequestId],onDelete:Restrict)
+ dispatchId String @db.Uuid
+ assignmentId String @db.Uuid
+ driverUserId String @db.Uuid
+ deliveryQuoteId String @db.Uuid
+ termsHash String @db.Char(64)
+ amount Decimal @db.Decimal(14,2)
+ currency String @db.Char(3)
+ receivedFrom String
+ occurredAt DateTime
+ recordedAt DateTime @default(now())
+}
+model ShippingPolicyAudit {
+ id String @id @default(uuid()) @db.Uuid
+ integrationClientId String @db.Uuid
+ actorUserId String @db.Uuid
+ key String @db.Uuid
+ requestHash String @db.Char(64)
+ previousPayer String
+ payer String
+ revision Int
+ createdAt DateTime @default(now())
+ @@unique([actorUserId,key])
+ @@unique([integrationClientId,revision])
 }

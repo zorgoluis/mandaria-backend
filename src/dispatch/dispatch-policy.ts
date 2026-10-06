@@ -148,13 +148,15 @@ export async function openDispatch(
     where: { deliveryRequestId: quote.deliveryRequestId },
     select: { id: true },
   });
-  let authorizedDispatchId: string | undefined;
+  const authorization = await tx.authorizedQuoteAcceptance.findUnique({
+    where: { deliveryQuoteId: quote.id },
+  });
+  let authorizedDispatchId: string | undefined = authorization?.dispatchId;
   if (conversion) {
-    const evidence = await tx.authorizedQuoteAcceptance.findUnique({
-      where: { conversionId: conversion.id },
-    });
+    const evidence = authorization;
     if (
       !evidence ||
+      evidence.conversionId !== conversion.id ||
       evidence.deliveryQuoteId !== quote.id ||
       evidence.deliveryRequestId !== quote.deliveryRequestId
     )

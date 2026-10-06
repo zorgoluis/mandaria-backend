@@ -26,14 +26,23 @@ const user = {
   passwordHash: '',
   active: true,
   role: 'SUPER_ADMIN',
+  sessionVersion: 0,
 };
 const password = randomBytes(20).toString('hex');
-const users = { findByEmail: vi.fn(), findPublic: vi.fn() };
+const users = {
+  findByEmail: vi.fn(),
+  findPublic: vi.fn(),
+  sessionValid: vi.fn().mockResolvedValue(true),
+};
 const refresh = { create: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn() };
 const prisma = {
   refreshToken: refresh,
   $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
-    callback({ refreshToken: refresh }),
+    callback({
+      refreshToken: refresh,
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      user: { findUniqueOrThrow: vi.fn().mockResolvedValue(user) },
+    }),
   ),
 };
 const auth = new AuthService(

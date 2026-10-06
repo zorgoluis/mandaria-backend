@@ -264,6 +264,9 @@ export class DriversService {
               activeAssignment.dispatch,
               'EXECUTOR',
             ),
+            ...(operational && 'shippingPayment' in operational
+              ? { shippingPayment: operational.shippingPayment }
+              : {}),
           }
         : null,
       independent: independentProfile

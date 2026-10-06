@@ -24,7 +24,14 @@ export interface PartnerApplicationNoticeMail {
  * Outbound email port. The domain depends only on this interface; Resend HTTPS, the local outbox and
  * test fakes are interchangeable adapters bound to MAIL_PROVIDER.
  */
+export interface CustomerAccessMail {
+  to: string;
+  purpose: 'REGISTER' | 'RESET' | 'VERIFY';
+  actionUrl: string;
+  expiresAt: Date;
+}
 export interface MailProvider {
+  sendCustomerAccess?(mail: CustomerAccessMail): Promise<void>;
   readonly name: string;
   sendUserInvitation(mail: UserInvitationMail): Promise<void>;
   sendPartnerApplicationNotice(

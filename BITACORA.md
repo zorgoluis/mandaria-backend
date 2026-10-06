@@ -4,6 +4,28 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación V1.17 autorizada — 2026-10-06:** el propietario solicita commit y push a la rama actual `v1.17-Clientes_directos_Mandaria`. Se incluyen A–E, migraciones incrementales, contratos, pruebas, evidencia y handoff coordinador; se conserva `nul` fuera del commit. Verificaciones de esta tarea: revisión Git, contenido preparado y diff --check. Las suites documentadas corresponden a la implementación anterior y no se repiten para publicar. El resultado de commit/push se confirma mediante Git; sin despliegue ni activación, admisión nueva deshabilitada.
+
+- **Handoff coordinador a WEB V1.17 (2026-10-06):** leídos contratos implementados de identidad y demanda. Backend A–E reportado/verificado localmente por agente responsable; no se repitieron suites aquí. Siguiente prompt FRONTEND usa contrato real: POST profile/type sin key, GET/POST shipping-policy con UUIDkey, envelopes reales y hash final de MDR para aceptación. WEB implementará identidad/demanda y configuración/lecturas operativas; no restituirá hitos/cobro al admin o DRIVER web. Recuperación sin duplicados y secretos de acceso efímeros; flags sin activar. APP DRIVER, integración real y política monetaria/liquidación siguen pendientes de activación.
+
+- **V1.17 A–E backend validado localmente — 2026-10-06:** continuación autorizada de A hasta B–E. Titularidad XOR, cupo PERSONAL transaccional/BUSINESS múltiple, MPQ/conversión/aceptación/cancelación directas, política B2B de pagador y términos inmutables, declaración DRIVER y barrera PICKED_UP, reconciliación durable con cierre de intentos y protección ante POST tardío, proyecciones/publicVersion y outbox sólo B2B. Migración incremental39; A y cambios previos preservados. [Contrato/handoff implementado](docs/V1.17-DEMAND-IMPLEMENTATION.md), [evidencia nueva](docs/checks/v117-demand.json). Nuevas verificaciones: 472 unitarias,459 E2E únicos/22 archivos completos,36 públicas; build/tipos raíz+build/linters/contratos y Prisma generate/validate/status. Upgrade38→39 y limpia39;51 usuarios,40 refresh,47 perfiles y38 registros de migración originales preservados. Abortos/fallos previos excluidos; causa nativa no acreditada. **B–E ya no pendientes de implementación; admisión nueva false y flujo sin activar.** No acredita UI/APP ni integración remota. Reembolsos monetarios/liquidación entre ejecutores, coordinación de despliegue y soporte excepcional siguen pendientes operativos. Sin Docker/frontend/Coita/base real/.env/version/commit/push/despliegue/activación. El documento nul se conserva. La entrada A parcial que sigue es histórica.
+
+- **V1.17 implementación parcial A — 2026-10-06:** solicitud del propietario amplía el diseño a A–E y confirma siete decisiones comerciales. Implementado únicamente CustomerAccount PERSONAL/BUSINESS, registro/verificación, perfil propio y recuperación con sessionVersion; conserva roles existentes/tokens antiguos hasta reset. Migración incremental 20261006000100_customer_identity, admisión false; OpenAPI humano actualizado y B2B filtrado. Ver [contrato real, evidencia y continuación](docs/V1.17-IDENTITY-IMPLEMENTATION.md). Verificación NUEVA: 472 unitarias, 37 E2E únicos (13 identidad + 24 invitaciones), 35 públicas; build/tipos/linters/docs; migración limpia 38 y upgrade 37→38 con usuario/refresh/historial preservados. Fallos iniciales corregidos y excluidos del conteo. **B–E no implementados; no declarar V1.17 completa.** No falta una decisión nueva para continuar el desarrollo. Política monetaria/liquidación/UI/soporte pendientes operativos. Cambios preexistentes y nul conservados; sin Docker, frontend, Coita, producción, commit/push/despliegue/activación. Entradas siguientes sobre decisiones pendientes son antecedentes ya superados por la aprobación actual.
+
+- **Revisión coordinadora de propuesta V1.17 (2026-10-06):** leídos diseño y handoff. Se toma CASH/PICKUP con titular o representante como decisión reportada por BACKEND y recogida en sus documentos; no se reabre por ausencia en el historial local. Diseño sigue NO IMPLEMENTADO. Para siguiente aprobación: default BUSINESS REQUESTER, responsabilidad B2B del integrador/designado, declaración DRIVER y barrera PICKED_UP para REQUESTER, tratamiento comercial trazable de efectivo y abandono explícito. No presentar estas recomendaciones como aprobadas. No automatizar refunds ni alterar créditos.
+
+- **V1.17 propuesta y contrato — 2026-10-06:** revisión estática de 01cc84a en rama v1.17-Clientes_directos_Mandaria. Documentos docs/V1.17-DIRECT-CUSTOMERS-DESIGN.md y docs/V1.17-DIRECT-CUSTOMERS-HANDOFF.md; no implementación. Propietario aprueba CASH/PICKUP para solicitante con presencia propia o representante autorizado. Diseño de perfil cliente separado, propietario XOR, cupo personal transaccional, términos congelados y compatibilidad B2B/outbox/publicVersion. Pendientes de negocio: default BUSINESS, responsabilidad B2B, declaración/barrera de efectivo y tratamiento comercial tras cobro/abandono. Mantener tarifas y refunds de créditos actuales; no inferir estado desde notas históricas. Rutas propuestas marcadas NO IMPLEMENTADAS; OpenAPI intacto. Sin Docker/DB/Coita/secretos/commit/push/despliegue.
+
+- **V1.17 clientes directos — análisis y prompts por plataforma (2026-10-06):** numeración propuesta V1.17 clientes directos, V1.18 GPS/enlace temporal, V1.19 app DRIVER. Revisión estática confirma DeliveryRequest.integrationClientId obligatorio, rutas MDR con IntegrationGuard y precotizaciones ligadas a integración. collection-instructions y conversión actual exigen RECIPIENT/CASH/DELIVERY/DELIVERY_FEE para ese flujo; solicitante no equivale a contacto de recogida. Preparados prompts de análisis BACKEND, WEB y futura APP cliente, con dependencia contractual, sin implementar. Reglas aprobadas: registro abierto PERSONAL/BUSINESS, una activa personal/múltiples negocio, pagador personal solicitante/negocio elegible, tarifa común. Pendientes proponer estados exactos de cupo y cobro a solicitante sin inventar medios/momentos.
+
+- **Cliente directo antes de GPS — reglas aprobadas (2026-10-06):** registro abierto PERSONAL/BUSINESS; persona una solicitud activa simultánea y envío siempre a cargo del solicitante; negocio múltiples activas y elección solicitante/destinatario; mismas tarifas existentes. GPS y enlace temporal de destinatario quedan posteriores al contrato de identidad/titularidad. Se entrega prompt BACKEND de análisis y diseño exacto previo a implementación; no confundir pagador del envío con goodsPaymentMode ni afirmar pago cobrado. Alta negocio abierta no implica aprobación/KYC adicional autorizada.
+
+- **Prioridad GPS antes de app DRIVER (2026-10-06):** propietario solicita preparar recepción de ubicación del repartidor y compartirla con clientes Mandaria/B2B. Revisión estática: coordenadas actuales pertenecen a paradas/routing, sin telemetría DRIVER encontrada; roles humanos actuales SUPER_ADMIN/PROVIDER_ADMIN/DRIVER, sin titularidad de cliente final. Se prepara prompt BACKEND para contrato e implementación de ubicación por asignación, lectura B2B propia, frescura, concurrencia y revocación. Acceso de futura app cliente requiere definir identidad/titularidad; no conceder acceso por conocer MDR. No se implementaron endpoints en esta tarea.
+
+- **V1.16 propuesta — validación confirmada por el propietario (2026-10-06):** el usuario confirma que los puntos pendientes de solicitudes de socios fase 1 ya fueron probados: interfaz pública, revisión administrativa, avisos/configuración y recorrido completo. Se registra como entrega validada por el propietario; no quedan pendientes de prueba de esos puntos en el roadmap. No se ejecutaron nuevamente pruebas ni se verificó aquí el entorno o release desplegado. Numeración propuesta, sin cambio de versión del paquete.
+
+- **Roadmap por versiones — 2026-10-06:** solicitado listado de entregas pasadas, actuales y futuras. Se conserva V1.0–V1.13 histórico; bloques posteriores se presentan como propuesta de numeración, no releases publicados. QA publicado en 01cc84a integra socios de main con ejecución DRIVER y seguimiento B2B. Paquete backend permanece 1.12.0; no se cambian versiones ni se confunde push con despliegue.
+
 - **Publicación autorizada del merge — 2026-10-06:** propietario solicita commit y push a QA del merge main 71eb11a con QA a5ceb4d ya resuelto y validado. Se conserva el trabajo de ambas ramas; nul excluido. Comprobación actual: sin conflictos y diff staged limpio; pruebas corresponden a la resolución anterior, no repetidas. Resultado de publicación se confirma mediante Git. Sin despliegue.
 
 - **Integración main → QA (2026-10-06):** resolución del merge ya iniciado entre QA a5ceb4d y main 71eb11a. Se conservan solicitudes de socios/correo/proxy/restauración de main y ejecución DRIVER, reconciliación y seguimiento B2B de QA. Ambas familias de modelos y módulos integradas; OpenAPI regenerado. Propuesta de QA prevalece sobre el diseño anterior de main; historiales de ambas ramas conservados. Validación nueva detallada en VERIFICATION. Sin Docker, base principal, producción ni push; merge preparado para commit.
@@ -483,6 +505,14 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-06 — V1.17 implementación parcial, identidad A
+
+- Solicitud: implementar A–E del diseño aprobado conservando trabajo previo, con siete decisiones confirmadas y admisión cerrada.
+- Cambios: CustomerAccount/challenges, registro y verificación, perfil propio y anexión sin cambiar rol, recuperación con sesión versionada y compatibilidad de JWT anteriores. Migración incremental nueva, adapters de correo, OpenAPI humano, ejemplos/handoff y decisiones actualizados. No modificar semántica financiera ni logística existente.
+- Verificación ejecutada: migración limpia38 e incremental37→38 con usuario/refresh/historial preservados; 472 unitarias, 37 E2E únicos de dos archivos, 35 públicas; build, tsc raíz/build, linters y docs. Intentos iniciales fallidos documentados y excluidos; no son evidencia histórica reutilizada.
+- Resultado: sólo A implementada/verificada localmente. B–E pendientes técnicos, sin atribuirlos a falta de aprobación. No V1.17 completa ni habilitada. Informe docs/V1.17-IDENTITY-IMPLEMENTATION.md.
+- Pendientes: propietario XOR/cupo/conversión humana, términos/política, cobro DRIVER y reconciliación, proyecciones/outbox/regresiones integrales. Activación condicionada a política monetaria, liquidación entre ejecutores, UI y soporte. Sin frontend, Docker, Coita/producción, commit/push/despliegue.
 
 ### 2026-10-02 — Decisiones aprobadas y diseño técnico de custodia excepcional
 
@@ -2176,3 +2206,89 @@ Solicitud: commitear y subir a rama actual QA. Se incluyen los cambios verificad
 - Cambios: conjunto resuelto de ambas ramas y continuidad; nul fuera del commit.
 - Verificación actual: rama QA, ausencia de archivos sin fusionar y git diff --cached --check. Se conserva la evidencia de pruebas de la tarea anterior.
 - Resultado: preparado para commit de merge y push normal, sin force; confirmación mediante salida Git. No despliegue ni activación.
+
+
+### 2026-10-06 — Roadmap de versiones
+
+- Solicitud: organizar versiones históricas, trabajo actual y evolución futura.
+- Cambios: continuidad y propuesta en conversación; sin cambios de código/paquete.
+- Verificación: lectura de README, VERIFICATION, BITACORA y commit actual; sin suites nuevas.
+- Resultado: separación entre historia, implementación QA y versiones futuras propuestas; activación coordinada y app pendientes. Sin commit, push o despliegue en esta tarea.
+
+
+## 2026-10-06 — Confirmación de cierre V1.16 por el propietario
+
+- Solicitud: actualizar el contexto del roadmap porque los puntos de solicitudes de socios fase 1 ya fueron probados.
+- Cambios: estado actualizado como validación confirmada por el propietario, conservando antecedentes.
+- Verificaciones actuales: lectura de continuidad y revisión documental con git diff --check; sin pruebas funcionales nuevas.
+- Resultado: se retiran esos pendientes de pruebas del roadmap; no se infiere un nuevo despliegue ni etiqueta oficial.
+- Pendientes: V1.14 y V1.15 conservan sus pendientes; sin cambios de producto, Docker, commit ni push.
+
+
+## 2026-10-06 — Preparación GPS para DRIVER y consumidores
+
+- Solicitud: adelantar servicios GPS antes de construir app, con consumo de clientes Mandaria y B2B.
+- Cambios: prioridad y hallazgos registrados; prompt BACKEND entregado en conversación según flujo de coordinación acordado.
+- Verificación actual: lectura de continuidad, búsqueda estática en src/schema y contrato B2B; git diff --check. Sin pruebas funcionales.
+- Resultado: alcance propuesto de última ubicación por asignación con autorización y caducidad, separado de hitos; no implementación ni release.
+- Pendientes: implementación/pruebas backend y contrato de titularidad del futuro cliente Mandaria. Sin Docker, frontend, commit, push ni despliegue.
+
+
+## 2026-10-06 — Handoff cliente directo PERSONAL/BUSINESS
+
+- Solicitud: continuar con reglas aprobadas de simultaneidad y pagador del envío.
+- Cambios: reglas registradas y prompt BACKEND preparado en conversación para diseño de identidad, ownership, ciclo activo, pago y compatibilidad B2B.
+- Verificaciones actuales: lectura de continuidad y búsqueda estática de modelo financiero/DTO; git diff --check. Sin pruebas funcionales nuevas.
+- Resultado: alcance de análisis definido; sin endpoints implementados ni decisiones inventadas sobre pago en origen o pasarela.
+- Pendientes: contrato y migración propuestos, estados que ocupan/liberan cupo y encaje del cobro al solicitante con flujos existentes; después implementación y handoff WEB/APP, luego GPS.
+- Sin Docker, producción, commit ni push; cambios previos conservados.
+
+
+## 2026-10-06 — Análisis V1.17 y prompts BACKEND/WEB/APP cliente
+
+- Solicitud: analizar y generar prompt por plataforma para clientes directos.
+- Cambios: continuidad actualizada; prompts completos entregados en conversación, análisis previo a implementación.
+- Verificaciones ejecutadas: lecturas estáticas de schema, controladores auth/MDR, acoplamiento precotizaciones, instrucciones de cobro, README/package e inventario frontend; git diff --check. No pruebas funcionales ni auditoría completa frontend.
+- Resultado: se identifica titularidad B2B obligatoria y alcance limitado del cobro actual; separación de tarifa, mercancía y créditos; cupo requiere garantía transaccional y tratamiento explícito de expiración/custodia.
+- Pendientes: handoff backend y propuesta de cobro al solicitante, diseño WEB/APP sin inventar endpoints; stack/repositorio móvil no definidos. GPS/enlace destinatario fase posterior; B2B conserva compatibilidad.
+- Sin cambios de producto, frontend editado, Docker, base, commit, push ni despliegue. Historial preservado.
+
+
+## 2026-10-06 — Diseño V1.17 clientes directos y pagador
+
+Solicitud: analizar identidad, titularidad, una activa PERSONAL/múltiples BUSINESS, política B2B y cobro, con contrato y plan sin producto. Se contrastaron schema, guards/auth/invitaciones, idempotencia/consumo MPQ, conversión/aceptación, SQL de integridad, dispatch/custodia, outbox, seguimiento y proyecciones de cobro. Decisión nueva del propietario: solicitante paga efectivo en recogida con presencia propia o representante autorizado. Propuesta y handoff de V1.17 añadidos; README enlazado y verificación estática registrada. Se conserva BITACORA previamente modificada y nul.
+
+Verificaciones de esta tarea: lecturas/búsquedas estáticas, referencias locales de los documentos y git diff --check; no build, tests, consultas DB ni regeneración OpenAPI. Resultados funcionales anteriores siguen históricos. Resultado: diseño para revisión, no implementación autorizada ni endpoints disponibles. Pendientes de negocio delimitados al final del diseño; V1.18 GPS/enlace y V1.19 app DRIVER fuera de alcance. Sin cambios funcionales, migraciones, configuración, secretos, Docker, Coita, producción, commit/push ni despliegue.
+
+
+## 2026-10-06 — Revisión de entrega de diseño V1.17
+
+- Solicitud/contexto: propietario entrega resultado BACKEND con propuesta y handoff.
+- Cambios: registrada revisión y decisiones restantes; documentos originales conservados.
+- Verificación actual: lectura estática de ambos documentos y continuidad, git diff --check; no pruebas de producto.
+- Resultado: base de identidad/ownership/cupo/snapshot documentada; efectivo en recogida consta como decisión recibida por BACKEND, sin volver a solicitarla.
+- Pendientes: aprobar políticas aún marcadas como propuestas y concretar responsables/condiciones monetarias; después implementación por etapas. Sin Docker, código, commit, push o despliegue.
+
+
+### 2026-10-06 — continuación V1.17 B–E
+
+Solicitud: completar B–E sobre A conservada, sin activar ni publicar.
+
+**V1.17 A–E backend validado localmente — 2026-10-06:** continuación autorizada de A hasta B–E. Titularidad XOR, cupo PERSONAL transaccional/BUSINESS múltiple, MPQ/conversión/aceptación/cancelación directas, política B2B de pagador y términos inmutables, declaración DRIVER y barrera PICKED_UP, reconciliación durable con cierre de intentos y protección ante POST tardío, proyecciones/publicVersion y outbox sólo B2B. Migración incremental39; A y cambios previos preservados. [Contrato/handoff implementado](docs/V1.17-DEMAND-IMPLEMENTATION.md), [evidencia nueva](docs/checks/v117-demand.json). Nuevas verificaciones: 472 unitarias,459 E2E únicos/22 archivos completos,36 públicas; build/tipos raíz+build/linters/contratos y Prisma generate/validate/status. Upgrade38→39 y limpia39;51 usuarios,40 refresh,47 perfiles y38 registros de migración originales preservados. Abortos/fallos previos excluidos; causa nativa no acreditada. **B–E ya no pendientes de implementación; admisión nueva false y flujo sin activar.** No acredita UI/APP ni integración remota. Reembolsos monetarios/liquidación entre ejecutores, coordinación de despliegue y soporte excepcional siguen pendientes operativos. Sin Docker/frontend/Coita/base real/.env/version/commit/push/despliegue/activación. El documento nul se conserva. La entrada A parcial que sigue es histórica.
+
+Correcciones justificadas durante verificación: mock/fixtures conforme a contratos de propietario y contraseña; aserciones exactas de campos aditivos y payload estable de webhook; teardown conserva historia financiera inmutable en bases sintéticas. Sin omitir casos ni relajar constraints. Runners por archivo evitan interferencia entre bases; un build accidental durante una corrida invalidó cuatro archivos y se repitieron después del build. Detalle de reportes completos, intentos excluidos y límites en VERIFICATION.
+
+Cierre operativo de esta verificación: cluster PostgreSQL temporal detenido, datos/evidencia sintéticos conservados; git diff --check aprobado. No se han realizado commit ni push.
+
+
+## 2026-10-06 — Revisión de entrega B–E y prompt FRONTEND WEB
+
+- Solicitud/contexto: propietario aporta implementación B–E y validación local backend.
+- Cambios: actualización de continuidad y prompt de implementación WEB en conversación, preservando contratos y código.
+- Verificación actual: lectura de continuidad, V1.17-DEMAND-IMPLEMENTATION y V1.17-IDENTITY-IMPLEMENTATION; git diff --check. No se repitieron pruebas backend ni se verificó frontend.
+- Resultado: backend A–E diferenciado del cierre integral V1.17; handoff demanda actual prevalece sobre pendientes históricos de identidad.
+- Pendientes: interfaz Web, integración real con backend en entorno aislado, APP DRIVER compatible y condiciones operativas. Sin Docker, código, commit/push, despliegue ni activación.
+
+### 2026-10-06 — commit y push de V1.17 solicitados
+
+Solicitud: publicar A–E y documentación en la rama actual. Cambios: continuidad de publicación; conservar implementación y handoff existentes. Verificación actual: revisión de rama/remoto, contenido preparado y diff --check; pruebas funcionales anteriores no repetidas. Publicación se verifica contra origin tras el envío. Pendientes operativos y admisión false conservados; sin despliegue. nul excluido del commit.

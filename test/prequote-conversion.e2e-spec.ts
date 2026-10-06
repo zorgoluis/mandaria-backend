@@ -361,6 +361,7 @@ describe('B2 atomic conversion on real PostgreSQL', () => {
     );
     expect(Object.keys(r.body).sort()).toEqual(
       [
+        'shippingTerms',
         'prequotePublicId',
         'convertedAt',
         'deliveryRequestPublicId',
@@ -908,8 +909,8 @@ describe('B2 controlled failures and SQL construction', () => {
     const { c } = await converted();
     const rows = await p.$queryRaw<
       { condeferrable: boolean; condeferred: boolean }[]
-    >`SELECT condeferrable,condeferred FROM pg_constraint WHERE conrelid='"PrequoteConversion"'::regclass AND conname IN ('PrequoteConversion_deliveryRequestId_integrationClientId_fkey','PrequoteConversion_deliveryQuoteId_deliveryRequestId_fkey')`;
-    expect(rows).toHaveLength(2);
+    >`SELECT condeferrable,condeferred FROM pg_constraint WHERE conrelid='"PrequoteConversion"'::regclass AND conname IN ('conversion_b2b_owner','conversion_direct_owner','PrequoteConversion_deliveryQuoteId_deliveryRequestId_fkey')`;
+    expect(rows).toHaveLength(3);
     expect(rows.every((r) => r.condeferrable && r.condeferred)).toBe(true);
     await p.$transaction(async (tx) => {
       await tx.$executeRawUnsafe('SAVEPOINT b2_child');

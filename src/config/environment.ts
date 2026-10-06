@@ -5,6 +5,16 @@ const optional = <T extends z.ZodTypeAny>(type: T) =>
   z.preprocess((v) => (v === '' ? undefined : v), type.optional());
 
 const schema = z.object({
+  CUSTOMER_ADMISSION_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  CUSTOMER_CHALLENGE_TTL_SECONDS: z.coerce
+    .number()
+    .int()
+    .min(60)
+    .max(3600)
+    .default(1800),
   DETAILED_EXECUTION_ENABLED: z
     .enum(['true', 'false'])
     .default('false')

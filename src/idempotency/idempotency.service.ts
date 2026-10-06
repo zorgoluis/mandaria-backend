@@ -1,10 +1,14 @@
+import { DomainException } from '../common/domain-error.js';
+import { ownerKey, lockCustomer } from '../customers/demand-owner.js';
+
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { createHash, randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export type IdempotencyScope = {
-  integrationClientId: string;
+  integrationClientId?: string | null;
+  customerAccountId?: string | null;
   key: string;
   /** Logical operation, part of the fingerprint (e.g. delivery_requests.create). */
   operation: string;
@@ -44,12 +48,26 @@ export class IdempotencyService {
     create: (tx: Prisma.TransactionClient, resourceId: string) => Promise<void>,
     load: (resourceId: string) => Promise<T>,
   ): Promise<{ result: T; replayed: boolean }> {
+    if (!!scope.integrationClientId === !!scope.customerAccountId)
+      throw new Error('Exactly one demand owner is required');
+    if (typeof scope.key !== 'string' || !/^[!-~]{8,255}$/.test(scope.key))
+      throw new DomainException(
+        'IDEMPOTENCY_KEY_INVALID',
+        400,
+        'Idempotency-Key must contain 8–255 visible ASCII characters',
+      );
     const requestHash = fingerprint(scope.operation, payload);
     const existing = await this.find(scope);
     if (existing) return this.replay(scope, existing, requestHash, load);
     const resourceId = randomUUID();
     try {
       await this.prisma.$transaction(async (tx) => {
+        await lockCustomer(
+          tx,
+          scope.customerAccountId
+            ? { kind: 'CUSTOMER', id: scope.customerAccountId }
+            : scope.integrationClientId!,
+        );
         await tx.apiIdempotencyRecord.create({
           data: { ...scope, requestHash, resourceId },
         });
@@ -70,10 +88,12 @@ export class IdempotencyService {
   private find(scope: IdempotencyScope) {
     return this.prisma.apiIdempotencyRecord.findUnique({
       where: {
-        integrationClientId_key: {
-          integrationClientId: scope.integrationClientId,
-          key: scope.key,
-        },
+        ...ownerKey(
+          scope.customerAccountId
+            ? { kind: 'CUSTOMER', id: scope.customerAccountId }
+            : scope.integrationClientId!,
+          scope.key,
+        ),
       },
       select: {
         requestHash: true,

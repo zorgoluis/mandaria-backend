@@ -1,3 +1,5 @@
+import { ownerFields } from '../customers/demand-owner.js';
+import type { DemandOwnerInput } from '../customers/demand-owner.js';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
@@ -64,7 +66,9 @@ export class DurablePrequoteConsumption implements PrequoteConsumption {
       throw new PrequotePublicError('PREQUOTE_CONSUMPTION_UNAVAILABLE');
     return policy;
   }
-  async admit(integrationClientId: string): Promise<ConsumptionDecision> {
+  async admit(
+    integrationClientId: DemandOwnerInput,
+  ): Promise<ConsumptionDecision> {
     this.policy();
     const owner = randomBytes(32).toString('hex');
     const result = await this.prisma.$transaction(async (tx) => {
@@ -115,7 +119,7 @@ export class DurablePrequoteConsumption implements PrequoteConsumption {
       const permit = await tx.prequoteConsumptionPermit.create({
         data: {
           id: randomUUID(),
-          integrationClientId,
+          ...ownerFields(integrationClientId),
           ownerHash: hash(owner),
           policyFingerprint: fingerprint,
           state: 'RESERVED',

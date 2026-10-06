@@ -12,6 +12,7 @@ import { DeliveryQuotesService } from './delivery-quotes.service.js';
 
 /** V1.6: can Mandaria serve this LOCAL_DELIVERY and at what price. No provider/driver assignment. */
 @Module({
+  exports: [AuthorizedAcceptanceService],
   imports: [
     AuthModule,
     IntegrationsModule,

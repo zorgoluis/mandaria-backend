@@ -1,5 +1,10 @@
 # Entrega de contrato B2B a Mandaria Frontend
 
+## V1.17 — resincronización requerida
+
+Contrato local actualizado en docs/openapi-b2b.json (B2B únicamente) y docs/openapi.json (humano/administración). Integrar términos de envío, pagador configurado, contacto propio y consentimiento versión2 para REQUESTER. [Guía vigente](B2B-PUBLIC-GUIDE.md), [contrato WEB/APP exacto](V1.17-DEMAND-IMPLEMENTATION.md). No añadir formularios Customer ni ShippingCollection al portal B2B. Origen confirmado https://mandaria.com.mx; paths ya contienen /api/v1. No se cambió exposición de Swagger/nginx ni se desplegó.
+
+
 2026-10-01. Contrato y guías; no implementación de portal o administración web. No cambios en frontend, Nginx, credenciales, flags, base ni acceso al Swagger completo.
 
 ## Artefactos públicos

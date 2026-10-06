@@ -1,3 +1,7 @@
+import {
+  demandOwner,
+  type DemandOwnerInput,
+} from '../customers/demand-owner.js';
 import type { PrequoteConsumptionPermit } from '@prisma/client';
 export type ConsumptionLimits = {
   minute: number;
@@ -42,7 +46,7 @@ function availableAt(
 }
 /** Single ledger projection; DB supplies now and rows. No in-memory quota authority. */
 export function consumptionRetryAt(
-  rows: Pick<
+  rows: (Pick<
     PrequoteConsumptionPermit,
     | 'integrationClientId'
     | 'state'
@@ -50,15 +54,23 @@ export function consumptionRetryAt(
     | 'startedAt'
     | 'protectedUntil'
     | 'units'
-  >[],
-  integrationId: string,
+  > & { customerAccountId?: string | null })[],
+  integrationId: DemandOwnerInput,
   c: ConsumptionLimits,
   now: Date,
 ) {
+  const owner = demandOwner(integrationId);
+  const owns = (r: {
+    integrationClientId: string | null;
+    customerAccountId?: string | null;
+  }) =>
+    owner.kind === 'INTEGRATION'
+      ? r.integrationClientId === owner.id && !r.customerAccountId
+      : r.customerAccountId === owner.id && !r.integrationClientId;
   const t = now.getTime();
   const window = (ms: number, own: boolean, weighted: boolean): Entry[] =>
     rows
-      .filter((r) => !own || r.integrationClientId === integrationId)
+      .filter((r) => !own || owns(r))
       .flatMap((r) => {
         const until = r.startedAt
           ? r.startedAt.getTime() + ms
@@ -68,7 +80,7 @@ export function consumptionRetryAt(
         return until > t ? [{ units: weighted ? r.units : 1, until }] : [];
       });
   const slots = rows
-    .filter((r) => r.integrationClientId === integrationId)
+    .filter((r) => owns(r))
     .flatMap((r) => {
       const until = r.startedAt
         ? r.protectedUntil!.getTime()

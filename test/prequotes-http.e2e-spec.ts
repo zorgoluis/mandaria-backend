@@ -281,6 +281,7 @@ describe('A4 HTTP prequotes with PostgreSQL and controlled routing', () => {
         'deliveryRequestPublicId',
         'deliveryQuotePublicId',
         'availabilityGuaranteed',
+        'shippingTerms',
       ].sort(),
     );
     expect(r.body).toMatchObject({

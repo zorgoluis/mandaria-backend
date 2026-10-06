@@ -10,6 +10,7 @@ import {
   IsUUID,
   Length,
   Min,
+  Matches,
   ValidateNested,
 } from 'class-validator';
 import { CUSTODY_REASONS, EXECUTION_PHASES } from './execution.types.js';
@@ -38,9 +39,27 @@ export class ExecutionCommandDto {
   @ApiProperty({ minimum: 0 }) @IsInt() @Min(0) expectedRevision!: number;
 }
 export class DriverAttemptParamsDto {
-  @ApiProperty({ enum: ['ADVANCE', 'REPORT', 'DELIVER'] })
-  @IsIn(['ADVANCE', 'REPORT', 'DELIVER'])
-  operation!: 'ADVANCE' | 'REPORT' | 'DELIVER';
+  @ApiProperty({ enum: ['ADVANCE', 'REPORT', 'DELIVER', 'COLLECT_SHIPPING'] })
+  @IsIn(['ADVANCE', 'REPORT', 'DELIVER', 'COLLECT_SHIPPING'])
+  operation!: 'ADVANCE' | 'REPORT' | 'DELIVER' | 'COLLECT_SHIPPING';
+}
+export class ShippingCollectionDto extends ExecutionCommandDto {
+  @ApiProperty({ pattern: '^MQ-[0-9]{6,}$' })
+  @Matches(/^MQ-[0-9]{6,}$/)
+  quotePublicId!: string;
+  @ApiProperty({ pattern: '^[a-f0-9]{64}$' })
+  @Matches(/^[a-f0-9]{64}$/)
+  termsHash!: string;
+  @ApiProperty({ pattern: '^[0-9]+\\.[0-9]{2}$' })
+  @Matches(/^\d+\.\d{2}$/)
+  amount!: string;
+  @ApiProperty({ enum: ['MXN'] }) @Equals('MXN') currency!: string;
+  @ApiProperty({ enum: ['REQUESTER', 'AUTHORIZED_REPRESENTATIVE'] })
+  @IsIn(['REQUESTER', 'AUTHORIZED_REPRESENTATIVE'])
+  receivedFrom!: string;
+  @ApiProperty({ format: 'date-time' })
+  @IsISO8601({ strict: true })
+  occurredAt!: string;
 }
 export class AdvanceExecutionDto extends ExecutionCommandDto {
   @ApiProperty({ enum: EXECUTION_PHASES })

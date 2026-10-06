@@ -1,0 +1,14 @@
+ALTER TYPE "Role" ADD VALUE 'CUSTOMER';
+ALTER TABLE "User" ADD COLUMN "sessionVersion" INTEGER NOT NULL DEFAULT 0 CHECK ("sessionVersion">=0);
+CREATE TYPE "CustomerType" AS ENUM ('PERSONAL','BUSINESS');
+CREATE TABLE "CustomerAccount" (
+ id UUID PRIMARY KEY, "userId" UUID NOT NULL UNIQUE REFERENCES "User"(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+ type "CustomerType" NOT NULL, active BOOLEAN NOT NULL DEFAULT true,
+ "displayName" VARCHAR(100) NOT NULL, "businessName" VARCHAR(160), revision INTEGER NOT NULL DEFAULT 1 CHECK(revision>0),
+ "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL
+);
+CREATE TABLE "CustomerChallenge" (
+ id UUID PRIMARY KEY,email VARCHAR(254) NOT NULL,purpose VARCHAR(20) NOT NULL CHECK(purpose IN ('REGISTER','RESET','VERIFY')),
+ "tokenHash" CHAR(64) NOT NULL UNIQUE,profile JSONB,"expiresAt" TIMESTAMP(3) NOT NULL,"consumedAt" TIMESTAMP(3),"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX "CustomerChallenge_email_purpose_idx" ON "CustomerChallenge"(email,purpose);

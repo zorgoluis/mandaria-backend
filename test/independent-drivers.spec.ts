@@ -443,6 +443,7 @@ describe('V1.9 take serializes against suspension', () => {
           create: vi.fn().mockImplementation(createImpl),
         },
         dispatch: {
+          findUnique: vi.fn().mockResolvedValue(null),
           update: vi.fn(),
           findFirst: vi.fn().mockResolvedValue(null),
         },

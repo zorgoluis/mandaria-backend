@@ -1,3 +1,4 @@
+import { retainShippingFixtures } from './support/shipping-fixtures.js';
 import 'reflect-metadata';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
@@ -458,6 +459,10 @@ async function removeFixtures() {
       select: { id: true },
     })
   ).map((z) => z.id);
+  if (await retainShippingFixtures(prisma, clientIds, zoneIds)) {
+    await prisma.$disconnect();
+    return;
+  }
   await purgeFixtureDispatches(prisma, clientIds);
   await prisma.deliveryAssignment.deleteMany({
     where: { driverId: { in: driverIds } },
@@ -625,7 +630,21 @@ describe('V1.12-B a completed delivery records its B2B event', () => {
     const status = await statusOf(dispatch.requestPublicId).expect(200);
     const [event] = await eventsOf(dispatch.id);
     // Two representations of the same delivery cannot contradict each other.
-    expect(event.payload).toEqual(status.body);
+    // delivery.completed intentionally keeps its original contract. Polling adds
+    // version, classification and shipping instructions; compare every event field exactly.
+    expect(event.payload).toEqual(
+      Object.fromEntries(
+        [
+          'publicId',
+          'externalReference',
+          'status',
+          'requestedAt',
+          'deliveredAt',
+          'cancelledAt',
+          'execution',
+        ].map((key) => [key, status.body[key]]),
+      ),
+    );
   });
 
   it('the payload carries no internal identifier of any kind', async () => {
@@ -670,9 +689,20 @@ describe('V1.12-B a completed delivery records its B2B event', () => {
     const after = await eventsOf(dispatch.id);
     expect(after).toEqual(before);
     // And the public status still agrees after the restart.
-    expect((await statusOf(dispatch.requestPublicId).expect(200)).body).toEqual(
-      before[0].payload,
-    );
+    const current = (await statusOf(dispatch.requestPublicId).expect(200)).body;
+    expect(
+      Object.fromEntries(
+        [
+          'publicId',
+          'externalReference',
+          'status',
+          'requestedAt',
+          'deliveredAt',
+          'cancelledAt',
+          'execution',
+        ].map((key) => [key, current[key]]),
+      ),
+    ).toEqual(before[0].payload);
   });
 
   it('the snapshot is frozen: later legitimate changes to the request do not touch it', async () => {
@@ -934,6 +964,7 @@ describe('V1.12-B a recorded event is history', () => {
       where: { publicId: open.requestPublicId },
       select: { id: true, integrationClientId: true, requestedAt: true },
     });
+    if (!request.integrationClientId) throw Error('Expected B2B fixture');
     const payload = {
       publicId: open.requestPublicId,
       externalReference: open.reference,

@@ -451,7 +451,7 @@ export class DispatchService {
         actorUserId,
         deliveredAt: outcome.deliveredAt.toISOString(),
       });
-      this.logger.log(recordedEventLog(outcome.event));
+      if (outcome.event) this.logger.log(recordedEventLog(outcome.event));
       // V1.12-D: the transaction has already committed and the event is durable, so this is
       // only a nudge for latency. If the process dies right here the worker rediscovers the
       // event from the outbox; transport never decides whether a delivery happened.

@@ -16,6 +16,17 @@ export const deliveryRequestSummarySelect = {
 
 export const deliveryRequestDetailSelect = {
   ...deliveryRequestSummarySelect,
+  shippingTerms: {
+    select: {
+      payer: true,
+      method: true,
+      dueAt: true,
+      component: true,
+      termsVersion: true,
+      termsHash: true,
+      payerContact: true,
+    },
+  },
   cancellationReason: true,
   stops: {
     orderBy: { sequence: 'asc' },

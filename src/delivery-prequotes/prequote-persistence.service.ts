@@ -1,3 +1,14 @@
+import {
+  shippingSnapshot,
+  type ShippingPayer,
+} from '../customers/shipping-terms.js';
+import {
+  demandOwner,
+  ownerFields,
+  ownerKey,
+  ownerSql,
+} from '../customers/demand-owner.js';
+import type { DemandOwnerInput } from '../customers/demand-owner.js';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
@@ -18,7 +29,7 @@ export const PREQUOTE_OPERATION = 'delivery_prequotes.create';
 export const PREQUOTE_RESOURCE = 'DeliveryPrequote';
 export type PrequoteLease = {
   recordId: string;
-  integrationClientId: string;
+  integrationClientId: DemandOwnerInput;
   owner: string;
   version: number;
 };
@@ -52,13 +63,26 @@ export class PrequotePersistenceService {
   ) {}
 
   /** Read-only coherent observation; never acquires work or consumes an attempt. */
-  async inspect(integrationClientId: string, key: string, input: unknown) {
-    const conditions = normalizePrequoteConditions(input);
-    const requestHash = fingerprint(PREQUOTE_OPERATION, conditions);
+  async inspect(
+    integrationClientId: DemandOwnerInput,
+    key: string,
+    input: unknown,
+    shippingPayer?: ShippingPayer,
+  ) {
+    const conditions = normalizePrequoteConditions(
+      input,
+      demandOwner(integrationClientId).kind === 'CUSTOMER',
+    );
+    const requestHash = fingerprint(
+      PREQUOTE_OPERATION,
+      demandOwner(integrationClientId).kind === 'CUSTOMER'
+        ? { conditions, shippingPayer: shippingPayer ?? 'REQUESTER' }
+        : conditions,
+    );
     return this.prisma.$transaction(
       async (tx) => {
         const record = await tx.apiIdempotencyRecord.findUnique({
-          where: { integrationClientId_key: { integrationClientId, key } },
+          where: { ...ownerKey(integrationClientId, key) },
           include: { execution: true },
         });
         if (!record) return { kind: 'available' as const };
@@ -108,12 +132,16 @@ export class PrequotePersistenceService {
   }
 
   async reserve(
-    integrationClientId: string,
+    integrationClientId: DemandOwnerInput,
     key: string,
     input: unknown,
     policy: LeasePolicy,
+    shippingPayer?: ShippingPayer,
   ) {
-    const conditions = normalizePrequoteConditions(input);
+    const conditions = normalizePrequoteConditions(
+      input,
+      demandOwner(integrationClientId).kind === 'CUSTOMER',
+    );
     if (
       !/^[\x21-\x7e]{8,255}$/.test(key) ||
       !validDuration(policy.leaseMs, 300_000) ||
@@ -124,12 +152,17 @@ export class PrequotePersistenceService {
         400,
         'Invalid internal lease policy or key',
       );
-    const requestHash = fingerprint(PREQUOTE_OPERATION, conditions);
+    const requestHash = fingerprint(
+      PREQUOTE_OPERATION,
+      demandOwner(integrationClientId).kind === 'CUSTOMER'
+        ? { conditions, shippingPayer: shippingPayer ?? 'REQUESTER' }
+        : conditions,
+    );
     return this.prisma.$transaction(async (tx) => {
       const inserted = await tx.apiIdempotencyRecord.createMany({
         data: {
           id: randomUUID(),
-          integrationClientId,
+          ...ownerFields(integrationClientId),
           key,
           operation: PREQUOTE_OPERATION,
           resourceType: PREQUOTE_RESOURCE,
@@ -146,7 +179,7 @@ export class PrequotePersistenceService {
           requestHash: string;
           resourceId: string;
         }[]
-      >`SELECT * FROM "ApiIdempotencyRecord" WHERE "integrationClientId"=${integrationClientId}::uuid AND key=${key} FOR UPDATE`;
+      >`SELECT * FROM "ApiIdempotencyRecord" WHERE ${ownerSql(integrationClientId)} AND key=${key} FOR UPDATE`;
       if (
         record.operation !== PREQUOTE_OPERATION ||
         record.resourceType !== PREQUOTE_RESOURCE ||
@@ -221,7 +254,7 @@ export class PrequotePersistenceService {
   private async owned(tx: Prisma.TransactionClient, lease: PrequoteLease) {
     const [record] = await tx.$queryRaw<
       { id: string; resourceId: string; requestHash: string }[]
-    >`SELECT * FROM "ApiIdempotencyRecord" WHERE id=${lease.recordId}::uuid AND "integrationClientId"=${lease.integrationClientId}::uuid FOR UPDATE`;
+    >`SELECT * FROM "ApiIdempotencyRecord" WHERE id=${lease.recordId}::uuid AND ${ownerSql(lease.integrationClientId)} FOR UPDATE`;
     if (!record) throw lost();
     await tx.$queryRaw`SELECT "recordId" FROM "ApiIdempotencyExecution" WHERE "recordId"=${record.id}::uuid FOR UPDATE`;
     const execution = await tx.apiIdempotencyExecution.findUnique({
@@ -267,8 +300,12 @@ export class PrequotePersistenceService {
     input: unknown,
     evidence: { serviceZoneId: string; ratePlanId: string; route: RouteResult },
     validityMs: number,
+    shippingPayer?: ShippingPayer,
   ) {
-    const conditions = normalizePrequoteConditions(input);
+    const conditions = normalizePrequoteConditions(
+      input,
+      demandOwner(lease.integrationClientId).kind === 'CUSTOMER',
+    );
     if (!validDuration(validityMs, 86_400_000))
       throw new DomainException(
         'PREQUOTE_DURATION_INVALID',
@@ -277,7 +314,15 @@ export class PrequotePersistenceService {
       );
     return this.prisma.$transaction(async (tx) => {
       const { record } = await this.owned(tx, lease);
-      if (record.requestHash !== fingerprint(PREQUOTE_OPERATION, conditions))
+      if (
+        record.requestHash !==
+        fingerprint(
+          PREQUOTE_OPERATION,
+          demandOwner(lease.integrationClientId).kind === 'CUSTOMER'
+            ? { conditions, shippingPayer: shippingPayer ?? 'REQUESTER' }
+            : conditions,
+        )
+      )
         throw conflict();
       // Lock order: key record -> zone -> plan -> bands. No external work is performed here.
       await tx.$queryRaw`SELECT id FROM "ServiceZone" WHERE id=${evidence.serviceZoneId}::uuid FOR SHARE`;
@@ -310,7 +355,12 @@ export class PrequotePersistenceService {
           id: record.resourceId,
           publicId: await nextPublicId(tx, 'MPQ'),
           idempotencyRecordId: record.id,
-          integrationClientId: lease.integrationClientId,
+          ...ownerFields(lease.integrationClientId),
+          shippingTerms: await shippingSnapshot(
+            tx,
+            lease.integrationClientId,
+            shippingPayer,
+          ),
           conditionsVersion: 1,
           conditions,
           serviceType: 'LOCAL_DELIVERY',

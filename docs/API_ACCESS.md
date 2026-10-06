@@ -53,6 +53,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | DELETE | /api/v1/admin/integrations/{id}/credentials/{credentialId} | bearer | SUPER_ADMIN | — | Compatibility alias for credential revocation |
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/revoke | bearer | SUPER_ADMIN | — | AdminIntegrationsController_revoke[0] |
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/rotate | bearer | SUPER_ADMIN | — | Create replacement with the same scopes/expiry; revoke old credential explicitly after transition |
+| GET | /api/v1/admin/integrations/{id}/shipping-policy | bearer | SUPER_ADMIN | — | Consultar pagador predeterminado B2B y revisión; no altera solicitudes históricas |
+| POST | /api/v1/admin/integrations/{id}/shipping-policy | bearer | SUPER_ADMIN | — | Cambiar política para nuevas solicitudes; cambio invalida MPQ todavía no convertidas |
 | GET | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Consultar el endpoint de webhook de un IntegrationClient |
 | PUT | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Configurar el endpoint de webhook de un IntegrationClient |
 | GET | /api/v1/admin/integrations/{id}/webhook/deliveries | bearer | SUPER_ADMIN | — | Estado de entrega de los eventos de un IntegrationClient |
@@ -117,7 +119,27 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/auth/login | Pública | — | — | AuthController_login |
 | POST | /api/v1/auth/logout | Pública | — | — | AuthController_logout |
 | GET | /api/v1/auth/me | bearer | — | — | AuthController_me |
+| POST | /api/v1/auth/password-recovery | Pública | — | — | Solicitar recuperación de una cuenta humana existente; respuesta genérica |
+| POST | /api/v1/auth/password-reset | Pública | — | — | Restablecer contraseña; invalida todas las sesiones anteriores de esa cuenta |
 | POST | /api/v1/auth/refresh | Pública | — | — | AuthController_refresh |
+| POST | /api/v1/customer-registration | Pública | — | — | Solicitar registro cliente; respuesta genérica, admisión deshabilitada por defecto |
+| POST | /api/v1/customer-registration/confirm | Pública | — | — | Verificar correo y crear usuario CUSTOMER con perfil; no concede permisos operativos |
+| POST | /api/v1/customer-registration/resend | Pública | — | — | Repetir solicitud de registro con perfil completo; invalida el token anterior aún pendiente |
+| GET | /api/v1/customer/capabilities | bearer | — | — | Consultar cupo durable y pagadores permitidos; GET no libera cupo ni confirma disponibilidad logística |
+| POST | /api/v1/customer/contact-verification | bearer | — | — | Enviar verificación al correo de la cuenta autenticada; no permite elegir otra dirección |
+| POST | /api/v1/customer/contact-verification/confirm | bearer | — | — | Confirmar el correo propio; token ajeno inválido |
+| POST | /api/v1/customer/delivery-prequotes | bearer | — | — | Precotizar solicitud directa con tarifas compartidas; no reserva cupo |
+| GET | /api/v1/customer/delivery-prequotes/{publicId} | bearer | — | — | Consultar precotización propia y recuperar conversión por clave/referencia original |
+| POST | /api/v1/customer/delivery-prequotes/{publicId}/convert | bearer | — | — | Convertir una vez; PERSONAL ocupa un cupo hasta cierre durable |
+| POST | /api/v1/customer/delivery-quotes/{publicId}/accept | bearer | — | — | Consentir MQ y términos exactos; no confirma cobro ni entrega física |
+| GET | /api/v1/customer/delivery-requests | bearer | — | — | Solicitudes propias paginadas; titular aislado del canal B2B |
+| GET | /api/v1/customer/delivery-requests/{publicId} | bearer | — | — | Detalle propio e instrucciones persistidas |
+| POST | /api/v1/customer/delivery-requests/{publicId}/cancel | bearer | — | — | Cancelar solicitud propia; repetición segura, custodia bloquea cancelación ordinaria |
+| GET | /api/v1/customer/delivery-requests/{publicId}/status | bearer | — | — | Fotografía logística propia; ordenar por publicVersion por solicitud |
+| GET | /api/v1/customer/profile | bearer | — | — | Consultar perfil propio activo; un JWT B2B no es válido |
+| POST | /api/v1/customer/profile | bearer | — | — | Crear perfil propio verificado, conservando rol operativo y sesiones |
+| PATCH | /api/v1/customer/profile | bearer | — | — | Actualizar nombres con expectedRevision; no cambia tipo, usuario ni permisos |
+| POST | /api/v1/customer/profile/type | bearer | — | — | Cambiar tipo propio sólo sin solicitudes abiertas; expectedRevision detecta concurrencia y respuesta incierta se reconcilia con GET profile |
 | POST | /api/v1/delivery-prequotes | integration-bearer | — | prequotes:create | Emitir o recuperar mi precotización |
 | GET | /api/v1/delivery-prequotes/{publicId} | integration-bearer | — | prequotes:read | Consultar mi precotización |
 | POST | /api/v1/delivery-prequotes/{publicId}/convert | integration-bearer | — | prequotes:convert, deliveries:create, quotes:create | Convertir una precotización una sola vez |
@@ -142,6 +164,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/driver/dispatches/{dispatchId}/execution-completion | bearer | DRIVER | — | Confirmar entrega propia |
 | POST | /api/v1/driver/dispatches/{dispatchId}/execution-events | bearer | DRIVER | — | Registrar siguiente hito del Driver asignado |
 | POST | /api/v1/driver/dispatches/{dispatchId}/release | bearer | DRIVER | — | Liberar un servicio que tomé |
+| POST | /api/v1/driver/dispatches/{dispatchId}/shipping-collection | bearer | DRIVER | — | Declarar efectivo del envío recibido en recogida |
 | POST | /api/v1/driver/dispatches/{dispatchId}/take | bearer | DRIVER | — | Tomar un servicio |
 | GET | /api/v1/driver/dispatches/available | bearer | DRIVER | — | Servicios que puedo tomar |
 | GET | /api/v1/driver/me | bearer | DRIVER | — | Consultar mi perfil de repartidor |

@@ -23,6 +23,18 @@ export class ExecutionResponse {
   allowedActions!: string[];
   @ApiProperty({ format: 'date-time' }) lastRecordedAt!: string;
 }
+export class ShippingCollectionResponse {
+  @ApiProperty({ enum: ['DECLARED'] }) evidenceStatus!: string;
+  @ApiProperty({ example: '55.00' }) amount!: string;
+  @ApiProperty({ enum: ['MXN'] }) currency!: string;
+  @ApiProperty({ format: 'date-time' }) recordedAt!: string;
+  @ApiProperty({
+    enum: [false],
+    description:
+      'Declaración del Driver; Mandaria no verifica físicamente el efectivo.',
+  })
+  physicalReceiptVerified!: boolean;
+}
 export class ProviderAdvanceAttemptResponse {
   @ApiProperty({ enum: ['APPLIED', 'PENDING_OR_UNKNOWN', 'CLOSED_NO_EFFECTS'] })
   state!: string;

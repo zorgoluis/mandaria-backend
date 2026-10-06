@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { retainShippingFixtures } from './support/shipping-fixtures.js';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Test } from '@nestjs/testing';
@@ -378,6 +379,10 @@ beforeAll(async () => {
 }, 180000);
 
 afterAll(async () => {
+  if (await retainShippingFixtures(prisma, clientIds, zoneId ? [zoneId] : [])) {
+    await prisma.$disconnect();
+    return;
+  }
   await purgeFixtureDispatches(prisma, clientIds);
   const providerIds = Object.values(providers);
   const driverIds = Object.values(drivers);

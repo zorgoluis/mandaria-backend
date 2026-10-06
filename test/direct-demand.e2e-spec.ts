@@ -1,0 +1,1239 @@
+import 'reflect-metadata';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { Test } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
+import type { INestApplication, LoggerService } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+import * as argon2 from 'argon2';
+import request from 'supertest';
+import { ensureTestCreditPolicies } from './support/credit-policies.js';
+import { fundForAward } from './support/credits.js';
+
+const databaseUrl = process.env.TEST_DATABASE_URL;
+if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith('_test'))
+  throw new Error('Dedicated TEST_DATABASE_URL ending in _test required');
+process.env.DATABASE_URL = databaseUrl;
+process.env.NODE_ENV = 'test';
+process.env.JWT_ACCESS_SECRET = randomBytes(48).toString('hex');
+process.env.JWT_REFRESH_SECRET = randomBytes(48).toString('hex');
+process.env.INTEGRATION_JWT_SECRET = randomBytes(48).toString('hex');
+process.env.JWT_ACCESS_EXPIRES_IN = '3600';
+process.env.INTEGRATION_ACCESS_TOKEN_EXPIRES_IN = '3600';
+process.env.DISPATCH_TTL_MINUTES = '60';
+process.env.LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES = '30';
+process.env.INDEPENDENT_DRIVER_MAX_VEHICLES = '2';
+process.env.MAIL_PROVIDER = 'local_outbox';
+process.env.DETAILED_EXECUTION_ENABLED = 'true';
+process.env.CUSTOMER_ADMISSION_ENABLED = 'true';
+process.env.PREQUOTE_ENABLED = 'true';
+process.env.PREQUOTE_CONVERSION_ENABLED = 'true';
+process.env.PREQUOTE_AUTHORIZED_ACCEPT_ENABLED = 'true';
+process.env.PREQUOTE_PER_MINUTE = '1000';
+process.env.PREQUOTE_PER_DAY = '100000';
+process.env.PREQUOTE_GLOBAL_DAILY_ROUTING_UNITS = '100000';
+process.env.B2B_WEBHOOK_POLL_SECONDS = '0';
+
+const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
+const run = randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
+const PREFIX = 'E2E_V117_';
+const password = randomBytes(24).toString('base64url');
+const mail = (n: string) => `${n}-${run}@execution.test`.toLowerCase();
+const logs: string[] = [];
+const capture = (...args: unknown[]) => void logs.push(JSON.stringify(args));
+const logger: LoggerService = {
+  log: capture,
+  error: capture,
+  warn: capture,
+  debug: capture,
+  verbose: capture,
+  fatal: capture,
+};
+const routing = {
+  name: 'fake',
+  async calculateRoute() {
+    return {
+      distanceMeters: 3900,
+      durationSeconds: 640,
+      routingProvider: 'fake',
+      calculatedAt: new Date(),
+    };
+  },
+};
+const ZONE = { lng: -93.4, lat: 17.4 };
+const square = () => ({
+  type: 'Polygon',
+  coordinates: [
+    [
+      [ZONE.lng, ZONE.lat],
+      [ZONE.lng + 0.1, ZONE.lat],
+      [ZONE.lng + 0.1, ZONE.lat + 0.1],
+      [ZONE.lng, ZONE.lat + 0.1],
+      [ZONE.lng, ZONE.lat],
+    ],
+  ],
+});
+const providers: Record<string, string> = {};
+const drivers: Record<string, string> = {};
+const vehicles: Record<string, string> = {};
+const users: Record<string, string> = {};
+const t: Record<string, string> = {};
+let zoneId = '';
+let app: INestApplication;
+const api = () => request(app.getHttpServer());
+const bearer = { type: 'bearer' } as const;
+
+async function bootstrap() {
+  const { AppModule } = await import('../dist/app.module.js');
+  const { setup } = await import('../dist/setup.js');
+  const { ROUTING_PROVIDER } = await import('../dist/routing/routing.types.js');
+  const { PREQUOTE_CONSUMPTION } =
+    await import('../dist/delivery-prequotes/prequote-consumption.js');
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+    .overrideProvider(PREQUOTE_CONSUMPTION)
+    .useValue({
+      admit: async () => ({
+        admitted: true,
+        permit: {
+          start: async () => {},
+          assertReady: async () => {},
+          finish: async () => {},
+        },
+      }),
+    })
+    .overrideProvider(ROUTING_PROVIDER)
+    .useValue(routing)
+    .setLogger(logger)
+    .compile();
+  const instance = moduleRef.createNestApplication({
+    logger,
+    bodyParser: false,
+  });
+  setup(instance);
+  await instance.init();
+  return instance;
+}
+
+/** A fresh app per block resets the in-memory throttler counters. */
+function withApp() {
+  beforeAll(async () => {
+    app = await bootstrap();
+  });
+  afterAll(async () => {
+    await app?.close();
+  });
+}
+
+const claim = (token: string, dispatchId: string) =>
+  api()
+    .post(`/api/v1/provider/dispatches/${dispatchId}/claim`)
+    .auth(token, bearer)
+    .send({});
+const assign = (token: string, dispatchId: string, body: object) =>
+  api()
+    .post(`/api/v1/provider/dispatches/${dispatchId}/assignment`)
+    .auth(token, bearer)
+    .send(body);
+const take = (token: string, dispatchId: string, vehicleId: string) =>
+  api()
+    .post(`/api/v1/driver/dispatches/${dispatchId}/take`)
+    .auth(token, bearer)
+    .send({ vehicleId });
+async function assignedToken(id: string) {
+  const a = await prisma.deliveryAssignment.findFirstOrThrow({
+    where: { dispatchId: id, status: { in: ['ACTIVE', 'COMPLETED'] } },
+    orderBy: { assignedAt: 'desc' },
+  });
+  const name = Object.keys(drivers).find((n) => drivers[n] === a.driverId)!;
+  return t[name];
+}
+const completionCalls = new Map<
+  string,
+  {
+    token: string;
+    key: string;
+    body: { assignmentId: string; expectedRevision: number };
+  }
+>();
+async function appDeliver(id: string) {
+  let c = completionCalls.get(id);
+  if (!c) {
+    const token = await assignedToken(id);
+    const r = await api()
+      .get('/api/v1/driver/dispatches/' + id + '/execution')
+      .auth(token, bearer)
+      .expect(200);
+    c = {
+      token,
+      key: randomUUID(),
+      body: {
+        assignmentId: r.body.execution.activeAssignmentId,
+        expectedRevision: r.body.execution.revision,
+      },
+    };
+    completionCalls.set(id, c);
+  }
+  return api()
+    .post('/api/v1/driver/dispatches/' + id + '/execution-completion')
+    .auth(c.token, bearer)
+    .set('Idempotency-Key', c.key)
+    .send(c.body)
+    .expect(200);
+}
+
+beforeAll(async () => {
+  // Leftovers of a previous killed run would otherwise collide with these fixtures and with the
+  // global invariant scans of other suites.
+  // Isolated disposable execution database; fixtures retained for invariant inspection.
+  await ensureTestCreditPolicies(prisma);
+  const passwordHash = await argon2.hash(password);
+  const user = async (
+    name: string,
+    role: 'SUPER_ADMIN' | 'PROVIDER_ADMIN' | 'DRIVER',
+  ) => {
+    const u = await prisma.user.create({
+      data: { email: mail(name), passwordHash, role },
+    });
+    users[name] = u.id;
+    return u.id;
+  };
+  await user('sa', 'SUPER_ADMIN');
+  await user('sa2', 'SUPER_ADMIN');
+  // A and B receive dispatches (both candidates); C has no coverage, so it is never a candidate.
+  for (const key of ['A', 'B', 'C'] as const) {
+    const provider = await prisma.deliveryProvider.create({
+      data: {
+        name: `Proveedor ${key} ${run}`,
+        code: `${PREFIX}${key}_${run}`,
+        type: 'FLEET',
+        status: 'ACTIVE',
+        maxDrivers: 10,
+        maxVehicles: 10,
+      },
+    });
+    providers[key] = provider.id;
+    await prisma.providerMembership.create({
+      data: {
+        providerId: provider.id,
+        userId: await user(`admin${key}`, 'PROVIDER_ADMIN'),
+        role: 'OWNER',
+      },
+    });
+  }
+  const driver = async (key: string, providerKey: 'A' | 'B' = 'A') => {
+    const row = await prisma.driver.create({
+      data: {
+        providerId: providers[providerKey],
+        userId: await user(key, 'DRIVER'),
+        name: key,
+        status: 'ACTIVE',
+      },
+    });
+    drivers[key] = row.id;
+  };
+  await driver('ana');
+  await driver('beto');
+  await driver('indy');
+  await driver('otro');
+  for (const key of ['fleet1', 'fleet2']) {
+    const row = await prisma.vehicle.create({
+      data: {
+        providerId: providers.A,
+        identifier: `${key.toUpperCase()}-${run}`,
+        type: 'MOTORCYCLE',
+        status: 'ACTIVE',
+      },
+    });
+    vehicles[key] = row.id;
+  }
+  await prisma.serviceZone.updateMany({
+    where: { code: { startsWith: PREFIX }, status: 'ACTIVE' },
+    data: { status: 'INACTIVE' },
+  });
+  app = await bootstrap();
+  const login = async (email: string) =>
+    (
+      await api()
+        .post('/api/v1/auth/login')
+        .send({ email, password })
+        .expect(200)
+    ).body.accessToken as string;
+  t.sa = await login(mail('sa'));
+  t.A = await login(mail('adminA'));
+  t.B = await login(mail('adminB'));
+  t.C = await login(mail('adminC'));
+  t.ana = await login(mail('ana'));
+  // Login is limited to 5 per minute per IP; a fresh app resets the in-memory counter.
+  await app.close();
+  app = await bootstrap();
+  t.indy = await login(mail('indy'));
+  t.sa2 = await login(mail('sa2'));
+  t.otro = await login(mail('otro'));
+  t.beto = await login(mail('beto'));
+  const zone = await api()
+    .post('/api/v1/admin/service-zones')
+    .auth(t.sa, bearer)
+    .send({
+      code: `${PREFIX}ZONE_${run}`,
+      name: `Zona ${run}`,
+      currency: 'MXN',
+      boundary: square(),
+    })
+    .expect(201);
+  zoneId = zone.body.id;
+  await api()
+    .post(`/api/v1/admin/service-zones/${zoneId}/activate`)
+    .auth(t.sa, bearer)
+    .expect(200);
+  const plan = await api()
+    .post('/api/v1/admin/rate-plans')
+    .auth(t.sa, bearer)
+    .send({
+      serviceZoneId: zoneId,
+      serviceType: 'LOCAL_DELIVERY',
+      quoteValidityMinutes: 60,
+      bands: [
+        { minDistanceMeters: 0, maxDistanceMeters: 100000, amount: '55' },
+      ],
+    })
+    .expect(201);
+  await api()
+    .post(`/api/v1/admin/rate-plans/${plan.body.id}/activate`)
+    .auth(t.sa, bearer)
+    .expect(200);
+  for (const key of ['A', 'B'] as const)
+    await api()
+      .post(`/api/v1/admin/providers/${providers[key]}/service-coverages`)
+      .auth(t.sa, bearer)
+      .send({ serviceZoneId: zoneId, serviceType: 'LOCAL_DELIVERY' })
+      .expect(201);
+  // The independent driver and its own vehicle.
+  await api()
+    .post(`/api/v1/admin/drivers/${drivers.indy}/independent`)
+    .auth(t.sa, bearer)
+    .send({ reason: 'Alta para V1.11-A' })
+    .expect(200);
+  vehicles.indy = (
+    await api()
+      .post(`/api/v1/admin/drivers/${drivers.indy}/independent/vehicles`)
+      .auth(t.sa, bearer)
+      .send({ identifier: `INDY-${run}`, type: 'MOTORCYCLE' })
+      .expect(201)
+  ).body.id;
+  const client = await api()
+    .post('/api/v1/admin/integrations')
+    .auth(t.sa, bearer)
+    .send({ name: 'Completion client', code: `${PREFIX}CLIENT_${run}` })
+    .expect(201);
+  const credential = await api()
+    .post(`/api/v1/admin/integrations/${client.body.id}/credentials`)
+    .auth(t.sa, bearer)
+    .send({
+      scopes: [
+        'prequotes:create',
+        'prequotes:read',
+        'prequotes:convert',
+        'deliveries:create',
+        'deliveries:read',
+        'deliveries:cancel',
+        'quotes:create',
+        'quotes:read',
+        'quotes:accept',
+      ],
+    })
+    .expect(201);
+  t.b2b = (
+    await api()
+      .post('/api/v1/integrations/token')
+      .send({
+        clientId: credential.body.clientId,
+        clientSecret: credential.body.clientSecret,
+      })
+      .expect(200)
+  ).body.accessToken;
+  await app.close();
+}, 180000);
+
+afterAll(async () => {
+  // Retain history, but release this suite's geographic fixture for other files.
+  if (zoneId)
+    await prisma.serviceZone.update({
+      where: { id: zoneId },
+      data: { status: 'INACTIVE' },
+    });
+  await prisma.$disconnect();
+}, 120000);
+
+describe('V1.17 direct demand, quota, shipping declaration and durable recovery', () => {
+  withApp();
+  const customerIds: Record<string, string> = {};
+  beforeAll(async () => {
+    // Existing A identity is exercised separately; these are isolated verified test accounts.
+    for (const [name, type] of [
+      ['personal', 'PERSONAL'],
+      ['business', 'BUSINESS'],
+      ['other', 'PERSONAL'],
+    ] as const) {
+      const u = await prisma.user.create({
+        data: {
+          email: mail(name),
+          role: 'CUSTOMER',
+          passwordHash: await argon2.hash(password),
+          emailVerifiedAt: new Date(),
+        },
+      });
+      users[name] = u.id;
+      customerIds[name] = (
+        await prisma.customerAccount.create({
+          data: {
+            userId: u.id,
+            type,
+            displayName: name,
+            businessName: type === 'BUSINESS' ? 'Synthetic business' : null,
+          },
+        })
+      ).id;
+      t[name] = (
+        await api()
+          .post('/api/v1/auth/login')
+          .send({ email: mail(name), password })
+          .expect(200)
+      ).body.accessToken;
+    }
+  });
+  beforeEach(async () => {
+    await app.close();
+    app = await bootstrap();
+  });
+  const conditions = {
+    conditionsVersion: 1,
+    serviceType: 'LOCAL_DELIVERY',
+    stops: [
+      {
+        type: 'PICKUP',
+        sequence: 1,
+        latitude: Number((ZONE.lat + 0.02).toFixed(6)),
+        longitude: Number((ZONE.lng + 0.02).toFixed(6)),
+      },
+      {
+        type: 'DROPOFF',
+        sequence: 2,
+        latitude: Number((ZONE.lat + 0.05).toFixed(6)),
+        longitude: Number((ZONE.lng + 0.05).toFixed(6)),
+      },
+    ],
+    packages: [{ category: 'PARCEL', quantity: 1 }],
+  };
+  const conversion = () => ({
+    conditionsVersion: 1,
+    deliveryRequest: {
+      serviceType: 'LOCAL_DELIVERY',
+      externalReference: 'Synthetic direct',
+      stops: conditions.stops.map((s) => ({
+        ...s,
+        address: 'Synthetic street',
+        contactName: 'Synthetic contact',
+        contactPhone: '0000000000',
+      })),
+      packages: [
+        { category: 'PARCEL', description: 'Synthetic parcel', quantity: 1 },
+      ],
+      financialContext: { goodsPaymentMode: 'PREPAID', currency: 'MXN' },
+    },
+    payerContact: {
+      name: 'Synthetic payer',
+      phone: '0000000000',
+      capacity: 'AUTHORIZED_REPRESENTATIVE',
+    },
+  });
+  const mpq = (
+    name = 'personal',
+    shippingPayer = 'REQUESTER',
+    key = randomUUID(),
+  ) =>
+    api()
+      .post('/api/v1/customer/delivery-prequotes')
+      .auth(t[name], bearer)
+      .set('Idempotency-Key', key)
+      .send({ conditions, shippingPayer });
+  const convert = (id: string, name = 'personal', key = randomUUID()) =>
+    api()
+      .post('/api/v1/customer/delivery-prequotes/' + id + '/convert')
+      .auth(t[name], bearer)
+      .set('Idempotency-Key', key)
+      .send(conversion());
+  const cancel = (id: string, name = 'personal') =>
+    api()
+      .post('/api/v1/customer/delivery-requests/' + id + '/cancel')
+      .auth(t[name], bearer)
+      .send({ reason: 'Synthetic cancellation' });
+  const status = (id: string, name = 'personal') =>
+    api()
+      .get('/api/v1/customer/delivery-requests/' + id + '/status')
+      .auth(t[name], bearer);
+  async function create(name = 'personal', payer = 'REQUESTER') {
+    const q = await mpq(name, payer).expect(201);
+    return (await convert(q.body.prequote.publicId, name).expect(201)).body
+      .result;
+  }
+  async function accept(
+    c: Awaited<ReturnType<typeof create>>,
+    name = 'personal',
+    key = randomUUID(),
+  ) {
+    return api()
+      .post('/api/v1/customer/delivery-quotes/' + c.quote.publicId + '/accept')
+      .auth(t[name], bearer)
+      .set('Idempotency-Key', key)
+      .send({
+        customerAuthorization: {
+          version: 1,
+          status: 'AUTHORIZED_BY_CUSTOMER',
+          reference: 'synthetic-consent',
+          authorizedAt: new Date().toISOString(),
+          quotePublicId: c.quote.publicId,
+          amount: c.quote.amount,
+          currency: c.quote.currency,
+          expiresAt: c.quote.expiresAt,
+          shippingTermsVersion: 1,
+          shippingTermsHash: c.shippingTerms.termsHash,
+        },
+      });
+  }
+  async function start(name = 'personal', independent = false) {
+    const c = await create(name);
+    expect((await accept(c, name)).status).toBe(200);
+    const d = await prisma.dispatch.findFirstOrThrow({
+      where: { deliveryRequest: { publicId: c.deliveryRequestPublicId } },
+    });
+    await fundForAward(
+      prisma,
+      d.id,
+      independent ? { driverId: drivers.indy } : { providerId: providers.A },
+    );
+    if (independent) await take(t.indy, d.id, vehicles.indy).expect(200);
+    else {
+      await claim(t.A, d.id).expect(200);
+      await assign(t.A, d.id, {
+        driverId: drivers.ana,
+        vehicleId: vehicles.fleet1,
+      }).expect(201);
+    }
+    return { c, id: d.id, token: independent ? t.indy : t.ana, name };
+  }
+  async function head(d: { id: string; token: string }) {
+    return (
+      await api()
+        .get('/api/v1/driver/dispatches/' + d.id + '/execution')
+        .auth(d.token, bearer)
+        .expect(200)
+    ).body.execution;
+  }
+  async function step(d: { id: string; token: string }, phase: string) {
+    const e = await head(d);
+    return api()
+      .post('/api/v1/driver/dispatches/' + d.id + '/execution-events')
+      .auth(d.token, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        assignmentId: e.activeAssignmentId,
+        expectedRevision: e.revision,
+        phase,
+      });
+  }
+  async function cashBody(d: Awaited<ReturnType<typeof start>>) {
+    const e = await head(d);
+    return {
+      assignmentId: e.activeAssignmentId,
+      expectedRevision: e.revision,
+      quotePublicId: d.c.quote.publicId,
+      termsHash: d.c.shippingTerms.termsHash,
+      amount: d.c.quote.amount,
+      currency: d.c.quote.currency,
+      receivedFrom: 'AUTHORIZED_REPRESENTATIVE',
+      occurredAt: new Date().toISOString(),
+    };
+  }
+  const cash = (
+    d: { id: string; token: string },
+    body: object,
+    key = randomUUID(),
+  ) =>
+    api()
+      .post('/api/v1/driver/dispatches/' + d.id + '/shipping-collection')
+      .auth(d.token, bearer)
+      .set('Idempotency-Key', key)
+      .send(body);
+  const attempt = (
+    d: { id: string; token: string },
+    assignmentId: string,
+    key: string,
+    close = false,
+  ) => {
+    const path =
+      '/api/v1/driver/dispatches/' +
+      d.id +
+      '/assignments/' +
+      assignmentId +
+      '/attempt' +
+      (close ? '/close' : '') +
+      '?operation=COLLECT_SHIPPING';
+    return (close ? api().post(path) : api().get(path))
+      .auth(d.token, bearer)
+      .set('Idempotency-Key', key);
+  };
+  it('separates direct ownership and B2B, blocks PERSONAL recipient and duplicate quota transactionally', async () => {
+    await mpq('personal', 'RECIPIENT').expect(400);
+    const q = await mpq().expect(201);
+    await convert(q.body.prequote.publicId, 'other').expect(404);
+    await api()
+      .get('/api/v1/delivery-prequotes/' + q.body.prequote.publicId)
+      .auth(t.b2b, bearer)
+      .expect(404);
+    const keys = Array.from({ length: 8 }, () => randomUUID());
+    const results = await Promise.all(
+      keys.map((k) => convert(q.body.prequote.publicId, 'personal', k)),
+    );
+    expect(results.filter((x) => x.status === 201)).toHaveLength(1);
+    expect(results.filter((x) => x.status === 409)).toHaveLength(7);
+    const winner = results.find((x) => x.status === 201)!;
+    const retry = await convert(
+      q.body.prequote.publicId,
+      'personal',
+      keys[results.indexOf(winner)],
+    ).expect(201);
+    expect(retry.body.result.deliveryRequestPublicId).toBe(
+      winner.body.result.deliveryRequestPublicId,
+    );
+    const capacity = await api()
+      .get('/api/v1/customer/capabilities')
+      .auth(t.personal, bearer)
+      .expect(200);
+    expect(capacity.body).toMatchObject({
+      canCreateRequest: false,
+      reason: 'CUSTOMER_ACTIVE_REQUEST_LIMIT',
+      capacity: {
+        occupied: true,
+        activeCount: 1,
+        activeRequestPublicId: winner.body.result.deliveryRequestPublicId,
+      },
+    });
+    const ownPage = await api()
+      .get('/api/v1/customer/delivery-requests?page=1&pageSize=10')
+      .auth(t.personal, bearer)
+      .expect(200);
+    expect(ownPage.body.items).toHaveLength(1);
+    expect(ownPage.body.total).toBe(1);
+    await status(winner.body.result.deliveryRequestPublicId, 'other').expect(
+      404,
+    );
+    const row = await prisma.deliveryRequest.findUniqueOrThrow({
+      where: { publicId: winner.body.result.deliveryRequestPublicId },
+    });
+    expect(row.integrationClientId).toBeNull();
+    expect(row.customerAccountId).toBe(customerIds.personal);
+    await cancel(row.publicId).expect(200);
+    expect(
+      (
+        await prisma.directRequestLifecycle.findUniqueOrThrow({
+          where: { deliveryRequestId: row.id },
+        })
+      ).personalSlot,
+    ).toBeNull();
+  }, 30000);
+  it('PERSONAL quota serializes different prequotes and preserves the losing quote for a later legal conversion', async () => {
+    const a = await mpq().expect(201);
+    const b = await mpq().expect(201);
+    const quotes = [a.body.prequote.publicId, b.body.prequote.publicId];
+    const keys = [randomUUID(), randomUUID()];
+    const responses = await Promise.all(
+      quotes.map((q, i) => convert(q, 'personal', keys[i])),
+    );
+    expect(responses.map((r) => r.status).sort()).toEqual([201, 409]);
+    const loser = responses.findIndex((r) => r.status === 409);
+    expect(responses[loser].body.code).toBe('CUSTOMER_ACTIVE_REQUEST_LIMIT');
+    expect(
+      await prisma.directRequestLifecycle.count({
+        where: { customerAccountId: customerIds.personal, closedAt: null },
+      }),
+    ).toBe(1);
+    const winner = responses.find((r) => r.status === 201)!;
+    await cancel(winner.body.result.deliveryRequestPublicId).expect(200);
+    const retried = await convert(
+      quotes[loser],
+      'personal',
+      keys[loser],
+    ).expect(201);
+    await cancel(retried.body.result.deliveryRequestPublicId).expect(200);
+  });
+  it('BUSINESS supports concurrent active requests and independent payer choices; same key retains terms', async () => {
+    const a = await create('business');
+    const b = await create('business', 'RECIPIENT');
+    expect(a.shippingTerms.payer).toBe('REQUESTER');
+    expect(b.shippingTerms.payer).toBe('RECIPIENT');
+    expect(
+      await prisma.directRequestLifecycle.count({
+        where: { customerAccountId: customerIds.business, closedAt: null },
+      }),
+    ).toBe(2);
+    await cancel(a.deliveryRequestPublicId, 'business').expect(200);
+    await cancel(b.deliveryRequestPublicId, 'business').expect(200);
+  }, 30000);
+  it('requires exact consent hash and keeps quota until explicit cancellation', async () => {
+    const c = await create();
+    const bad = {
+      ...c,
+      shippingTerms: { ...c.shippingTerms, termsHash: '0'.repeat(64) },
+    };
+    expect((await accept(bad)).status).toBe(409);
+    const row = await prisma.deliveryRequest.findUniqueOrThrow({
+      where: { publicId: c.deliveryRequestPublicId },
+    });
+    expect(
+      (
+        await prisma.directRequestLifecycle.findUniqueOrThrow({
+          where: { deliveryRequestId: row.id },
+        })
+      ).personalSlot,
+    ).toBe(customerIds.personal);
+    await cancel(c.deliveryRequestPublicId).expect(200);
+  });
+  it('fleet cash is exact, durable, separately versioned and required before pickup; delivery creates no B2B outbox', async () => {
+    const d = await start();
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    expect((await step(d, 'AT_PICKUP')).status).toBe(200);
+    expect((await step(d, 'PICKED_UP')).status).toBe(409);
+    const b = await cashBody(d);
+    await cash(d, { ...b, amount: '0.01' }).expect(409);
+    await cash({ ...d, token: t.A }, b).expect(403);
+    await cash({ ...d, token: t.otro }, b).expect(404);
+    const before = (await status(d.c.deliveryRequestPublicId).expect(200)).body;
+    const key = randomUUID();
+    await cash(d, b, key).expect(200);
+    // Simulated lost response: discard it and recover from the durable receipt and status.
+    expect((await attempt(d, b.assignmentId, key).expect(200)).body.state).toBe(
+      'APPLIED',
+    );
+    await cash(d, b, key).expect(200);
+    await cash(d, b).expect(409);
+    const after = (await status(d.c.deliveryRequestPublicId).expect(200)).body;
+    expect(BigInt(after.publicVersion)).toBeGreaterThan(
+      BigInt(before.publicVersion),
+    );
+    expect(after.shippingPayment).toMatchObject({
+      evidenceStatus: 'DECLARED',
+      collectShipping: false,
+      amount: d.c.quote.amount,
+    });
+    expect(JSON.stringify(after)).not.toContain('payerContact');
+    expect(
+      (await status(d.c.deliveryRequestPublicId).expect(200)).body
+        .publicVersion,
+    ).toBe(after.publicVersion);
+    for (const phase of ['PICKED_UP', 'TO_DROPOFF', 'AT_DROPOFF'])
+      expect((await step(d, phase)).status).toBe(200);
+    await appDeliver(d.id);
+    const row = await prisma.deliveryRequest.findUniqueOrThrow({
+      where: { publicId: d.c.deliveryRequestPublicId },
+    });
+    expect(
+      await prisma.b2bOutboxEvent.count({
+        where: { deliveryRequestId: row.id },
+      }),
+    ).toBe(0);
+    expect(
+      (
+        await prisma.directRequestLifecycle.findUniqueOrThrow({
+          where: { deliveryRequestId: row.id },
+        })
+      ).closureReason,
+    ).toBe('DELIVERED');
+    const final = (await status(row.publicId).expect(200)).body;
+    expect(final.shippingPayment.instructionStatus).toBe('HISTORICAL');
+    expect(final.terminalOutcome).toMatchObject({ type: 'DELIVERED' });
+  }, 30000);
+  it('explicit close wins before a delayed cash command and survives application restart', async () => {
+    const d = await start();
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    expect((await step(d, 'AT_PICKUP')).status).toBe(200);
+    const b = await cashBody(d);
+    const key = randomUUID();
+    expect((await attempt(d, b.assignmentId, key).expect(200)).body.state).toBe(
+      'PENDING_OR_UNKNOWN',
+    );
+    expect(
+      (await attempt(d, b.assignmentId, key, true).expect(200)).body.state,
+    ).toBe('CLOSED_NO_EFFECTS');
+    await app.close();
+    app = await bootstrap();
+    expect((await attempt(d, b.assignmentId, key).expect(200)).body.state).toBe(
+      'CLOSED_NO_EFFECTS',
+    );
+    const late = await cash(d, b, key).expect(409);
+    expect(JSON.stringify(late.body)).toContain('EXECUTION_ATTEMPT_CLOSED');
+    expect(
+      await prisma.shippingCollectionDeclaration.count({
+        where: { dispatchId: d.id },
+      }),
+    ).toBe(0);
+    await cancel(d.c.deliveryRequestPublicId).expect(200);
+  }, 30000);
+  it('cash versus close serializes to APPLIED or CLOSED_NO_EFFECTS and never double declares', async () => {
+    const d = await start('personal', true);
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    expect((await step(d, 'AT_PICKUP')).status).toBe(200);
+    const b = await cashBody(d);
+    const key = randomUUID();
+    await Promise.all([cash(d, b, key), attempt(d, b.assignmentId, key, true)]);
+    const state = (await attempt(d, b.assignmentId, key).expect(200)).body
+      .state;
+    expect(['APPLIED', 'CLOSED_NO_EFFECTS']).toContain(state);
+    expect(
+      await prisma.shippingCollectionDeclaration.count({
+        where: { dispatchId: d.id },
+      }),
+    ).toBe(state === 'APPLIED' ? 1 : 0);
+    if (state === 'CLOSED_NO_EFFECTS') await cash(d, b).expect(200);
+    expect((await step(d, 'PICKED_UP')).status).toBe(200);
+    await cancel(d.c.deliveryRequestPublicId).expect(409);
+    const e = await head(d);
+    const incident = await api()
+      .post('/api/v1/driver/dispatches/' + d.id + '/custody-incidents')
+      .auth(d.token, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        assignmentId: e.activeAssignmentId,
+        expectedRevision: e.revision,
+        reasonCode: 'OTHER',
+        reasonDetail: 'Synthetic blocked delivery',
+      })
+      .expect(201);
+    const v = incident.body.execution;
+    await api()
+      .post(
+        '/api/v1/admin/dispatches/' +
+          d.id +
+          '/custody-incidents/' +
+          incident.body.id +
+          '/resolve',
+      )
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        assignmentId: v.activeAssignmentId,
+        expectedRevision: v.revision,
+        type: 'RETURN_TO_ORIGIN',
+        reason: 'Synthetic confirmed return',
+        occurredAt: new Date().toISOString(),
+        confirmationMethod: 'PHONE',
+        custodianConfirmed: true,
+        originConfirmed: true,
+        originContactLabel: 'Synthetic origin',
+        originContactRole: 'Requester',
+      })
+      .expect(200);
+    const row = await prisma.deliveryRequest.findUniqueOrThrow({
+      where: { publicId: d.c.deliveryRequestPublicId },
+    });
+    expect(
+      (
+        await prisma.directRequestLifecycle.findUniqueOrThrow({
+          where: { deliveryRequestId: row.id },
+        })
+      ).closureReason,
+    ).toBe('RETURNED');
+    expect(
+      await prisma.shippingCollectionDeclaration.count({
+        where: { dispatchId: d.id },
+      }),
+    ).toBe(1);
+  }, 30000);
+  it('expired MQ does not release PERSONAL quota or change the immutable terms', async () => {
+    app.get(ConfigService).set('PREQUOTE_VALIDITY_MS', 1000);
+    const c = await create();
+    app.get(ConfigService).set('PREQUOTE_VALIDITY_MS', 900000);
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    expect((await accept(c)).status).toBe(409);
+    const q = await mpq().expect(201);
+    await convert(q.body.prequote.publicId).expect(409);
+    const detail = await api()
+      .get('/api/v1/customer/delivery-requests/' + c.deliveryRequestPublicId)
+      .auth(t.personal, bearer)
+      .expect(200);
+    expect(detail.body.shippingTerms.termsHash).toBe(c.shippingTerms.termsHash);
+    await cancel(c.deliveryRequestPublicId).expect(200);
+  }, 30000);
+  it('transfer keeps custody, the shipping declaration and original economic charge; former Driver loses write authority', async () => {
+    const d = await start();
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    expect((await step(d, 'AT_PICKUP')).status).toBe(200);
+    const body = await cashBody(d),
+      key = randomUUID();
+    await cash(d, body, key).expect(200);
+    expect((await step(d, 'PICKED_UP')).status).toBe(200);
+    const e = await head(d);
+    const incident = await api()
+      .post('/api/v1/driver/dispatches/' + d.id + '/custody-incidents')
+      .auth(d.token, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        assignmentId: e.activeAssignmentId,
+        expectedRevision: e.revision,
+        reasonCode: 'VEHICLE_FAILURE',
+        reasonDetail: 'Synthetic vehicle unavailable',
+      })
+      .expect(201);
+    const before = (await status(d.c.deliveryRequestPublicId).expect(200)).body;
+    const entries = await prisma.creditLedgerEntry.count({
+      where: { referenceId: d.id },
+    });
+    const v = incident.body.execution;
+    await api()
+      .post(
+        '/api/v1/admin/dispatches/' +
+          d.id +
+          '/custody-incidents/' +
+          incident.body.id +
+          '/resolve',
+      )
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        assignmentId: v.activeAssignmentId,
+        expectedRevision: v.revision,
+        type: 'TRANSFER',
+        reason: 'Synthetic transfer',
+        occurredAt: new Date().toISOString(),
+        confirmationMethod: 'PHONE',
+        recipient: {
+          mode: 'INDEPENDENT',
+          driverId: drivers.indy,
+          vehicleId: vehicles.indy,
+        },
+        releasingCustodianConfirmed: true,
+        receivingCustodianConfirmed: true,
+        atCurrentStageLocation: true,
+      })
+      .expect(200);
+    expect(
+      await prisma.creditLedgerEntry.count({ where: { referenceId: d.id } }),
+    ).toBe(entries);
+    const after = (await status(d.c.deliveryRequestPublicId).expect(200)).body;
+    expect(BigInt(after.publicVersion)).toBeGreaterThan(
+      BigInt(before.publicVersion),
+    );
+    expect(after.shippingPayment.evidenceStatus).toBe('DECLARED');
+    expect(after.shippingPayment.collectShipping).toBe(false);
+    await cash(d, body, key).expect(200); // Historical replay is not another physical collection.
+    await cash(d, body).expect(404);
+    const recipient = { ...d, token: t.indy };
+    const next = await head(recipient);
+    expect(next.phase).toBe('PICKED_UP');
+    await cash(recipient, {
+      ...body,
+      assignmentId: next.activeAssignmentId,
+      expectedRevision: next.revision,
+    }).expect(409);
+    const q = await mpq().expect(201);
+    await convert(q.body.prequote.publicId).expect(409);
+    expect((await step(recipient, 'TO_DROPOFF')).status).toBe(200);
+    expect((await step(recipient, 'AT_DROPOFF')).status).toBe(200);
+    await appDeliver(d.id);
+  }, 30000);
+  it('cash and pickup serialize: pickup succeeds only after the single persisted declaration', async () => {
+    const d = await start();
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    expect((await step(d, 'AT_PICKUP')).status).toBe(200);
+    const b = await cashBody(d);
+    const [collection, pickup] = await Promise.all([
+      cash(d, b),
+      api()
+        .post('/api/v1/driver/dispatches/' + d.id + '/execution-events')
+        .auth(d.token, bearer)
+        .set('Idempotency-Key', randomUUID())
+        .send({
+          assignmentId: b.assignmentId,
+          expectedRevision: b.expectedRevision,
+          phase: 'PICKED_UP',
+        }),
+    ]);
+    expect(collection.status).toBe(200);
+    expect([200, 409]).toContain(pickup.status);
+    expect(
+      await prisma.shippingCollectionDeclaration.count({
+        where: { dispatchId: d.id },
+      }),
+    ).toBe(1);
+    if (pickup.status === 409)
+      expect((await step(d, 'PICKED_UP')).status).toBe(200);
+    for (const phase of ['TO_DROPOFF', 'AT_DROPOFF'])
+      expect((await step(d, phase)).status).toBe(200);
+    await appDeliver(d.id);
+  }, 30000);
+  it('controlled receipt failure rolls back cash evidence and leaves an unknown attempt that can be closed safely', async () => {
+    const d = await start();
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    expect((await step(d, 'AT_PICKUP')).status).toBe(200);
+    const b = await cashBody(d),
+      key = randomUUID();
+    await prisma.$executeRawUnsafe(
+      `CREATE FUNCTION v117_test_receipt_fault() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.key='${key}'::uuid THEN RAISE EXCEPTION 'V117_TEST_RECEIPT_FAILURE'; END IF; RETURN NEW; END $$`,
+    );
+    await prisma.$executeRawUnsafe(
+      'CREATE TRIGGER v117_test_receipt_fault BEFORE INSERT ON "DeliveryExecutionCommand" FOR EACH ROW EXECUTE FUNCTION v117_test_receipt_fault()',
+    );
+    try {
+      await cash(d, b, key).expect(500);
+    } finally {
+      await prisma.$executeRawUnsafe(
+        'DROP TRIGGER v117_test_receipt_fault ON "DeliveryExecutionCommand"',
+      );
+      await prisma.$executeRawUnsafe('DROP FUNCTION v117_test_receipt_fault()');
+    }
+    expect(
+      await prisma.shippingCollectionDeclaration.count({
+        where: { dispatchId: d.id },
+      }),
+    ).toBe(0);
+    expect((await attempt(d, b.assignmentId, key).expect(200)).body.state).toBe(
+      'PENDING_OR_UNKNOWN',
+    );
+    await attempt(d, b.assignmentId, key, true).expect(200);
+    await cash(d, b, key).expect(409);
+    await cancel(d.c.deliveryRequestPublicId).expect(200);
+  }, 30000);
+  it('cancellation versus cash keeps at most one declaration and never grants pickup on a cancelled request', async () => {
+    const d = await start();
+    await step(d, 'TO_PICKUP');
+    await step(d, 'AT_PICKUP');
+    const b = await cashBody(d);
+    const [collection, cancellation] = await Promise.all([
+      cash(d, b),
+      cancel(d.c.deliveryRequestPublicId),
+    ]);
+    expect(cancellation.status).toBe(200);
+    expect([200, 409, 404]).toContain(collection.status);
+    const count = await prisma.shippingCollectionDeclaration.count({
+      where: { dispatchId: d.id },
+    });
+    expect(count).toBe(collection.status === 200 ? 1 : 0);
+    const last = (await status(d.c.deliveryRequestPublicId).expect(200)).body;
+    expect(last.shippingPayment.collectShipping).toBe(false);
+    expect(last.shippingPayment.instructionStatus).toBe('HISTORICAL');
+    const late = await api()
+      .post('/api/v1/driver/dispatches/' + d.id + '/execution-events')
+      .auth(d.token, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        assignmentId: b.assignmentId,
+        expectedRevision: b.expectedRevision,
+        phase: 'PICKED_UP',
+      })
+      .expect(409);
+    expect(late.body.code).toBe('EXECUTION_CONFLICT');
+  }, 30000);
+  it('type change and conversion serialize; database rejects removal, reopening and forged ownership of quota', async () => {
+    const q = await mpq().expect(201);
+    const p = (
+      await api()
+        .get('/api/v1/customer/profile')
+        .auth(t.personal, bearer)
+        .expect(200)
+    ).body;
+    const change = () =>
+      api()
+        .post('/api/v1/customer/profile/type')
+        .auth(t.personal, bearer)
+        .send({ type: 'BUSINESS', expectedRevision: p.revision });
+    const [converted, changed] = await Promise.all([
+      convert(q.body.prequote.publicId),
+      change(),
+    ]);
+    expect([201, 409]).toContain(converted.status);
+    expect([200, 409]).toContain(changed.status);
+    expect(converted.status === 201 || changed.status === 200).toBe(true);
+    const c = converted.status === 201 ? converted.body.result : await create();
+    await api()
+      .post('/api/v1/customer/profile/type')
+      .auth(t.personal, bearer)
+      .send({
+        type: 'PERSONAL',
+        expectedRevision:
+          changed.status === 200 ? changed.body.revision : p.revision,
+      })
+      .expect(409);
+    const row = await prisma.deliveryRequest.findUniqueOrThrow({
+      where: { publicId: c.deliveryRequestPublicId },
+    });
+    await expect(
+      prisma.directRequestLifecycle.delete({
+        where: { deliveryRequestId: row.id },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      prisma.directRequestLifecycle.update({
+        where: { deliveryRequestId: row.id },
+        data: {
+          closedAt: new Date(),
+          closureReason: 'CANCELLED',
+          personalSlot: null,
+        },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      prisma.deliveryRequest.update({
+        where: { id: row.id },
+        data: { customerAccountId: customerIds.other },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      prisma.deliveryShippingTerms.update({
+        where: { deliveryRequestId: row.id },
+        data: { payer: 'RECIPIENT' },
+      }),
+    ).rejects.toThrow();
+    await cancel(c.deliveryRequestPublicId).expect(200);
+    await expect(
+      prisma.directRequestLifecycle.update({
+        where: { deliveryRequestId: row.id },
+        data: {
+          closedAt: null,
+          closureReason: null,
+          personalSlot: customerIds.personal,
+        },
+      }),
+    ).rejects.toThrow();
+    const current = (
+      await api()
+        .get('/api/v1/customer/profile')
+        .auth(t.personal, bearer)
+        .expect(200)
+    ).body;
+    await api()
+      .post('/api/v1/customer/profile/type')
+      .auth(t.personal, bearer)
+      .send({ type: 'PERSONAL', expectedRevision: current.revision })
+      .expect(200);
+  }, 30000);
+  it('B2B payer policy is admin-only, replayable and invalidates old unconverted MPQ', async () => {
+    const client = await prisma.integrationClient.findUniqueOrThrow({
+      where: { code: `${PREFIX}CLIENT_${run}` },
+    });
+    const path = '/api/v1/admin/integrations/' + client.id + '/shipping-policy';
+    await api()
+      .post(path)
+      .auth(t.personal, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({ payer: 'REQUESTER', expectedRevision: 1 })
+      .expect(403);
+    const q = await api()
+      .post('/api/v1/delivery-prequotes')
+      .auth(t.b2b, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({ ...conditions, packages: [{ category: 'FOOD', quantity: 1 }] })
+      .expect(201);
+    const changeKey = randomUUID();
+    const change = () =>
+      api()
+        .post(path)
+        .auth(t.sa, bearer)
+        .set('Idempotency-Key', changeKey)
+        .send({ payer: 'REQUESTER', expectedRevision: 1 });
+    expect((await change().expect(200)).body).toEqual({
+      payer: 'REQUESTER',
+      revision: 2,
+    });
+    expect((await change().expect(200)).body.revision).toBe(2);
+    const direct = conversion();
+    const input = {
+      conditionsVersion: 1,
+      deliveryRequest: {
+        ...direct.deliveryRequest,
+        packages: [
+          { category: 'FOOD', description: 'Synthetic food', quantity: 1 },
+        ],
+      },
+      merchantConfirmation: {
+        goodsPaymentStatus: 'CONFIRMED_BY_MERCHANT',
+        goodsPaymentReference: 'synthetic-payment',
+        goodsPaymentConfirmedAt: '2026-01-01T00:00:00Z',
+        orderAcceptanceStatus: 'ACCEPTED_BY_MERCHANT',
+        orderAcceptanceReference: 'synthetic-order',
+        orderAcceptedAt: '2026-01-01T00:00:00Z',
+      },
+      deliveryCollectionInstruction: {
+        payer: 'RECIPIENT',
+        method: 'CASH',
+        dueAt: 'DELIVERY',
+        components: ['DELIVERY_FEE'],
+      },
+    };
+    const rejected = await api()
+      .post('/api/v1/delivery-prequotes/' + q.body.publicId + '/convert')
+      .auth(t.b2b, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send(input)
+      .expect(409);
+    expect(rejected.body.code).toBe('SHIPPING_POLICY_CHANGED');
+  }, 30000);
+  it('new non-converted B2B REQUESTER requires terms consent v2 and preserves configured payer without request override', async () => {
+    const input = conversion();
+    const created = await api()
+      .post('/api/v1/delivery-requests')
+      .auth(t.b2b, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({ ...input.deliveryRequest, payerContact: input.payerContact })
+      .expect(201);
+    expect(created.body.shippingTerms.payer).toBe('REQUESTER');
+    const q = await api()
+      .post('/api/v1/delivery-requests/' + created.body.publicId + '/quotes')
+      .auth(t.b2b, bearer)
+      .expect(201);
+    const path = '/api/v1/delivery-quotes/' + q.body.publicId + '/accept';
+    await api().post(path).auth(t.b2b, bearer).send({}).expect(400);
+    const body = {
+      customerAuthorization: {
+        version: 2,
+        status: 'AUTHORIZED_BY_CUSTOMER',
+        reference: 'synthetic-consent',
+        authorizedAt: new Date().toISOString(),
+        quotePublicId: q.body.publicId,
+        amount: q.body.amount,
+        currency: q.body.currency,
+        expiresAt: q.body.expiresAt,
+        shippingTermsVersion: 1,
+        shippingTermsHash: created.body.shippingTerms.termsHash,
+      },
+    };
+    await api()
+      .post(path)
+      .auth(t.b2b, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send(body)
+      .expect(200);
+    await api()
+      .post('/api/v1/delivery-requests/' + created.body.publicId + '/cancel')
+      .auth(t.b2b, bearer)
+      .send({ reason: 'Synthetic cancellation' })
+      .expect(200);
+  }, 30000);
+  it('admission remains explicitly gated, and logs exclude tokens and private payer data', async () => {
+    app.get(ConfigService).set('CUSTOMER_ADMISSION_ENABLED', false);
+    const caps = await api()
+      .get('/api/v1/customer/capabilities')
+      .auth(t.personal, bearer)
+      .expect(200);
+    expect(caps.body).toMatchObject({
+      canCreateRequest: false,
+      canPrequote: false,
+      reason: 'CUSTOMER_ADMISSION_DISABLED',
+    });
+    await mpq().expect(503);
+    const serialized = logs.join('\n');
+    for (const token of Object.values(t))
+      expect(serialized).not.toContain(token);
+    expect(serialized).not.toContain(password);
+    expect(serialized).not.toContain('Synthetic payer');
+    expect(serialized).not.toContain('0000000000');
+  });
+});

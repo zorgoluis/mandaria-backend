@@ -1,5 +1,9 @@
 # Ejecución por repartidor — contrato APP y transición WEB
 
+## Adición V1.17: envío REQUESTER, sin activación
+
+[Contrato exacto y recuperación de efectivo](V1.17-DEMAND-IMPLEMENTATION.md#app-repartidor-declaración-de-efectivo). La app debe consumir shippingPayment y allowedActions, registrar COLLECT_SHIPPING sólo con el Driver vigente en AT_PICKUP y conservar la misma key ante timeout. PICKED_UP queda bloqueado para nuevos REQUESTER sin declaración. Consulta/cierre técnico de intentos usan operation=COLLECT_SHIPPING; cerrar no devuelve efectivo ni prueba que no se recibió. Transferencia conserva declaración y cargo, sin nuevo cobro. WEB sólo muestra instrucciones/evidencia y no suplanta al Driver. Históricos sin términos y RECIPIENT conservan el contrato previo. No hay implementación de app ni activación en esta tarea.
+
 Cambio solicitado por el propietario, preparado sobre QA `d440aef`. Implementación local sin publicar ni activar. Sustituye la decisión anterior de que el administrador registrara hitos telefónicos. No incluye construcción de app, GPS, notificaciones push, pruebas con Coita ni operación offline completa.
 
 ## Autoridad y compatibilidad

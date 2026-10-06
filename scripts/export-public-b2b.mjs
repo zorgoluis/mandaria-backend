@@ -42,8 +42,8 @@ export const APPROVED_OPERATIONS = [
     'post',
     '/api/v1/delivery-requests',
     'createRequest',
-    'Crear solicitud directa',
-    'Flujo directo, separado de la conversión de precotizaciones. Requiere Idempotency-Key estable por intención. externalReference no es única. No cotiza ni reserva capacidad.',
+    'Crear solicitud B2B sin precotización',
+    'Creación B2B sin precotización, separada de clientes humanos directos. El pagador proviene de la política de la integración, sin override por solicitud. Requiere Idempotency-Key estable por intención. externalReference no es única. No cotiza ni reserva capacidad.',
   ],
   [
     'get',
@@ -164,6 +164,10 @@ const schemas = new Set([
   'MerchantConfirmationDto',
   'CollectionInstructionDto',
   'PrequoteConversionResponse',
+  'PayerContactDto',
+  'ShippingTermsResponse',
+  'OwnedShippingTermsResponse',
+  'ShippingPaymentResponse',
 ]);
 const groups = new Set([
   'schemas',

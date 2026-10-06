@@ -32,7 +32,7 @@ const invalid = () =>
   );
 
 /** One internal normalizer for A4 and future comparison; never changes legacy normalization. */
-export function normalizePrequoteConditions(input: unknown) {
+export function normalizePrequoteConditions(input: unknown, direct = false) {
   if (!input || typeof input !== 'object' || Array.isArray(input))
     throw invalid();
   const value = input as Record<string, unknown>;
@@ -88,7 +88,7 @@ export function normalizePrequoteConditions(input: unknown) {
       if (
         validateSync(item, { whitelist: true, forbidNonWhitelisted: true })
           .length ||
-        item.category !== 'FOOD'
+        (!direct && item.category !== 'FOOD')
       )
         throw invalid();
       return {

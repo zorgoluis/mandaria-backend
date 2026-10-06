@@ -1,29 +1,43 @@
 {
-  "id": "23d498bb-445b-479c-a157-4541e96acf71",
+  "id": "0c460579-dca0-407f-8d0b-59c155efbc0e",
   "status": "CLAIMED",
   "access": "OWNER",
   "serviceType": "LOCAL_DELIVERY",
   "serviceZone": {
-    "code": "D13_25C37A4616EF",
+    "code": "D13_5860AEBF2BE6",
     "name": "B2 zone"
   },
-  "openedAt": "2026-09-29T15:35:55.615Z",
-  "expiresAt": "2026-09-29T15:45:55.615Z",
+  "openedAt": "2026-10-06T22:42:15.196Z",
+  "expiresAt": "2026-10-06T22:52:15.196Z",
   "claimedByMe": true,
-  "claimedAt": "2026-09-29T15:35:55.748Z",
+  "claimedAt": "2026-10-06T22:42:15.334Z",
   "cancelledAt": null,
   "deliveredAt": null,
   "creditEnforcementMode": "ENFORCED",
   "creditCost": 3,
   "assignment": null,
-  "assignmentDeadline": "2026-09-29T15:40:55.748Z",
+  "assignmentDeadline": "2026-10-06T22:47:15.334Z",
   "assignmentOverdue": false,
   "myCandidate": {
     "status": "CLAIMED",
-    "offeredAt": "2026-09-29T15:35:55.615Z",
-    "claimedAt": "2026-09-29T15:35:55.748Z",
+    "offeredAt": "2026-10-06T22:42:15.196Z",
+    "claimedAt": "2026-10-06T22:42:15.334Z",
     "releasedAt": null,
     "releaseReason": null
+  },
+  "shippingPayment": {
+    "payer": "RECIPIENT",
+    "method": "CASH",
+    "dueAt": "DELIVERY",
+    "component": "DELIVERY_FEE",
+    "termsVersion": 1,
+    "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+    "amount": "25.10",
+    "currency": "MXN",
+    "instructionStatus": "CURRENT",
+    "evidenceStatus": "NOT_DECLARED",
+    "declaredAt": null,
+    "collectShipping": true
   },
   "collectionInstructions": {
     "applicability": "CURRENT",
@@ -50,7 +64,7 @@
     },
     "pickup": {
       "address": "Synthetic location",
-      "latitude": 40.038002,
+      "latitude": 44.948002,
       "longitude": 75.000002,
       "contactName": "Fixture",
       "contactPhone": "0000000000",
@@ -58,7 +72,7 @@
     },
     "dropoff": {
       "address": "Synthetic location",
-      "latitude": 40.038008,
+      "latitude": 44.948008,
       "longitude": 75.000008,
       "contactName": "Fixture",
       "contactPhone": "0000000000",
@@ -84,7 +98,8 @@
       "driverAdvancesGoods": false,
       "driverAdvanceAmount": null
     },
-    "deliveryRequestPublicId": "MDR-000009",
+    "deliveryRequestPublicId": "MDR-000001",
     "externalReference": "b2-order"
-  }
+  },
+  "trackingMode": null
 }

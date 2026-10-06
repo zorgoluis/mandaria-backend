@@ -1,5 +1,14 @@
 # Mandaria — guía pública B2B
 
+## V1.17 — pagador del envío (implementación local, no activada)
+
+La integración conserva RECIPIENT por defecto. Sólo SUPER_ADMIN puede configurar REQUESTER; no hay override B2B por solicitud. shippingTerms se congela al emitir/crear y al convertir: REQUESTER requiere payerContact (name, phone, capacity REQUESTER o AUTHORIZED_REPRESENTATIVE) en la creación o en el envelope de conversión. El hash final proviene de la MDR convertida, no de MPQ si se añadió contacto. Modificación de política antes de convertir produce409 SHIPPING_POLICY_CHANGED; replays comprometidos mantienen términos originales.
+
+REQUESTER paga efectivo en recogida, personalmente o mediante representante presente. Aceptar exige customerAuthorization.version=2, shippingTermsVersion=1 y shippingTermsHash exacto junto con MQ/importe/moneda/vencimiento, incluso para solicitudes sin MPQ. RECIPIENT mantiene el contrato previo. La instrucción en conversión es eco validado, no permiso de cambiar política. El nuevo status.shippingPayment es null para historia sin términos o resume payer/method/dueAt/component/termsVersion/termsHash, importe/moneda de MQ aceptada, instructionStatus, evidenceStatus, declaredAt y collectShipping. No expone el contacto de pago. HISTORICAL y collectShipping=false tras cierre; DECLARED significa declaración humana, no comprobación bancaria. No ordenar por revision: comparar publicVersion por MDR.
+
+Directos CUSTOMER usan rutas y tokens humanos separados, excluidos de este contrato público. No hay nuevo webhook: delivery.completed conserva su payload y consulta reconcilia. No se automatiza devolución monetaria ni liquidación entre ejecutores.
+
+
 Contrato descargable: [openapi-b2b.json](openapi-b2b.json). Ejemplos ficticios; no representan una cuenta, precio garantizado o servicio disponible. Integración exclusivamente servidor a servidor: nunca guardar clientSecret ni el secreto de webhook en la app móvil o JavaScript público.
 
 ## Direcciones confirmadas

@@ -66,10 +66,10 @@ const normalized = (input: unknown) => {
 describe('B2 normalization and retry identity', () => {
   it('normalizes dates, monetary values, references and optional physical defaults', () => {
     const { conditions, payload } = normalized(body());
-    expect(payload.merchantConfirmation.goodsPaymentConfirmedAt).toBe(
+    expect(payload.merchantConfirmation?.goodsPaymentConfirmedAt).toBe(
       '2026-01-01T00:00:00.000Z',
     );
-    expect(payload.merchantConfirmation.goodsPaymentReference).toBe('receipt');
+    expect(payload.merchantConfirmation?.goodsPaymentReference).toBe('receipt');
     expect(payload.deliveryRequest.financialContext.goodsValue).toBe('150.00');
     expect(conditions.packages[0].weightKg).toBeNull();
     expect(conditions.packages[0].isFragile).toBe(false);

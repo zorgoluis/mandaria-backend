@@ -1,3 +1,5 @@
+import { lockCustomer, ownerKey } from '../customers/demand-owner.js';
+import type { DirectAcceptanceDto } from '../customers/direct-demand.dto.js';
 import {
   BadRequestException,
   ForbiddenException,
@@ -40,7 +42,10 @@ export class AuthorizedAcceptanceService {
     dto: AcceptDeliveryQuoteDto,
   ) {
     const owned = await this.quotes.getOwned(publicId, principal.id);
-    if (!owned.prequoteConversion) {
+    const shipping = await this.prisma.deliveryShippingTerms.findUnique({
+      where: { deliveryRequestId: owned.deliveryRequestId },
+    });
+    if (!owned.prequoteConversion && shipping?.payer !== 'REQUESTER') {
       if (dto.customerAuthorization !== undefined)
         throw fail('AUTHORIZED_ACCEPT_ORIGIN_REQUIRED', 400);
       return {
@@ -143,7 +148,7 @@ export class AuthorizedAcceptanceService {
           if (zone?.status !== 'ACTIVE')
             throw fail('AUTHORIZED_ACCEPT_SERVICE_UNAVAILABLE');
           this.assertEnabled();
-          const conversion = await tx.prequoteConversion.findUniqueOrThrow({
+          const conversion = await tx.prequoteConversion.findUnique({
             where: { deliveryRequestId: quote.deliveryRequestId },
           });
           const record = await tx.apiIdempotencyRecord.findUniqueOrThrow({
@@ -155,10 +160,21 @@ export class AuthorizedAcceptanceService {
             },
             select: { id: true },
           });
+          const terms = await tx.deliveryShippingTerms.findUnique({
+            where: { deliveryRequestId: quote.deliveryRequestId },
+          });
+          if (
+            (terms?.payer === 'REQUESTER' || authorization.version === 2) &&
+            (!terms ||
+              authorization.shippingTermsHash !== terms.termsHash ||
+              authorization.shippingTermsVersion !== terms.termsVersion ||
+              authorization.version !== 2)
+          )
+            throw fail('CUSTOMER_AUTHORIZATION_MISMATCH');
           const evidence = await tx.authorizedQuoteAcceptance.create({
             data: {
               id,
-              conversionId: conversion.id,
+              conversionId: conversion?.id,
               deliveryRequestId: quote.deliveryRequestId,
               deliveryQuoteId: quote.id,
               integrationClientId: principal.id,
@@ -167,6 +183,7 @@ export class AuthorizedAcceptanceService {
               credentialId: principal.authentication.credentialId,
               authenticatedTokenExpiresAt:
                 principal.authentication.tokenExpiresAt,
+              shippingTermsHash: authorization.shippingTermsHash,
               authorizationVersion: authorization.version,
               authorizationStatus: authorization.status,
               authorizationReference: authorization.reference,
@@ -209,6 +226,148 @@ export class AuthorizedAcceptanceService {
           deliveryRequestPublicId: outcome.result.deliveryRequest.publicId,
         });
       return { quote: outcome.result, replayed: outcome.replayed };
+    } catch (error) {
+      throw mapAuthorizedAcceptanceError(error);
+    }
+  }
+
+  async acceptDirect(
+    publicId: string,
+    customerAccountId: string,
+    userId: string,
+    authentication: { sessionVersion: number; tokenExpiresAt: Date },
+    key: string,
+    dto: DirectAcceptanceDto,
+  ) {
+    if (!/^[!-~]{8,255}$/.test(key)) throw fail('IDEMPOTENCY_KEY_INVALID', 400);
+    const authorization = dto.customerAuthorization;
+    const owner = { kind: 'CUSTOMER' as const, id: customerAccountId };
+    const owned = await this.prisma.deliveryQuote.findFirst({
+      where: {
+        publicId,
+        deliveryRequest: { customerAccountId, integrationClientId: null },
+      },
+      select: quoteSelect,
+    });
+    if (!owned) throw new NotFoundException('Delivery quote not found');
+    try {
+      return await this.idempotency.execute(
+        {
+          customerAccountId,
+          key,
+          operation: 'delivery_quotes.accept_authorized',
+          resourceType: 'AuthorizedQuoteAcceptance',
+        },
+        { publicId, customerAuthorization: authorization },
+        async (tx, id) => {
+          const account = await lockCustomer(tx, owner);
+          await tx.$queryRaw`SELECT id FROM "User" WHERE id=${userId}::uuid FOR SHARE`;
+          const user = await tx.user.findUnique({ where: { id: userId } });
+          if (
+            account?.userId !== userId ||
+            !user?.active ||
+            !user.emailVerifiedAt ||
+            user.sessionVersion !== authentication.sessionVersion ||
+            authentication.tokenExpiresAt <= new Date()
+          )
+            throw new UnauthorizedException();
+          await tx.$queryRaw`SELECT id FROM "DeliveryRequest" WHERE id=${owned.deliveryRequestId}::uuid FOR UPDATE`;
+          await tx.$queryRaw`SELECT id FROM "DeliveryQuote" WHERE id=${owned.id}::uuid FOR SHARE`;
+          const request = await tx.deliveryRequest.findUniqueOrThrow({
+            where: { id: owned.deliveryRequestId },
+            include: { shippingTerms: true, directLifecycle: true },
+          });
+          const quote = await tx.deliveryQuote.findUniqueOrThrow({
+            where: { id: owned.id },
+            select: quoteSelect,
+          });
+          const [zone] = await tx.$queryRaw<
+            { status: string }[]
+          >`SELECT status FROM "ServiceZone" WHERE id=${quote.serviceZoneId}::uuid FOR SHARE`;
+          const [clock] = await tx.$queryRaw<
+            { now: Date }[]
+          >`SELECT date_trunc('milliseconds',clock_timestamp() AT TIME ZONE 'UTC') AS now`;
+          if (
+            !request.directLifecycle ||
+            request.directLifecycle.closedAt ||
+            request.status !== 'CREATED'
+          )
+            throw fail('QUOTE_NOT_ACCEPTABLE');
+          if (quote.expiresAt <= clock.now || quote.status === 'EXPIRED')
+            throw fail('QUOTE_EXPIRED');
+          if (quote.status !== 'OFFERED') throw fail('QUOTE_NOT_ACCEPTABLE');
+          if (
+            !request.shippingTerms ||
+            authorization.shippingTermsHash !==
+              request.shippingTerms.termsHash ||
+            authorization.shippingTermsVersion !==
+              request.shippingTerms.termsVersion ||
+            authorization.quotePublicId !== publicId ||
+            authorization.amount !== quote.amount.toFixed(2) ||
+            authorization.currency !== quote.currency ||
+            new Date(authorization.expiresAt).getTime() !==
+              quote.expiresAt.getTime()
+          )
+            throw fail('CUSTOMER_AUTHORIZATION_MISMATCH');
+          const authorizedAt = new Date(authorization.authorizedAt);
+          if (authorizedAt < quote.createdAt || authorizedAt > clock.now)
+            throw fail('CUSTOMER_AUTHORIZATION_MISMATCH');
+          if (zone?.status !== 'ACTIVE')
+            throw fail('AUTHORIZED_ACCEPT_SERVICE_UNAVAILABLE');
+          this.assertEnabled();
+          if (!this.config.get<boolean>('CUSTOMER_ADMISSION_ENABLED'))
+            throw fail('CUSTOMER_ADMISSION_DISABLED', 503);
+          const conversion = await tx.prequoteConversion.findUniqueOrThrow({
+            where: { deliveryRequestId: quote.deliveryRequestId },
+          });
+          const record = await tx.apiIdempotencyRecord.findUniqueOrThrow({
+            where: ownerKey(owner, key),
+          });
+          const evidence = await tx.authorizedQuoteAcceptance.create({
+            data: {
+              id,
+              conversionId: conversion.id,
+              deliveryRequestId: quote.deliveryRequestId,
+              deliveryQuoteId: quote.id,
+              customerAccountId,
+              dispatchId: randomUUID(),
+              idempotencyRecordId: record.id,
+              userId,
+              evidenceKind: 'DIRECT_CUSTOMER',
+              shippingTermsHash: request.shippingTerms.termsHash,
+              authenticatedTokenExpiresAt: authentication.tokenExpiresAt,
+              authorizationVersion: authorization.version,
+              authorizationStatus: authorization.status,
+              authorizationReference: authorization.reference,
+              authorizedAt,
+              authorizedAmount: authorization.amount,
+              authorizedCurrency: authorization.currency,
+              authorizedExpiresAt: quote.expiresAt,
+            },
+          });
+          const accepted = await tx.deliveryQuote.update({
+            where: { id: quote.id },
+            data: { status: 'ACCEPTED', acceptedAt: evidence.acceptedAt },
+            select: quoteSelect,
+          });
+          await openDispatch(
+            tx,
+            accepted,
+            this.config.getOrThrow<number>('DISPATCH_TTL_MINUTES'),
+            evidence.acceptedAt,
+          );
+        },
+        async (id) => {
+          const evidence =
+            await this.prisma.authorizedQuoteAcceptance.findFirst({
+              where: { id, customerAccountId, userId },
+              select: { quote: { select: quoteSelect } },
+            });
+          if (!evidence)
+            throw new NotFoundException('Delivery quote not found');
+          return evidence.quote;
+        },
+      );
     } catch (error) {
       throw mapAuthorizedAcceptanceError(error);
     }

@@ -20,6 +20,13 @@ const STATUS_WHERE: Record<UserAccountStatus, Prisma.UserWhereInput> = {
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
+  async sessionValid(id: string, version: number) {
+    const row = await this.prisma.user.findUnique({
+      where: { id },
+      select: { sessionVersion: true },
+    });
+    return row?.sessionVersion === version;
+  }
   findByEmail(email: string) {
     return this.prisma.user.findUnique({ where: { email } });
   }

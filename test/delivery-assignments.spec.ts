@@ -155,14 +155,18 @@ describe('DeliveryAssignmentsService rules inside the transaction', () => {
           return [];
         return queue.shift() ?? [];
       }),
-      deliveryAssignment: {
+      dispatch: {
+        findUnique: vi.fn().mockResolvedValue(null),
         findUniqueOrThrow: vi
           .fn()
-          .mockResolvedValue({
-            id: 'new',
-            dispatchId: 'd1',
-            assignedByUserId: 'u1',
-          }),
+          .mockResolvedValue({ deliveryRequest: { shippingTerms: null } }),
+      },
+      deliveryAssignment: {
+        findUniqueOrThrow: vi.fn().mockResolvedValue({
+          id: 'new',
+          dispatchId: 'd1',
+          assignedByUserId: 'u1',
+        }),
         findFirst: vi
           .fn()
           .mockResolvedValue(
