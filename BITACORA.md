@@ -4,6 +4,8 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Inicio análisis V1.18 autorizado (2026-10-06):** propietario aprueba preparar análisis GPS y enlaces temporales tras reporte WEB de nueve escenarios navegador/backend/PG40. Ese reporte no fue reejecutado aquí. Revisión estática actual: sin telemetría GPS encontrada en src/schema; coordenadas routing no son ubicación DRIVER. Titularidad V1.17 XOR y permisos de asignación son base. Prompt BACKEND de diseño, sin implementación: última posición por asignación, consumo directo/B2B y token temporal destinatario, versiones/frescura independientes, privacidad, revocación y carreras. Ventana de visibilidad, TTL, precisión/frecuencia/retención siguen como propuestas a justificar, no decisiones aprobadas.
+
 - **Publicación autorizada del cierre contractual V1.17 — 2026-10-06:** solicitado commit y push a la rama actual `v1.17-Clientes_directos_Mandaria`. Se incluyen reconciliación humana, migración40, contratos, pruebas, evidencia y handoffs existentes. Verificación de esta tarea: revisión de rama, contenido preparado y diff --check; suites de la implementación anterior no repetidas. Resultado Git se confirma al terminar. Admisión sin activar, sin despliegue; nul conservado fuera del commit.
 
 - **Handoff coordinador de reconciliación a WEB (2026-10-06):** leído V1.17-COMMAND-RECONCILIATION; siguiente frontend integra HumanAttemptResult (canPrepareNewAttempt, COMMAND_ATTEMPT_CLOSED), recibos por actor y consent-context. Diferenciar cierre de recurso de routing/presupuesto retenido y APPLIED histórico de estado actual. OFFER ya existía, no se atribuye corrección funcional. Validaciones backend son evidencia del agente responsable; sin repetición aquí. Después de integrar, verificar Web con backend migración40 en entorno aislado; admisión real deshabilitada.
@@ -2334,3 +2336,12 @@ Solicitud: publicar A–E y documentación en la rama actual. Cambios: continuid
 - Verificación actual: revisión Git y diff --check; no se repiten pruebas funcionales, cuyos resultados anteriores permanecen identificados como históricos para esta publicación.
 - Resultado: contenido preparado para commit y push normal a la misma rama; resultado efectivo confirmado por Git al finalizar. Sin despliegue ni activación. nul excluido y preservado.
 - Pendientes: integración WEB y condiciones operativas documentadas en el handoff.
+
+
+## 2026-10-06 — Análisis inicial y prompt BACKEND V1.18
+
+- Solicitud: avanzar al análisis GPS y acceso temporal del destinatario.
+- Cambios: continuidad y prompt de diseño entregado en conversación, sin nuevos contratos implementados.
+- Verificación actual: lectura de continuidad, contrato B2B versionado, demanda V1.17 y controlador DRIVER; búsqueda estática de GPS/location; git diff --check. Sin pruebas funcionales.
+- Resultado: alcance por canal/propiedad/asignación; no confundir GPS con hitos, pagos, historial de recorrido o garantía física.
+- Pendientes: documento/handoff backend con decisiones operativas, autorización de enlace y límites, después implementación y WEB/APP. V1.17 sigue sin activar; sin Docker, producto, commit/push ni despliegue.
