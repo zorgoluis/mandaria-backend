@@ -204,6 +204,7 @@ describe('opening and cancellation inside the caller transaction', () => {
   });
   const tx = (eligible: string[], policies = true) => ({
     prequoteConversion: { findUnique: vi.fn().mockResolvedValue(null) },
+    authorizedQuoteAcceptance: { findUnique: vi.fn().mockResolvedValue(null) },
     $queryRaw: vi.fn().mockResolvedValue(eligible.map((id) => ({ id }))),
     dispatch: {
       create: vi.fn(async ({ data }) => ({
@@ -411,7 +412,10 @@ describe('DispatchService authorization inside the transaction', () => {
       .mockResolvedValue(eligible.map((id) => ({ id })));
     const tx = {
       $queryRaw: queryRaw,
-      dispatch: { update: vi.fn() },
+      dispatch: {
+        findUnique: vi.fn().mockResolvedValue(null),
+        update: vi.fn(),
+      },
       dispatchCandidate: {
         findUnique: vi.fn().mockResolvedValue(candidate),
         update: vi.fn(),

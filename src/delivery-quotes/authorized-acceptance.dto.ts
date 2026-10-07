@@ -2,6 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   Equals,
+  IsIn,
+  IsOptional,
   IsDateString,
   IsObject,
   IsString,
@@ -13,7 +15,21 @@ import {
 } from 'class-validator';
 
 export class CustomerAuthorizationDto {
-  @ApiProperty({ enum: [1] }) @Equals(1) version!: number;
+  @ApiProperty({
+    enum: [1, 2],
+    description:
+      'B2B REQUESTER exige versión 2 y hash/versión de términos. Versión 1 conserva RECIPIENT histórico. Cliente directo exige términos exactos en ambas versiones.',
+  })
+  @IsIn([1, 2])
+  version!: number;
+  @ApiPropertyOptional({ enum: [1] })
+  @IsOptional()
+  @Equals(1)
+  shippingTermsVersion?: number;
+  @ApiPropertyOptional({ pattern: '^[a-f0-9]{64}$' })
+  @IsOptional()
+  @Matches(/^[a-f0-9]{64}$/)
+  shippingTermsHash?: string;
   @ApiProperty({ enum: ['AUTHORIZED_BY_CUSTOMER'] })
   @Equals('AUTHORIZED_BY_CUSTOMER')
   status!: string;
@@ -60,7 +76,7 @@ export class AcceptDeliveryQuoteDto {
   @ApiPropertyOptional({
     type: CustomerAuthorizationDto,
     description:
-      'Obligatorio sólo para MQ convertidas. Legacy admite ausencia/body vacío; atestación en legacy se rechaza.',
+      'Obligatorio para MQ convertidas y nuevas solicitudes REQUESTER. Para REQUESTER B2B usar versión 2 con shippingTermsVersion y shippingTermsHash exactos. No convertidas RECIPIENT conservan body vacío; allí una atestación se rechaza.',
   })
   @ValidateIf((_o, v) => v !== undefined)
   @IsObject()

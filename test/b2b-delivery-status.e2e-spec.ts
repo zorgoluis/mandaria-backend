@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { retainShippingFixtures } from './support/shipping-fixtures.js';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { Test } from '@nestjs/testing';
@@ -482,6 +483,7 @@ async function removeFixtures() {
       select: { id: true },
     })
   ).map((z) => z.id);
+  if (await retainShippingFixtures(prisma, clientIds, zoneIds)) return;
   await purgeFixtureDispatches(prisma, clientIds);
   await prisma.deliveryAssignment.deleteMany({
     where: { driverId: { in: driverIds } },
@@ -717,10 +719,17 @@ describe('V1.12-A a B2B client can observe its own delivery', () => {
       'publicId',
       'publicVersion',
       'requestedAt',
+      'shippingPayment',
       'status',
       'terminalOutcome',
       'trackingMode',
     ]);
+    expect(status.body.shippingPayment).toMatchObject({
+      payer: 'RECIPIENT',
+      instructionStatus: 'HISTORICAL',
+      collectShipping: false,
+    });
+    expect(status.body.shippingPayment).not.toHaveProperty('payerContact');
     const body = JSON.stringify(status.body);
     for (const forbidden of [
       dispatch.id,
@@ -995,6 +1004,7 @@ describe('V1.12-G public execution identity CHECK', () => {
             deliveredByUserId: users.adminA,
           },
         });
+        if (!subject.integrationClientId) throw Error('Expected B2B fixture');
         await tx.b2bOutboxEvent.create({
           data: {
             type: 'DELIVERY_COMPLETED',

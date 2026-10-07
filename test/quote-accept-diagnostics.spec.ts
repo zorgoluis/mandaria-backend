@@ -58,6 +58,7 @@ const persistenceError = () =>
   });
 // This is a transaction DOUBLE, not a PostgreSQL test. Only explicit commit publishes the draft.
 const db = {
+  deliveryShippingTerms: { findUnique: async () => null },
   deliveryQuote: { findFirst: async () => ({ prequoteConversion: null }) },
   $transaction: async (work: (tx: unknown) => Promise<unknown>) => {
     transactionCalls++;
@@ -84,6 +85,9 @@ const db = {
     });
     const tx = {
       prequoteConversion: { findUnique: vi.fn().mockResolvedValue(null) },
+      authorizedQuoteAcceptance: {
+        findUnique: vi.fn().mockResolvedValue(null),
+      },
       $queryRaw: async (parts: TemplateStringsArray, ...values: unknown[]) => {
         const sql = parts.join('?');
         if (sql.includes('FROM "DeliveryQuote"')) {

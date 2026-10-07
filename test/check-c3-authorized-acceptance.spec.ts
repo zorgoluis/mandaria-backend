@@ -33,13 +33,11 @@ describe('C3 exact clock boundaries (simulated DB clock, not physical synchroniz
           .mockResolvedValueOnce([{ status: 'ACTIVE' }])
           .mockResolvedValueOnce([{ now }]),
         deliveryQuote: {
-          findUniqueOrThrow: vi
-            .fn()
-            .mockResolvedValue({
-              id: 'quote',
-              status: 'OFFERED',
-              expiresAt: boundary === 'quote' ? now : future,
-            }),
+          findUniqueOrThrow: vi.fn().mockResolvedValue({
+            id: 'quote',
+            status: 'OFFERED',
+            expiresAt: boundary === 'quote' ? now : future,
+          }),
         },
         authorizedQuoteAcceptance: {
           findUnique: vi.fn().mockResolvedValue(null),
@@ -63,7 +61,12 @@ describe('C3 exact clock boundaries (simulated DB clock, not physical synchroniz
       const module = await Test.createTestingModule({
         providers: [
           AuthorizedAcceptanceService,
-          { provide: PrismaService, useValue: {} },
+          {
+            provide: PrismaService,
+            useValue: {
+              deliveryShippingTerms: { findUnique: async () => null },
+            },
+          },
           { provide: ConfigService, useValue: { get: () => true } },
           {
             provide: DeliveryQuotesService,

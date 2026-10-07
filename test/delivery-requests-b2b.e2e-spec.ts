@@ -1,3 +1,4 @@
+import { retainShippingFixtures } from './support/shipping-fixtures.js';
 import 'reflect-metadata';
 import { randomBytes, randomUUID } from 'node:crypto';
 import {
@@ -186,6 +187,10 @@ afterEach(async () => {
 });
 afterAll(async () => {
   const ids = Object.values(clientIds);
+  if (await retainShippingFixtures(prisma, ids)) {
+    await prisma.$disconnect();
+    return;
+  }
   await prisma.deliveryRequest.deleteMany({
     where: { integrationClientId: { in: ids } },
   });

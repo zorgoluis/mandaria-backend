@@ -1,3 +1,4 @@
+import { ShippingPaymentResponse } from '../customers/shipping.responses.js';
 import {
   CollectionInstructionsResponse,
   collectionInstructionsDoc,
@@ -86,6 +87,12 @@ export class DeliveryAssignmentWithPaymentResponse extends DeliveryAssignmentRes
     description: collectionInstructionsDoc,
   })
   collectionInstructions?: CollectionInstructionsResponse;
+  @ApiPropertyOptional({
+    type: ShippingPaymentResponse,
+    description:
+      'Instrucción de envío separada de mercancía y créditos; consultar allowedActions antes de registrar efectivo.',
+  })
+  shippingPayment?: ShippingPaymentResponse;
   @ApiProperty({ type: PaymentContextResponse })
   paymentContext!: PaymentContextResponse;
 }

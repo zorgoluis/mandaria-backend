@@ -16,6 +16,7 @@ const source = (status: DispatchStatus = 'CLAIMED'): Source => ({
     currency: 'MXN',
   },
   deliveryRequest: {
+    shippingTerms: null,
     status: 'CREATED',
     financialContext: { goodsPaymentMode: 'PREPAID' },
     prequoteConversion: {

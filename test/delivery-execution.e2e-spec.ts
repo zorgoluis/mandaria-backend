@@ -582,6 +582,7 @@ describe('Detailed execution HTTP and PostgreSQL', () => {
     });
     const { publicDeliveryStatus } =
       await import('../dist/delivery-requests/public-delivery-tracking.js');
+    if (!req.integrationClientId) throw Error('Expected B2B fixture');
     vi.useFakeTimers({ toFake: ['Date'] });
     let expired;
     try {

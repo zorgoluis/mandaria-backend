@@ -4,6 +4,7 @@ import {
 } from './mail-templates.js';
 import { MailDeliveryError } from './mail.types.js';
 import type {
+  CustomerAccessMail,
   MailProvider,
   PartnerApplicationNoticeMail,
   UserInvitationMail,
@@ -27,6 +28,23 @@ export class ResendMailProvider implements MailProvider {
     return this.send(mail.to, renderPartnerApplicationNotice(mail));
   }
 
+  sendCustomerAccess(mail: CustomerAccessMail) {
+    // URL constructed from validated server origin and a random URL-safe token; never user HTML.
+    const text =
+      'Continúa tu solicitud de acceso a Mandaria: ' +
+      mail.actionUrl +
+      '\nSi no la solicitaste, ignora este mensaje.';
+    const safe = text
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
+    return this.send(mail.to, {
+      subject: 'Acceso a Mandaria',
+      text,
+      html: '<p>' + safe + '</p>',
+    });
+  }
   private async send(
     to: string,
     content: { subject: string; text: string; html: string },

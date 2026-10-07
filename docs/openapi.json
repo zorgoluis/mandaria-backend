@@ -28357,7 +28357,7 @@
     },
     "/api/v1/delivery-quotes/{publicId}/accept": {
       "post": {
-        "description": "Requiere quotes:accept. Convertidas requieren Idempotency-Key y atestación del integrador sobre MQ/importe/moneda/expiry exactos, con consentimiento posterior a conversión. Flag false por defecto. Mandaria no verifica directamente consentimiento humano. Evidencia inmutable, ACCEPTED y Dispatch atómicos. Replay con autenticación vigente funciona incluso vencida/cancelada o flag off; Idempotent-Replayed y Cache-Control no-store. No significa comida/envío cobrado ni entrega física. Legacy conserva body vacío y replay actual. OFFERED vigente → ACCEPTED y abre Dispatch con snapshots de créditos en una sola transacción. LOCAL_DELIVERY requiere políticas ACTIVE de PROVIDER e INDEPENDENT_DRIVER, incluso sin candidatos. No consulta saldos ni debita créditos. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver. En errores conservar statusCode, code y requestId (también X-Request-Id); no sustituir code por REMOTE_ERROR.",
+        "description": "Requiere quotes:accept. Convertidas requieren Idempotency-Key y atestación del integrador sobre MQ/importe/moneda/expiry exactos, con consentimiento posterior a conversión. Flag false por defecto. Mandaria no verifica directamente consentimiento humano. Evidencia inmutable, ACCEPTED y Dispatch atómicos. Replay con autenticación vigente funciona incluso vencida/cancelada o flag off; Idempotent-Replayed y Cache-Control no-store. No significa comida/envío cobrado ni entrega física. No convertidas RECIPIENT conservan body vacío y replay actual. REQUESTER exige atestación versión 2 con shippingTermsVersion/hash exactos, incluso sin precotización. OFFERED vigente → ACCEPTED y abre Dispatch con snapshots de créditos en una sola transacción. LOCAL_DELIVERY requiere políticas ACTIVE de PROVIDER e INDEPENDENT_DRIVER, incluso sin candidatos. No consulta saldos ni debita créditos. Repetir sobre ACCEPTED es idempotente (200). Aceptaciones simultáneas producen una sola ACCEPTED. No asigna proveedor ni Driver. En errores conservar statusCode, code y requestId (también X-Request-Id); no sustituir code por REMOTE_ERROR.",
         "operationId": "DeliveryQuotesController_accept",
         "parameters": [
           {
@@ -56922,6 +56922,446 @@
         ]
       }
     },
+    "/api/v1/driver/dispatches/{dispatchId}/shipping-collection": {
+      "post": {
+        "description": "Sólo Driver vigente, en AT_PICKUP. Importe, moneda y hash exactos de MQ/términos; no es recibo bancario ni movimiento de créditos. Recuperar mediante operation=COLLECT_SHIPPING. Cerrar un intento técnico no devuelve dinero ni prueba ausencia de cobro físico.",
+        "operationId": "DriverExecutionController_collectShipping",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID durable por intención. Repetir exactamente tras respuesta incierta.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShippingCollectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingCollectionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación fallida: UUID, campos, límites o consulta inválidos. No se aceptan campos desconocidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano válido; un token B2B no es válido aquí.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global insuficiente o falta membership del proveedor solicitado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor, usuario, membership, Driver, Vehicle o asignación no encontrado. Recursos de otro proveedor se reportan como no encontrados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicto: duplicado, transición inválida, usuario no elegible, límite maxDrivers/maxVehicles alcanzado, Driver/Vehicle no elegible u ocupado, o selección de proveedor ambigua.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado; no se exponen SQL ni credenciales.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Declarar efectivo del envío recibido en recogida",
+        "tags": [
+          "Driver Execution"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
     "/api/v1/driver/dispatches/{dispatchId}/execution-completion": {
       "post": {
         "description": "El Driver asignado de flotilla o independiente confirma entrega física. Exige assignmentId, expectedRevision e Idempotency-Key. Legacy utiliza revisión 0. Recibo y delivery.completed se confirman atómicamente; no acredita cobro.",
@@ -57392,7 +57832,8 @@
               "enum": [
                 "ADVANCE",
                 "REPORT",
-                "DELIVER"
+                "DELIVER",
+                "COLLECT_SHIPPING"
               ]
             }
           },
@@ -57790,7 +58231,8 @@
               "enum": [
                 "ADVANCE",
                 "REPORT",
-                "DELIVER"
+                "DELIVER",
+                "COLLECT_SHIPPING"
               ]
             }
           },
@@ -60046,6 +60488,1437 @@
         ],
         "x-roles": [
           "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/customer/command-attempt": {
+      "get": {
+        "operationId": "CustomerCommandAttemptsController_get",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PREQUOTE_CREATE",
+                "PREQUOTE_CONVERT",
+                "QUOTE_ACCEPT"
+              ]
+            }
+          },
+          {
+            "name": "resourcePublicId",
+            "required": false,
+            "in": "query",
+            "description": "Omitir en PREQUOTE_CREATE; MPQ original para conversión, MQ original para aceptación.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanAttemptResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Perfil humano propio activo y verificado requerido."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT: clave usada con otra operación o recurso; no borrar el marcador."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar intento propio sin cuerpo original; GET no cierra ni ejecuta comandos",
+        "tags": [
+          "Customer command recovery"
+        ]
+      }
+    },
+    "/api/v1/customer/command-attempt/close": {
+      "post": {
+        "operationId": "CustomerCommandAttemptsController_close",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PREQUOTE_CREATE",
+                "PREQUOTE_CONVERT",
+                "QUOTE_ACCEPT"
+              ]
+            }
+          },
+          {
+            "name": "resourcePublicId",
+            "required": false,
+            "in": "query",
+            "description": "Omitir en PREQUOTE_CREATE; MPQ original para conversión, MQ original para aceptación.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanAttemptResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Perfil humano propio activo y verificado requerido."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT: clave usada con otra operación o recurso; no borrar el marcador."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cerrar explícitamente el intento; impide commit tardío, conserva routing/presupuesto ya autorizado",
+        "tags": [
+          "Customer command recovery"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-requests/{publicId}/consent-context": {
+      "get": {
+        "operationId": "CustomerCommandAttemptsController_context",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentContext"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Perfil humano propio activo y verificado requerido."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT: clave usada con otra operación o recurso; no borrar el marcador."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recuperar MPQ/MQ y hash final propios entre dispositivos; no renueva vigencia ni fabrica consentimiento",
+        "tags": [
+          "Customer command recovery"
+        ]
+      }
+    },
+    "/api/v1/admin/integrations/{id}/shipping-policy/attempt": {
+      "get": {
+        "operationId": "ShippingPolicyAttemptController_get",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "SUPER_ADMIN humano requerido. Sólo sus propios intentos; otro administrador usa su propia identidad y clave."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Acreditar recibo original de política por actor/clave; no comparar sólo política actual",
+        "tags": [
+          "Admin shipping policy recovery"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/integrations/{id}/shipping-policy/attempt/close": {
+      "post": {
+        "operationId": "ShippingPolicyAttemptController_close",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "SUPER_ADMIN humano requerido. Sólo sus propios intentos; otro administrador usa su propia identidad y clave."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cerrar intención de política propia de forma atómica con el POST original",
+        "tags": [
+          "Admin shipping policy recovery"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/integrations/{id}/shipping-policy": {
+      "get": {
+        "operationId": "ShippingPolicyController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "Se requiere SUPER_ADMIN humano."
+          },
+          "409": {
+            "description": "SHIPPING_POLICY_REVISION_CONFLICT o IDEMPOTENCY_KEY_REUSED."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar pagador predeterminado B2B y revisión; no altera solicitudes históricas",
+        "tags": [
+          "Admin shipping policy"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      },
+      "post": {
+        "operationId": "ShippingPolicyController_set",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID propio del administrador; replay conserva revisión original.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShippingPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "Se requiere SUPER_ADMIN humano."
+          },
+          "409": {
+            "description": "SHIPPING_POLICY_REVISION_CONFLICT o IDEMPOTENCY_KEY_REUSED."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar política para nuevas solicitudes; cambio invalida MPQ todavía no convertidas",
+        "tags": [
+          "Admin shipping policy"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-prequotes": {
+      "post": {
+        "operationId": "DirectDemandController_prequote",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectPrequoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectPrequoteCreatedResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CUSTOMER_ACCESS_DENIED o CUSTOMER_CONTACT_NOT_VERIFIED."
+          },
+          "404": {
+            "description": "Recurso inexistente o de otro titular."
+          },
+          "409": {
+            "description": "Conflicto de cupo, términos, idempotencia, vencimiento o custodia. Consultar recurso propio antes de reintentar."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Precotizar solicitud directa con tarifas compartidas; no reserva cupo",
+        "tags": [
+          "Customer deliveries"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-prequotes/{publicId}": {
+      "get": {
+        "operationId": "DirectDemandController_prequoteGet",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectPrequoteResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CUSTOMER_ACCESS_DENIED o CUSTOMER_CONTACT_NOT_VERIFIED."
+          },
+          "404": {
+            "description": "Recurso inexistente o de otro titular."
+          },
+          "409": {
+            "description": "Conflicto de cupo, términos, idempotencia, vencimiento o custodia. Consultar recurso propio antes de reintentar."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar precotización propia y recuperar conversión por clave/referencia original",
+        "tags": [
+          "Customer deliveries"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-prequotes/{publicId}/convert": {
+      "post": {
+        "operationId": "DirectDemandController_convert",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectConversionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectConversionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CUSTOMER_ACCESS_DENIED o CUSTOMER_CONTACT_NOT_VERIFIED."
+          },
+          "404": {
+            "description": "Recurso inexistente o de otro titular."
+          },
+          "409": {
+            "description": "Conflicto de cupo, términos, idempotencia, vencimiento o custodia. Consultar recurso propio antes de reintentar."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Convertir una vez; PERSONAL ocupa un cupo hasta cierre durable",
+        "tags": [
+          "Customer deliveries"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-quotes/{publicId}/accept": {
+      "post": {
+        "operationId": "DirectDemandController_accept",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectAcceptanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectAcceptedResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CUSTOMER_ACCESS_DENIED o CUSTOMER_CONTACT_NOT_VERIFIED."
+          },
+          "404": {
+            "description": "Recurso inexistente o de otro titular."
+          },
+          "409": {
+            "description": "Conflicto de cupo, términos, idempotencia, vencimiento o custodia. Consultar recurso propio antes de reintentar."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consentir MQ y términos exactos; no confirma cobro ni entrega física",
+        "tags": [
+          "Customer deliveries"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-requests": {
+      "get": {
+        "operationId": "DirectDemandController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryRequestPageResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CUSTOMER_ACCESS_DENIED o CUSTOMER_CONTACT_NOT_VERIFIED."
+          },
+          "404": {
+            "description": "Recurso inexistente o de otro titular."
+          },
+          "409": {
+            "description": "Conflicto de cupo, términos, idempotencia, vencimiento o custodia. Consultar recurso propio antes de reintentar."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Solicitudes propias paginadas; titular aislado del canal B2B",
+        "tags": [
+          "Customer deliveries"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-requests/{publicId}": {
+      "get": {
+        "operationId": "DirectDemandController_detail",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryRequestResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CUSTOMER_ACCESS_DENIED o CUSTOMER_CONTACT_NOT_VERIFIED."
+          },
+          "404": {
+            "description": "Recurso inexistente o de otro titular."
+          },
+          "409": {
+            "description": "Conflicto de cupo, términos, idempotencia, vencimiento o custodia. Consultar recurso propio antes de reintentar."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalle propio e instrucciones persistidas",
+        "tags": [
+          "Customer deliveries"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-requests/{publicId}/status": {
+      "get": {
+        "operationId": "DirectDemandController_status",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryStatusResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CUSTOMER_ACCESS_DENIED o CUSTOMER_CONTACT_NOT_VERIFIED."
+          },
+          "404": {
+            "description": "Recurso inexistente o de otro titular."
+          },
+          "409": {
+            "description": "Conflicto de cupo, términos, idempotencia, vencimiento o custodia. Consultar recurso propio antes de reintentar."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fotografía logística propia; ordenar por publicVersion por solicitud",
+        "tags": [
+          "Customer deliveries"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-requests/{publicId}/cancel": {
+      "post": {
+        "operationId": "DirectDemandController_cancel",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelDeliveryRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryStatusResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CUSTOMER_ACCESS_DENIED o CUSTOMER_CONTACT_NOT_VERIFIED."
+          },
+          "404": {
+            "description": "Recurso inexistente o de otro titular."
+          },
+          "409": {
+            "description": "Conflicto de cupo, términos, idempotencia, vencimiento o custodia. Consultar recurso propio antes de reintentar."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancelar solicitud propia; repetición segura, custodia bloquea cancelación ordinaria",
+        "tags": [
+          "Customer deliveries"
+        ]
+      }
+    },
+    "/api/v1/customer/capabilities": {
+      "get": {
+        "operationId": "CustomerProfileController_capabilities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "allowedShippingPayers",
+                    "defaultShippingPayer",
+                    "capacity",
+                    "canCreateRequest",
+                    "canPrequote",
+                    "reason"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "PERSONAL",
+                        "BUSINESS"
+                      ]
+                    },
+                    "allowedShippingPayers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "REQUESTER",
+                          "RECIPIENT"
+                        ]
+                      }
+                    },
+                    "defaultShippingPayer": {
+                      "type": "string",
+                      "enum": [
+                        "REQUESTER"
+                      ]
+                    },
+                    "capacity": {
+                      "type": "object",
+                      "properties": {
+                        "maxActiveRequests": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "occupied": {
+                          "type": "boolean"
+                        },
+                        "activeCount": {
+                          "type": "integer"
+                        },
+                        "activeRequestPublicId": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "canCreateRequest": {
+                      "type": "boolean"
+                    },
+                    "canPrequote": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "JWT humano inválido, cuenta inactiva o sesión anterior a recuperación de contraseña."
+          },
+          "403": {
+            "description": "CUSTOMER_CONTACT_NOT_VERIFIED o CUSTOMER_ACCESS_DENIED."
+          },
+          "409": {
+            "description": "PROFILE_ALREADY_EXISTS o PROFILE_REVISION_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar cupo durable y pagadores permitidos; GET no libera cupo ni confirma disponibilidad logística",
+        "tags": [
+          "Customer profile"
+        ]
+      }
+    },
+    "/api/v1/customer/profile/type": {
+      "post": {
+        "operationId": "CustomerProfileController_changeType",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeCustomerTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerProfileViewDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "JWT humano inválido, cuenta inactiva o sesión anterior a recuperación de contraseña."
+          },
+          "403": {
+            "description": "CUSTOMER_CONTACT_NOT_VERIFIED o CUSTOMER_ACCESS_DENIED."
+          },
+          "409": {
+            "description": "CUSTOMER_ACTIVE_REQUESTS o PROFILE_REVISION_CONFLICT; no cambia contratos existentes."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar tipo propio sólo sin solicitudes abiertas; expectedRevision detecta concurrencia y respuesta incierta se reconcilia con GET profile",
+        "tags": [
+          "Customer profile"
+        ]
+      }
+    },
+    "/api/v1/customer/contact-verification": {
+      "post": {
+        "operationId": "CustomerProfileController_verify",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAcceptedDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "JWT humano inválido, cuenta inactiva o sesión anterior a recuperación de contraseña."
+          },
+          "403": {
+            "description": "CUSTOMER_CONTACT_NOT_VERIFIED o CUSTOMER_ACCESS_DENIED."
+          },
+          "409": {
+            "description": "PROFILE_ALREADY_EXISTS o PROFILE_REVISION_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Enviar verificación al correo de la cuenta autenticada; no permite elegir otra dirección",
+        "tags": [
+          "Customer profile"
+        ]
+      }
+    },
+    "/api/v1/customer/contact-verification/confirm": {
+      "post": {
+        "operationId": "CustomerProfileController_verified",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerConfirmedDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "JWT humano inválido, cuenta inactiva o sesión anterior a recuperación de contraseña."
+          },
+          "403": {
+            "description": "CUSTOMER_CONTACT_NOT_VERIFIED o CUSTOMER_ACCESS_DENIED."
+          },
+          "409": {
+            "description": "PROFILE_ALREADY_EXISTS o PROFILE_REVISION_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmar el correo propio; token ajeno inválido",
+        "tags": [
+          "Customer profile"
+        ]
+      }
+    },
+    "/api/v1/customer/profile": {
+      "post": {
+        "operationId": "CustomerProfileController_attach",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerProfileViewDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "JWT humano inválido, cuenta inactiva o sesión anterior a recuperación de contraseña."
+          },
+          "403": {
+            "description": "CUSTOMER_CONTACT_NOT_VERIFIED o CUSTOMER_ACCESS_DENIED."
+          },
+          "409": {
+            "description": "PROFILE_ALREADY_EXISTS o PROFILE_REVISION_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear perfil propio verificado, conservando rol operativo y sesiones",
+        "tags": [
+          "Customer profile"
+        ]
+      },
+      "get": {
+        "operationId": "CustomerProfileController_profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerProfileViewDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "JWT humano inválido, cuenta inactiva o sesión anterior a recuperación de contraseña."
+          },
+          "403": {
+            "description": "CUSTOMER_CONTACT_NOT_VERIFIED o CUSTOMER_ACCESS_DENIED."
+          },
+          "409": {
+            "description": "PROFILE_ALREADY_EXISTS o PROFILE_REVISION_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar perfil propio activo; un JWT B2B no es válido",
+        "tags": [
+          "Customer profile"
+        ]
+      },
+      "patch": {
+        "operationId": "CustomerProfileController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerProfileViewDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "JWT humano inválido, cuenta inactiva o sesión anterior a recuperación de contraseña."
+          },
+          "403": {
+            "description": "CUSTOMER_CONTACT_NOT_VERIFIED o CUSTOMER_ACCESS_DENIED."
+          },
+          "409": {
+            "description": "PROFILE_ALREADY_EXISTS o PROFILE_REVISION_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Actualizar nombres con expectedRevision; no cambia tipo, usuario ni permisos",
+        "tags": [
+          "Customer profile"
+        ]
+      }
+    },
+    "/api/v1/customer-registration": {
+      "post": {
+        "operationId": "CustomerRegistrationController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Respuesta genérica. El correo contiene el token de uso único; no se devuelve por API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAcceptedDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación o ACCESS_TOKEN_INVALID; no revela identidad por correo."
+          },
+          "410": {
+            "description": "ACCESS_TOKEN_EXPIRED"
+          },
+          "429": {
+            "description": "Límite por IP/operación: cinco solicitudes por minuto."
+          },
+          "503": {
+            "description": "CUSTOMER_ADMISSION_DISABLED para alta/confirmación; recuperación de cuentas existentes permanece disponible."
+          }
+        },
+        "summary": "Solicitar registro cliente; respuesta genérica, admisión deshabilitada por defecto",
+        "tags": [
+          "Customer registration and recovery"
+        ]
+      }
+    },
+    "/api/v1/customer-registration/resend": {
+      "post": {
+        "operationId": "CustomerRegistrationController_resend",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAcceptedDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación o ACCESS_TOKEN_INVALID; no revela identidad por correo."
+          },
+          "410": {
+            "description": "ACCESS_TOKEN_EXPIRED"
+          },
+          "429": {
+            "description": "Límite por IP/operación: cinco solicitudes por minuto."
+          },
+          "503": {
+            "description": "CUSTOMER_ADMISSION_DISABLED para alta/confirmación; recuperación de cuentas existentes permanece disponible."
+          }
+        },
+        "summary": "Repetir solicitud de registro con perfil completo; invalida el token anterior aún pendiente",
+        "tags": [
+          "Customer registration and recovery"
+        ]
+      }
+    },
+    "/api/v1/customer-registration/confirm": {
+      "post": {
+        "operationId": "CustomerRegistrationController_confirm",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerConfirmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerConfirmedDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación o ACCESS_TOKEN_INVALID; no revela identidad por correo."
+          },
+          "410": {
+            "description": "ACCESS_TOKEN_EXPIRED"
+          },
+          "429": {
+            "description": "Límite por IP/operación: cinco solicitudes por minuto."
+          },
+          "503": {
+            "description": "CUSTOMER_ADMISSION_DISABLED para alta/confirmación; recuperación de cuentas existentes permanece disponible."
+          }
+        },
+        "summary": "Verificar correo y crear usuario CUSTOMER con perfil; no concede permisos operativos",
+        "tags": [
+          "Customer registration and recovery"
+        ]
+      }
+    },
+    "/api/v1/auth/password-recovery": {
+      "post": {
+        "operationId": "CustomerRegistrationController_recover",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAcceptedDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación o ACCESS_TOKEN_INVALID; no revela identidad por correo."
+          },
+          "410": {
+            "description": "ACCESS_TOKEN_EXPIRED"
+          },
+          "429": {
+            "description": "Límite por IP/operación: cinco solicitudes por minuto."
+          },
+          "503": {
+            "description": "CUSTOMER_ADMISSION_DISABLED para alta/confirmación; recuperación de cuentas existentes permanece disponible."
+          }
+        },
+        "summary": "Solicitar recuperación de una cuenta humana existente; respuesta genérica",
+        "tags": [
+          "Customer registration and recovery"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset": {
+      "post": {
+        "operationId": "CustomerRegistrationController_reset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerConfirmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerConfirmedDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validación o ACCESS_TOKEN_INVALID; no revela identidad por correo."
+          },
+          "410": {
+            "description": "ACCESS_TOKEN_EXPIRED"
+          },
+          "429": {
+            "description": "Límite por IP/operación: cinco solicitudes por minuto."
+          },
+          "503": {
+            "description": "CUSTOMER_ADMISSION_DISABLED para alta/confirmación; recuperación de cuentas existentes permanece disponible."
+          }
+        },
+        "summary": "Restablecer contraseña; invalida todas las sesiones anteriores de esa cuenta",
+        "tags": [
+          "Customer registration and recovery"
         ]
       }
     },
@@ -62682,6 +64555,7 @@
           "role": {
             "type": "string",
             "enum": [
+              "CUSTOMER",
               "SUPER_ADMIN",
               "PROVIDER_ADMIN",
               "DRIVER"
@@ -62946,6 +64820,7 @@
           "role": {
             "type": "string",
             "enum": [
+              "CUSTOMER",
               "SUPER_ADMIN",
               "PROVIDER_ADMIN",
               "DRIVER"
@@ -63611,6 +65486,108 @@
           "component"
         ]
       },
+      "ShippingPaymentResponse": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ]
+          },
+          "termsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Hash inmutable de términos exactos; enviar en el consentimiento de MQ. No es una credencial."
+          },
+          "policyRevision": {
+            "type": "number",
+            "nullable": true,
+            "description": "Revisión de política congelada; no ordena fotografías públicas."
+          },
+          "amount": {
+            "type": "string",
+            "nullable": true,
+            "example": "55.00",
+            "description": "Importe de MQ aceptada; null si todavía no fue aceptada."
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true,
+            "example": "MXN"
+          },
+          "quotePublicId": {
+            "type": "string",
+            "nullable": true
+          },
+          "instructionStatus": {
+            "type": "string",
+            "enum": [
+              "CURRENT",
+              "HISTORICAL",
+              "OFFER"
+            ],
+            "description": "HISTORICAL nunca autoriza cobrar. OFFER informa términos antes de adjudicación."
+          },
+          "evidenceStatus": {
+            "type": "string",
+            "enum": [
+              "DECLARED",
+              "NOT_DECLARED"
+            ],
+            "description": "Declaración humana de efectivo REQUESTER, no verificación bancaria ni liquidación. RECIPIENT conserva el cierre existente sin declaración añadida."
+          },
+          "declaredAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "collectShipping": {
+            "type": "boolean",
+            "description": "Instrucción pendiente, no permiso operativo. El Driver debe seguir allowedActions y su asignación vigente; nunca cobrar de nuevo por replay."
+          }
+        },
+        "required": [
+          "payer",
+          "method",
+          "dueAt",
+          "component",
+          "termsVersion",
+          "termsHash",
+          "amount",
+          "currency",
+          "instructionStatus",
+          "evidenceStatus",
+          "declaredAt",
+          "collectShipping"
+        ]
+      },
       "DriverSelfActiveDeliveryAssignmentResponse": {
         "type": "object",
         "properties": {
@@ -63644,6 +65621,14 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
+          "shippingPayment": {
+            "description": "Instrucción de envío separada de mercancía y créditos; consultar allowedActions antes de registrar efectivo.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingPaymentResponse"
               }
             ]
           },
@@ -64133,6 +66118,29 @@
           }
         }
       },
+      "PayerContactDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "AUTHORIZED_REPRESENTATIVE"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "capacity"
+        ]
+      },
       "DeliveryStopDto": {
         "type": "object",
         "properties": {
@@ -64305,6 +66313,14 @@
       "CreateDeliveryRequestDto": {
         "type": "object",
         "properties": {
+          "payerContact": {
+            "description": "Pagador presente o representante del solicitante; requerido si política REQUESTER. No cambia el pagador configurado.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PayerContactDto"
+              }
+            ]
+          },
           "serviceType": {
             "type": "string",
             "enum": [
@@ -64344,6 +66360,72 @@
           "stops",
           "packages",
           "financialContext"
+        ]
+      },
+      "OwnedShippingTermsResponse": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ]
+          },
+          "termsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Hash inmutable de términos exactos; enviar en el consentimiento de MQ. No es una credencial."
+          },
+          "policyRevision": {
+            "type": "number",
+            "nullable": true,
+            "description": "Revisión de política congelada; no ordena fotografías públicas."
+          },
+          "payerContact": {
+            "nullable": true,
+            "description": "Contacto de pago propio; no se publica en status ni webhooks.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PayerContactDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "payer",
+          "method",
+          "dueAt",
+          "component",
+          "termsVersion",
+          "termsHash",
+          "payerContact"
         ]
       },
       "DeliveryStopResponse": {
@@ -64523,6 +66605,15 @@
             "format": "date-time",
             "type": "string"
           },
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OwnedShippingTermsResponse"
+              }
+            ]
+          },
           "cancellationReason": {
             "type": "string",
             "nullable": true,
@@ -64551,6 +66642,7 @@
           "requestedAt",
           "createdAt",
           "updatedAt",
+          "shippingTerms",
           "stops",
           "packages",
           "financialContext"
@@ -64784,6 +66876,16 @@
       "DeliveryStatusResponse": {
         "type": "object",
         "properties": {
+          "shippingPayment": {
+            "nullable": true,
+            "description": "Instrucción financiera congelada, separada de progreso, custodia, mercancía y créditos. null para servicios históricos sin términos.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingPaymentResponse"
+              }
+            ]
+          },
           "publicVersion": {
             "type": "string",
             "pattern": "^[1-9][0-9]*$",
@@ -64890,6 +66992,7 @@
           }
         },
         "required": [
+          "shippingPayment",
           "publicVersion",
           "trackingMode",
           "assignmentState",
@@ -64986,10 +67089,17 @@
           },
           "integrationClientId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           },
           "integrationClient": {
-            "$ref": "#/components/schemas/IntegrationClientSummaryResponse"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationClientSummaryResponse"
+              }
+            ]
           }
         },
         "required": [
@@ -65090,6 +67200,15 @@
             "format": "date-time",
             "type": "string"
           },
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OwnedShippingTermsResponse"
+              }
+            ]
+          },
           "cancellationReason": {
             "type": "string",
             "nullable": true,
@@ -65116,10 +67235,17 @@
           },
           "integrationClientId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           },
           "integrationClient": {
-            "$ref": "#/components/schemas/IntegrationClientSummaryResponse"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationClientSummaryResponse"
+              }
+            ]
           }
         },
         "required": [
@@ -65129,6 +67255,7 @@
           "requestedAt",
           "createdAt",
           "updatedAt",
+          "shippingTerms",
           "stops",
           "packages",
           "financialContext",
@@ -65898,8 +68025,20 @@
           "version": {
             "type": "number",
             "enum": [
+              1,
+              2
+            ],
+            "description": "B2B REQUESTER exige versión 2 y hash/versión de términos. Versión 1 conserva RECIPIENT histórico. Cliente directo exige términos exactos en ambas versiones."
+          },
+          "shippingTermsVersion": {
+            "type": "number",
+            "enum": [
               1
             ]
+          },
+          "shippingTermsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
           },
           "status": {
             "type": "string",
@@ -65954,7 +68093,7 @@
         "type": "object",
         "properties": {
           "customerAuthorization": {
-            "description": "Obligatorio sólo para MQ convertidas. Legacy admite ausencia/body vacío; atestación en legacy se rechaza.",
+            "description": "Obligatorio para MQ convertidas y nuevas solicitudes REQUESTER. Para REQUESTER B2B usar versión 2 con shippingTermsVersion y shippingTermsHash exactos. No convertidas RECIPIENT conservan body vacío; allí una atestación se rechaza.",
             "allOf": [
               {
                 "$ref": "#/components/schemas/CustomerAuthorizationDto"
@@ -66904,6 +69043,14 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
+          "shippingPayment": {
+            "description": "Instrucción de envío separada de mercancía y créditos; consultar allowedActions antes de registrar efectivo.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingPaymentResponse"
               }
             ]
           },
@@ -68404,6 +70551,14 @@
               }
             ]
           },
+          "shippingPayment": {
+            "description": "Instrucción de envío separada de mercancía y créditos; consultar allowedActions antes de registrar efectivo.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingPaymentResponse"
+              }
+            ]
+          },
           "paymentContext": {
             "$ref": "#/components/schemas/PaymentContextResponse"
           }
@@ -69513,6 +71668,14 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/CollectionInstructionsResponse"
+              }
+            ]
+          },
+          "shippingPayment": {
+            "description": "Instrucción de envío separada de mercancía y créditos; consultar allowedActions antes de registrar efectivo.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingPaymentResponse"
               }
             ]
           },
@@ -70633,6 +72796,61 @@
           "packages"
         ]
       },
+      "ShippingTermsResponse": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ]
+          },
+          "termsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Hash inmutable de términos exactos; enviar en el consentimiento de MQ. No es una credencial."
+          },
+          "policyRevision": {
+            "type": "number",
+            "nullable": true,
+            "description": "Revisión de política congelada; no ordena fotografías públicas."
+          }
+        },
+        "required": [
+          "payer",
+          "method",
+          "dueAt",
+          "component",
+          "termsVersion",
+          "termsHash"
+        ]
+      },
       "PrequoteZoneResponse": {
         "type": "object",
         "properties": {
@@ -70653,6 +72871,16 @@
       "PrequoteResponse": {
         "type": "object",
         "properties": {
+          "shippingTerms": {
+            "nullable": true,
+            "description": "Política congelada; null sólo para precotizaciones históricas anteriores a V1.17.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingTermsResponse"
+              }
+            ]
+          },
           "publicId": {
             "type": "string",
             "example": "MPQ-000123"
@@ -70740,6 +72968,7 @@
           }
         },
         "required": [
+          "shippingTerms",
           "publicId",
           "status",
           "conditionsVersion",
@@ -70861,6 +73090,14 @@
       "ConversionDeliveryRequestDto": {
         "type": "object",
         "properties": {
+          "payerContact": {
+            "description": "Pagador presente o representante del solicitante; requerido si política REQUESTER. No cambia el pagador configurado.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PayerContactDto"
+              }
+            ]
+          },
           "serviceType": {
             "type": "string",
             "enum": [
@@ -70956,8 +73193,10 @@
           "payer": {
             "type": "string",
             "enum": [
-              "RECIPIENT"
-            ]
+              "RECIPIENT",
+              "REQUESTER"
+            ],
+            "description": "Eco de la política del integrador; no permite sobrescribirla."
           },
           "method": {
             "type": "string",
@@ -70968,7 +73207,8 @@
           "dueAt": {
             "type": "string",
             "enum": [
-              "DELIVERY"
+              "DELIVERY",
+              "PICKUP"
             ]
           },
           "components": {
@@ -70994,6 +73234,9 @@
       "ConvertPrequoteDto": {
         "type": "object",
         "properties": {
+          "payerContact": {
+            "$ref": "#/components/schemas/PayerContactDto"
+          },
           "conditionsVersion": {
             "type": "number",
             "enum": [
@@ -71025,6 +73268,15 @@
       "PrequoteConversionResponse": {
         "type": "object",
         "properties": {
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingTermsResponse"
+              }
+            ]
+          },
           "prequotePublicId": {
             "type": "string",
             "example": "MPQ-000101"
@@ -71068,6 +73320,7 @@
           }
         },
         "required": [
+          "shippingTerms",
           "prequotePublicId",
           "convertedAt",
           "deliveryRequestPublicId",
@@ -71715,6 +73968,97 @@
           "toAssignmentId"
         ]
       },
+      "ShippingCollectionDto": {
+        "type": "object",
+        "properties": {
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 0
+          },
+          "quotePublicId": {
+            "type": "string",
+            "pattern": "^MQ-[0-9]{6,}$"
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{2}$"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "MXN"
+            ]
+          },
+          "receivedFrom": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "AUTHORIZED_REPRESENTATIVE"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "assignmentId",
+          "expectedRevision",
+          "quotePublicId",
+          "termsHash",
+          "amount",
+          "currency",
+          "receivedFrom",
+          "occurredAt"
+        ]
+      },
+      "ShippingCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "evidenceStatus": {
+            "type": "string",
+            "enum": [
+              "DECLARED"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "example": "55.00"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "MXN"
+            ]
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "physicalReceiptVerified": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "Declaración del Driver; Mandaria no verifica físicamente el efectivo."
+          }
+        },
+        "required": [
+          "evidenceStatus",
+          "amount",
+          "currency",
+          "recordedAt",
+          "physicalReceiptVerified"
+        ]
+      },
       "ExecutionCommandDto": {
         "type": "object",
         "properties": {
@@ -71846,6 +74190,999 @@
           "state",
           "appliedRevision",
           "canStartNewAttempt"
+        ]
+      },
+      "RecoveredShippingTerms": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ]
+          },
+          "termsVersion": {
+            "type": "number"
+          },
+          "termsHash": {
+            "type": "string"
+          },
+          "policyRevision": {
+            "type": "number",
+            "description": "Sólo snapshot preliminar de MPQ."
+          }
+        },
+        "required": [
+          "payer",
+          "method",
+          "dueAt",
+          "component",
+          "termsVersion",
+          "termsHash"
+        ]
+      },
+      "RecoveredPrequote": {
+        "type": "object",
+        "properties": {
+          "prequotePublicId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredShippingTerms"
+              }
+            ]
+          }
+        },
+        "required": [
+          "prequotePublicId",
+          "amount",
+          "currency",
+          "expiresAt",
+          "shippingTerms"
+        ]
+      },
+      "RecoveredConversion": {
+        "type": "object",
+        "properties": {
+          "prequotePublicId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredShippingTerms"
+              }
+            ]
+          },
+          "deliveryRequestPublicId": {
+            "type": "string"
+          },
+          "deliveryQuotePublicId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "prequotePublicId",
+          "amount",
+          "currency",
+          "expiresAt",
+          "shippingTerms",
+          "deliveryRequestPublicId",
+          "deliveryQuotePublicId"
+        ]
+      },
+      "RecoveredAcceptance": {
+        "type": "object",
+        "properties": {
+          "deliveryRequestPublicId": {
+            "type": "string"
+          },
+          "deliveryQuotePublicId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredShippingTerms"
+              }
+            ]
+          }
+        },
+        "required": [
+          "deliveryRequestPublicId",
+          "deliveryQuotePublicId",
+          "amount",
+          "currency",
+          "expiresAt",
+          "acceptedAt",
+          "shippingTerms"
+        ]
+      },
+      "RecoveredPolicy": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "revision": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "payer",
+          "revision"
+        ]
+      },
+      "HumanAttemptResult": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "PREQUOTE_CREATE",
+              "PREQUOTE_CONVERT",
+              "QUOTE_ACCEPT",
+              "SHIPPING_POLICY"
+            ]
+          },
+          "resourcePublicId": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "APPLIED",
+              "PENDING_OR_UNKNOWN",
+              "CLOSED_NO_EFFECTS"
+            ]
+          },
+          "canPrepareNewAttempt": {
+            "type": "boolean",
+            "description": "Permite preparar otra intención explícita, nunca enviarla automáticamente."
+          },
+          "closureScope": {
+            "type": "string",
+            "enum": [
+              "RESOURCE_OR_POLICY_ONLY"
+            ],
+            "description": "Cierre impide publicación/commit del comando. No deshace routing ni presupuesto ya autorizado."
+          },
+          "routingEffects": {
+            "type": "string",
+            "enum": [
+              "NONE_STARTED",
+              "POSSIBLE_RETAINED"
+            ],
+            "description": "POSSIBLE_RETAINED: routing autorizado/incierto puede terminar incluso tras el cierre; consumo se conserva, no se devuelve presupuesto."
+          },
+          "closedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "result": {
+            "nullable": true,
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredPrequote"
+              },
+              {
+                "$ref": "#/components/schemas/RecoveredConversion"
+              },
+              {
+                "$ref": "#/components/schemas/RecoveredAcceptance"
+              },
+              {
+                "$ref": "#/components/schemas/RecoveredPolicy"
+              }
+            ],
+            "description": "APPLIED: seleccionar forma por operation. Resto: null. Resultado original sin cuerpo, contacto ni consentimiento; no implica vigencia actual."
+          }
+        },
+        "required": [
+          "operation",
+          "resourcePublicId",
+          "state",
+          "canPrepareNewAttempt",
+          "closureScope",
+          "routingEffects",
+          "closedAt",
+          "result"
+        ]
+      },
+      "ConsentPrequote": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "publicId",
+          "expiresAt"
+        ]
+      },
+      "ConsentQuote": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OFFERED",
+              "ACCEPTED",
+              "EXPIRED",
+              "CANCELLED"
+            ]
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "publicId",
+          "expiresAt",
+          "amount",
+          "currency",
+          "status",
+          "acceptedAt"
+        ]
+      },
+      "ConsentContext": {
+        "type": "object",
+        "properties": {
+          "deliveryRequestPublicId": {
+            "type": "string"
+          },
+          "prequote": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentPrequote"
+              }
+            ]
+          },
+          "quote": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentQuote"
+              }
+            ]
+          },
+          "shippingTerms": {
+            "nullable": true,
+            "description": "Hash FINAL persistido sobre los términos de MDR/MQ; no usar el hash preliminar de MPQ para consentir.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredShippingTerms"
+              }
+            ]
+          },
+          "canPrepareConsent": {
+            "type": "boolean",
+            "description": "Indicación vigente al leer; POST vuelve a validar TTL, términos y permisos."
+          },
+          "automaticAcceptance": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "deliveryRequestPublicId",
+          "prequote",
+          "quote",
+          "shippingTerms",
+          "canPrepareConsent",
+          "automaticAcceptance"
+        ]
+      },
+      "ShippingPolicyResponse": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "revision": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "payer",
+          "revision"
+        ]
+      },
+      "ShippingPolicyDto": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "payer",
+          "expectedRevision"
+        ]
+      },
+      "PrequotePackage": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "FOOD",
+              "GROCERIES",
+              "MEDICINE",
+              "DOCUMENT",
+              "PARCEL",
+              "MERCHANDISE",
+              "OTHER"
+            ],
+            "example": "FOOD"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000,
+            "example": 2
+          },
+          "weightKg": {
+            "type": "number",
+            "nullable": true,
+            "example": 1.5,
+            "description": "Kilogramos > 0, hasta 3 decimales."
+          },
+          "lengthCm": {
+            "type": "number",
+            "nullable": true,
+            "example": 30,
+            "description": "cm > 0"
+          },
+          "widthCm": {
+            "type": "number",
+            "nullable": true,
+            "example": 20,
+            "description": "cm > 0"
+          },
+          "heightCm": {
+            "type": "number",
+            "nullable": true,
+            "example": 15,
+            "description": "cm > 0"
+          },
+          "isFragile": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "category",
+          "quantity"
+        ]
+      },
+      "DirectPrequoteConditionsDto": {
+        "type": "object",
+        "properties": {
+          "conditionsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ],
+            "description": "Obligatorio, sin default. Versión de condiciones canónicas.",
+            "example": 1
+          },
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "LOCAL_DELIVERY"
+            ],
+            "description": "Sólo servicio inmediato. No admite programación."
+          },
+          "stops": {
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "PICKUP/1 y DROPOFF/2; coordenadas hasta 6 decimales; sin direcciones ni contactos.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrequoteStop"
+            }
+          },
+          "packages": {
+            "minItems": 1,
+            "maxItems": 50,
+            "description": "Categorías soportadas por las tarifas comunes; no limitado a FOOD.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrequotePackage"
+            }
+          }
+        },
+        "required": [
+          "conditionsVersion",
+          "serviceType",
+          "stops",
+          "packages"
+        ]
+      },
+      "DirectPrequoteDto": {
+        "type": "object",
+        "properties": {
+          "conditions": {
+            "$ref": "#/components/schemas/DirectPrequoteConditionsDto"
+          },
+          "shippingPayer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ],
+            "default": "REQUESTER",
+            "description": "PERSONAL sólo REQUESTER; BUSINESS permite RECIPIENT."
+          }
+        },
+        "required": [
+          "conditions"
+        ]
+      },
+      "DirectPrequoteResponse": {
+        "type": "object",
+        "properties": {
+          "shippingTerms": {
+            "nullable": true,
+            "description": "Política congelada; null sólo para precotizaciones históricas anteriores a V1.17.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingTermsResponse"
+              }
+            ]
+          },
+          "publicId": {
+            "type": "string",
+            "example": "MPQ-000123"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OFFERED",
+              "EXPIRED",
+              "CONVERTED"
+            ],
+            "description": "EXPIRED cuando now >= expiresAt. No se persiste ni renueva por replay."
+          },
+          "conditionsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "conditions": {
+            "description": "Condiciones normalizadas completas, incluida conditionsVersion; medidas siempre presentes como número o null.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DirectPrequoteConditionsDto"
+              }
+            ]
+          },
+          "serviceZone": {
+            "description": "Código y nombre congelados al emitir.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrequoteZoneResponse"
+              }
+            ]
+          },
+          "distanceMeters": {
+            "type": "number",
+            "minimum": 0
+          },
+          "durationSeconds": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Duración calculada de ruta, no promesa de llegada."
+          },
+          "amount": {
+            "type": "string",
+            "example": "60.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "MXN"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Reloj DB de publicación; issuedAt interno."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Vigencia absoluta independiente del TTL de RatePlan."
+          },
+          "convertedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Fecha de conversión inmutable; null si no consumida."
+          },
+          "deliveryRequestPublicId": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryQuotePublicId": {
+            "type": "string",
+            "nullable": true
+          },
+          "availabilityGuaranteed": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "No reserva capacidad logística."
+          }
+        },
+        "required": [
+          "shippingTerms",
+          "publicId",
+          "status",
+          "conditionsVersion",
+          "conditions",
+          "serviceZone",
+          "distanceMeters",
+          "durationSeconds",
+          "amount",
+          "currency",
+          "createdAt",
+          "expiresAt",
+          "convertedAt",
+          "deliveryRequestPublicId",
+          "deliveryQuotePublicId",
+          "availabilityGuaranteed"
+        ]
+      },
+      "DirectPrequoteCreatedResponse": {
+        "type": "object",
+        "properties": {
+          "prequote": {
+            "$ref": "#/components/schemas/DirectPrequoteResponse"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "prequote",
+          "replayed"
+        ]
+      },
+      "DirectConversionDto": {
+        "type": "object",
+        "properties": {
+          "conditionsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "deliveryRequest": {
+            "$ref": "#/components/schemas/CreateDeliveryRequestDto"
+          },
+          "payerContact": {
+            "$ref": "#/components/schemas/PayerContactDto"
+          }
+        },
+        "required": [
+          "conditionsVersion",
+          "deliveryRequest"
+        ]
+      },
+      "DirectConversionResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/PrequoteConversionResponse"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "result",
+          "replayed"
+        ]
+      },
+      "DirectAuthorizationDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "enum": [
+              1,
+              2
+            ],
+            "description": "B2B REQUESTER exige versión 2 y hash/versión de términos. Versión 1 conserva RECIPIENT histórico. Cliente directo exige términos exactos en ambas versiones."
+          },
+          "shippingTermsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "shippingTermsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AUTHORIZED_BY_CUSTOMER"
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Referencia opaca de evidencia conservada por el integrador; sin PII ni comprobantes. Mandaria no verifica directamente el consentimiento humano."
+          },
+          "authorizedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Posterior a la creación de MQ; zona explícita. No amplía TTL."
+          },
+          "quotePublicId": {
+            "type": "string",
+            "example": "MQ-000101"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00",
+            "description": "Eco exacto del snapshot; nunca determina el precio."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "MXN"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Vencimiento exacto de MQ, sin renovación."
+          }
+        },
+        "required": [
+          "version",
+          "status",
+          "reference",
+          "authorizedAt",
+          "quotePublicId",
+          "amount",
+          "currency",
+          "expiresAt"
+        ]
+      },
+      "DirectAcceptanceDto": {
+        "type": "object",
+        "properties": {
+          "customerAuthorization": {
+            "$ref": "#/components/schemas/DirectAuthorizationDto"
+          }
+        },
+        "required": [
+          "customerAuthorization"
+        ]
+      },
+      "DirectAcceptedResponse": {
+        "type": "object",
+        "properties": {
+          "quote": {
+            "$ref": "#/components/schemas/DeliveryQuoteResponse"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "quote",
+          "replayed"
+        ]
+      },
+      "ChangeCustomerTypeDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERSONAL",
+              "BUSINESS"
+            ]
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "type"
+        ]
+      },
+      "CustomerProfileViewDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERSONAL",
+              "BUSINESS"
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true
+          },
+          "revision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "displayName",
+          "businessName",
+          "revision",
+          "active"
+        ]
+      },
+      "CustomerAcceptedDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACCEPTED"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CustomerTokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "CustomerConfirmedDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CustomerProfileDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERSONAL",
+              "BUSINESS"
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "displayName"
+        ]
+      },
+      "UpdateCustomerDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedRevision"
+        ]
+      },
+      "RegisterCustomerDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERSONAL",
+              "BUSINESS"
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "type",
+          "displayName"
+        ]
+      },
+      "CustomerConfirmDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "CustomerEmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
         ]
       },
       "CreatePartnerApplicationDto": {

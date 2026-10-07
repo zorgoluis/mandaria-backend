@@ -42,6 +42,7 @@ const subjectSelect = {
   ...deliveryStatusSelect,
   id: true,
   integrationClientId: true,
+  customerAccountId: true,
 } as const;
 
 /**
@@ -67,11 +68,14 @@ export async function recordDeliveryCompleted(
   dispatchId: string,
   deliveryRequestId: string,
   occurredAt: Date,
-): Promise<B2bEvent> {
+): Promise<B2bEvent | null> {
   const request = await tx.deliveryRequest.findUniqueOrThrow({
     where: { id: deliveryRequestId },
     select: subjectSelect,
   });
+  if (request.customerAccountId && !request.integrationClientId) return null;
+  if (!request.integrationClientId || request.customerAccountId)
+    throw new Error('Invalid delivery demand owner');
   const data = deliveryStatusView(request, occurredAt);
   const event = await tx.b2bOutboxEvent.create({
     data: {

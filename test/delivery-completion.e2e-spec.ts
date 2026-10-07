@@ -1,3 +1,4 @@
+import { retainShippingFixtures } from './support/shipping-fixtures.js';
 import 'reflect-metadata';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
@@ -458,6 +459,10 @@ async function removeFixtures() {
       select: { id: true },
     })
   ).map((z) => z.id);
+  if (await retainShippingFixtures(prisma, clientIds, zoneIds)) {
+    await prisma.$disconnect();
+    return;
+  }
   await purgeFixtureDispatches(prisma, clientIds);
   await prisma.deliveryAssignment.deleteMany({
     where: { driverId: { in: driverIds } },

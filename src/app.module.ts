@@ -1,3 +1,4 @@
+import { CustomersModule } from './customers/customers.module.js';
 import { ExecutionModule } from './delivery-execution/execution.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -46,6 +47,7 @@ import { PartnerApplicationsModule } from './partner-applications/partner-applic
     B2bWebhooksModule,
     PrequotesModule,
     ExecutionModule,
+    CustomersModule,
     PartnerApplicationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

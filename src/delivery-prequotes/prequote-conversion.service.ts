@@ -1,4 +1,17 @@
 import {
+  demandOwner,
+  ownerFields,
+  ownerKey,
+  ownerSql,
+  lockCustomer,
+  type DemandOwnerInput,
+} from '../customers/demand-owner.js';
+import {
+  readShippingSnapshot,
+  shippingSnapshot,
+} from '../customers/shipping-terms.js';
+import type { DirectConversionDto } from '../customers/direct-demand.dto.js';
+import {
   BadRequestException,
   Injectable,
   Logger,
@@ -11,6 +24,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import {
   IdempotencyService,
   canonicalJson,
+  fingerprint,
 } from '../idempotency/idempotency.service.js';
 import { normalizeDeliveryRequest } from '../delivery-requests/delivery-requests.service.js';
 import { nextPublicId } from '../common/public-id.js';
@@ -23,57 +37,72 @@ import {
 } from '../delivery-quotes/delivery-quotes.service.js';
 const fail = (code: string, status = 409) =>
   new DomainException(code, status, code);
-export function conversionPayload(publicId: string, dto: ConvertPrequoteDto) {
+export function conversionPayload(
+  publicId: string,
+  dto: ConvertPrequoteDto | DirectConversionDto,
+  direct = false,
+) {
+  if (dto.deliveryRequest.payerContact)
+    throw new BadRequestException(
+      'payerContact belongs to the conversion envelope',
+    );
   const deliveryRequest = normalizeDeliveryRequest(dto.deliveryRequest);
   if (
     dto.conditionsVersion !== 1 ||
     dto.deliveryRequest.serviceType !== 'LOCAL_DELIVERY' ||
-    deliveryRequest.financialContext.goodsPaymentMode !== 'PREPAID' ||
+    (!direct &&
+      deliveryRequest.financialContext.goodsPaymentMode !== 'PREPAID') ||
     deliveryRequest.financialContext.currency !== 'MXN'
   )
     throw new BadRequestException([
       'Conversion requires LOCAL_DELIVERY, PREPAID and MXN',
     ]);
-  const conditions = normalizePrequoteConditions({
-    conditionsVersion: dto.conditionsVersion,
-    serviceType: 'LOCAL_DELIVERY',
-    stops: deliveryRequest.stops.map(
-      ({ type, sequence, latitude, longitude }) => ({
-        type,
-        sequence,
-        latitude,
-        longitude,
-      }),
-    ),
-    packages: deliveryRequest.packages.map(
-      ({
-        category,
-        quantity,
-        weightKg,
-        lengthCm,
-        widthCm,
-        heightCm,
-        isFragile,
-      }) => ({
-        category,
-        quantity,
-        weightKg,
-        lengthCm,
-        widthCm,
-        heightCm,
-        isFragile,
-      }),
-    ),
-  });
-  const merchantConfirmation = {
-    ...dto.merchantConfirmation,
-    goodsPaymentConfirmedAt: new Date(
-      dto.merchantConfirmation.goodsPaymentConfirmedAt,
-    ).toISOString(),
-    orderAcceptedAt: new Date(
-      dto.merchantConfirmation.orderAcceptedAt,
-    ).toISOString(),
-  };
+  const conditions = normalizePrequoteConditions(
+    {
+      conditionsVersion: dto.conditionsVersion,
+      serviceType: 'LOCAL_DELIVERY',
+      stops: deliveryRequest.stops.map(
+        ({ type, sequence, latitude, longitude }) => ({
+          type,
+          sequence,
+          latitude,
+          longitude,
+        }),
+      ),
+      packages: deliveryRequest.packages.map(
+        ({
+          category,
+          quantity,
+          weightKg,
+          lengthCm,
+          widthCm,
+          heightCm,
+          isFragile,
+        }) => ({
+          category,
+          quantity,
+          weightKg,
+          lengthCm,
+          widthCm,
+          heightCm,
+          isFragile,
+        }),
+      ),
+    },
+    direct,
+  );
+  const merchantConfirmation =
+    'merchantConfirmation' in dto
+      ? {
+          ...dto.merchantConfirmation,
+          goodsPaymentConfirmedAt: new Date(
+            dto.merchantConfirmation.goodsPaymentConfirmedAt,
+          ).toISOString(),
+          orderAcceptedAt: new Date(
+            dto.merchantConfirmation.orderAcceptedAt,
+          ).toISOString(),
+        }
+      : undefined;
   return {
     conditions,
     payload: {
@@ -81,7 +110,11 @@ export function conversionPayload(publicId: string, dto: ConvertPrequoteDto) {
       conditionsVersion: 1,
       deliveryRequest,
       merchantConfirmation,
-      deliveryCollectionInstruction: { ...dto.deliveryCollectionInstruction },
+      deliveryCollectionInstruction:
+        'deliveryCollectionInstruction' in dto
+          ? { ...dto.deliveryCollectionInstruction }
+          : undefined,
+      payerContact: dto.payerContact,
     },
   };
 }
@@ -94,28 +127,47 @@ export class PrequoteConversionService {
     private readonly config: ConfigService,
   ) {}
   async convert(
-    integrationClientId: string,
+    integrationClientId: DemandOwnerInput,
     publicId: string,
     key: string,
-    dto: ConvertPrequoteDto,
+    dto: ConvertPrequoteDto | DirectConversionDto,
   ) {
-    const { conditions, payload } = conversionPayload(publicId, dto);
+    const { conditions, payload } = conversionPayload(
+      publicId,
+      dto,
+      demandOwner(integrationClientId).kind === 'CUSTOMER',
+    );
     try {
       const outcome = await this.idempotency.execute(
         {
-          integrationClientId,
+          ...ownerFields(integrationClientId),
           key,
           operation: 'delivery_prequotes.convert',
           resourceType: 'PrequoteConversion',
+          attemptResource: publicId,
         },
         payload,
         async (tx, id) => {
           if (!this.config.get<boolean>('PREQUOTE_CONVERSION_ENABLED'))
             throw fail('PREQUOTE_CONVERSION_DISABLED', 503);
+          const customer = await lockCustomer(tx, integrationClientId);
+          if (
+            customer &&
+            !this.config.get<boolean>('CUSTOMER_ADMISSION_ENABLED')
+          )
+            throw fail('CUSTOMER_ADMISSION_DISABLED', 503);
           const rows = await tx.$queryRaw<
             { id: string }[]
-          >`SELECT id FROM "DeliveryPrequote" WHERE "publicId"=${publicId} AND "integrationClientId"=${integrationClientId}::uuid FOR UPDATE`;
+          >`SELECT id FROM "DeliveryPrequote" WHERE "publicId"=${publicId} AND ${ownerSql(integrationClientId)} FOR UPDATE`;
           if (!rows.length) throw new NotFoundException('Prequote not found');
+          if (
+            customer?.type === 'PERSONAL' &&
+            (await tx.directRequestLifecycle.findFirst({
+              where: { personalSlot: customer.id },
+            }))
+          )
+            throw fail('CUSTOMER_ACTIVE_REQUEST_LIMIT');
+
           const q = await tx.deliveryPrequote.findUniqueOrThrow({
             where: { id: rows[0].id },
           });
@@ -138,15 +190,17 @@ export class PrequoteConversionService {
           if (canonicalJson(conditions) !== canonicalJson(q.conditions))
             throw fail('PREQUOTE_CONDITIONS_MISMATCH');
           if (
-            new Date(payload.merchantConfirmation.goodsPaymentConfirmedAt) >
+            payload.merchantConfirmation &&
+            (new Date(payload.merchantConfirmation.goodsPaymentConfirmedAt) >
               clock.now ||
-            new Date(payload.merchantConfirmation.orderAcceptedAt) > clock.now
+              new Date(payload.merchantConfirmation.orderAcceptedAt) >
+                clock.now)
           )
             throw new BadRequestException([
               'Merchant confirmation dates must not be future',
             ]);
           const record = await tx.apiIdempotencyRecord.findUniqueOrThrow({
-            where: { integrationClientId_key: { integrationClientId, key } },
+            where: ownerKey(integrationClientId, key),
             select: { id: true },
           });
           const deliveryRequestId = randomUUID(),
@@ -156,6 +210,24 @@ export class PrequoteConversionService {
               randomUUID(),
             ),
             financialContextId = randomUUID();
+          const terms = readShippingSnapshot(q.shippingTerms);
+          if (terms) {
+            const current = await shippingSnapshot(
+              tx,
+              integrationClientId,
+              customer ? terms.payer : undefined,
+            );
+            if (current.termsHash !== terms.termsHash)
+              throw fail('SHIPPING_POLICY_CHANGED');
+            if (terms.payer === 'REQUESTER' && !payload.payerContact)
+              throw fail('SHIPPING_PAYER_CONTACT_REQUIRED', 400);
+            if (
+              payload.deliveryCollectionInstruction &&
+              (payload.deliveryCollectionInstruction.payer !== terms.payer ||
+                payload.deliveryCollectionInstruction.dueAt !== terms.dueAt)
+            )
+              throw fail('SHIPPING_TERMS_MISMATCH');
+          }
           const c = await tx.prequoteConversion.create({
             data: {
               id,
@@ -163,11 +235,12 @@ export class PrequoteConversionService {
               deliveryRequestId,
               deliveryQuoteId,
               idempotencyRecordId: record.id,
-              integrationClientId,
+              ...ownerFields(integrationClientId),
               ...payload.merchantConfirmation,
-              collectionPayer: 'RECIPIENT',
+              origin: customer ? 'DIRECT_CUSTOMER' : 'B2B_MERCHANT',
+              collectionPayer: terms?.payer ?? 'RECIPIENT',
               collectionMethod: 'CASH',
-              collectionDueAt: 'DELIVERY',
+              collectionDueAt: terms?.dueAt ?? 'DELIVERY',
               collectionComponent: 'DELIVERY_FEE',
               stopIds,
               packageIds,
@@ -178,7 +251,7 @@ export class PrequoteConversionService {
             data: {
               id: deliveryRequestId,
               publicId: await nextPublicId(tx, 'MDR'),
-              integrationClientId,
+              ...ownerFields(integrationClientId),
               serviceType: q.serviceType,
               externalReference: payload.deliveryRequest.externalReference,
               createdAt: c.convertedAt,
@@ -203,6 +276,30 @@ export class PrequoteConversionService {
               },
             },
           });
+          if (terms)
+            await tx.deliveryShippingTerms.create({
+              data: {
+                deliveryRequestId,
+                ...terms,
+                termsHash: payload.payerContact
+                  ? fingerprint('shipping.final_terms', {
+                      terms,
+                      payerContact: payload.payerContact,
+                    })
+                  : terms.termsHash,
+                payerContact: payload.payerContact
+                  ? { ...payload.payerContact }
+                  : undefined,
+              },
+            });
+          if (customer)
+            await tx.directRequestLifecycle.create({
+              data: {
+                deliveryRequestId,
+                customerAccountId: customer.id,
+                personalSlot: customer.type === 'PERSONAL' ? customer.id : null,
+              },
+            });
           await tx.deliveryQuote.create({
             data: {
               id: deliveryQuoteId,
@@ -270,21 +367,37 @@ export class PrequoteConversionService {
       throw error;
     }
   }
-  private async load(id: string, integrationClientId: string) {
+  private async load(id: string, integrationClientId: DemandOwnerInput) {
     return this.prisma.$transaction(
       async (tx) => {
         const c = await tx.prequoteConversion.findFirstOrThrow({
-          where: { id, integrationClientId },
+          where: { id, ...ownerFields(integrationClientId) },
           include: {
             prequote: { select: { publicId: true } },
             deliveryRequest: {
-              select: { publicId: true, externalReference: true, status: true },
+              select: {
+                publicId: true,
+                externalReference: true,
+                status: true,
+                shippingTerms: {
+                  select: {
+                    payer: true,
+                    method: true,
+                    dueAt: true,
+                    component: true,
+                    termsVersion: true,
+                    termsHash: true,
+                    policyRevision: true,
+                  },
+                },
+              },
             },
             deliveryQuote: { select: quoteSelect },
           },
         });
         return {
           prequotePublicId: c.prequote.publicId,
+          shippingTerms: c.deliveryRequest.shippingTerms,
           convertedAt: c.convertedAt,
           deliveryRequestPublicId: c.deliveryRequest.publicId,
           externalReference: c.deliveryRequest.externalReference,

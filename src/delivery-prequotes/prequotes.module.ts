@@ -12,6 +12,7 @@ import { PrequotePersistenceService } from './prequote-persistence.service.js';
 import { PREQUOTE_CONSUMPTION } from './prequote-consumption.js';
 import { DurablePrequoteConsumption } from './durable-prequote-consumption.js';
 @Module({
+  exports: [PrequotesService, PrequoteConversionService],
   imports: [
     IntegrationsModule,
     RoutingModule,

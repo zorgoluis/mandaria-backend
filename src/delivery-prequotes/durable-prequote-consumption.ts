@@ -1,3 +1,6 @@
+import { ownerFields } from '../customers/demand-owner.js';
+import { customerAttempt, CREATE_MPQ } from '../idempotency/human-attempt.js';
+import type { DemandOwnerInput } from '../customers/demand-owner.js';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
@@ -64,10 +67,16 @@ export class DurablePrequoteConsumption implements PrequoteConsumption {
       throw new PrequotePublicError('PREQUOTE_CONSUMPTION_UNAVAILABLE');
     return policy;
   }
-  async admit(integrationClientId: string): Promise<ConsumptionDecision> {
+  async admit(
+    integrationClientId: DemandOwnerInput,
+    attemptKey?: string,
+  ): Promise<ConsumptionDecision> {
     this.policy();
     const owner = randomBytes(32).toString('hex');
     const result = await this.prisma.$transaction(async (tx) => {
+      const attempt = attemptKey
+        ? await customerAttempt(tx, integrationClientId, attemptKey, CREATE_MPQ)
+        : null;
       await lock(tx);
       const { limits, fingerprint } = await this.checkedPolicy(tx);
       const time = await now(tx);
@@ -115,7 +124,8 @@ export class DurablePrequoteConsumption implements PrequoteConsumption {
       const permit = await tx.prequoteConsumptionPermit.create({
         data: {
           id: randomUUID(),
-          integrationClientId,
+          humanAttemptId: attempt?.id,
+          ...ownerFields(integrationClientId),
           ownerHash: hash(owner),
           policyFingerprint: fingerprint,
           state: 'RESERVED',
@@ -155,6 +165,7 @@ export class DurablePrequoteConsumption implements PrequoteConsumption {
   }
   async startPermit(id: string, owner: string) {
     await this.prisma.$transaction(async (tx) => {
+      await this.attemptPermit(tx, id, true);
       await lock(tx);
       const { fingerprint } = await this.checkedPolicy(tx);
       const p = await tx.prequoteConsumptionPermit.findUnique({
@@ -187,6 +198,7 @@ export class DurablePrequoteConsumption implements PrequoteConsumption {
   async assertReady(id: string, owner: string) {
     const { fingerprint } = this.policy();
     await this.prisma.$transaction(async (tx) => {
+      await this.attemptPermit(tx, id, false);
       const policy = await tx.prequoteConsumptionPolicy.findUnique({
         where: { id: 1 },
       });
@@ -206,6 +218,29 @@ export class DurablePrequoteConsumption implements PrequoteConsumption {
       )
         throw invalid();
     });
+  }
+  private async attemptPermit(
+    tx: Prisma.TransactionClient,
+    id: string,
+    starting: boolean,
+  ) {
+    const permit = await tx.prequoteConsumptionPermit.findUnique({
+      where: { id },
+      include: { humanAttempt: true },
+    });
+    if (!permit?.humanAttempt) return;
+    const a = permit.humanAttempt;
+    const fence = await customerAttempt(
+      tx,
+      { kind: 'CUSTOMER', id: a.ownerId },
+      a.key,
+      CREATE_MPQ,
+    );
+    if (starting && fence)
+      await tx.humanCommandAttempt.update({
+        where: { id: fence.id },
+        data: { routingEffectsPossible: true },
+      });
   }
   async finishPermit(
     id: string,

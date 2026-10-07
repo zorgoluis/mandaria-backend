@@ -1,4 +1,14 @@
 import {
+  shippingSnapshot,
+  type ShippingPayer,
+} from '../customers/shipping-terms.js';
+import {
+  demandOwner,
+  ownerFields,
+  rowOwner,
+} from '../customers/demand-owner.js';
+import type { DemandOwnerInput } from '../customers/demand-owner.js';
+import {
   ForbiddenException,
   Inject,
   Injectable,
@@ -45,6 +55,7 @@ export function prequoteView(
     status: q.prequoteConversion
       ? 'CONVERTED'
       : prequoteEffectiveStatus(q, now),
+    shippingTerms: q.shippingTerms,
     conditionsVersion: q.conditionsVersion,
     conditions: q.conditions,
     serviceZone: { code: q.zoneCode, name: q.zoneName },
@@ -77,9 +88,9 @@ export class PrequotesService {
     private readonly consumption: PrequoteConsumption,
   ) {}
 
-  async get(publicId: string, integrationClientId: string) {
+  async get(publicId: string, integrationClientId: DemandOwnerInput) {
     const q = await this.prisma.deliveryPrequote.findFirst({
-      where: { publicId, integrationClientId },
+      where: { publicId, ...ownerFields(integrationClientId) },
       include: {
         prequoteConversion: {
           select: {
@@ -98,10 +109,34 @@ export class PrequotesService {
     if (!this.config.getOrThrow<boolean>('PREQUOTE_ENABLED'))
       throw new PrequotePublicError('PREQUOTE_DISABLED');
   }
-  private async authorize(token: string, integrationClientId: string) {
+  private async authorize(
+    token: string,
+    integrationClientId: DemandOwnerInput,
+  ) {
+    const owner = demandOwner(integrationClientId);
+    if (owner.kind === 'CUSTOMER') {
+      const c = await this.prisma.customerAccount.findUnique({
+        where: { id: owner.id },
+        include: { user: true },
+      });
+      if (
+        !c?.active ||
+        !c.user.active ||
+        !c.user.emailVerifiedAt ||
+        c.user.id !== token
+      )
+        throw new ForbiddenException();
+      if (!this.config.get<boolean>('CUSTOMER_ADMISSION_ENABLED'))
+        throw new DomainException(
+          'CUSTOMER_ADMISSION_DISABLED',
+          503,
+          'Customer admission disabled',
+        );
+      return;
+    }
     const principal = await this.auth.authenticate(token);
     if (
-      principal.id !== integrationClientId ||
+      principal.id !== owner.id ||
       !principal.scopes.includes('prequotes:create')
     )
       throw new ForbiddenException('Insufficient integration scopes');
@@ -115,7 +150,7 @@ export class PrequotesService {
       return {
         prequote: await this.get(
           result.prequote.publicId,
-          result.prequote.integrationClientId,
+          rowOwner(result.prequote),
         ),
         replayed: true,
       };
@@ -127,12 +162,16 @@ export class PrequotesService {
   }
 
   async create(
-    integrationClientId: string,
+    integrationClientId: DemandOwnerInput,
     token: string,
     key: string,
     input: unknown,
+    shippingPayer?: ShippingPayer,
   ) {
-    const conditions = normalizePrequoteConditions(input);
+    const conditions = normalizePrequoteConditions(
+      input,
+      demandOwner(integrationClientId).kind === 'CUSTOMER',
+    );
     if (!/^[\x21-\x7e]{8,255}$/.test(key))
       throw new DomainException(
         'IDEMPOTENCY_KEY_INVALID',
@@ -140,14 +179,31 @@ export class PrequotesService {
         'Idempotency-Key must contain 8–255 visible ASCII characters',
       );
     const existing = await this.resolve(
-      await this.persistence.inspect(integrationClientId, key, conditions),
+      await this.persistence.inspect(
+        integrationClientId,
+        key,
+        conditions,
+        shippingPayer,
+      ),
     );
     if (existing) return existing;
     this.enabled();
     await this.authorize(token, integrationClientId);
+    if (demandOwner(integrationClientId).kind === 'CUSTOMER')
+      await this.prisma.$transaction((tx) =>
+        shippingSnapshot(tx, integrationClientId, shippingPayer),
+      );
     const admission = await this.consumption
-      .admit(integrationClientId)
+      .admit(
+        integrationClientId,
+        demandOwner(integrationClientId).kind === 'CUSTOMER' ? key : undefined,
+      )
       .catch((error: unknown) => {
+        if (
+          error instanceof DomainException &&
+          error.code.startsWith('COMMAND_ATTEMPT_')
+        )
+          throw error;
         if (error instanceof PrequotePublicError) throw error;
         throw new PrequotePublicError('PREQUOTE_CONSUMPTION_UNAVAILABLE');
       });
@@ -169,6 +225,7 @@ export class PrequotesService {
           leaseMs: this.config.getOrThrow<number>('PREQUOTE_LEASE_MS'),
           maxAttempts: this.config.getOrThrow<number>('PREQUOTE_MAX_ATTEMPTS'),
         },
+        shippingPayer,
       );
       const resolved = await this.resolve(result);
       if (resolved) return resolved;
@@ -226,6 +283,7 @@ export class PrequotesService {
               route,
             },
             this.config.getOrThrow<number>('PREQUOTE_VALIDITY_MS'),
+            shippingPayer,
           )
           .catch((error: unknown) => {
             if (
@@ -281,6 +339,7 @@ export class PrequotesService {
               integrationClientId,
               key,
               conditions,
+              shippingPayer,
             ),
           );
           if (current) {

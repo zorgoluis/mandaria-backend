@@ -1,3 +1,127 @@
+## V1.17 — cierre contractual de recuperación humana, 2026-10-06
+
+**PASS local del alcance solicitado.** Sin activación ni publicación. [Contrato/rutas/DTOs y procedimiento WEB](docs/V1.17-COMMAND-RECONCILIATION.md); [consolidado con comandos, exit codes, hashes y todos los intentos](docs/checks/v117-command-recovery.json). La implementación A–E previa y sus cifras siguientes son históricas; no se suman a esta tarea.
+
+| Verificación NUEVA | Resultado |
+|---|---|
+| Demanda directa, archivo completo |23/23; siete casos nuevos: recuperación sin cuerpo, app nueva y proceso OS separado, cierre vs POST tardío/concurrente, rollback, original de política/actores, contexto final desde MDR, worker en routing y lease vencida. PostgreSQL real; routing controlado. |
+| Regresión E2E, archivos completos |197 adicionales: persistencia24, consumo22, MPQ HTTP40, conversión39, aceptación35, clientes13 e invitaciones24. **220 únicos/8 archivos** con exit0 y reporte completo; no toda la suite E2E. |
+| Unitarias |472/472 en36 archivos, exit0. |
+| Contrato público |37/37, exit0: nuevas rutas humanas/admin excluidas, OFFER existente y nullable correctos. |
+| Build/tipos/linters |nest build; tsc --noEmit con tsconfig.json y tsconfig.build.json; ESLint src test prisma; Oxlint: exit0. Advertencia histórica readFileSync en script de C3, sin ampliar alcance. |
+| Documentación |OpenAPI completo regenerado desde fuente; público regenerado sin diferencia semántica. docs:check, export-public-b2b --check, pruebas públicas y git diff --check aprobados. |
+| Prisma/migración |generate/validate/status exit0. Limpia40 y upgrade39→40 mediante migrate deploy, sin reset. Checksums de40 migraciones coincidentes. Comparación nueva de53 tablas/3.721 filas sintéticas y39 registros de migración originales: preservados. |
+| Recibos históricos |Lectura NUEVA tras upgrade de MPQ/create, conversión, aceptación y política anteriores al fence: cuatro APPLIED, cero fences creados. Prueba interna del servicio; autorización HTTP se verifica en direct-demand. |
+
+Entorno: Node24.15.0, Prisma6.19.3, Vitest4.1.11, PostgreSQL18 local loopback65063, cluster temporal mandaria-v117-z5t2IE. Base upgrade `mandaria_v117_recovery2_upgrade_test`, limpia `mandaria_v117_recovery2_clean_test`; E2E en clones por archivo. Ningún .env/base real/servicio externo. Routing falso, correo local y webhooks externos deshabilitados. Sólo flags del proceso de pruebas, no configuración operativa.
+
+### Intentos no acreditados y correcciones
+
+- Primer direct-demand:22/23, falló fixture lease1ms porque venció antes del INSERT; trigger rechazó EXECUTION_INVALID_INITIAL_STATE. Se corrigió a500ms y espera600ms, sin debilitar constraint ni aserción. Archivo completo después23/23, incluyendo prueba adicional de proceso OS nuevo.
+- Tres archivos no pudieron importar dist porque **docs:check invoca nest build** y se ejecutó concurrentemente. Fue interferencia del procedimiento de verificación, no defecto de producto ni prueba omitida aprobada. Se ejecutaron completos sin builds simultáneos:24/22/40 aprobados.
+- Aceptación autorizada abortó con exit3221226505, sin reporte completo. Un único diagnóstico adicional con pool forks, archivo completo:35/35. Causa nativa no acreditada; aborto excluido. No se cambiaron configuración global ni casos para ocultarlo.
+- Primer tsc encontró Promise.withResolvers fuera del lib del proyecto: test corregido con Promise estándar, sin cambiar tsconfig. ESLint detectó variable descartada sin uso: se corrigió sin exclusiones. Prueba pública inicial refería nombre incompleto de DTO; se corrigió a AdminDeliveryRequestSummaryResponse y pasó. Script temporal de comparación tuvo error sintáctico antes de consultar; segundo intento correcto. Primer bootstrap de migración fue rechazado por identidad de URLs iguales, sin SQL aplicado; setup corregido con bases nuevas aisladas. Evidencia incompleta no suma casos.
+
+### Comandos reproducibles
+
+Con TEST_DATABASE_URL dirigido **exclusivamente a una base sintética identificada**, distinto de DATABASE_URL; DOTENV_CONFIG_PATH a un archivo inexistente para no cargar .env. No publicar valores. Primero generar/aplicar migración y build. Cada archivo E2E sobre clon limpio independiente. Ejecutar docs:check después de finalizar E2E, porque recompila dist.
+
+```text
+node node_modules/prisma/build/index.js generate --config prisma.test.config.ts
+node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts
+node node_modules/prisma/build/index.js validate --config prisma.test.config.ts
+node node_modules/prisma/build/index.js migrate status --config prisma.test.config.ts
+node node_modules/@nestjs/cli/bin/nest.js build
+node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json
+node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json
+node node_modules/eslint/bin/eslint.js src test prisma
+node node_modules/oxlint/bin/oxlint src/ test/ scripts/ --ignore-pattern src/generated
+node node_modules/vitest/vitest.mjs run --pool=threads --maxWorkers=1 --reporter=json --outputFile=<reporte-unitario>
+node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/<archivo>.e2e-spec.ts --pool=forks --maxWorkers=1 --reporter=default --reporter=json --outputFile=<reporte-unico>
+node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts --check
+node dist/openapi.cli.js
+node scripts/export-public-b2b.mjs
+node scripts/export-public-b2b.mjs --check
+node --test --test-isolation=none scripts/export-public-b2b.test.mjs scripts/webhook-signature-example.test.mjs
+git diff --check
+```
+
+Los comandos exactos por intento (threads/forks), archivos, reportes y logs están en el consolidado; `.tmp/v117-recovery` contiene runners locales y reportes no versionados. Bases/evidencia retenidas, sin borrar historia. El proceso PostgreSQL temporal iniciado para esta tarea se detuvo al terminar (pg_ctl stop, exit0); las bases y la evidencia se conservaron.
+
+### Límites y siguiente consumidor
+
+WEB debe integrar los GET/POST close propios y resincronizar OpenAPI; no se verificó frontend. Recurso/política cerrados no equivalen a routing sin coste: POSSIBLE_RETAINED conserva autorizaciones/budget, incluso si la llamada termina después. Nuevo despliegue requiere drenar escritores antiguos antes de habilitar cierres; mezcla de versiones no acreditada. No se activó admisión, cobro automático ni devolución. No commit, push, Docker ni despliegue. Las obligaciones monetarias/operativas A–E siguen pendientes de activación.
+
+## V1.17 B–E — cierre local del backend A–E, 2026-10-06
+
+**PASS local de implementación y regresiones pertinentes. Sin activación.** [Contrato exacto/handoff](docs/V1.17-DEMAND-IMPLEMENTATION.md), [consolidado trazable](docs/checks/v117-demand.json). A y las entradas históricas siguientes se conservan; sus resultados no se suman a los nuevos.
+
+### Evidencia NUEVA
+
+| Verificación | Resultado ejecutado |
+|---|---|
+| Unitarias completas |472/472, exit 0; .tmp/v117-be/unit2.json |
+| E2E pertinentes, archivos completos |459/459 casos únicos en 22 archivos, cada uno exit 0 y reporte completo exitoso. No es la suite E2E global. |
+| Núcleo nuevo |16 direct-demand: dueño/cupo concurrente entre MPQ distintas, consentimientos/términos, BUSINESS, cash/recogida/cancelación, retorno/transferencia, retry/tombstone/rollback/reinicio, política B2B, flags y privacidad. |
+| Consumo real |22 prequote-consumption, incluido permiso CUSTOMER durable, propietario separado y presupuesto común. Direct-demand emplea doble de admisión; no sustituye esta regresión real. |
+| Regresiones |Identidad13/invitaciones24; autorización35; MPQHTTP40/persistencia24/conversión39; MQ14/MDRB2B15; ejecución29/completion29/asignaciones13; créditos36/refunds22; outbox17; seguimiento público2/B2B21; instrucciones5/driver-self7; independiente23/dispatch13. |
+| Contrato público |36/36, exit 0; incluye aislamiento humano/admin/driver, referencias y términos públicos. |
+| Tipos y build |nest build; tsc --noEmit -p tsconfig.json; tsc --noEmit -p tsconfig.build.json: exit 0. |
+| Linters |ESLint src test prisma y Oxlint: exit 0. Única advertencia Oxlint histórica readFileSync en scripts/verify-authorized-acceptance-c3-regression.mjs; no se amplía alcance para corregirla. |
+| Documentación |OpenAPI completo y público regenerados; generate-api-access --check y export-public-b2b --check exit 0. |
+| Prisma |generate, validate y migrate status aprobados;39 migraciones finalizadas, checksums exactos de archivos actuales. |
+| Migraciones |migrate deploy A38→39 y limpia39, sin reset. Comparación read-only de todas las filas originales:51 User,40 RefreshToken,47 CustomerAccount y 38 registros completos de migración sin cambios. No acredita datos productivos. |
+
+Entorno nativo Node 24.15.0, Prisma 6.19.3, Vitest 4.1.11, PostgreSQL 18 loopback 65063, cluster temporal mandaria-v117-z5t2IE. Bases mandaria_v117_be4_test (upgrade) y mandaria_v117_clean4_test (limpia); cada archivo E2E en clon sintético propio. No se usó Docker ni .env/base principal. Correo local y routing controlado; ningún envío real.
+
+### Reproducción y procedencia
+
+Los comandos exactos, exit codes, hashes de reportes y rutas de logs locales constan en el JSON. Reportes por archivo .tmp/v117-be/per-file/r*-<archivo>.json; consolidar sólo un éxito completo por archivo, no sumar repeticiones. Los hashes de fuentes representan el árbol final tras formato; el formato posterior no alteró lógica ni aserciones. Comandos equivalentes, con TEST_DATABASE_URL configurado localmente hacia una base aislada identificada y .env deshabilitado:
+
+```text
+node node_modules/prisma/build/index.js generate --config prisma.test.config.ts
+node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts
+node node_modules/prisma/build/index.js validate --config prisma.test.config.ts
+node node_modules/prisma/build/index.js migrate status --config prisma.test.config.ts
+npm run build
+npx tsc --noEmit -p tsconfig.json
+npx tsc --noEmit -p tsconfig.build.json
+npm run lint
+npm run lint:eslint
+node node_modules/vitest/vitest.mjs run --reporter=json --outputFile=<reporte-unitario>
+node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/<archivo>.e2e-spec.ts --pool=threads --maxWorkers=1 --reporter=default --reporter=json --outputFile=<reporte-archivo>
+node dist/openapi.cli.js
+node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts
+node scripts/export-public-b2b.mjs
+npm run docs:b2b:check
+npm run test:public-b2b
+```
+
+No ejecutar build mientras Vitest importe dist. El pool final se registra por lote: threads para nuevos directos/precotizaciones/MDR/outbox; forks para seguimientoB2B/independiente/dispatch finales. El resto conserva sus corridas completas anteriores de esta misma tarea. No hubo modificación de configuración compartida del runner. Conservar fixtures históricos inmutables y retirar sólo cobertura de la suite evita limpiar deshabilitando constraints; se retienen exclusivamente en bases temporales.
+
+### Intentos no acreditados y límites
+
+- Abortos nativos/workers: direct forks, corrida combinada, MDRB2B y primer seguimientoB2B. Sin reporte completo/exit 0: no cuentan. Los archivos finalmente tienen éxito completo separado; no se afirma resuelta la causa nativa.
+- Primeros fallos de fixtures/mocks, aserciones de campos nuevos y limpieza contra historia inmutable se corrigieron sin omitir casos. Outbox exige exactamente su payload histórico; status añade shippingPayment sin contacto.
+- Un build concurrente iniciado por error eliminó dist durante cuatro archivos de precotizaciones: intento inválido, repetidos después de acabar build. No atribuido al producto.
+- Borrador no publicado de migración 39 falló sintaxis en base be3; sólo se corrigió esa migración nueva. Upgrade be4 / clean4 completos; históricas intactas.
+- Primera comparación de migración incluyó fixtures añadidos por tests; comparación final selecciona todos los IDs originales de A y detectaría pérdida/cambio. migrate status restringido falló al iniciar engine; mismo chequeo autorizado sólo local terminó exit 0.
+- No E2E global, UI/APP, proveedor externo de rutas/correo, Coita ni producción. No evaluación de capacidad productiva. Política monetaria/settlement, responsables de custodia y despliegue coordinado siguen como condiciones operativas; no se automatizan refunds monetarios. CUSTOMER_ADMISSION_ENABLED permanece false. Sin commit/push/despliegue.
+
+## V1.17 A — identidad; cierre parcial de implementación, 2026-10-06
+
+[Informe y contrato real](docs/V1.17-IDENTITY-IMPLEMENTATION.md), [resumen de evidencia](docs/checks/v117-identity.json). PostgreSQL nativo en cluster nuevo loopback65063, bases mandaria_v117_test y mandaria_v117_upgrade_test; sin Docker/.env/base principal/Coita/producción.
+
+Pruebas NUEVAS: 472/472 unitarias completas; 37/37 E2E únicos (customers13 + user-invitations24) en archivos completos; 35/35 públicas. Build, tsc raíz/build sin emisión, Oxlint (advertencia histórica readFileSync), ESLint pertinente y docs:b2b:check aprobados. Prisma generate y migrate deploy limpios; upgrade real desde las 37 migraciones de HEAD preserva usuario sintético, refresh y registros/checksums de migraciones; 38 finales. No acredita todavía migraciones ni recorridos B–E. Primer E2E1/10 y primer tsc fallidos, luego corregidos; no sumar repeticiones. Sin suite E2E global ni integración real de correo/UI.
+
+Estado **PARTIAL para V1.17**: titularidad/cupo, política/snapshots, cobro/reconciliación y proyecciones B–E pendientes; admisión nueva false. Las aprobaciones de negocio actualizadas en diseño no equivalen a implementación. No se ejecutó ni autorizó despliegue/activación.
+
+## Diseño V1.17 — revisión estática 2026-10-06 (antecedente)
+
+Base01cc84a, rama v1.17-Clientes_directos_Mandaria. [Propuesta](docs/V1.17-DIRECT-CUSTOMERS-DESIGN.md), [handoff](docs/V1.17-DIRECT-CUSTOMERS-HANDOFF.md). Leídos AGENTS/continuidad y fuentes enumeradas en §2: User/Auth/invitaciones, modelo de propietario y recibos, MPQ/conversión/aceptación, tarifas, dispatch/custodia, outbox/triggers, refunds y seguimiento público. Registro abierto, recuperación de contraseña y pagador REQUESTER no se consideran existentes por referencias históricas. Confirmación de operación comercial post-reset/pruebas de socios corresponde al propietario, no a nueva ejecución del agente.
+
+Verificación nueva limitada a inspección de código, referencias locales y git diff --check. No se ejecutaron build, suites, PostgreSQL, migraciones ni OpenAPI; la matriz de pruebas del diseño está propuesta, no aprobada. Sólo documentos/continuidad; trabajo previo conservado. Contrato NO IMPLEMENTADO, pendientes de negocio explícitos, sin secretos/Docker/Coita/producción/commit/push/despliegue.
+
 ## Merge main → QA — 2026-10-06
 
 Resolución de siete conflictos del merge ya iniciado (QA a5ceb4d + main 71eb11a). Ambos módulos importados y registrados; relaciones/modelos de ambos padres presentes. OpenAPI regenerado: ninguna operación de ninguno de los dos padres perdida; B2B filtrado sin cambios semánticos. Propuesta QA conserva la evolución aprobada posterior a la propuesta original de main; historial Git original intacto.
@@ -2577,3 +2701,8 @@ Nueva ejecución: npm run docs:b2b exit0 (incluye build y regeneración desde Sw
 - Alcance: PostgreSQL 18.6 local, clúster temporal en loopback y puerto efímero, datos sintéticos, dos funciones históricas y tabla mínima con el CHECK real. No es una suite integral ni prueba de todas las migraciones/tabla productiva. Clúster detenido; base principal, .env y VM intactos. Producción usa PG17 y queda pendiente aplicar la migración allí.
 - Intentos previos no aprobados: EPERM en sandbox; tuberías heredadas de pg_ctl en Windows (corregidas, clúster detenido); un fallo UNKNOWN al iniciar pg_dump. Verificado binario y repetición final completa exit 0.
 - Oxlint del script y git diff --check ejecutados. No build de aplicación: cambio SQL y herramienta de regresión, sin cambios TypeScript.
+
+
+### Limpieza de verificación V1.17 B–E
+
+Cluster temporal exclusivo mandaria-v117-z5t2IE/pg detenido con pg_ctl, exit 0. Se conservan bases sintéticas, historia inmutable y logs; no se borraron recursos ajenos. git diff --check final aprobado. Sin cambios a .env, versión, migraciones históricas ni activación.

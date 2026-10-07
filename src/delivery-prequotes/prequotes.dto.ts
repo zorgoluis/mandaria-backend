@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ShippingTermsResponse } from '../customers/shipping.responses.js';
 import { PrequoteStop, PrequotePackage } from './prequote-conditions.js';
 class PrequoteFoodPackage extends PrequotePackage {
   @ApiProperty({ enum: ['FOOD'], example: 'FOOD' })
@@ -40,6 +41,13 @@ class PrequoteZoneResponse {
   @ApiProperty({ example: 'Zona Centro' }) name!: string;
 }
 export class PrequoteResponse {
+  @ApiProperty({
+    type: ShippingTermsResponse,
+    nullable: true,
+    description:
+      'Política congelada; null sólo para precotizaciones históricas anteriores a V1.17.',
+  })
+  shippingTerms!: ShippingTermsResponse | null;
   @ApiProperty({ example: 'MPQ-000123' }) publicId!: string;
   @ApiProperty({
     enum: ['OFFERED', 'EXPIRED', 'CONVERTED'],

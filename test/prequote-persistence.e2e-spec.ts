@@ -1,3 +1,4 @@
+import { ownerFields } from '../dist/customers/demand-owner.js';
 import 'reflect-metadata';
 import { randomUUID, randomInt } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -502,7 +503,7 @@ describe.sequential('A3 internal protocol with real PostgreSQL', () => {
           id: resourceId,
           publicId: await nextPublicId(tx, 'MPQ'),
           idempotencyRecordId: lease.recordId,
-          integrationClientId: lease.integrationClientId,
+          ...ownerFields(lease.integrationClientId),
           conditionsVersion: 1,
           conditions: normalizePrequoteConditions(conditions),
           serviceType: 'LOCAL_DELIVERY',

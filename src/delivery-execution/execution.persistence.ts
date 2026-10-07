@@ -1,3 +1,5 @@
+import { shippingView } from '../customers/shipping-view.js';
+import { lockRequestCustomer } from '../customers/demand-owner.js';
 import type { Prisma } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
 import { EXECUTION_PHASES } from './execution.types.js';
@@ -17,6 +19,12 @@ export async function lockExecutionDispatch(
   tx: Prisma.TransactionClient,
   dispatchId: string,
 ) {
+  const ownerRequest = await tx.dispatch.findUnique({
+    where: { id: dispatchId },
+    select: { deliveryRequestId: true },
+  });
+  if (ownerRequest)
+    await lockRequestCustomer(tx, ownerRequest.deliveryRequestId);
   await tx.$queryRaw`SELECT r.id FROM "DeliveryRequest" r JOIN "Dispatch" d ON d."deliveryRequestId"=r.id WHERE d.id=${dispatchId}::uuid FOR UPDATE OF r`;
   await tx.$queryRaw`SELECT id FROM "Dispatch" WHERE id=${dispatchId}::uuid FOR UPDATE`;
 }
@@ -48,7 +56,23 @@ export async function initializeExecution(
     where: { id: assignmentId },
   });
   const existing = await executionHead(tx, assignment.dispatchId);
-  if (!existing && !enabled) return;
+  if (!existing && !enabled) {
+    const d = await tx.dispatch.findUniqueOrThrow({
+      where: { id: assignment.dispatchId },
+      select: {
+        deliveryRequest: {
+          select: { shippingTerms: { select: { payer: true } } },
+        },
+      },
+    });
+    if (d.deliveryRequest.shippingTerms?.payer === 'REQUESTER')
+      throw new DomainException(
+        'SHIPPING_DETAILED_EXECUTION_REQUIRED',
+        409,
+        'Requester collection requires detailed execution',
+      );
+    return;
+  }
   if (!existing)
     await tx.$executeRaw`INSERT INTO "DeliveryExecution" ("dispatchId","chainId","assignmentId",revision,phase) VALUES (${assignment.dispatchId}::uuid,${assignment.id}::uuid,${assignment.id}::uuid,0,0)`;
   const head = await executionHead(tx, assignment.dispatchId);
@@ -76,6 +100,12 @@ export async function executionView(
     { id: string }[]
   >`SELECT id FROM "DeliveryCustodyIncident" WHERE "dispatchId"=${dispatchId}::uuid AND "resolvedAt" IS NULL`;
   const active = d.status === 'CLAIMED' && a.status === 'ACTIVE';
+  const shipping = await tx.deliveryShippingTerms.findUnique({
+    where: { deliveryRequestId: d.deliveryRequestId },
+    include: { declaration: true },
+  });
+  const requiresDeclaration =
+    shipping?.payer === 'REQUESTER' && !shipping.declaration;
   return {
     trackingMode: 'DETAILED',
     revision: e.revision,
@@ -95,7 +125,11 @@ export async function executionView(
       : incidents.length
         ? []
         : [
-            ...(e.phase < 5 ? ['ADVANCE'] : ['DELIVER']),
+            ...(e.phase === 2 && requiresDeclaration
+              ? ['COLLECT_SHIPPING']
+              : e.phase < 5
+                ? ['ADVANCE']
+                : ['DELIVER']),
             ...(e.phase >= 3
               ? ['REPORT_INCIDENT']
               : ['ORDINARY_ASSIGNMENT_OPERATIONS']),
@@ -141,6 +175,7 @@ export async function withExecutionInstructions<
     execution?: ExecutionView;
     collectionActionAllowed?: boolean;
     advanceToOriginAllowed?: boolean;
+    shippingPayment?: Awaited<ReturnType<typeof shippingView>>;
   }
 > {
   const classified = {
@@ -152,7 +187,7 @@ export async function withExecutionInstructions<
   if (!execution) return classified;
   execution.allowedActions = execution.allowedActions.filter((action) =>
     'claimedByMe' in view
-      ? !['ADVANCE', 'DELIVER'].includes(action)
+      ? !['ADVANCE', 'DELIVER', 'COLLECT_SHIPPING'].includes(action)
       : action !== 'ORDINARY_ASSIGNMENT_OPERATIONS',
   );
   // An intervening transfer must never attach the new custodian's IDs/actions to an old view.
@@ -167,6 +202,17 @@ export async function withExecutionInstructions<
     ...classified,
     trackingMode: 'DETAILED',
     execution,
+    shippingPayment: await shippingView(
+      tx,
+      (
+        await tx.dispatch.findUniqueOrThrow({
+          where: { id: dispatchId },
+          select: { deliveryRequestId: true },
+        })
+      ).deliveryRequestId,
+      !execution.activeAssignmentId,
+      true,
+    ),
     collectionActionAllowed:
       execution.activeAssignmentId !== null &&
       execution.openIncidentId === null &&

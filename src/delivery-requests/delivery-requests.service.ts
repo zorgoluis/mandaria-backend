@@ -1,3 +1,5 @@
+import { shippingSnapshot } from '../customers/shipping-terms.js';
+import { lockRequestCustomer } from '../customers/demand-owner.js';
 import {
   BadRequestException,
   Injectable,
@@ -9,7 +11,10 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { closeDispatchesForCancelledRequest } from '../dispatch/dispatch-policy.js';
 import { publicDeliveryStatus } from './public-delivery-tracking.js';
 import { pageResult } from '../common/pagination.dto.js';
-import { IdempotencyService } from '../idempotency/idempotency.service.js';
+import {
+  IdempotencyService,
+  fingerprint,
+} from '../idempotency/idempotency.service.js';
 import {
   formatPublicId as formatWithPrefix,
   nextPublicId,
@@ -28,7 +33,8 @@ import {
 
 export type DeliveryActor =
   | { type: 'INTEGRATION'; integrationClientId: string }
-  | { type: 'USER'; userId: string };
+  | { type: 'USER'; userId: string }
+  | { type: 'CUSTOMER'; userId: string; customerAccountId: string };
 
 /** Formats the sequence value without truncating beyond six digits. */
 export const formatPublicId = (value: bigint | number) =>
@@ -63,6 +69,7 @@ export function normalizeDeliveryRequest(dto: CreateDeliveryRequestDto) {
     ...(dto.serviceType && dto.serviceType !== 'LOCAL_DELIVERY'
       ? { serviceType: dto.serviceType }
       : {}),
+    ...(dto.payerContact ? { payerContact: { ...dto.payerContact } } : {}),
     externalReference: dto.externalReference ?? null,
     stops: stops.map((s) => ({
       type: s.type,
@@ -117,6 +124,9 @@ export class DeliveryRequestsService {
       },
       payload,
       async (tx, id) => {
+        const terms = await shippingSnapshot(tx, integrationClientId);
+        if (terms.payer === 'REQUESTER' && !dto.payerContact)
+          throw invalid('SHIPPING_PAYER_CONTACT_REQUIRED');
         const publicId = await nextPublicId(tx, 'MDR');
         await tx.deliveryRequest.create({
           data: {
@@ -128,6 +138,20 @@ export class DeliveryRequestsService {
             stops: { create: payload.stops },
             packages: { create: payload.packages },
             financialContext: { create: payload.financialContext },
+            shippingTerms: {
+              create: {
+                ...terms,
+                termsHash: dto.payerContact
+                  ? fingerprint('shipping.final_terms', {
+                      terms,
+                      payerContact: dto.payerContact,
+                    })
+                  : terms.termsHash,
+                payerContact: dto.payerContact
+                  ? { ...dto.payerContact }
+                  : undefined,
+              },
+            },
           },
         });
       },
@@ -225,15 +249,22 @@ export class DeliveryRequestsService {
     const scope =
       actor.type === 'INTEGRATION'
         ? { integrationClientId: actor.integrationClientId }
-        : {};
+        : actor.type === 'CUSTOMER'
+          ? {
+              customerAccountId: actor.customerAccountId,
+              integrationClientId: null,
+            }
+          : {};
     const result = await this.prisma.$transaction(async (tx) => {
-      const [row] = scope.integrationClientId
-        ? await tx.$queryRaw<
-            { id: string; status: string }[]
-          >`SELECT id, status FROM "DeliveryRequest" WHERE "publicId" = ${publicId} AND "integrationClientId" = ${scope.integrationClientId}::uuid FOR UPDATE`
-        : await tx.$queryRaw<
-            { id: string; status: string }[]
-          >`SELECT id, status FROM "DeliveryRequest" WHERE "publicId" = ${publicId} FOR UPDATE`;
+      const target = await tx.deliveryRequest.findFirst({
+        where: { publicId, ...scope },
+        select: { id: true },
+      });
+      if (!target) throw new NotFoundException('Delivery request not found');
+      await lockRequestCustomer(tx, target.id);
+      const [row] = await tx.$queryRaw<
+        { id: string; status: string }[]
+      >`SELECT id,status FROM "DeliveryRequest" WHERE id=${target.id}::uuid FOR UPDATE`;
       if (!row) throw new NotFoundException('Delivery request not found');
       if (row.status !== 'CREATED')
         return {

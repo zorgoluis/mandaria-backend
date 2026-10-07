@@ -57,7 +57,7 @@ export type CompletionOutcome =
       kind: 'completed';
       assignmentId: string;
       deliveredAt: Date;
-      event: B2bEvent;
+      event: B2bEvent | null;
     }
   | { kind: 'already'; deliveredAt: Date; deliveredByUserId: string };
 

@@ -35,12 +35,20 @@ export class AuthService implements OnModuleInit {
       this.logger.warn({ event: 'login_rejected' });
       throw new UnauthorizedException('Invalid credentials');
     }
-    const tokens = await this.issue(user.id);
-    await this.prisma.refreshToken.create({ data: tokens.record });
+    const tokens = await this.issue(user.id, user.sessionVersion);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id=${user.id}::uuid FOR UPDATE`;
+      const current = await tx.user.findUniqueOrThrow({
+        where: { id: user.id },
+      });
+      if (!current.active || current.sessionVersion !== user.sessionVersion)
+        throw new UnauthorizedException('Invalid credentials');
+      await tx.refreshToken.create({ data: tokens.record });
+    });
     this.logger.log({ event: 'login_succeeded', userId: user.id });
     return tokens.response;
   }
-  private async issue(userId: string) {
+  private async issue(userId: string, sessionVersion: number) {
     const id = randomUUID();
     const accessSeconds = this.config.getOrThrow<number>(
       'JWT_ACCESS_EXPIRES_IN',
@@ -49,7 +57,7 @@ export class AuthService implements OnModuleInit {
       'JWT_REFRESH_EXPIRES_IN',
     );
     const accessToken = await this.jwt.signAsync(
-      { sub: userId, type: 'access' },
+      { sub: userId, type: 'access', sv: sessionVersion },
       {
         secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
         expiresIn: accessSeconds,
@@ -59,7 +67,7 @@ export class AuthService implements OnModuleInit {
       },
     );
     const refreshToken = await this.jwt.signAsync(
-      { sub: userId, jti: id, type: 'refresh' },
+      { sub: userId, jti: id, type: 'refresh', sv: sessionVersion },
       {
         secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
         expiresIn: refreshSeconds,
@@ -89,6 +97,7 @@ export class AuthService implements OnModuleInit {
         sub: string;
         jti: string;
         type: string;
+        sv?: number;
       }>(token, {
         secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
         issuer: 'mandaria',
@@ -98,7 +107,9 @@ export class AuthService implements OnModuleInit {
       if (
         payload.type !== 'refresh' ||
         typeof payload.sub !== 'string' ||
-        typeof payload.jti !== 'string'
+        typeof payload.jti !== 'string' ||
+        !Number.isInteger(payload.sv ?? 0) ||
+        (payload.sv ?? 0) < 0
       )
         throw new Error();
       return payload;
@@ -108,8 +119,9 @@ export class AuthService implements OnModuleInit {
   }
   async refresh(token: string) {
     const payload = await this.verifyRefresh(token);
-    const next = await this.issue(payload.sub);
+    const next = await this.issue(payload.sub, payload.sv ?? 0);
     await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id=${payload.sub}::uuid FOR UPDATE`;
       const record = await tx.refreshToken.findUnique({
         where: { id: payload.jti },
         include: { user: true },
@@ -118,6 +130,7 @@ export class AuthService implements OnModuleInit {
         !record ||
         record.userId !== payload.sub ||
         !record.user.active ||
+        record.user.sessionVersion !== (payload.sv ?? 0) ||
         record.revokedAt ||
         record.expiresAt <= new Date() ||
         !matchesSecret(token, record.tokenHash)

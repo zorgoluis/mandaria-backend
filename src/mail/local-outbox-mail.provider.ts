@@ -6,6 +6,7 @@ import {
   renderUserInvitation,
 } from './mail-templates.js';
 import type {
+  CustomerAccessMail,
   MailProvider,
   PartnerApplicationNoticeMail,
   UserInvitationMail,
@@ -36,6 +37,15 @@ export class LocalOutboxMailProvider implements MailProvider {
       to: mail.to,
       reference: mail.reference,
       ...renderPartnerApplicationNotice(mail),
+    });
+  }
+  sendCustomerAccess(mail: CustomerAccessMail) {
+    return this.write({
+      kind: 'CUSTOMER_ACCESS',
+      to: mail.to,
+      purpose: mail.purpose,
+      actionUrl: mail.actionUrl,
+      expiresAt: mail.expiresAt.toISOString(),
     });
   }
   private async write(message: Record<string, unknown>) {

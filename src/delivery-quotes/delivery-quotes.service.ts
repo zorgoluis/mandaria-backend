@@ -53,7 +53,21 @@ export const quoteSelect = {
   createdAt: true,
   updatedAt: true,
   deliveryRequest: {
-    select: { publicId: true, integrationClientId: true, status: true },
+    select: {
+      publicId: true,
+      integrationClientId: true,
+      status: true,
+      shippingTerms: {
+        select: {
+          payer: true,
+          method: true,
+          dueAt: true,
+          component: true,
+          termsVersion: true,
+          termsHash: true,
+        },
+      },
+    },
   },
   serviceZone: { select: { id: true, code: true, name: true } },
   ratePlan: { select: { id: true, version: true } },
@@ -87,6 +101,7 @@ export function integrationQuoteView(row: QuoteRow, now = new Date()) {
   return {
     publicId: v.publicId,
     deliveryRequestPublicId: v.deliveryRequest.publicId,
+    shippingTerms: v.deliveryRequest.shippingTerms,
     serviceType: v.serviceType,
     serviceZone: { code: v.serviceZone.code, name: v.serviceZone.name },
     distanceMeters: v.distanceMeters,

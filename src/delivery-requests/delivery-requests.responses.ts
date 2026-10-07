@@ -1,3 +1,4 @@
+import { OwnedShippingTermsResponse } from '../customers/shipping.responses.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ServiceType,
@@ -72,6 +73,8 @@ class DeliveryRequestBase {
   @ApiProperty(dateTime) updatedAt!: Date;
 }
 class DeliveryRequestContent extends DeliveryRequestBase {
+  @ApiProperty({ type: OwnedShippingTermsResponse, nullable: true })
+  shippingTerms!: OwnedShippingTermsResponse | null;
   @ApiPropertyOptional({ type: String, nullable: true, example: null })
   cancellationReason!: string | null;
   @ApiProperty({ type: DeliveryStopResponse, isArray: true })
@@ -95,15 +98,17 @@ class IntegrationClientSummaryResponse {
 }
 export class AdminDeliveryRequestSummaryResponse extends DeliveryRequestBase {
   @ApiProperty({ format: 'uuid' }) id!: string;
-  @ApiProperty({ format: 'uuid' }) integrationClientId!: string;
-  @ApiProperty({ type: IntegrationClientSummaryResponse })
-  integrationClient!: IntegrationClientSummaryResponse;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true })
+  integrationClientId!: string | null;
+  @ApiProperty({ type: IntegrationClientSummaryResponse, nullable: true })
+  integrationClient!: IntegrationClientSummaryResponse | null;
 }
 export class AdminDeliveryRequestResponse extends DeliveryRequestContent {
   @ApiProperty({ format: 'uuid' }) id!: string;
-  @ApiProperty({ format: 'uuid' }) integrationClientId!: string;
-  @ApiProperty({ type: IntegrationClientSummaryResponse })
-  integrationClient!: IntegrationClientSummaryResponse;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true })
+  integrationClientId!: string | null;
+  @ApiProperty({ type: IntegrationClientSummaryResponse, nullable: true })
+  integrationClient!: IntegrationClientSummaryResponse | null;
 }
 export class AdminDeliveryRequestPageResponse extends PaginationResponse {
   @ApiProperty({ type: AdminDeliveryRequestSummaryResponse, isArray: true })

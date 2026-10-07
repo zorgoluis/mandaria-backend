@@ -1,3 +1,5 @@
+import { IsOptional } from 'class-validator';
+import { PayerContactDto } from '../customers/payer-contact.dto.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -215,6 +217,15 @@ export class DeliveryFinancialContextDto {
   currency!: string;
 }
 export class CreateDeliveryRequestDto {
+  @ApiPropertyOptional({
+    type: PayerContactDto,
+    description:
+      'Pagador presente o representante del solicitante; requerido si política REQUESTER. No cambia el pagador configurado.',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PayerContactDto)
+  payerContact?: PayerContactDto;
   @ApiPropertyOptional({
     enum: ServiceType,
     default: 'LOCAL_DELIVERY',

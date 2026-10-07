@@ -1,3 +1,4 @@
+import type { ShippingCollectionDto } from './execution.dto.js';
 import {
   BadRequestException,
   ForbiddenException,
@@ -145,7 +146,7 @@ export class ExecutionService {
   async reconcileDriver(
     dispatchId: string,
     assignmentId: string,
-    operation: 'ADVANCE' | 'REPORT' | 'DELIVER',
+    operation: 'ADVANCE' | 'REPORT' | 'DELIVER' | 'COLLECT_SHIPPING',
     actor: Actor,
     key: string,
     close = false,
@@ -184,7 +185,13 @@ export class ExecutionService {
             assignmentId: assignment.id,
             operation,
             canStartNewAttempt:
-              state === 'CLOSED_NO_EFFECTS' && assignment.status === 'ACTIVE',
+              state === 'CLOSED_NO_EFFECTS' &&
+              assignment.status === 'ACTIVE' &&
+              (operation !== 'COLLECT_SHIPPING' ||
+                !(await tx.shippingCollectionDeclaration.findFirst({
+                  where: { dispatchId },
+                  select: { deliveryRequestId: true },
+                }))),
           };
         },
         {
@@ -344,7 +351,7 @@ export class ExecutionService {
           : [];
     if (result && actor.role === 'PROVIDER_ADMIN')
       result.allowedActions = result.allowedActions.filter(
-        (a) => !['ADVANCE', 'DELIVER'].includes(a),
+        (a) => !['ADVANCE', 'DELIVER', 'COLLECT_SHIPPING'].includes(a),
       );
     if (result && actor.role === 'DRIVER')
       result.allowedActions = result.allowedActions.filter(
@@ -556,6 +563,72 @@ export class ExecutionService {
       ),
     );
   }
+  collectShipping(
+    id: string,
+    actor: Actor,
+    key: string,
+    body: ShippingCollectionDto,
+  ) {
+    if (actor.role !== 'DRIVER') throw new ForbiddenException();
+    return this.command(
+      id,
+      actor,
+      key,
+      `APP_COLLECT_SHIPPING:${body.assignmentId.toLowerCase()}`,
+      body,
+      async (tx, { e, a }) => {
+        const d = await tx.dispatch.findUniqueOrThrow({
+          where: { id },
+          include: {
+            deliveryQuote: true,
+            deliveryRequest: {
+              include: { shippingTerms: { include: { declaration: true } } },
+            },
+          },
+        });
+        const terms = d.deliveryRequest.shippingTerms;
+        if (e.phase !== 2 || !terms || terms.payer !== 'REQUESTER')
+          throw executionError('SHIPPING_COLLECTION_NOT_ALLOWED');
+        if (terms.declaration)
+          throw executionError('SHIPPING_ALREADY_DECLARED');
+        if (
+          body.quotePublicId !== d.deliveryQuote.publicId ||
+          body.amount !== d.deliveryQuote.amount.toFixed(2) ||
+          body.currency !== d.deliveryQuote.currency ||
+          body.termsHash !== terms.termsHash
+        )
+          throw executionError('SHIPPING_COLLECTION_MISMATCH');
+        const [clock] = await tx.$queryRaw<
+          { now: Date }[]
+        >`SELECT date_trunc('milliseconds',clock_timestamp() AT TIME ZONE 'UTC') AS now`;
+        const occurredAt = new Date(body.occurredAt);
+        if (occurredAt < e.recordedAt || occurredAt > clock.now)
+          throw executionError('SHIPPING_COLLECTION_TIME_INVALID');
+        await tx.shippingCollectionDeclaration.create({
+          data: {
+            deliveryRequestId: d.deliveryRequestId,
+            dispatchId: id,
+            assignmentId: a.id,
+            driverUserId: actor.id,
+            deliveryQuoteId: d.deliveryQuoteId,
+            termsHash: terms.termsHash,
+            amount: body.amount,
+            currency: body.currency,
+            receivedFrom: body.receivedFrom,
+            occurredAt,
+            recordedAt: clock.now,
+          },
+        });
+        return {
+          evidenceStatus: 'DECLARED',
+          amount: body.amount,
+          currency: body.currency,
+          recordedAt: clock.now.toISOString(),
+          physicalReceiptVerified: false,
+        };
+      },
+    );
+  }
   advance(id: string, actor: Actor, key: string, body: AdvanceExecutionDto) {
     if (actor.role !== 'DRIVER') throw new ForbiddenException();
     return this.command(
@@ -569,6 +642,21 @@ export class ExecutionService {
           throw executionError('EXECUTION_TRANSITION_INVALID');
         if ((await executionView(tx, id))?.openIncidentId)
           throw executionError('CUSTODY_INCIDENT_OPEN');
+        if (e.phase === 2) {
+          const d = await tx.dispatch.findUniqueOrThrow({
+            where: { id },
+            select: {
+              deliveryRequest: {
+                select: { shippingTerms: { include: { declaration: true } } },
+              },
+            },
+          });
+          if (
+            d.deliveryRequest.shippingTerms?.payer === 'REQUESTER' &&
+            !d.deliveryRequest.shippingTerms.declaration
+          )
+            throw executionError('SHIPPING_COLLECTION_REQUIRED');
+        }
         await executionEvent(tx, e, a.id, actor.id, 'ADVANCED', e.phase + 1);
         return this.view(tx, id, actor);
       },

@@ -1,3 +1,4 @@
+import { ShippingPaymentResponse } from '../customers/shipping.responses.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   B2B_DELIVERY_STATUSES,
@@ -86,6 +87,13 @@ export class PublicTerminalOutcomeResponse {
 }
 
 export class DeliveryStatusResponse {
+  @ApiProperty({
+    type: ShippingPaymentResponse,
+    nullable: true,
+    description:
+      'Instrucción financiera congelada, separada de progreso, custodia, mercancía y créditos. null para servicios históricos sin términos.',
+  })
+  shippingPayment!: ShippingPaymentResponse | null;
   @ApiProperty({
     type: String,
     pattern: '^[1-9][0-9]*$',

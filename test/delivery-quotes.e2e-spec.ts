@@ -1,3 +1,4 @@
+import { retainShippingFixtures } from './support/shipping-fixtures.js';
 import 'reflect-metadata';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -299,6 +300,10 @@ afterAll(async () => {
   vi.useRealTimers();
   const ids = Object.values(clientIds);
   const zoneIds = Object.values(zones);
+  if (await retainShippingFixtures(prisma, ids, zoneIds)) {
+    await prisma.$disconnect();
+    return;
+  }
   await prisma.deliveryQuote.deleteMany({
     where: {
       OR: [

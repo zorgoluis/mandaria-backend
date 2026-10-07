@@ -1,4 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ShippingTermsResponse } from '../customers/shipping.responses.js';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PayerContactDto } from '../customers/payer-contact.dto.js';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -8,6 +10,8 @@ import {
   IsDateString,
   IsDefined,
   IsObject,
+  IsOptional,
+  IsIn,
   IsString,
   Matches,
   MaxLength,
@@ -67,9 +71,17 @@ export class MerchantConfirmationDto {
   orderAcceptedAt!: string;
 }
 export class CollectionInstructionDto {
-  @ApiProperty({ enum: ['RECIPIENT'] }) @Equals('RECIPIENT') payer!: string;
+  @ApiProperty({
+    enum: ['RECIPIENT', 'REQUESTER'],
+    description:
+      'Eco de la política del integrador; no permite sobrescribirla.',
+  })
+  @IsIn(['RECIPIENT', 'REQUESTER'])
+  payer!: string;
   @ApiProperty({ enum: ['CASH'] }) @Equals('CASH') method!: string;
-  @ApiProperty({ enum: ['DELIVERY'] }) @Equals('DELIVERY') dueAt!: string;
+  @ApiProperty({ enum: ['DELIVERY', 'PICKUP'] })
+  @IsIn(['DELIVERY', 'PICKUP'])
+  dueAt!: string;
   @ApiProperty({
     enum: ['DELIVERY_FEE'],
     isArray: true,
@@ -108,6 +120,11 @@ class ConversionDeliveryRequestDto extends CreateDeliveryRequestDto {
 }
 
 export class ConvertPrequoteDto {
+  @ApiPropertyOptional({ type: PayerContactDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PayerContactDto)
+  payerContact?: PayerContactDto;
   @ApiProperty({ enum: [1] }) @Equals(1) conditionsVersion!: number;
   @ApiProperty({
     type: ConversionDeliveryRequestDto,
@@ -133,6 +150,8 @@ export class ConvertPrequoteDto {
   deliveryCollectionInstruction!: CollectionInstructionDto;
 }
 export class PrequoteConversionResponse {
+  @ApiProperty({ type: ShippingTermsResponse, nullable: true })
+  shippingTerms!: ShippingTermsResponse | null;
   @ApiProperty({ example: 'MPQ-000101' }) prequotePublicId!: string;
   @ApiProperty({ format: 'date-time' }) convertedAt!: Date;
   @ApiProperty({ example: 'MDR-000101' }) deliveryRequestPublicId!: string;

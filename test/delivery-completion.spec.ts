@@ -85,7 +85,10 @@ function txDouble(rawRows: unknown[][]) {
   const tx = {
     $queryRaw: queryRaw,
     deliveryAssignment: { update: assignmentUpdate },
-    dispatch: { update: dispatchUpdate },
+    dispatch: {
+      findUnique: vi.fn().mockResolvedValue(null),
+      update: dispatchUpdate,
+    },
     deliveryRequest: { findUniqueOrThrow: requestRead },
     b2bOutboxEvent: { create: eventCreate },
   } as unknown as Prisma.TransactionClient;
@@ -486,6 +489,7 @@ describe('V1.11-A the independent completion does not re-run the approval gate',
       },
       b2bOutboxEvent: { create: vi.fn(async () => ({ id: EVENT })) },
       dispatch: {
+        findUnique: vi.fn().mockResolvedValue(null),
         update: dispatchUpdate,
         // viewFor runs after the transaction has committed; returning nothing only affects the
         // rendering of the response, which is not what this case is about.

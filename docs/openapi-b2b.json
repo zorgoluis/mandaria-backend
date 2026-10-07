@@ -492,8 +492,8 @@
           "deliveries:create"
         ],
         "operationId": "createRequest",
-        "summary": "Crear solicitud directa",
-        "description": "Flujo directo, separado de la conversión de precotizaciones. Requiere Idempotency-Key estable por intención. externalReference no es única. No cotiza ni reserva capacidad.",
+        "summary": "Crear solicitud B2B sin precotización",
+        "description": "Creación B2B sin precotización, separada de clientes humanos directos. El pagador proviene de la política de la integración, sin override por solicitud. Requiere Idempotency-Key estable por intención. externalReference no es única. No cotiza ni reserva capacidad.",
         "tags": [
           "Solicitudes"
         ],
@@ -5456,6 +5456,29 @@
           "scopes"
         ]
       },
+      "PayerContactDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "AUTHORIZED_REPRESENTATIVE"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "capacity"
+        ]
+      },
       "DeliveryStopDto": {
         "type": "object",
         "properties": {
@@ -5628,6 +5651,14 @@
       "CreateDeliveryRequestDto": {
         "type": "object",
         "properties": {
+          "payerContact": {
+            "description": "Pagador presente o representante del solicitante; requerido si política REQUESTER. No cambia el pagador configurado.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PayerContactDto"
+              }
+            ]
+          },
           "serviceType": {
             "type": "string",
             "enum": [
@@ -5667,6 +5698,72 @@
           "stops",
           "packages",
           "financialContext"
+        ]
+      },
+      "OwnedShippingTermsResponse": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ]
+          },
+          "termsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Hash inmutable de términos exactos; enviar en el consentimiento de MQ. No es una credencial."
+          },
+          "policyRevision": {
+            "type": "number",
+            "nullable": true,
+            "description": "Revisión de política congelada; no ordena fotografías públicas."
+          },
+          "payerContact": {
+            "nullable": true,
+            "description": "Contacto de pago propio; no se publica en status ni webhooks.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PayerContactDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "payer",
+          "method",
+          "dueAt",
+          "component",
+          "termsVersion",
+          "termsHash",
+          "payerContact"
         ]
       },
       "DeliveryStopResponse": {
@@ -5846,6 +5943,15 @@
             "format": "date-time",
             "type": "string"
           },
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OwnedShippingTermsResponse"
+              }
+            ]
+          },
           "cancellationReason": {
             "type": "string",
             "nullable": true,
@@ -5874,6 +5980,7 @@
           "requestedAt",
           "createdAt",
           "updatedAt",
+          "shippingTerms",
           "stops",
           "packages",
           "financialContext"
@@ -5973,6 +6080,108 @@
           "total",
           "totalPages",
           "items"
+        ]
+      },
+      "ShippingPaymentResponse": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ]
+          },
+          "termsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Hash inmutable de términos exactos; enviar en el consentimiento de MQ. No es una credencial."
+          },
+          "policyRevision": {
+            "type": "number",
+            "nullable": true,
+            "description": "Revisión de política congelada; no ordena fotografías públicas."
+          },
+          "amount": {
+            "type": "string",
+            "nullable": true,
+            "example": "55.00",
+            "description": "Importe de MQ aceptada; null si todavía no fue aceptada."
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true,
+            "example": "MXN"
+          },
+          "quotePublicId": {
+            "type": "string",
+            "nullable": true
+          },
+          "instructionStatus": {
+            "type": "string",
+            "enum": [
+              "CURRENT",
+              "HISTORICAL",
+              "OFFER"
+            ],
+            "description": "HISTORICAL nunca autoriza cobrar. OFFER informa términos antes de adjudicación."
+          },
+          "evidenceStatus": {
+            "type": "string",
+            "enum": [
+              "DECLARED",
+              "NOT_DECLARED"
+            ],
+            "description": "Declaración humana de efectivo REQUESTER, no verificación bancaria ni liquidación. RECIPIENT conserva el cierre existente sin declaración añadida."
+          },
+          "declaredAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "collectShipping": {
+            "type": "boolean",
+            "description": "Indica una instrucción pendiente. No autoriza al integrador a declarar el cobro ni acredita que no se haya recibido efectivo físicamente."
+          }
+        },
+        "required": [
+          "payer",
+          "method",
+          "dueAt",
+          "component",
+          "termsVersion",
+          "termsHash",
+          "amount",
+          "currency",
+          "instructionStatus",
+          "evidenceStatus",
+          "declaredAt",
+          "collectShipping"
         ]
       },
       "PublicTerminalOutcomeResponse": {
@@ -6107,6 +6316,16 @@
       "DeliveryStatusResponse": {
         "type": "object",
         "properties": {
+          "shippingPayment": {
+            "nullable": true,
+            "description": "Instrucción financiera congelada, separada de progreso, custodia, mercancía y créditos. null para servicios históricos sin términos.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingPaymentResponse"
+              }
+            ]
+          },
           "publicVersion": {
             "type": "string",
             "pattern": "^[1-9][0-9]*$",
@@ -6213,6 +6432,7 @@
           }
         },
         "required": [
+          "shippingPayment",
           "publicVersion",
           "trackingMode",
           "assignmentState",
@@ -6385,8 +6605,20 @@
           "version": {
             "type": "number",
             "enum": [
+              1,
+              2
+            ],
+            "description": "REQUESTER exige versión 2, shippingTermsVersion y shippingTermsHash exactos. Versión 1 conserva el flujo RECIPIENT convertido existente."
+          },
+          "shippingTermsVersion": {
+            "type": "number",
+            "enum": [
               1
             ]
+          },
+          "shippingTermsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
           },
           "status": {
             "type": "string",
@@ -6441,7 +6673,7 @@
         "type": "object",
         "properties": {
           "customerAuthorization": {
-            "description": "Obligatorio sólo para MQ convertidas. Legacy admite ausencia/body vacío; atestación en legacy se rechaza.",
+            "description": "Obligatorio para MQ convertidas y nuevas solicitudes REQUESTER. Para REQUESTER B2B usar versión 2 con shippingTermsVersion y shippingTermsHash exactos. No convertidas RECIPIENT conservan body vacío; allí una atestación se rechaza.",
             "allOf": [
               {
                 "$ref": "#/components/schemas/CustomerAuthorizationDto"
@@ -6582,6 +6814,61 @@
           "packages"
         ]
       },
+      "ShippingTermsResponse": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ]
+          },
+          "termsVersion": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Hash inmutable de términos exactos; enviar en el consentimiento de MQ. No es una credencial."
+          },
+          "policyRevision": {
+            "type": "number",
+            "nullable": true,
+            "description": "Revisión de política congelada; no ordena fotografías públicas."
+          }
+        },
+        "required": [
+          "payer",
+          "method",
+          "dueAt",
+          "component",
+          "termsVersion",
+          "termsHash"
+        ]
+      },
       "PrequoteZoneResponse": {
         "type": "object",
         "properties": {
@@ -6602,6 +6889,16 @@
       "PrequoteResponse": {
         "type": "object",
         "properties": {
+          "shippingTerms": {
+            "nullable": true,
+            "description": "Política congelada; null sólo para precotizaciones históricas anteriores a V1.17.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingTermsResponse"
+              }
+            ]
+          },
           "publicId": {
             "type": "string",
             "example": "MPQ-000123"
@@ -6689,6 +6986,7 @@
           }
         },
         "required": [
+          "shippingTerms",
           "publicId",
           "status",
           "conditionsVersion",
@@ -6810,6 +7108,14 @@
       "ConversionDeliveryRequestDto": {
         "type": "object",
         "properties": {
+          "payerContact": {
+            "description": "Pagador presente o representante del solicitante; requerido si política REQUESTER. No cambia el pagador configurado.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PayerContactDto"
+              }
+            ]
+          },
           "serviceType": {
             "type": "string",
             "enum": [
@@ -6905,8 +7211,10 @@
           "payer": {
             "type": "string",
             "enum": [
-              "RECIPIENT"
-            ]
+              "RECIPIENT",
+              "REQUESTER"
+            ],
+            "description": "Eco de la política de la integración; no permite sobrescribirla por solicitud."
           },
           "method": {
             "type": "string",
@@ -6917,7 +7225,8 @@
           "dueAt": {
             "type": "string",
             "enum": [
-              "DELIVERY"
+              "DELIVERY",
+              "PICKUP"
             ]
           },
           "components": {
@@ -6943,6 +7252,9 @@
       "ConvertPrequoteDto": {
         "type": "object",
         "properties": {
+          "payerContact": {
+            "$ref": "#/components/schemas/PayerContactDto"
+          },
           "conditionsVersion": {
             "type": "number",
             "enum": [
@@ -6974,6 +7286,15 @@
       "PrequoteConversionResponse": {
         "type": "object",
         "properties": {
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShippingTermsResponse"
+              }
+            ]
+          },
           "prequotePublicId": {
             "type": "string",
             "example": "MPQ-000101"
@@ -7017,6 +7338,7 @@
           }
         },
         "required": [
+          "shippingTerms",
           "prequotePublicId",
           "convertedAt",
           "deliveryRequestPublicId",

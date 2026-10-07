@@ -1,3 +1,6 @@
+import { shippingView } from '../customers/shipping-view.js';
+import { ownerFields } from '../customers/demand-owner.js';
+import type { DemandOwnerInput } from '../customers/demand-owner.js';
 import { NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { Prisma, type PrismaClient } from '@prisma/client';
 import {
@@ -9,14 +12,14 @@ import {
 export async function publicDeliveryStatus(
   db: PrismaClient,
   publicId: string,
-  integrationClientId: string,
+  integrationClientId: DemandOwnerInput,
 ) {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       return await db.$transaction(
         async (tx) => {
           const request = await tx.deliveryRequest.findFirst({
-            where: { publicId, integrationClientId },
+            where: { publicId, ...ownerFields(integrationClientId) },
             select: { ...deliveryStatusSelect, id: true },
           });
           if (!request)
@@ -62,6 +65,12 @@ export async function publicDeliveryStatus(
             : [];
           const result = {
             ...base,
+            shippingPayment: await shippingView(
+              tx,
+              request.id,
+              ['DELIVERED', 'CANCELLED', 'EXPIRED'].includes(base.status) ||
+                dispatch?.status === 'RETURNED',
+            ),
             // Preserve legacy omission and old field meanings. New fields are always present.
             ...(execution
               ? {

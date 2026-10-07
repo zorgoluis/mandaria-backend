@@ -1,5 +1,9 @@
+import { ShippingCollectionDto } from './execution.dto.js';
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger';
-import { ResolutionAttemptResponse } from './execution.responses.js';
+import {
+  ResolutionAttemptResponse,
+  ShippingCollectionResponse,
+} from './execution.responses.js';
 import { ProviderAdvanceAttemptResponse } from './execution.responses.js';
 import {
   DriverAttemptResponse,
@@ -189,6 +193,30 @@ export class ProviderExecutionController {
 @Roles('DRIVER')
 @Controller('driver/dispatches')
 export class DriverExecutionController {
+  @Post(':dispatchId/shipping-collection')
+  @HttpCode(200)
+  @ApiOkResponse({ type: ShippingCollectionResponse })
+  @keyHeader()
+  @ApiOperation({
+    summary: 'Declarar efectivo del envío recibido en recogida',
+    description:
+      'Sólo Driver vigente, en AT_PICKUP. Importe, moneda y hash exactos de MQ/términos; no es recibo bancario ni movimiento de créditos. Recuperar mediante operation=COLLECT_SHIPPING. Cerrar un intento técnico no devuelve dinero ni prueba ausencia de cobro físico.',
+  })
+  @ApiErrors(400, 401, 403, 404, 409, 429, 500)
+  collectShipping(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Req() req: AuthenticatedRequest,
+    @Headers('idempotency-key') key: string,
+    @Body() body: ShippingCollectionDto,
+  ) {
+    return this.execution.collectShipping(
+      id,
+      { id: req.user.id, role: 'DRIVER' },
+      key,
+      body,
+    );
+  }
+
   constructor(private readonly execution: ExecutionService) {}
   @Post(':dispatchId/execution-completion')
   @HttpCode(200)

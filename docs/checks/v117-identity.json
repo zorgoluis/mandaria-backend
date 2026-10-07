@@ -1,0 +1,418 @@
+{
+  "date": "2026-10-06",
+  "baseline": "01cc84a",
+  "branch": "v1.17-Clientes_directos_Mandaria",
+  "verdict": "PARTIAL_V1_17",
+  "implemented": "A identity only; B-E not implemented",
+  "runtime": {
+    "node": "v24.15.0",
+    "postgres": "18",
+    "host": "127.0.0.1",
+    "port": 65063,
+    "databases": [
+      "mandaria_v117_test",
+      "mandaria_v117_upgrade_test"
+    ]
+  },
+  "evidenceDirectory": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE",
+  "reports": [
+    {
+      "name": "unit",
+      "report": ".tmp/v117/unit.json",
+      "passed": 472,
+      "failed": 0,
+      "files": [
+        {
+          "file": "authorized-acceptance.spec.ts",
+          "passed": 9,
+          "status": "passed"
+        },
+        {
+          "file": "b2b-outbox.spec.ts",
+          "passed": 9,
+          "status": "passed"
+        },
+        {
+          "file": "b2b-webhook-operations.spec.ts",
+          "passed": 8,
+          "status": "passed"
+        },
+        {
+          "file": "b2b-webhook-reliability.spec.ts",
+          "passed": 17,
+          "status": "passed"
+        },
+        {
+          "file": "b2b-webhooks.spec.ts",
+          "passed": 19,
+          "status": "passed"
+        },
+        {
+          "file": "check-c3-authorized-acceptance.spec.ts",
+          "passed": 3,
+          "status": "passed"
+        },
+        {
+          "file": "collection-instructions.spec.ts",
+          "passed": 10,
+          "status": "passed"
+        },
+        {
+          "file": "credit-consumption.spec.ts",
+          "passed": 12,
+          "status": "passed"
+        },
+        {
+          "file": "credit-policies.spec.ts",
+          "passed": 16,
+          "status": "passed"
+        },
+        {
+          "file": "credit-refunds.spec.ts",
+          "passed": 10,
+          "status": "passed"
+        },
+        {
+          "file": "credits.spec.ts",
+          "passed": 17,
+          "status": "passed"
+        },
+        {
+          "file": "delivery-assignments.spec.ts",
+          "passed": 10,
+          "status": "passed"
+        },
+        {
+          "file": "delivery-completion.spec.ts",
+          "passed": 23,
+          "status": "passed"
+        },
+        {
+          "file": "delivery-requests.spec.ts",
+          "passed": 11,
+          "status": "passed"
+        },
+        {
+          "file": "delivery-status.spec.ts",
+          "passed": 14,
+          "status": "passed"
+        },
+        {
+          "file": "dispatch-credit-snapshots.spec.ts",
+          "passed": 10,
+          "status": "passed"
+        },
+        {
+          "file": "dispatch.spec.ts",
+          "passed": 13,
+          "status": "passed"
+        },
+        {
+          "file": "http.spec.ts",
+          "passed": 4,
+          "status": "passed"
+        },
+        {
+          "file": "independent-drivers.spec.ts",
+          "passed": 22,
+          "status": "passed"
+        },
+        {
+          "file": "integration-auth.spec.ts",
+          "passed": 3,
+          "status": "passed"
+        },
+        {
+          "file": "invitations.spec.ts",
+          "passed": 16,
+          "status": "passed"
+        },
+        {
+          "file": "local-provider-admins.spec.ts",
+          "passed": 2,
+          "status": "passed"
+        },
+        {
+          "file": "logistics.spec.ts",
+          "passed": 8,
+          "status": "passed"
+        },
+        {
+          "file": "partner-applications.spec.ts",
+          "passed": 69,
+          "status": "passed"
+        },
+        {
+          "file": "prequote-conditions.spec.ts",
+          "passed": 16,
+          "status": "passed"
+        },
+        {
+          "file": "prequote-consumption.spec.ts",
+          "passed": 15,
+          "status": "passed"
+        },
+        {
+          "file": "prequote-conversion.spec.ts",
+          "passed": 8,
+          "status": "passed"
+        },
+        {
+          "file": "prequote-orchestration.spec.ts",
+          "passed": 10,
+          "status": "passed"
+        },
+        {
+          "file": "pricing.spec.ts",
+          "passed": 14,
+          "status": "passed"
+        },
+        {
+          "file": "providers.spec.ts",
+          "passed": 3,
+          "status": "passed"
+        },
+        {
+          "file": "public-execution-identity.spec.ts",
+          "passed": 6,
+          "status": "passed"
+        },
+        {
+          "file": "quote-accept-diagnostics.spec.ts",
+          "passed": 15,
+          "status": "passed"
+        },
+        {
+          "file": "quote-pricing.spec.ts",
+          "passed": 19,
+          "status": "passed"
+        },
+        {
+          "file": "resend-mail.spec.ts",
+          "passed": 19,
+          "status": "passed"
+        },
+        {
+          "file": "services.spec.ts",
+          "passed": 7,
+          "status": "passed"
+        },
+        {
+          "file": "environment.spec.ts",
+          "passed": 5,
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "name": "identity-regression-final",
+      "report": ".tmp/v117/identity-regression-final.json",
+      "passed": 37,
+      "failed": 0,
+      "files": [
+        {
+          "file": "customers.e2e-spec.ts",
+          "passed": 13,
+          "status": "passed"
+        },
+        {
+          "file": "user-invitations.e2e-spec.ts",
+          "passed": 24,
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "migrate-escalated",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "deploy",
+        "--config",
+        "prisma.test.config.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\migrate-escalated.log"
+    },
+    {
+      "name": "prisma-validate",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "validate",
+        "--config",
+        "prisma.test.config.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\prisma-validate.log"
+    },
+    {
+      "name": "migrate-status",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "status",
+        "--config",
+        "prisma.test.config.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\migrate-status.log"
+    },
+    {
+      "name": "types-delivery",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\types-delivery.log"
+    },
+    {
+      "name": "types-build",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.build.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\types-build.log"
+    },
+    {
+      "name": "eslint",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "src/customers",
+        "src/auth/auth.service.ts",
+        "src/auth/auth.guards.ts",
+        "src/config/environment.ts",
+        "src/app.module.ts",
+        "src/mail",
+        "src/users/users.service.ts",
+        "test/customers.e2e-spec.ts",
+        "test/services.spec.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\eslint.log"
+    },
+    {
+      "name": "eslint-delivery",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "src/customers",
+        "test/customers.e2e-spec.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\eslint-delivery.log"
+    },
+    {
+      "name": "oxlint",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/oxlint/bin/oxlint",
+        "src/",
+        "test/",
+        "scripts/",
+        "--ignore-pattern",
+        "src/generated"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\oxlint.log"
+    },
+    {
+      "name": "docs-check",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/generate-api-access.ts",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\docs-check.log"
+    },
+    {
+      "name": "public-check",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\public-check.log"
+    },
+    {
+      "name": "public-contract",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "--test",
+        "--test-isolation=none",
+        "scripts/export-public-b2b.test.mjs",
+        "scripts/webhook-signature-example.test.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\public-contract.log"
+    }
+  ],
+  "incremental": {
+    "baseline": "01cc84a",
+    "oldMigrations": 37,
+    "userPreserved": true,
+    "refreshPreserved": true,
+    "legacySessionVersion": 0,
+    "migrationHistoryPreserved": true
+  },
+  "excludedAttempts": [
+    "Sandbox Prisma generation EPERM",
+    "Sandbox initdb failed; no environment descriptor created",
+    "Sandbox migrate deploy schema engine error",
+    "identity-e2e 1/10: advisory lock void result unsupported; corrected ::text",
+    "types missing MailProvider.name on test fake"
+  ],
+  "notVerified": [
+    "B-E functionality/migrations",
+    "complete repository E2E",
+    "actual email delivery",
+    "frontend/app",
+    "QA or production deployment"
+  ],
+  "hashes": {
+    "prisma/schema.prisma": "0b5e5e1e79038af71e13ba01bac664d922a930864de2099710ee5d83332403b3",
+    "prisma/migrations/20261006000100_customer_identity/migration.sql": "e458c8f540950b6f07b60926b7d772f4495d0e21b20fc42038ee8ec040a0278f",
+    "src/customers/customers.controller.ts": "69541fb5aea7b17eafd50975128d9602dc07b6500323cd1cdf44af80e7eea4bc",
+    "src/customers/customers.dto.ts": "6e7637902f55d21b3d130c6acc28f5ec8461c2dfe12b181a45fd1a6c34bc55cd",
+    "src/customers/customers.service.ts": "dfc8adf4f1a2c704b95551f3c6c60c51fd85a511eebc8a41a85eb6a86681d84b",
+    "src/customers/customers.module.ts": "4c22ff2fcb317192219ed1654cd18ccb3bd7efe36a398523ffe3f12f021aaa3e",
+    "src/auth/auth.guards.ts": "b83d4f813285a2e3e760b4efd1a6ced390b897e9f7b43026b363cebd6a240397",
+    "src/auth/auth.service.ts": "0cd19c4106ce9a6c54139ac641c115e28e39234c652fb8f8c90e679eb880ba09",
+    "src/users/users.service.ts": "e3adcfda40fd62176c140858f4ac2919b4a01873c249bccf891c26d75647a680",
+    "src/config/environment.ts": "4c85b155c0f8546287890e5c763bf42a8da3a94fe8e2533d8d7c915044cdfffa",
+    "src/mail/mail.types.ts": "f6fdd70f71bc0616bc16a32016c071907ea035c77d658246cdcfe1c87bc02ed8",
+    "src/mail/local-outbox-mail.provider.ts": "299329c221dbf96bf85f6cdc442e64aaee17ef926b6409bf352a82d01b2fe2dd",
+    "src/mail/resend-mail.provider.ts": "e211536881bbd2658d549bc14e6461d0a9705a99cdab3301950ef9ff8b475808",
+    "test/customers.e2e-spec.ts": "13c5c0a0115b7d15dea2355b60fc3fb091fa2c56992bbb66c9fcc1781e1691fd",
+    "test/services.spec.ts": "8875bbf830d03909bf7caac1db9b647ecc23dd827646ac50ec3a7c6ddd8308e2",
+    "docs/openapi.json": "bbd519a2d96370e312d4f563a5813d168e024d33d267528def79b3cd935440fc",
+    "docs/openapi-b2b.json": "6ecc0667e86456a1e152e95e8f51ad9d58d699cb92a9745e4563153a4cf00880"
+  }
+}

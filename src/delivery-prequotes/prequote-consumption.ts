@@ -1,3 +1,4 @@
+import type { DemandOwnerInput } from '../customers/demand-owner.js';
 import { Injectable } from '@nestjs/common';
 
 export const PREQUOTE_CONSUMPTION = Symbol('PREQUOTE_CONSUMPTION');
@@ -16,7 +17,10 @@ export interface ConsumptionPermit {
   }): Promise<void>;
 }
 export interface PrequoteConsumption {
-  admit(integrationClientId: string): Promise<ConsumptionDecision>;
+  admit(
+    integrationClientId: DemandOwnerInput,
+    attemptKey?: string,
+  ): Promise<ConsumptionDecision>;
 }
 /** Deny-only adapter retained for A4 regression; production binds durable A5 protection. */
 @Injectable()
