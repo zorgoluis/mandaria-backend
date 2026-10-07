@@ -55,6 +55,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/rotate | bearer | SUPER_ADMIN | — | Create replacement with the same scopes/expiry; revoke old credential explicitly after transition |
 | GET | /api/v1/admin/integrations/{id}/shipping-policy | bearer | SUPER_ADMIN | — | Consultar pagador predeterminado B2B y revisión; no altera solicitudes históricas |
 | POST | /api/v1/admin/integrations/{id}/shipping-policy | bearer | SUPER_ADMIN | — | Cambiar política para nuevas solicitudes; cambio invalida MPQ todavía no convertidas |
+| GET | /api/v1/admin/integrations/{id}/shipping-policy/attempt | bearer | SUPER_ADMIN | — | Acreditar recibo original de política por actor/clave; no comparar sólo política actual |
+| POST | /api/v1/admin/integrations/{id}/shipping-policy/attempt/close | bearer | SUPER_ADMIN | — | Cerrar intención de política propia de forma atómica con el POST original |
 | GET | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Consultar el endpoint de webhook de un IntegrationClient |
 | PUT | /api/v1/admin/integrations/{id}/webhook | bearer | SUPER_ADMIN | — | Configurar el endpoint de webhook de un IntegrationClient |
 | GET | /api/v1/admin/integrations/{id}/webhook/deliveries | bearer | SUPER_ADMIN | — | Estado de entrega de los eventos de un IntegrationClient |
@@ -126,6 +128,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/customer-registration/confirm | Pública | — | — | Verificar correo y crear usuario CUSTOMER con perfil; no concede permisos operativos |
 | POST | /api/v1/customer-registration/resend | Pública | — | — | Repetir solicitud de registro con perfil completo; invalida el token anterior aún pendiente |
 | GET | /api/v1/customer/capabilities | bearer | — | — | Consultar cupo durable y pagadores permitidos; GET no libera cupo ni confirma disponibilidad logística |
+| GET | /api/v1/customer/command-attempt | bearer | — | — | Consultar intento propio sin cuerpo original; GET no cierra ni ejecuta comandos |
+| POST | /api/v1/customer/command-attempt/close | bearer | — | — | Cerrar explícitamente el intento; impide commit tardío, conserva routing/presupuesto ya autorizado |
 | POST | /api/v1/customer/contact-verification | bearer | — | — | Enviar verificación al correo de la cuenta autenticada; no permite elegir otra dirección |
 | POST | /api/v1/customer/contact-verification/confirm | bearer | — | — | Confirmar el correo propio; token ajeno inválido |
 | POST | /api/v1/customer/delivery-prequotes | bearer | — | — | Precotizar solicitud directa con tarifas compartidas; no reserva cupo |
@@ -135,6 +139,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/customer/delivery-requests | bearer | — | — | Solicitudes propias paginadas; titular aislado del canal B2B |
 | GET | /api/v1/customer/delivery-requests/{publicId} | bearer | — | — | Detalle propio e instrucciones persistidas |
 | POST | /api/v1/customer/delivery-requests/{publicId}/cancel | bearer | — | — | Cancelar solicitud propia; repetición segura, custodia bloquea cancelación ordinaria |
+| GET | /api/v1/customer/delivery-requests/{publicId}/consent-context | bearer | — | — | Recuperar MPQ/MQ y hash final propios entre dispositivos; no renueva vigencia ni fabrica consentimiento |
 | GET | /api/v1/customer/delivery-requests/{publicId}/status | bearer | — | — | Fotografía logística propia; ordenar por publicVersion por solicitud |
 | GET | /api/v1/customer/profile | bearer | — | — | Consultar perfil propio activo; un JWT B2B no es válido |
 | POST | /api/v1/customer/profile | bearer | — | — | Crear perfil propio verificado, conservando rol operativo y sesiones |

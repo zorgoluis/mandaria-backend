@@ -17,7 +17,10 @@ export interface ConsumptionPermit {
   }): Promise<void>;
 }
 export interface PrequoteConsumption {
-  admit(integrationClientId: DemandOwnerInput): Promise<ConsumptionDecision>;
+  admit(
+    integrationClientId: DemandOwnerInput,
+    attemptKey?: string,
+  ): Promise<ConsumptionDecision>;
 }
 /** Deny-only adapter retained for A4 regression; production binds durable A5 protection. */
 @Injectable()

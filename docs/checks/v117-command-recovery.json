@@ -1,0 +1,1145 @@
+{
+  "date": "2026-10-06",
+  "scope": "V1.17 human command recovery local only",
+  "node": "v24.15.0",
+  "baseline": "609f6970535ff48237046dd91f74e60cb408c4d9",
+  "branch": "v1.17-Clientes_directos_Mandaria",
+  "postgres": "18 local loopback 65063; synthetic databases only",
+  "e2e": {
+    "uniqueFiles": 8,
+    "passed": 220,
+    "selected": [
+      {
+        "file": "test/direct-demand.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_0_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-direct-demand.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-direct-demand.log",
+        "passed": 23,
+        "failed": 0,
+        "total": 23,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "794972943ad1f7a0933ef2df468714f320b08df7b205c542da1719c8aa50eff3",
+        "logSha256": "d5ca10743d4ce7e108065a8d7b5213604997a2dc42a31a1a51c8e0362a92c7ae"
+      },
+      {
+        "file": "test/prequote-conversion.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_4_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-prequote-conversion.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-prequote-conversion.log",
+        "passed": 39,
+        "failed": 0,
+        "total": 39,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "d5309a2623d078e5871272523acef331d3ca3c762fc0633f2818e16356cde788",
+        "logSha256": "089485da12fcd4f113c1dd2026d260f2e4bc58448c582f8be3df568e0bd83b4f"
+      },
+      {
+        "file": "test/customers.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_6_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-customers.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-customers.log",
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "cc4e8d8bfee579a385bef4fda4bcfbe71a4fedbbdd4bda156d9134bcb1917ecc",
+        "logSha256": "1f3588c7ca3db3102821ba262bfd48cdd62cb210e237b86ff4a016a947b4018b"
+      },
+      {
+        "file": "test/user-invitations.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_7_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-user-invitations.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-user-invitations.log",
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "128a08cf38c73e9a4d8fc6abb21312538ace0f3bc6d4a2c88674f9df32219aec",
+        "logSha256": "4e1cb6043f318a50496d367412e477444e7de1756268bcb518c18d3d8736b875"
+      },
+      {
+        "file": "test/prequote-persistence.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_1_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-prequote-persistence.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-prequote-persistence.log",
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "6fe1c64ccd18de2a08f17bcf3cc9dc98960b863bb300e17639bbbc9a6582a5e7",
+        "logSha256": "62fdf427bbb2378b52dd3de99c68ce27f648da9b8252cb07ed2509c8461a5b76"
+      },
+      {
+        "file": "test/prequote-consumption.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_2_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-prequote-consumption.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-prequote-consumption.log",
+        "passed": 22,
+        "failed": 0,
+        "total": 22,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "8c80239fed864b61386006d28b222c38e8614c6a19abf8e1a0f59f53ab7b5116",
+        "logSha256": "2f4132d7d5614b8834846a34c5b860ce14998a1178e2d076a060160cb0e4d787"
+      },
+      {
+        "file": "test/prequotes-http.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_3_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-prequotes-http.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-prequotes-http.log",
+        "passed": 40,
+        "failed": 0,
+        "total": 40,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "367b0e209021c2e05ae73246c735608c6668237888ebe337f2c6b4bc48205f96",
+        "logSha256": "97859e4d5a4842d47c966e09027dac3cb9fbb39ad04176c76dbc9a2d3e04e06b"
+      },
+      {
+        "file": "test/authorized-acceptance.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_4_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-authorized-acceptance.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-authorized-acceptance.log",
+        "passed": 35,
+        "failed": 0,
+        "total": 35,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "83aca451ccf48b1567f5d5914613fa505f3e488dca9a989b58ca3fd4f2e956f8",
+        "logSha256": "c52efcb624112a398c578f9603a7db5866f1f393f74dd5de0c7c1d256791141e"
+      }
+    ],
+    "allAttempts": [
+      {
+        "file": "test/direct-demand.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332759503_0_test",
+        "exitCode": 1,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332759503-direct-demand.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332759503-direct-demand.log",
+        "passed": 22,
+        "failed": 1,
+        "total": 23,
+        "success": false,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332759503-summary.json",
+        "reportSha256": "3cd636f2ee8d7c7407bea09b7fde4414e3912b153c03f384abb3dc441b926237",
+        "logSha256": "b2b7488c07659621a6ed4d396ffb94aac12f7dce97655fa67d0aaeab3dd32300"
+      },
+      {
+        "file": "test/direct-demand.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_0_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-direct-demand.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-direct-demand.log",
+        "passed": 23,
+        "failed": 0,
+        "total": 23,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "ef21194afd91fae915ecb8f9a27623bef4b22b35915bdc1f258feb5e05093730",
+        "logSha256": "3759d6fda2047fee09e9fb17f2d996cdcc77e9338591bf51a3ab560942c011a8"
+      },
+      {
+        "file": "test/prequote-persistence.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_1_test",
+        "exitCode": 1,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-prequote-persistence.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-prequote-persistence.log",
+        "passed": 0,
+        "failed": 0,
+        "total": 0,
+        "success": false,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "0f45b1361da72f59c67ee61fdb9c76ca45f6fe0ccf3da75be90854ef2ddb8af6",
+        "logSha256": "3750b67621d1b14dfff36f5be1674249dd6ebd98bb534cefc36c9d126fd2959f"
+      },
+      {
+        "file": "test/prequote-consumption.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_2_test",
+        "exitCode": 1,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-prequote-consumption.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-prequote-consumption.log",
+        "passed": 0,
+        "failed": 0,
+        "total": 22,
+        "success": false,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "55982315c02b9639e2974183fe11217c082f64ab8884086eb9a63234e3225a02",
+        "logSha256": "add8788957cab07946757743a043aeab4521133f9f9e42e89b0588119a5d7f53"
+      },
+      {
+        "file": "test/prequotes-http.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_3_test",
+        "exitCode": 1,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-prequotes-http.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-prequotes-http.log",
+        "passed": 0,
+        "failed": 0,
+        "total": 40,
+        "success": false,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "a3aafea16f8a63784bfb80d73990b9ace73330a9b0841ace6639a0d4c7da86f9",
+        "logSha256": "a99717ad15f6cdf203e045d8f8c3d1b5915ad8d7bd1329fa929f8209363ca9fc"
+      },
+      {
+        "file": "test/prequote-conversion.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_4_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-prequote-conversion.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-prequote-conversion.log",
+        "passed": 39,
+        "failed": 0,
+        "total": 39,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "d5309a2623d078e5871272523acef331d3ca3c762fc0633f2818e16356cde788",
+        "logSha256": "089485da12fcd4f113c1dd2026d260f2e4bc58448c582f8be3df568e0bd83b4f"
+      },
+      {
+        "file": "test/authorized-acceptance.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_5_test",
+        "exitCode": 3221226505,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-authorized-acceptance.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-authorized-acceptance.log",
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": null,
+        "logSha256": "768132eeef02aefcb43bb5ee22a92f96f26d5c4eb5843c97c526731afd40e43a"
+      },
+      {
+        "file": "test/customers.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_6_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-customers.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-customers.log",
+        "passed": 13,
+        "failed": 0,
+        "total": 13,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "cc4e8d8bfee579a385bef4fda4bcfbe71a4fedbbdd4bda156d9134bcb1917ecc",
+        "logSha256": "1f3588c7ca3db3102821ba262bfd48cdd62cb210e237b86ff4a016a947b4018b"
+      },
+      {
+        "file": "test/user-invitations.e2e-spec.ts",
+        "database": "mandaria_v117_r1791332909393_7_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791332909393-user-invitations.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791332909393-user-invitations.log",
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791332909393-summary.json",
+        "reportSha256": "128a08cf38c73e9a4d8fc6abb21312538ace0f3bc6d4a2c88674f9df32219aec",
+        "logSha256": "4e1cb6043f318a50496d367412e477444e7de1756268bcb518c18d3d8736b875"
+      },
+      {
+        "file": "test/direct-demand.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_0_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-direct-demand.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-direct-demand.log",
+        "passed": 23,
+        "failed": 0,
+        "total": 23,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "794972943ad1f7a0933ef2df468714f320b08df7b205c542da1719c8aa50eff3",
+        "logSha256": "d5ca10743d4ce7e108065a8d7b5213604997a2dc42a31a1a51c8e0362a92c7ae"
+      },
+      {
+        "file": "test/prequote-persistence.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_1_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-prequote-persistence.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-prequote-persistence.log",
+        "passed": 24,
+        "failed": 0,
+        "total": 24,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "6fe1c64ccd18de2a08f17bcf3cc9dc98960b863bb300e17639bbbc9a6582a5e7",
+        "logSha256": "62fdf427bbb2378b52dd3de99c68ce27f648da9b8252cb07ed2509c8461a5b76"
+      },
+      {
+        "file": "test/prequote-consumption.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_2_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-prequote-consumption.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-prequote-consumption.log",
+        "passed": 22,
+        "failed": 0,
+        "total": 22,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "8c80239fed864b61386006d28b222c38e8614c6a19abf8e1a0f59f53ab7b5116",
+        "logSha256": "2f4132d7d5614b8834846a34c5b860ce14998a1178e2d076a060160cb0e4d787"
+      },
+      {
+        "file": "test/prequotes-http.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_3_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-prequotes-http.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-prequotes-http.log",
+        "passed": 40,
+        "failed": 0,
+        "total": 40,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "367b0e209021c2e05ae73246c735608c6668237888ebe337f2c6b4bc48205f96",
+        "logSha256": "97859e4d5a4842d47c966e09027dac3cb9fbb39ad04176c76dbc9a2d3e04e06b"
+      },
+      {
+        "file": "test/authorized-acceptance.e2e-spec.ts",
+        "database": "mandaria_v117_r1791333123498_4_test",
+        "exitCode": 0,
+        "signal": null,
+        "report": ".tmp\\v117-recovery\\per-file\\r1791333123498-authorized-acceptance.json",
+        "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\r1791333123498-authorized-acceptance.log",
+        "passed": 35,
+        "failed": 0,
+        "total": 35,
+        "success": true,
+        "summary": ".tmp\\v117-recovery\\per-file\\r1791333123498-summary.json",
+        "reportSha256": "83aca451ccf48b1567f5d5914613fa505f3e488dca9a989b58ca3fd4f2e956f8",
+        "logSha256": "c52efcb624112a398c578f9603a7db5866f1f393f74dd5de0c7c1d256791141e"
+      }
+    ]
+  },
+  "unit": {
+    "passed": 472,
+    "total": 472,
+    "success": true,
+    "report": ".tmp/v117-recovery/unit.json",
+    "sha256": "41cd1160f6db490edf61524017e8a506e3e07c0c3e8208127b1f65b83ceb80dd"
+  },
+  "public": {
+    "passed": 37,
+    "total": 37,
+    "result": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-tests-final.result.json"
+  },
+  "checks": [
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/generate-api-access.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-api-access.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-api-access.log",
+      "logSha256": "569791408c8ff690a51223a5b8e925c6fa669118e9899a7699022239fef334e7"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build-final.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.build.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build-types-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build-types-final.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.build.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build-types.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build-types.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build2.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build2.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build3.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-build3.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/generate-api-access.ts",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-docs-check-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-docs-check-final.log",
+      "logSha256": "138ae873357d855770d541b2d781edf4b5c8e47ead9a940fb643301f01e255af"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/generate-api-access.ts",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-docs-check.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-docs-check.log",
+      "logSha256": "138ae873357d855770d541b2d781edf4b5c8e47ead9a940fb643301f01e255af"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "src",
+        "test",
+        "prisma"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-eslint-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-eslint-final.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "src",
+        "test",
+        "prisma"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-eslint.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-eslint.log",
+      "logSha256": "b6b79fdc807cadf272d1c9441327fd25239fab0ccb1b67c6fc4708218e45bea5"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "src",
+        "test",
+        "prisma"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-eslint2.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-eslint2.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "generate",
+        "--config",
+        "prisma.test.config.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-generate.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-generate.log",
+      "logSha256": "c71d3224ca3a6d9e5efd39260c44fd2bc065306fe1d72d3153427cd4dd5557a6"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        ".tmp/v117-recovery/historical.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-historical.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-historical.log",
+      "logSha256": "579257924eb10d6ae28688931a56ae2848efd646f784bee8c01c0200ea0b55a2"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        ".tmp/v117-recovery/migration-proof.mjs"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-migration-proof.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-migration-proof.log",
+      "logSha256": "f2ca06fb262ed481b2597e5801a815464a844fe38855ec7d9bdbea9c2c651cfe"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        ".tmp/v117-recovery/migration-proof.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-migration-proof2.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-migration-proof2.log",
+      "logSha256": "ab267d7221e25b6b59a330b7164b6085ed179633973eb43c54df06dd42226ab2"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "dist/openapi.cli.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-openapi-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-openapi-final.log",
+      "logSha256": "627ae9c2938b2acb63ddfcb32767004f5d6f7a10d1904344927fc911cbba93ed"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "dist/openapi.cli.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-openapi.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-openapi.log",
+      "logSha256": "627ae9c2938b2acb63ddfcb32767004f5d6f7a10d1904344927fc911cbba93ed"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/oxlint/bin/oxlint",
+        "src/",
+        "test/",
+        "scripts/",
+        "--ignore-pattern",
+        "src/generated"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-oxlint-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-oxlint-final.log",
+      "logSha256": "1d51994590c2989ce41a5e8b569d6525ea9b6f8f5b96669914231a746be756a1"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/oxlint/bin/oxlint",
+        "src/",
+        "test/",
+        "scripts/",
+        "--ignore-pattern",
+        "src/generated"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-oxlint.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-oxlint.log",
+      "logSha256": "1d51994590c2989ce41a5e8b569d6525ea9b6f8f5b96669914231a746be756a1"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "generate",
+        "--config",
+        "prisma.test.config.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-prisma-generate.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-prisma-generate.log",
+      "logSha256": "fe4be1a81421ba7654edfb015972e435ea751efa2860d189f82b9e6dfc8ae7e2"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "status",
+        "--config",
+        "prisma.test.config.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-prisma-status.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-prisma-status.log",
+      "logSha256": "669779b089efb5e64572af14723909ea36968ed1d2c5af5753141e2217913709"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "validate",
+        "--config",
+        "prisma.test.config.ts"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-prisma-validate.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-prisma-validate.log",
+      "logSha256": "f73e86a11396f3728ab8672163fe81be2419b6b89d97ff190007a7ceec08621d"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-check-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-check-final.log",
+      "logSha256": "e67e340409d594a728191574b481a9fb4e0a9eb2f7b1f6f93e9b48df041b7008"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-check.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-check.log",
+      "logSha256": "e67e340409d594a728191574b481a9fb4e0a9eb2f7b1f6f93e9b48df041b7008"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-export-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-export-final.log",
+      "logSha256": "e67e340409d594a728191574b481a9fb4e0a9eb2f7b1f6f93e9b48df041b7008"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-export.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-export.log",
+      "logSha256": "e67e340409d594a728191574b481a9fb4e0a9eb2f7b1f6f93e9b48df041b7008"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "--test",
+        "--test-isolation=none",
+        "scripts/export-public-b2b.test.mjs",
+        "scripts/webhook-signature-example.test.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-tests-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-tests-final.log",
+      "logSha256": "55dce89f8c9ea3714244dec4373e07e635cb7832caccdc1fc76283d0520b0235"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "--test",
+        "--test-isolation=none",
+        "scripts/export-public-b2b.test.mjs",
+        "scripts/webhook-signature-example.test.mjs"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-tests.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-tests.log",
+      "logSha256": "80e88f693ef1d370a62529de2d50223f08aa83d3a112b40f9679178c4e2f595c"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "--test",
+        "--test-isolation=none",
+        "scripts/export-public-b2b.test.mjs",
+        "scripts/webhook-signature-example.test.mjs"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-tests2.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-public-tests2.log",
+      "logSha256": "0c618a15db1214dc68685eba0d130e9abb121d53b081ec6a3208cbefd04b1c01"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-types-final.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-types-final.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exitCode": 2,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-types.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-types.log",
+      "logSha256": "7c3bfc146469fd7664de29b53120e5955d6fe4a5c75afe62d9d2c3c710766c2a"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-types2.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-types2.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v117-recovery/unit.json"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "metadata": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-unit.result.json",
+      "log": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-v117-z5t2IE\\recovery-unit.log",
+      "logSha256": "3b3bf3acd515367e04b48a67bb8269839e3e2ff2fb78b1637bbaddc4ee76e042"
+    }
+  ],
+  "migrationProof": {
+    "preserved": [
+      {
+        "table": "ApiIdempotencyExecution",
+        "rows": 93,
+        "sha256": "4627b19b411aa8bb39af877c09986e27caff8c6abc91e250adde28f73153278d"
+      },
+      {
+        "table": "ApiIdempotencyRecord",
+        "rows": 292,
+        "sha256": "8ee52c9723699335ea25a0164096e6f34324e05bb9feda5dc7b91fe0a8e2a6f1"
+      },
+      {
+        "table": "AuthorizedQuoteAcceptance",
+        "rows": 19,
+        "sha256": "ac344cfddc3c629b8d3fdb4a4b15c9d7b607fd0dffa26a30d76cd3be28194026"
+      },
+      {
+        "table": "B2bOutboxEvent",
+        "rows": 18,
+        "sha256": "d84be6c7f57f148f5075faa628088b66ee69cf6804121a8d93c99e081f1548fb"
+      },
+      {
+        "table": "B2bWebhookDelivery",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "B2bWebhookDeliveryAttempt",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "B2bWebhookEndpoint",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "CreditAccount",
+        "rows": 22,
+        "sha256": "80711b5b9c5722a0cd6451fc7ff0895554cad625864d78234690914293b4fcda"
+      },
+      {
+        "table": "CreditLedgerEntry",
+        "rows": 276,
+        "sha256": "3b66a050eec80e56d7c5672298ff8a158ac85d33477a4bcb34980b6bcce3a446"
+      },
+      {
+        "table": "CreditPolicy",
+        "rows": 2,
+        "sha256": "82c999dab4973a5b0c1fb646850a3ac16df01cb4dda3ac521dac4dc99e74e2ac"
+      },
+      {
+        "table": "CreditPolicyRange",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "CustomerAccount",
+        "rows": 56,
+        "sha256": "1d553ec00f5572998f504e84d1b7e907b3a83b4a450bd1abc58c23b3aa3e76f8"
+      },
+      {
+        "table": "CustomerChallenge",
+        "rows": 57,
+        "sha256": "91e4c641f944671dd3f9d45724ecf6e89eebb627cd38f1666a27706a7e115290"
+      },
+      {
+        "table": "DeliveryAssignment",
+        "rows": 52,
+        "sha256": "b88eb556f19a5130b43d9cbfa5c29b9a62419c4c288e52c1fce00676b3cdc0c1"
+      },
+      {
+        "table": "DeliveryCustodyIncident",
+        "rows": 19,
+        "sha256": "4181b2bcf7c49e656c45417ef8e40c47aa0c958ecddeccf838f6f689151613b8"
+      },
+      {
+        "table": "DeliveryCustodyResolution",
+        "rows": 19,
+        "sha256": "0405c770122770cf6798c441c527631c6af2184182a7ef65e105546339d63ed3"
+      },
+      {
+        "table": "DeliveryExecution",
+        "rows": 44,
+        "sha256": "b5dec7001965c8d59b4c3b1050c0742fe743c470b52a0ce3fb636831c05f0d12"
+      },
+      {
+        "table": "DeliveryExecutionCommand",
+        "rows": 266,
+        "sha256": "c34b67ea947912fd7f66456a8a7f2a439d5de541a68287754ce7f99117301a3b"
+      },
+      {
+        "table": "DeliveryExecutionEvent",
+        "rows": 286,
+        "sha256": "c3ef903bc527e5de9f489f47a01fb7411da1123016006ddf06703f0fed3f1ea1"
+      },
+      {
+        "table": "DeliveryFinancialContext",
+        "rows": 180,
+        "sha256": "d4d72eb1855db2aee03ef7b541ead4b00ea247775acb64d9ac676f0ba6bf00f3"
+      },
+      {
+        "table": "DeliveryPackage",
+        "rows": 180,
+        "sha256": "1552d4cab2ecd0aca50aeac25b02de904fff64568ad898ebcb38c5faa942ee7d"
+      },
+      {
+        "table": "DeliveryPrequote",
+        "rows": 92,
+        "sha256": "272e0580396c7ba350f7466c1cf79a8765913657d8ba8637670d008d1fea7e50"
+      },
+      {
+        "table": "DeliveryProvider",
+        "rows": 17,
+        "sha256": "9bd3c6751869767fa7e8311d53e02b11ccfa8b383a4ab4038e7566a289febbb9"
+      },
+      {
+        "table": "DeliveryQuote",
+        "rows": 87,
+        "sha256": "3aa0878b2fec31d8d47b500214760b00e0babc3f472b388c352176c6ee6ac260"
+      },
+      {
+        "table": "DeliveryRequest",
+        "rows": 180,
+        "sha256": "c3d2d9a47c8bc291794a0ef2059302f6e61529cb767602c6aa797c1663a612d1"
+      },
+      {
+        "table": "DeliveryShippingTerms",
+        "rows": 180,
+        "sha256": "dbc63939a4d397d610814f4a07eb35164d19bdfbb55ee59b00149cf68cc16008"
+      },
+      {
+        "table": "DeliveryStop",
+        "rows": 360,
+        "sha256": "697da5e33c70bf68351f205dfdbab8afc38281a55d11323181e0a51d2fba4571"
+      },
+      {
+        "table": "DirectRequestLifecycle",
+        "rows": 33,
+        "sha256": "b4c0798260692dd79fafb7f7c539022a5868d3a559866bcb3fc9e7daf2a03cf5"
+      },
+      {
+        "table": "Dispatch",
+        "rows": 49,
+        "sha256": "ac89626294ccb9726e075717b09c5f2515eae4653f34a750a39e04c590c20b6f"
+      },
+      {
+        "table": "DispatchCandidate",
+        "rows": 98,
+        "sha256": "d0999640bb7d46756ff6c2286d87611683117764c002a156bce0a64b9d4c57bb"
+      },
+      {
+        "table": "DispatchCreditSnapshot",
+        "rows": 98,
+        "sha256": "bb1ffdd4fa8da64c49695ede0745ec0ebe4aaf67ecbc2e9dc72b4d3dcf0fc297"
+      },
+      {
+        "table": "DispatchPreEnforcementAward",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "Driver",
+        "rows": 26,
+        "sha256": "23a8b785feb9fdb7e99bf261b147cbb6e54b366f4641daa25e6cdd789c080f1d"
+      },
+      {
+        "table": "DriverVehicleAssignment",
+        "rows": 3,
+        "sha256": "6c9b1f4899efb1b70efdf5f009cafcac538fc62d662b60ffe950ee857caab521"
+      },
+      {
+        "table": "IndependentDriverProfile",
+        "rows": 5,
+        "sha256": "62660f04b417a57093925100634761be4f508e319babfb8c6d995a7eff1e0474"
+      },
+      {
+        "table": "IntegrationClient",
+        "rows": 30,
+        "sha256": "b26831ccf078fe4a7bb629b6d31c2e1f33cfb83b7797e3eb7dc339e56a35421d"
+      },
+      {
+        "table": "IntegrationCredential",
+        "rows": 17,
+        "sha256": "7c757a680d05f14f19c01a073d7ad4a981d0989fbea6c58ec6c3b1b5f756c340"
+      },
+      {
+        "table": "PartnerApplication",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "PrequoteConsumptionPermit",
+        "rows": 25,
+        "sha256": "09b1eeee17d23b3d418034bc8b8e37400c4ba62dfa49fb8b852a52e28fbbf631"
+      },
+      {
+        "table": "PrequoteConsumptionPolicy",
+        "rows": 1,
+        "sha256": "a75168d011fcaae60b3f6f42f63b4bccff44761826a2149496be8796b799e10c"
+      },
+      {
+        "table": "PrequoteConversion",
+        "rows": 55,
+        "sha256": "13d7c44de7992279354f2ac0ee2e95fb21742f6db68ca3317333a4d094622c87"
+      },
+      {
+        "table": "ProviderMembership",
+        "rows": 17,
+        "sha256": "eb50f0f99478f268f203e635f9f3a178788dcea741a0bcfe179e669e667bb32c"
+      },
+      {
+        "table": "ProviderServiceCoverage",
+        "rows": 12,
+        "sha256": "f38e71627ab4c8bed2952eda27712de17d3378a6ca61065dbe84f1f9603f4fa4"
+      },
+      {
+        "table": "PublicDeliveryTracking",
+        "rows": 180,
+        "sha256": "3dd52d75c3d9384a29e74ecb1734dae7a23b12c6c81a8a204d7c43aeebc6b210"
+      },
+      {
+        "table": "RateBand",
+        "rows": 9,
+        "sha256": "2597316fc43f097c7ae57cc7e3bb86d13635f9b4000ea188f0bdf91d335d36f4"
+      },
+      {
+        "table": "RatePlan",
+        "rows": 9,
+        "sha256": "640c8f254def1d346c688b183b253545dda1a53b50c77c45429b139506c78f45"
+      },
+      {
+        "table": "RefreshToken",
+        "rows": 99,
+        "sha256": "0fbf2207ddec314f8e1a835d83b6f708e778ba5399f36ce491165e031d5b2371"
+      },
+      {
+        "table": "ServiceZone",
+        "rows": 8,
+        "sha256": "6d72e979f7cee31fc6710e4aaad57c1ef771a7d1467b24cb6cc0211952f9b98a"
+      },
+      {
+        "table": "ShippingCollectionDeclaration",
+        "rows": 10,
+        "sha256": "8e7d963961233474a6cd5ac852632fa9da9631a77bf7ff8a1f6329c81f5a1418"
+      },
+      {
+        "table": "ShippingPolicyAudit",
+        "rows": 2,
+        "sha256": "3e56ecbc4ce834046bd1b3c5d5f001646e04341d7ffd2bdab24f9e0790ff4f3e"
+      },
+      {
+        "table": "User",
+        "rows": 118,
+        "sha256": "bd2ba2a06eb2d56d8b912e8caa2ad8feb097655349b41de4a3e320f58226c54a"
+      },
+      {
+        "table": "UserInvitation",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "Vehicle",
+        "rows": 20,
+        "sha256": "903377bb6a2d2d1fd9f9886094767098412d7cb9651f876fba0a87f8d7b5b3eb"
+      }
+    ],
+    "migrations": [
+      {
+        "name": "upgrade39to40",
+        "count": 40,
+        "allFinished": true,
+        "checksumsMatch": true
+      },
+      {
+        "name": "clean40",
+        "count": 40,
+        "allFinished": true,
+        "checksumsMatch": true
+      }
+    ],
+    "originalMigrationRowsPreserved": 39
+  },
+  "historicalReceiptReadNewExecution": {
+    "results": [
+      {
+        "operation": "PREQUOTE_CREATE",
+        "state": "APPLIED"
+      },
+      {
+        "operation": "PREQUOTE_CONVERT",
+        "state": "APPLIED"
+      },
+      {
+        "operation": "QUOTE_ACCEPT",
+        "state": "APPLIED"
+      },
+      {
+        "operation": "SHIPPING_POLICY",
+        "state": "APPLIED"
+      }
+    ],
+    "createdFences": 0
+  },
+  "sourceHashes": {
+    "docs/API_ACCESS.md": "98b79c249d9a8073509ec62ee34d6f3ac2df5953e02d78333ec025977bf327d8",
+    "docs/openapi.json": "9d329cd18e5a8728bc443f13de55ae4fc3d64291c12297f0728208fba32c842e",
+    "prisma/schema.prisma": "d6e087346c0ac992188c5a2b0bc262cdfe5b4a0c2873bcbcfdbf9a27b8a15559",
+    "scripts/export-public-b2b.test.mjs": "2199e00ef17f9675ed1e2cac17a2dd8d57697ccb1aabf5809e72fb49f7ab6fc0",
+    "src/customers/customers.module.ts": "affd73ee646e726a6a8ea53561cad5f72195c683e57113bcb9243dce4d2dd79f",
+    "src/customers/shipping-policy.controller.ts": "31721159fff7c37a24397046a1631f06e405d4be8cc03981dcdff908e8bdc21a",
+    "src/delivery-prequotes/durable-prequote-consumption.ts": "78ed293a8080d8a9883b3c4bc5eab90f39b6156cc7efefb9d3efaf4ff288a1e3",
+    "src/delivery-prequotes/prequote-consumption.ts": "853ff5bba35c797c48eaf56a478fd703b30610921add583968b0867fdaac46ed",
+    "src/delivery-prequotes/prequote-conversion.service.ts": "977a578d1115902b5430982a300f3136ce1a850ffc5fae0a452cbaefb4931506",
+    "src/delivery-prequotes/prequote-errors.ts": "851d0a5d2de656b24b35800d52f363755ec85ba8daa3a30fc49f8abec03541d8",
+    "src/delivery-prequotes/prequote-persistence.service.ts": "6bea7e71f18fcf6f06981c61788cd868b710049998b74c48577c569043bcc584",
+    "src/delivery-prequotes/prequotes.service.ts": "ef279589c0d6d063e129cb1496178b9ac10a723362d4a7378c24dc3f94ce3405",
+    "src/delivery-quotes/authorized-acceptance.service.ts": "282feeff0b605eb1399af3b23e69e0a9ea0e7fd4b9cd5411a6e0606f297920f8",
+    "src/delivery-requests/delivery-requests.responses.ts": "1d7622c9a1c3ace73cdc292df5c0c26f337f4ba35bcdbd137f6e7969592af80b",
+    "src/idempotency/idempotency.service.ts": "ccd7e011dbc57df55ae1fc59c415b7eed51bc257455b9835124eb606fc8a22ad",
+    "test/direct-demand.e2e-spec.ts": "69330309e5fbf94ee94eb142a6cece5e0a64118dc942d81802df44e1b849fca1",
+    "src/idempotency/human-attempt.ts": "10646edf84fd2b3a6dd05fc84cad121824364751840cc8f72d9ed6b0a69a3e10",
+    "src/customers/command-attempts.service.ts": "740805e0a88e06e4056f37d5c81d90e482190b68227b408d86264aab520f26c4",
+    "src/customers/command-attempts.controller.ts": "05b0d3529d7f4d4bed08712f1a2f9f97a61978a572b571e24032c6b5d24cbe45",
+    "src/customers/command-attempts.dto.ts": "11e6194710daf47995fc2a35ce8dfb350ae0e0e5592f49d59edfcdd318b3dfa7",
+    "prisma/migrations/20261006000300_human_command_reconciliation/migration.sql": "4d393dfea425f5eab31f10a831256eef33e4afc513bb293958c6f3424d9bbfe8"
+  },
+  "limits": [
+    "Routing simulated; PostgreSQL real and isolated.",
+    "No full E2E suite; 8 relevant complete files.",
+    "Native aborted authorized-acceptance attempt excluded; forks diagnostic succeeded, root cause unproven.",
+    "Three import failures caused by concurrent docs:check rebuilding dist; rerun without rebuild succeeded.",
+    "First direct-demand fixture lease expired before insertion; corrected to valid lease then waited for expiry.",
+    "Earlier task test totals are historical and not included.",
+    "No deployment, Docker, real databases, frontend modifications or activation."
+  ],
+  "cleanup": {
+    "temporaryPostgresStopped": true,
+    "exitCode": 0,
+    "databasesAndEvidenceRetained": true
+  }
+}

@@ -144,6 +144,7 @@ export class PrequoteConversionService {
           key,
           operation: 'delivery_prequotes.convert',
           resourceType: 'PrequoteConversion',
+          attemptResource: publicId,
         },
         payload,
         async (tx, id) => {

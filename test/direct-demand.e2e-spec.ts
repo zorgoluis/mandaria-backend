@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { randomBytes, randomUUID } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
@@ -83,15 +84,15 @@ let app: INestApplication;
 const api = () => request(app.getHttpServer());
 const bearer = { type: 'bearer' } as const;
 
-async function bootstrap() {
+async function bootstrap(realConsumption = false) {
   const { AppModule } = await import('../dist/app.module.js');
   const { setup } = await import('../dist/setup.js');
   const { ROUTING_PROVIDER } = await import('../dist/routing/routing.types.js');
   const { PREQUOTE_CONSUMPTION } =
     await import('../dist/delivery-prequotes/prequote-consumption.js');
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-    .overrideProvider(PREQUOTE_CONSUMPTION)
-    .useValue({
+  const builder = Test.createTestingModule({ imports: [AppModule] });
+  if (!realConsumption)
+    builder.overrideProvider(PREQUOTE_CONSUMPTION).useValue({
       admit: async () => ({
         admitted: true,
         permit: {
@@ -100,7 +101,8 @@ async function bootstrap() {
           finish: async () => {},
         },
       }),
-    })
+    });
+  const moduleRef = await builder
     .overrideProvider(ROUTING_PROVIDER)
     .useValue(routing)
     .setLogger(logger)
@@ -1217,6 +1219,449 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
       .send({ reason: 'Synthetic cancellation' })
       .expect(200);
   }, 30000);
+  const recover = (
+    operation: string,
+    key: string,
+    resourcePublicId?: string,
+    close = false,
+    name = 'personal',
+  ) => {
+    const path = '/api/v1/customer/command-attempt' + (close ? '/close' : '');
+    return (close ? api().post(path) : api().get(path))
+      .auth(t[name], bearer)
+      .set('Idempotency-Key', key)
+      .query({ operation, ...(resourcePublicId ? { resourcePublicId } : {}) });
+  };
+  it('recovers original create, conversion and acceptance after response loss and app restart without bodies', async () => {
+    const k = randomUUID();
+    const q = await mpq('personal', 'REQUESTER', k).expect(201);
+    await app.close();
+    app = await bootstrap();
+    const receipt = await recover('PREQUOTE_CREATE', k).expect(200);
+    expect(receipt.body).toMatchObject({
+      state: 'APPLIED',
+      result: {
+        prequotePublicId: q.body.prequote.publicId,
+        amount: q.body.prequote.amount,
+      },
+    });
+    expect(receipt.body.result).not.toHaveProperty('conditions');
+    const ck = randomUUID();
+    const c = (
+      await convert(q.body.prequote.publicId, 'personal', ck).expect(201)
+    ).body.result;
+    const cr = await recover(
+      'PREQUOTE_CONVERT',
+      ck,
+      q.body.prequote.publicId,
+      true,
+    ).expect(200);
+    expect(cr.body).toMatchObject({
+      state: 'APPLIED',
+      result: {
+        deliveryRequestPublicId: c.deliveryRequestPublicId,
+        deliveryQuotePublicId: c.quote.publicId,
+        shippingTerms: { termsHash: c.shippingTerms.termsHash },
+      },
+    });
+    expect(JSON.stringify(cr.body)).not.toContain('Synthetic payer');
+    const ak = randomUUID();
+    await accept(c, 'personal', ak).then((r) => expect(r.status).toBe(200));
+    await app.close();
+    // A separate OS process has neither the original body nor application memory.
+    const restarted = spawnSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        `
+      import { readFileSync } from 'node:fs';
+      import { PrismaService } from './dist/prisma/prisma.service.js';
+      import { CommandAttemptsService } from './dist/customers/command-attempts.service.js';
+      const a=JSON.parse(readFileSync(0,'utf8')); const db=new PrismaService();
+      try { console.log(JSON.stringify(await new CommandAttemptsService(db).customer(a.owner,a.actor,a.key,{operation:'QUOTE_ACCEPT',resourcePublicId:a.resource}))); }
+      finally { await db.$disconnect(); }
+    `,
+      ],
+      {
+        input: JSON.stringify({
+          owner: customerIds.personal,
+          actor: users.personal,
+          key: ak,
+          resource: c.quote.publicId,
+        }),
+        encoding: 'utf8',
+        timeout: 15000,
+      },
+    );
+    expect(restarted.status).toBe(0);
+    expect(JSON.parse(restarted.stdout)).toMatchObject({
+      state: 'APPLIED',
+      result: { deliveryQuotePublicId: c.quote.publicId },
+    });
+    app = await bootstrap();
+    expect(
+      (await recover('QUOTE_ACCEPT', ak, c.quote.publicId).expect(200)).body,
+    ).toMatchObject({
+      state: 'APPLIED',
+      result: { deliveryQuotePublicId: c.quote.publicId },
+    });
+    await recover(
+      'PREQUOTE_CONVERT',
+      ck,
+      q.body.prequote.publicId,
+      false,
+      'other',
+    ).expect(404);
+    expect(
+      (
+        await recover('PREQUOTE_CREATE', k, undefined, false, 'other').expect(
+          200,
+        )
+      ).body.state,
+    ).toBe('PENDING_OR_UNKNOWN');
+    await recover('PREQUOTE_CONVERT', k, q.body.prequote.publicId).expect(409);
+    await api()
+      .get('/api/v1/customer/command-attempt')
+      .auth(t.b2b, bearer)
+      .set('Idempotency-Key', k)
+      .query({ operation: 'PREQUOTE_CREATE' })
+      .expect(401);
+    await cancel(c.deliveryRequestPublicId).expect(200);
+  });
+  it('GET is read only; explicit close fences delayed create, conversion and acceptance without freeing quota', async () => {
+    const k = randomUUID();
+    expect((await recover('PREQUOTE_CREATE', k).expect(200)).body.state).toBe(
+      'PENDING_OR_UNKNOWN',
+    );
+    expect(await prisma.humanCommandAttempt.count({ where: { key: k } })).toBe(
+      0,
+    );
+    expect(
+      (await recover('PREQUOTE_CREATE', k, undefined, true).expect(200)).body
+        .state,
+    ).toBe('CLOSED_NO_EFFECTS');
+    expect((await mpq('personal', 'REQUESTER', k).expect(409)).body.code).toBe(
+      'COMMAND_ATTEMPT_CLOSED',
+    );
+    const q = await mpq().expect(201);
+    const ck = randomUUID();
+    await recover(
+      'PREQUOTE_CONVERT',
+      ck,
+      q.body.prequote.publicId,
+      true,
+    ).expect(200);
+    expect(
+      (await convert(q.body.prequote.publicId, 'personal', ck).expect(409)).body
+        .code,
+    ).toBe('COMMAND_ATTEMPT_CLOSED');
+    const c = (await convert(q.body.prequote.publicId).expect(201)).body.result;
+    const ak = randomUUID();
+    await recover('QUOTE_ACCEPT', ak, c.quote.publicId, true).expect(200);
+    expect((await accept(c, 'personal', ak)).body.code).toBe(
+      'COMMAND_ATTEMPT_CLOSED',
+    );
+    expect(
+      await prisma.directRequestLifecycle.count({
+        where: { customerAccountId: customerIds.personal, closedAt: null },
+      }),
+    ).toBe(1);
+    await cancel(c.deliveryRequestPublicId).expect(200);
+  });
+  it('serializes conversion/acceptance versus closure; rollback remains unknown until explicitly fenced', async () => {
+    const q = await mpq().expect(201);
+    const key = randomUUID();
+    const [post, close] = await Promise.all([
+      convert(q.body.prequote.publicId, 'personal', key),
+      recover('PREQUOTE_CONVERT', key, q.body.prequote.publicId, true),
+    ]);
+    expect(close.status).toBe(200);
+    expect([201, 409]).toContain(post.status);
+    expect(close.body.state).toBe(
+      post.status === 201 ? 'APPLIED' : 'CLOSED_NO_EFFECTS',
+    );
+    const c =
+      post.status === 201
+        ? post.body.result
+        : (await convert(q.body.prequote.publicId).expect(201)).body.result;
+    const badKey = randomUUID();
+    const bad = {
+      ...c,
+      shippingTerms: { ...c.shippingTerms, termsHash: '0'.repeat(64) },
+    };
+    expect((await accept(bad, 'personal', badKey)).status).toBe(409);
+    expect(
+      (await recover('QUOTE_ACCEPT', badKey, c.quote.publicId).expect(200)).body
+        .state,
+    ).toBe('PENDING_OR_UNKNOWN');
+    await recover('QUOTE_ACCEPT', badKey, c.quote.publicId, true).expect(200);
+    expect((await accept(c, 'personal', badKey)).body.code).toBe(
+      'COMMAND_ATTEMPT_CLOSED',
+    );
+    const ak = randomUUID();
+    const [accepted, closed] = await Promise.all([
+      accept(c, 'personal', ak),
+      recover('QUOTE_ACCEPT', ak, c.quote.publicId, true),
+    ]);
+    expect(closed.status).toBe(200);
+    expect([200, 409]).toContain(accepted.status);
+    expect(closed.body.state).toBe(
+      accepted.status === 200 ? 'APPLIED' : 'CLOSED_NO_EFFECTS',
+    );
+    await cancel(c.deliveryRequestPublicId).expect(200);
+  });
+  it('recovers exact final terms and original MQ from own MDR on another device without renewing TTL', async () => {
+    const c = await create();
+    await app.close();
+    app = await bootstrap();
+    const path =
+      '/api/v1/customer/delivery-requests/' +
+      c.deliveryRequestPublicId +
+      '/consent-context';
+    const ctx = await api().get(path).auth(t.personal, bearer).expect(200);
+    expect(ctx.body).toMatchObject({
+      deliveryRequestPublicId: c.deliveryRequestPublicId,
+      quote: {
+        publicId: c.quote.publicId,
+        amount: c.quote.amount,
+        currency: c.quote.currency,
+        expiresAt: c.quote.expiresAt,
+      },
+      shippingTerms: { termsHash: c.shippingTerms.termsHash },
+      canPrepareConsent: true,
+      automaticAcceptance: false,
+    });
+    await api().get(path).auth(t.other, bearer).expect(404);
+    await cancel(c.deliveryRequestPublicId).expect(200);
+    expect(
+      (await api().get(path).auth(t.personal, bearer).expect(200)).body
+        .canPrepareConsent,
+    ).toBe(false);
+  });
+  it('policy recovery proves original audit revision after later change; scope and late POST are fenced', async () => {
+    const id = (
+      await prisma.integrationClient.findFirstOrThrow({
+        where: { code: { startsWith: PREFIX } },
+      })
+    ).id;
+    const path = '/api/v1/admin/integrations/' + id + '/shipping-policy';
+    const get = async () =>
+      (await api().get(path).auth(t.sa, bearer).expect(200)).body;
+    const original = await get();
+    const key = randomUUID();
+    const r = await api()
+      .post(path)
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', key)
+      .send({ payer: 'REQUESTER', expectedRevision: original.revision })
+      .expect(200);
+    await api()
+      .post(path)
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({ payer: 'RECIPIENT', expectedRevision: r.body.revision })
+      .expect(200);
+    const observed = await api()
+      .get(path + '/attempt')
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', key)
+      .expect(200);
+    expect(observed.body).toMatchObject({ state: 'APPLIED', result: r.body });
+    expect(
+      (
+        await api()
+          .get(path + '/attempt')
+          .auth(t.sa2, bearer)
+          .set('Idempotency-Key', key)
+          .expect(200)
+      ).body,
+    ).toMatchObject({ state: 'PENDING_OR_UNKNOWN', result: null });
+    expect(
+      (
+        await api()
+          .post(path + '/attempt/close')
+          .auth(t.sa2, bearer)
+          .set('Idempotency-Key', key)
+          .expect(200)
+      ).body.state,
+    ).toBe('CLOSED_NO_EFFECTS');
+    expect(
+      (
+        await api()
+          .get(path + '/attempt')
+          .auth(t.sa, bearer)
+          .set('Idempotency-Key', key)
+          .expect(200)
+      ).body.result,
+    ).toEqual(r.body);
+    await api()
+      .get(path + '/attempt')
+      .auth(t.A, bearer)
+      .set('Idempotency-Key', key)
+      .expect(403);
+    const late = randomUUID();
+    await api()
+      .post(path + '/attempt/close')
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', late)
+      .expect(200);
+    const current = await get();
+    expect(
+      (
+        await api()
+          .post(path)
+          .auth(t.sa, bearer)
+          .set('Idempotency-Key', late)
+          .send({ payer: 'REQUESTER', expectedRevision: current.revision })
+          .expect(409)
+      ).body.code,
+    ).toBe('COMMAND_ATTEMPT_CLOSED');
+    const racing = randomUUID();
+    const [write, closed] = await Promise.all([
+      api()
+        .post(path)
+        .auth(t.sa, bearer)
+        .set('Idempotency-Key', racing)
+        .send({ payer: 'REQUESTER', expectedRevision: current.revision }),
+      api()
+        .post(path + '/attempt/close')
+        .auth(t.sa, bearer)
+        .set('Idempotency-Key', racing)
+        .expect(200),
+    ]);
+    if (write.status === 200)
+      expect(closed.body).toMatchObject({
+        state: 'APPLIED',
+        result: write.body,
+      });
+    else {
+      expect(write.status).toBe(409);
+      expect(write.body.code).toBe('COMMAND_ATTEMPT_CLOSED');
+      expect(closed.body.state).toBe('CLOSED_NO_EFFECTS');
+    }
+  });
+  it('close fences an in-flight routing worker while retaining consumed budget and durable recovery', async () => {
+    await app.close();
+    app = await bootstrap(true);
+    function deferred() {
+      let resolve!: () => void;
+      const promise = new Promise<void>((done) => {
+        resolve = done;
+      });
+      return { promise, resolve };
+    }
+    const entered = deferred(),
+      release = deferred();
+    const original = routing.calculateRoute;
+    routing.calculateRoute = async () => {
+      entered.resolve();
+      await release.promise;
+      return original();
+    };
+    const key = randomUUID();
+    const running = mpq('personal', 'REQUESTER', key).then((r) => r);
+    try {
+      await Promise.race([
+        entered.promise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(Error('Routing did not start')), 8000),
+        ),
+      ]);
+      const pending = await recover('PREQUOTE_CREATE', key).expect(200);
+      expect(pending.body).toMatchObject({
+        state: 'PENDING_OR_UNKNOWN',
+        routingEffects: 'POSSIBLE_RETAINED',
+      });
+      const close = await recover(
+        'PREQUOTE_CREATE',
+        key,
+        undefined,
+        true,
+      ).expect(200);
+      expect(close.body).toMatchObject({
+        state: 'CLOSED_NO_EFFECTS',
+        closureScope: 'RESOURCE_OR_POLICY_ONLY',
+        routingEffects: 'POSSIBLE_RETAINED',
+      });
+    } finally {
+      release.resolve();
+      routing.calculateRoute = original;
+    }
+    expect((await running).body.code).toBe('COMMAND_ATTEMPT_CLOSED');
+    const fence = await prisma.humanCommandAttempt.findFirstOrThrow({
+      where: { key },
+    });
+    const permits = await prisma.prequoteConsumptionPermit.findMany({
+      where: { humanAttemptId: fence.id },
+    });
+    expect(permits).toHaveLength(1);
+    expect(permits[0].startedAt).not.toBeNull();
+    expect(permits[0].units).toBeGreaterThan(0);
+    expect(
+      await prisma.deliveryPrequote.count({
+        where: { record: { customerAccountId: customerIds.personal, key } },
+      }),
+    ).toBe(0);
+    await app.close();
+    app = await bootstrap(true);
+    expect((await recover('PREQUOTE_CREATE', key).expect(200)).body.state).toBe(
+      'CLOSED_NO_EFFECTS',
+    );
+    await mpq('personal', 'REQUESTER', key).expect(409);
+    expect(
+      await prisma.prequoteConsumptionPermit.count({
+        where: { humanAttemptId: fence.id },
+      }),
+    ).toBe(1);
+  }, 20000);
+  it('expired/reserved workers cannot acquire routing or publish after closure', async () => {
+    await app.close();
+    app = await bootstrap(true);
+    const { PrequotePersistenceService } =
+      await import('../dist/delivery-prequotes/prequote-persistence.service.js');
+    const { PREQUOTE_CONSUMPTION } =
+      await import('../dist/delivery-prequotes/prequote-consumption.js');
+    const store = app.get(PrequotePersistenceService);
+    const consumption =
+      app.get<
+        import('../src/delivery-prequotes/prequote-consumption.js').PrequoteConsumption
+      >(PREQUOTE_CONSUMPTION);
+    const key = randomUUID();
+    const owner = { kind: 'CUSTOMER' as const, id: customerIds.personal };
+    const permit = await consumption.admit(owner, key);
+    expect(permit.admitted).toBe(true);
+    if (!permit.admitted) throw Error('Permit expected');
+    const reserved = await store.reserve(
+      owner,
+      key,
+      conditions,
+      { leaseMs: 500, maxAttempts: 2 },
+      'REQUESTER',
+    );
+    expect(reserved.kind).toBe('acquired');
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    expect(
+      (await recover('PREQUOTE_CREATE', key, undefined, true).expect(200)).body
+        .routingEffects,
+    ).toBe('NONE_STARTED');
+    await expect(permit.permit.start()).rejects.toThrow();
+    await expect(
+      store.reserve(
+        owner,
+        key,
+        conditions,
+        { leaseMs: 90000, maxAttempts: 2 },
+        'REQUESTER',
+      ),
+    ).rejects.toThrow();
+    await permit.permit.finish({ routingStarted: false, published: false });
+    const rows = await prisma.prequoteConsumptionPermit.findMany({
+      where: { humanAttempt: { key } },
+    });
+    expect(rows[0].startedAt).toBeNull();
+    expect(rows[0].state).toBe('CANCELLED');
+  });
   it('admission remains explicitly gated, and logs exclude tokens and private payer data', async () => {
     app.get(ConfigService).set('CUSTOMER_ADMISSION_ENABLED', false);
     const caps = await api()

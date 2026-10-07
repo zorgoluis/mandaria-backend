@@ -1,4 +1,5 @@
 import { DomainException } from '../common/domain-error.js';
+import { customerAttempt } from './human-attempt.js';
 import { ownerKey, lockCustomer } from '../customers/demand-owner.js';
 
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
@@ -13,6 +14,7 @@ export type IdempotencyScope = {
   /** Logical operation, part of the fingerprint (e.g. delivery_requests.create). */
   operation: string;
   resourceType: string;
+  attemptResource?: string;
 };
 
 /** Stable JSON: sorted object keys, undefined dropped, arrays keep their order. */
@@ -68,8 +70,19 @@ export class IdempotencyService {
             ? { kind: 'CUSTOMER', id: scope.customerAccountId }
             : scope.integrationClientId!,
         );
+        await customerAttempt(
+          tx,
+          scope.customerAccountId
+            ? { kind: 'CUSTOMER', id: scope.customerAccountId }
+            : scope.integrationClientId!,
+          scope.key,
+          scope.operation,
+          scope.attemptResource ?? '',
+        );
+        const storedScope = { ...scope };
+        delete storedScope.attemptResource;
         await tx.apiIdempotencyRecord.create({
-          data: { ...scope, requestHash, resourceId },
+          data: { ...storedScope, requestHash, resourceId },
         });
         await create(tx, resourceId);
       });

@@ -60491,6 +60491,309 @@
         ]
       }
     },
+    "/api/v1/customer/command-attempt": {
+      "get": {
+        "operationId": "CustomerCommandAttemptsController_get",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PREQUOTE_CREATE",
+                "PREQUOTE_CONVERT",
+                "QUOTE_ACCEPT"
+              ]
+            }
+          },
+          {
+            "name": "resourcePublicId",
+            "required": false,
+            "in": "query",
+            "description": "Omitir en PREQUOTE_CREATE; MPQ original para conversión, MQ original para aceptación.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanAttemptResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Perfil humano propio activo y verificado requerido."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT: clave usada con otra operación o recurso; no borrar el marcador."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar intento propio sin cuerpo original; GET no cierra ni ejecuta comandos",
+        "tags": [
+          "Customer command recovery"
+        ]
+      }
+    },
+    "/api/v1/customer/command-attempt/close": {
+      "post": {
+        "operationId": "CustomerCommandAttemptsController_close",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PREQUOTE_CREATE",
+                "PREQUOTE_CONVERT",
+                "QUOTE_ACCEPT"
+              ]
+            }
+          },
+          {
+            "name": "resourcePublicId",
+            "required": false,
+            "in": "query",
+            "description": "Omitir en PREQUOTE_CREATE; MPQ original para conversión, MQ original para aceptación.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanAttemptResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Perfil humano propio activo y verificado requerido."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT: clave usada con otra operación o recurso; no borrar el marcador."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cerrar explícitamente el intento; impide commit tardío, conserva routing/presupuesto ya autorizado",
+        "tags": [
+          "Customer command recovery"
+        ]
+      }
+    },
+    "/api/v1/customer/delivery-requests/{publicId}/consent-context": {
+      "get": {
+        "operationId": "CustomerCommandAttemptsController_context",
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentContext"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Perfil humano propio activo y verificado requerido."
+          },
+          "404": {
+            "description": "Recurso inexistente o ajeno."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT: clave usada con otra operación o recurso; no borrar el marcador."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recuperar MPQ/MQ y hash final propios entre dispositivos; no renueva vigencia ni fabrica consentimiento",
+        "tags": [
+          "Customer command recovery"
+        ]
+      }
+    },
+    "/api/v1/admin/integrations/{id}/shipping-policy/attempt": {
+      "get": {
+        "operationId": "ShippingPolicyAttemptController_get",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "SUPER_ADMIN humano requerido. Sólo sus propios intentos; otro administrador usa su propia identidad y clave."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Acreditar recibo original de política por actor/clave; no comparar sólo política actual",
+        "tags": [
+          "Admin shipping policy recovery"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/integrations/{id}/shipping-policy/attempt/close": {
+      "post": {
+        "operationId": "ShippingPolicyAttemptController_close",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "403": {
+            "description": "SUPER_ADMIN humano requerido. Sólo sus propios intentos; otro administrador usa su propia identidad y clave."
+          },
+          "409": {
+            "description": "COMMAND_ATTEMPT_SCOPE_CONFLICT."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cerrar intención de política propia de forma atómica con el POST original",
+        "tags": [
+          "Admin shipping policy recovery"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
     "/api/v1/admin/integrations/{id}/shipping-policy": {
       "get": {
         "operationId": "ShippingPolicyController_get",
@@ -66786,10 +67089,17 @@
           },
           "integrationClientId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           },
           "integrationClient": {
-            "$ref": "#/components/schemas/IntegrationClientSummaryResponse"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationClientSummaryResponse"
+              }
+            ]
           }
         },
         "required": [
@@ -66925,10 +67235,17 @@
           },
           "integrationClientId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           },
           "integrationClient": {
-            "$ref": "#/components/schemas/IntegrationClientSummaryResponse"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationClientSummaryResponse"
+              }
+            ]
           }
         },
         "required": [
@@ -73873,6 +74190,390 @@
           "state",
           "appliedRevision",
           "canStartNewAttempt"
+        ]
+      },
+      "RecoveredShippingTerms": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "CASH"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "enum": [
+              "PICKUP",
+              "DELIVERY"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "enum": [
+              "DELIVERY_FEE"
+            ]
+          },
+          "termsVersion": {
+            "type": "number"
+          },
+          "termsHash": {
+            "type": "string"
+          },
+          "policyRevision": {
+            "type": "number",
+            "description": "Sólo snapshot preliminar de MPQ."
+          }
+        },
+        "required": [
+          "payer",
+          "method",
+          "dueAt",
+          "component",
+          "termsVersion",
+          "termsHash"
+        ]
+      },
+      "RecoveredPrequote": {
+        "type": "object",
+        "properties": {
+          "prequotePublicId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredShippingTerms"
+              }
+            ]
+          }
+        },
+        "required": [
+          "prequotePublicId",
+          "amount",
+          "currency",
+          "expiresAt",
+          "shippingTerms"
+        ]
+      },
+      "RecoveredConversion": {
+        "type": "object",
+        "properties": {
+          "prequotePublicId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredShippingTerms"
+              }
+            ]
+          },
+          "deliveryRequestPublicId": {
+            "type": "string"
+          },
+          "deliveryQuotePublicId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "prequotePublicId",
+          "amount",
+          "currency",
+          "expiresAt",
+          "shippingTerms",
+          "deliveryRequestPublicId",
+          "deliveryQuotePublicId"
+        ]
+      },
+      "RecoveredAcceptance": {
+        "type": "object",
+        "properties": {
+          "deliveryRequestPublicId": {
+            "type": "string"
+          },
+          "deliveryQuotePublicId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "shippingTerms": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredShippingTerms"
+              }
+            ]
+          }
+        },
+        "required": [
+          "deliveryRequestPublicId",
+          "deliveryQuotePublicId",
+          "amount",
+          "currency",
+          "expiresAt",
+          "acceptedAt",
+          "shippingTerms"
+        ]
+      },
+      "RecoveredPolicy": {
+        "type": "object",
+        "properties": {
+          "payer": {
+            "type": "string",
+            "enum": [
+              "REQUESTER",
+              "RECIPIENT"
+            ]
+          },
+          "revision": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "payer",
+          "revision"
+        ]
+      },
+      "HumanAttemptResult": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "PREQUOTE_CREATE",
+              "PREQUOTE_CONVERT",
+              "QUOTE_ACCEPT",
+              "SHIPPING_POLICY"
+            ]
+          },
+          "resourcePublicId": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "APPLIED",
+              "PENDING_OR_UNKNOWN",
+              "CLOSED_NO_EFFECTS"
+            ]
+          },
+          "canPrepareNewAttempt": {
+            "type": "boolean",
+            "description": "Permite preparar otra intención explícita, nunca enviarla automáticamente."
+          },
+          "closureScope": {
+            "type": "string",
+            "enum": [
+              "RESOURCE_OR_POLICY_ONLY"
+            ],
+            "description": "Cierre impide publicación/commit del comando. No deshace routing ni presupuesto ya autorizado."
+          },
+          "routingEffects": {
+            "type": "string",
+            "enum": [
+              "NONE_STARTED",
+              "POSSIBLE_RETAINED"
+            ],
+            "description": "POSSIBLE_RETAINED: routing autorizado/incierto puede terminar incluso tras el cierre; consumo se conserva, no se devuelve presupuesto."
+          },
+          "closedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "result": {
+            "nullable": true,
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredPrequote"
+              },
+              {
+                "$ref": "#/components/schemas/RecoveredConversion"
+              },
+              {
+                "$ref": "#/components/schemas/RecoveredAcceptance"
+              },
+              {
+                "$ref": "#/components/schemas/RecoveredPolicy"
+              }
+            ],
+            "description": "APPLIED: seleccionar forma por operation. Resto: null. Resultado original sin cuerpo, contacto ni consentimiento; no implica vigencia actual."
+          }
+        },
+        "required": [
+          "operation",
+          "resourcePublicId",
+          "state",
+          "canPrepareNewAttempt",
+          "closureScope",
+          "routingEffects",
+          "closedAt",
+          "result"
+        ]
+      },
+      "ConsentPrequote": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "publicId",
+          "expiresAt"
+        ]
+      },
+      "ConsentQuote": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amount": {
+            "type": "string",
+            "example": "25.00"
+          },
+          "currency": {
+            "type": "string",
+            "example": "MXN"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OFFERED",
+              "ACCEPTED",
+              "EXPIRED",
+              "CANCELLED"
+            ]
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "publicId",
+          "expiresAt",
+          "amount",
+          "currency",
+          "status",
+          "acceptedAt"
+        ]
+      },
+      "ConsentContext": {
+        "type": "object",
+        "properties": {
+          "deliveryRequestPublicId": {
+            "type": "string"
+          },
+          "prequote": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentPrequote"
+              }
+            ]
+          },
+          "quote": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentQuote"
+              }
+            ]
+          },
+          "shippingTerms": {
+            "nullable": true,
+            "description": "Hash FINAL persistido sobre los términos de MDR/MQ; no usar el hash preliminar de MPQ para consentir.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecoveredShippingTerms"
+              }
+            ]
+          },
+          "canPrepareConsent": {
+            "type": "boolean",
+            "description": "Indicación vigente al leer; POST vuelve a validar TTL, términos y permisos."
+          },
+          "automaticAcceptance": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "deliveryRequestPublicId",
+          "prequote",
+          "quote",
+          "shippingTerms",
+          "canPrepareConsent",
+          "automaticAcceptance"
         ]
       },
       "ShippingPolicyResponse": {

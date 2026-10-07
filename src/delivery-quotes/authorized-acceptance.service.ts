@@ -257,6 +257,7 @@ export class AuthorizedAcceptanceService {
           key,
           operation: 'delivery_quotes.accept_authorized',
           resourceType: 'AuthorizedQuoteAcceptance',
+          attemptResource: publicId,
         },
         { publicId, customerAuthorization: authorization },
         async (tx, id) => {

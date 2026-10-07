@@ -2,6 +2,8 @@
 
 ## V1.17 B–E — clientes directos y pagador
 
+**Cierre contractual local (2026-10-06):** [recuperación sin cuerpo original y reanudación entre dispositivos](docs/V1.17-COMMAND-RECONCILIATION.md). Consultas/cierres humanos para MPQ, conversión, aceptación y política; contexto MPQ/MQ/términos finales desde MDR propia. Cierre de MPQ impide publicación, pero conserva routing/presupuesto ya autorizado. WEB debe resincronizar OpenAPI humano. Nueva migración40; admisión sin activar, sin disponibilidad remota acreditada. Resultados de esta ampliación en VERIFICATION; cifras A–E siguientes son históricas.
+
 Implementación local documentada en [V1.17-DEMAND-IMPLEMENTATION](docs/V1.17-DEMAND-IMPLEMENTATION.md): titularidad CUSTOMER/B2B, cupo PERSONAL, términos inmutables y declaración de envío en recogida con recuperación durable. A e identidad conservadas. CUSTOMER_ADMISSION_ENABLED continúa false por defecto; no activar hasta coordinación WEB/APP/operación. [Verificación nueva](VERIFICATION.md) separada de evidencia histórica. Ninguna disponibilidad remota inferida.
 
 

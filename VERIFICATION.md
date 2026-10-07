@@ -1,3 +1,57 @@
+## V1.17 — cierre contractual de recuperación humana, 2026-10-06
+
+**PASS local del alcance solicitado.** Sin activación ni publicación. [Contrato/rutas/DTOs y procedimiento WEB](docs/V1.17-COMMAND-RECONCILIATION.md); [consolidado con comandos, exit codes, hashes y todos los intentos](docs/checks/v117-command-recovery.json). La implementación A–E previa y sus cifras siguientes son históricas; no se suman a esta tarea.
+
+| Verificación NUEVA | Resultado |
+|---|---|
+| Demanda directa, archivo completo |23/23; siete casos nuevos: recuperación sin cuerpo, app nueva y proceso OS separado, cierre vs POST tardío/concurrente, rollback, original de política/actores, contexto final desde MDR, worker en routing y lease vencida. PostgreSQL real; routing controlado. |
+| Regresión E2E, archivos completos |197 adicionales: persistencia24, consumo22, MPQ HTTP40, conversión39, aceptación35, clientes13 e invitaciones24. **220 únicos/8 archivos** con exit0 y reporte completo; no toda la suite E2E. |
+| Unitarias |472/472 en36 archivos, exit0. |
+| Contrato público |37/37, exit0: nuevas rutas humanas/admin excluidas, OFFER existente y nullable correctos. |
+| Build/tipos/linters |nest build; tsc --noEmit con tsconfig.json y tsconfig.build.json; ESLint src test prisma; Oxlint: exit0. Advertencia histórica readFileSync en script de C3, sin ampliar alcance. |
+| Documentación |OpenAPI completo regenerado desde fuente; público regenerado sin diferencia semántica. docs:check, export-public-b2b --check, pruebas públicas y git diff --check aprobados. |
+| Prisma/migración |generate/validate/status exit0. Limpia40 y upgrade39→40 mediante migrate deploy, sin reset. Checksums de40 migraciones coincidentes. Comparación nueva de53 tablas/3.721 filas sintéticas y39 registros de migración originales: preservados. |
+| Recibos históricos |Lectura NUEVA tras upgrade de MPQ/create, conversión, aceptación y política anteriores al fence: cuatro APPLIED, cero fences creados. Prueba interna del servicio; autorización HTTP se verifica en direct-demand. |
+
+Entorno: Node24.15.0, Prisma6.19.3, Vitest4.1.11, PostgreSQL18 local loopback65063, cluster temporal mandaria-v117-z5t2IE. Base upgrade `mandaria_v117_recovery2_upgrade_test`, limpia `mandaria_v117_recovery2_clean_test`; E2E en clones por archivo. Ningún .env/base real/servicio externo. Routing falso, correo local y webhooks externos deshabilitados. Sólo flags del proceso de pruebas, no configuración operativa.
+
+### Intentos no acreditados y correcciones
+
+- Primer direct-demand:22/23, falló fixture lease1ms porque venció antes del INSERT; trigger rechazó EXECUTION_INVALID_INITIAL_STATE. Se corrigió a500ms y espera600ms, sin debilitar constraint ni aserción. Archivo completo después23/23, incluyendo prueba adicional de proceso OS nuevo.
+- Tres archivos no pudieron importar dist porque **docs:check invoca nest build** y se ejecutó concurrentemente. Fue interferencia del procedimiento de verificación, no defecto de producto ni prueba omitida aprobada. Se ejecutaron completos sin builds simultáneos:24/22/40 aprobados.
+- Aceptación autorizada abortó con exit3221226505, sin reporte completo. Un único diagnóstico adicional con pool forks, archivo completo:35/35. Causa nativa no acreditada; aborto excluido. No se cambiaron configuración global ni casos para ocultarlo.
+- Primer tsc encontró Promise.withResolvers fuera del lib del proyecto: test corregido con Promise estándar, sin cambiar tsconfig. ESLint detectó variable descartada sin uso: se corrigió sin exclusiones. Prueba pública inicial refería nombre incompleto de DTO; se corrigió a AdminDeliveryRequestSummaryResponse y pasó. Script temporal de comparación tuvo error sintáctico antes de consultar; segundo intento correcto. Primer bootstrap de migración fue rechazado por identidad de URLs iguales, sin SQL aplicado; setup corregido con bases nuevas aisladas. Evidencia incompleta no suma casos.
+
+### Comandos reproducibles
+
+Con TEST_DATABASE_URL dirigido **exclusivamente a una base sintética identificada**, distinto de DATABASE_URL; DOTENV_CONFIG_PATH a un archivo inexistente para no cargar .env. No publicar valores. Primero generar/aplicar migración y build. Cada archivo E2E sobre clon limpio independiente. Ejecutar docs:check después de finalizar E2E, porque recompila dist.
+
+```text
+node node_modules/prisma/build/index.js generate --config prisma.test.config.ts
+node node_modules/prisma/build/index.js migrate deploy --config prisma.test.config.ts
+node node_modules/prisma/build/index.js validate --config prisma.test.config.ts
+node node_modules/prisma/build/index.js migrate status --config prisma.test.config.ts
+node node_modules/@nestjs/cli/bin/nest.js build
+node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json
+node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json
+node node_modules/eslint/bin/eslint.js src test prisma
+node node_modules/oxlint/bin/oxlint src/ test/ scripts/ --ignore-pattern src/generated
+node node_modules/vitest/vitest.mjs run --pool=threads --maxWorkers=1 --reporter=json --outputFile=<reporte-unitario>
+node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/<archivo>.e2e-spec.ts --pool=forks --maxWorkers=1 --reporter=default --reporter=json --outputFile=<reporte-unico>
+node node_modules/tsx/dist/cli.mjs scripts/generate-api-access.ts --check
+node dist/openapi.cli.js
+node scripts/export-public-b2b.mjs
+node scripts/export-public-b2b.mjs --check
+node --test --test-isolation=none scripts/export-public-b2b.test.mjs scripts/webhook-signature-example.test.mjs
+git diff --check
+```
+
+Los comandos exactos por intento (threads/forks), archivos, reportes y logs están en el consolidado; `.tmp/v117-recovery` contiene runners locales y reportes no versionados. Bases/evidencia retenidas, sin borrar historia. El proceso PostgreSQL temporal iniciado para esta tarea se detuvo al terminar (pg_ctl stop, exit0); las bases y la evidencia se conservaron.
+
+### Límites y siguiente consumidor
+
+WEB debe integrar los GET/POST close propios y resincronizar OpenAPI; no se verificó frontend. Recurso/política cerrados no equivalen a routing sin coste: POSSIBLE_RETAINED conserva autorizaciones/budget, incluso si la llamada termina después. Nuevo despliegue requiere drenar escritores antiguos antes de habilitar cierres; mezcla de versiones no acreditada. No se activó admisión, cobro automático ni devolución. No commit, push, Docker ni despliegue. Las obligaciones monetarias/operativas A–E siguen pendientes de activación.
+
 ## V1.17 B–E — cierre local del backend A–E, 2026-10-06
 
 **PASS local de implementación y regresiones pertinentes. Sin activación.** [Contrato exacto/handoff](docs/V1.17-DEMAND-IMPLEMENTATION.md), [consolidado trazable](docs/checks/v117-demand.json). A y las entradas históricas siguientes se conservan; sus resultados no se suman a los nuevos.

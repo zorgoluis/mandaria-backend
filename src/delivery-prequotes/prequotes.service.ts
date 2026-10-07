@@ -194,8 +194,16 @@ export class PrequotesService {
         shippingSnapshot(tx, integrationClientId, shippingPayer),
       );
     const admission = await this.consumption
-      .admit(integrationClientId)
+      .admit(
+        integrationClientId,
+        demandOwner(integrationClientId).kind === 'CUSTOMER' ? key : undefined,
+      )
       .catch((error: unknown) => {
+        if (
+          error instanceof DomainException &&
+          error.code.startsWith('COMMAND_ATTEMPT_')
+        )
+          throw error;
         if (error instanceof PrequotePublicError) throw error;
         throw new PrequotePublicError('PREQUOTE_CONSUMPTION_UNAVAILABLE');
       });

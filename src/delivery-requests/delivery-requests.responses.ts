@@ -98,15 +98,17 @@ class IntegrationClientSummaryResponse {
 }
 export class AdminDeliveryRequestSummaryResponse extends DeliveryRequestBase {
   @ApiProperty({ format: 'uuid' }) id!: string;
-  @ApiProperty({ format: 'uuid' }) integrationClientId!: string;
-  @ApiProperty({ type: IntegrationClientSummaryResponse })
-  integrationClient!: IntegrationClientSummaryResponse;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true })
+  integrationClientId!: string | null;
+  @ApiProperty({ type: IntegrationClientSummaryResponse, nullable: true })
+  integrationClient!: IntegrationClientSummaryResponse | null;
 }
 export class AdminDeliveryRequestResponse extends DeliveryRequestContent {
   @ApiProperty({ format: 'uuid' }) id!: string;
-  @ApiProperty({ format: 'uuid' }) integrationClientId!: string;
-  @ApiProperty({ type: IntegrationClientSummaryResponse })
-  integrationClient!: IntegrationClientSummaryResponse;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true })
+  integrationClientId!: string | null;
+  @ApiProperty({ type: IntegrationClientSummaryResponse, nullable: true })
+  integrationClient!: IntegrationClientSummaryResponse | null;
 }
 export class AdminDeliveryRequestPageResponse extends PaginationResponse {
   @ApiProperty({ type: AdminDeliveryRequestSummaryResponse, isArray: true })

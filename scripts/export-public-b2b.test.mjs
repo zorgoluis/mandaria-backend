@@ -7,18 +7,40 @@ import {
   checkPublicB2b,
 } from './export-public-b2b.mjs';
 const source = () => JSON.parse(readFileSync('docs/openapi.json', 'utf8'));
-test('V1.17 exposes B2B terms and consent while excluding human demand, collection and administrative policy',()=>{
-  const full=source(),d=publicB2bDocument(full);
+test('V1.17 exposes B2B terms and consent while excluding human demand, collection and administrative policy', () => {
+  const full = source(),
+    d = publicB2bDocument(full);
   assert.ok(full.paths['/api/v1/customer/delivery-prequotes']);
-  assert.ok(full.paths['/api/v1/driver/dispatches/{dispatchId}/shipping-collection']);
+  assert.ok(
+    full.paths['/api/v1/driver/dispatches/{dispatchId}/shipping-collection'],
+  );
   assert.ok(full.paths['/api/v1/admin/integrations/{id}/shipping-policy']);
-  for(const route of Object.keys(d.paths))assert.doesNotMatch(route,/\/customer|\/driver\/|\/admin\//);
-  assert.deepEqual(d.components.schemas.ShippingTermsResponse.properties.payer.enum,['REQUESTER','RECIPIENT']);
-  assert.ok(d.components.schemas.DeliveryStatusResponse.properties.shippingPayment);
-  assert.deepEqual(d.components.schemas.CustomerAuthorizationDto.properties.version.enum,[1,2]);
-  assert.ok(d.components.schemas.CustomerAuthorizationDto.properties.shippingTermsHash);
-  assert.ok(!d.components.schemas.ShippingPaymentResponse.properties.payerContact);
-  for(const name of ['DirectConversionDto','CustomerProfileViewDto','ShippingCollectionDto','ShippingPolicyDto'])assert.ok(!d.components.schemas[name]);
+  for (const route of Object.keys(d.paths))
+    assert.doesNotMatch(route, /\/customer|\/driver\/|\/admin\//);
+  assert.deepEqual(
+    d.components.schemas.ShippingTermsResponse.properties.payer.enum,
+    ['REQUESTER', 'RECIPIENT'],
+  );
+  assert.ok(
+    d.components.schemas.DeliveryStatusResponse.properties.shippingPayment,
+  );
+  assert.deepEqual(
+    d.components.schemas.CustomerAuthorizationDto.properties.version.enum,
+    [1, 2],
+  );
+  assert.ok(
+    d.components.schemas.CustomerAuthorizationDto.properties.shippingTermsHash,
+  );
+  assert.ok(
+    !d.components.schemas.ShippingPaymentResponse.properties.payerContact,
+  );
+  for (const name of [
+    'DirectConversionDto',
+    'CustomerProfileViewDto',
+    'ShippingCollectionDto',
+    'ShippingPolicyDto',
+  ])
+    assert.ok(!d.components.schemas[name]);
 });
 const path = '/api/v1/delivery-prequotes';
 const expected = [
@@ -430,4 +452,40 @@ test('versioned tracking preserves old fields and excludes internal error vocabu
   );
   assert.ok(!JSON.stringify(d).includes('/api/v1/admin/providers'));
   assert.ok(!JSON.stringify(d).includes('maxDrivers'));
+});
+
+test('human recovery stays private and human response schemas reflect real nullable integrations and offers', () => {
+  const full = source(),
+    pub = publicB2bDocument(full);
+  for (const [path, methods] of Object.entries({
+    '/api/v1/customer/command-attempt': ['get'],
+    '/api/v1/customer/command-attempt/close': ['post'],
+    '/api/v1/customer/delivery-requests/{publicId}/consent-context': ['get'],
+    '/api/v1/admin/integrations/{id}/shipping-policy/attempt': ['get'],
+    '/api/v1/admin/integrations/{id}/shipping-policy/attempt/close': ['post'],
+  })) {
+    for (const method of methods)
+      assert.deepEqual(full.paths[path][method].security, [{ bearer: [] }]);
+    assert.equal(pub.paths[path], undefined);
+  }
+  assert.equal(pub.components.schemas.HumanAttemptResult, undefined);
+  assert.ok(
+    full.components.schemas.ShippingPaymentResponse.properties.instructionStatus.enum.includes(
+      'OFFER',
+    ),
+  );
+  for (const name of [
+    'AdminDeliveryRequestSummaryResponse',
+    'AdminDeliveryRequestResponse',
+  ]) {
+    assert.equal(
+      full.components.schemas[name].properties.integrationClientId.nullable,
+      true,
+    );
+    assert.equal(
+      full.components.schemas[name].properties.integrationClient.nullable,
+      true,
+    );
+  }
+  assert.ok(full.components.schemas.ConsentContext.properties.shippingTerms);
 });

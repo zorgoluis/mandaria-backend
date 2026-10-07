@@ -23,6 +23,7 @@ enum CredentialStatus {
 /// Account state is derived (V1.6.1): active = ACTIVE; inactive without passwordHash = INVITED
 /// (never activated); inactive with passwordHash = DISABLED. A CHECK forbids active without password.
 model User {
+  humanCommandAttempts HumanCommandAttempt[]
   sessionVersion Int @default(0)
   customerAccount CustomerAccount?
   id String @id @default(uuid()) @db.Uuid
@@ -392,6 +393,22 @@ model DeliveryFinancialContext {
   deliveryRequest DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
 }
 /// Reusable B2B idempotency ledger. Stores only a payload hash, never the payload.
+model HumanCommandAttempt {
+  id String @id @default(uuid()) @db.Uuid
+  namespace String
+  ownerId String @db.Uuid
+  actorUserId String @db.Uuid
+  key String
+  operation String
+  resource String
+  createdAt DateTime @default(now())
+  closedAt DateTime?
+  routingEffectsPossible Boolean @default(false)
+  actor User @relation(fields:[actorUserId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  permits PrequoteConsumptionPermit[]
+  @@unique([namespace,ownerId,key])
+}
+
 model ApiIdempotencyRecord {
   authorizedAcceptance AuthorizedQuoteAcceptance?
   prequoteConversion PrequoteConversion?
@@ -1230,6 +1247,8 @@ model PrequoteConsumptionPolicy {
 }
 /// Single durable authority for reservations and potential MPQ routing consumption.
 model PrequoteConsumptionPermit {
+  humanAttemptId String? @db.Uuid
+  humanAttempt HumanCommandAttempt? @relation(fields:[humanAttemptId],references:[id],onDelete:Restrict)
   id String @id @db.Uuid
   integrationClientId String? @db.Uuid
   customerAccountId String? @db.Uuid

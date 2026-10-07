@@ -14,6 +14,11 @@ import { Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { fingerprint } from '../idempotency/idempotency.service.js';
+import {
+  customerAttempt,
+  CREATE_MPQ,
+  attemptError,
+} from '../idempotency/human-attempt.js';
 import { DomainException } from '../common/domain-error.js';
 import { nextPublicId } from '../common/public-id.js';
 import { ServiceZonesService } from '../service-zones/service-zones.service.js';
@@ -81,6 +86,24 @@ export class PrequotePersistenceService {
     );
     return this.prisma.$transaction(
       async (tx) => {
+        const owner = demandOwner(integrationClientId);
+        if (owner.kind === 'CUSTOMER') {
+          const fence = await tx.humanCommandAttempt.findUnique({
+            where: {
+              namespace_ownerId_key: {
+                namespace: 'CUSTOMER',
+                ownerId: owner.id,
+                key,
+              },
+            },
+          });
+          if (
+            fence &&
+            (fence.operation !== CREATE_MPQ || fence.resource !== '')
+          )
+            throw attemptError('COMMAND_ATTEMPT_SCOPE_CONFLICT');
+          if (fence?.closedAt) throw attemptError('COMMAND_ATTEMPT_CLOSED');
+        }
         const record = await tx.apiIdempotencyRecord.findUnique({
           where: { ...ownerKey(integrationClientId, key) },
           include: { execution: true },
@@ -159,6 +182,7 @@ export class PrequotePersistenceService {
         : conditions,
     );
     return this.prisma.$transaction(async (tx) => {
+      await customerAttempt(tx, integrationClientId, key, CREATE_MPQ);
       const inserted = await tx.apiIdempotencyRecord.createMany({
         data: {
           id: randomUUID(),
@@ -252,6 +276,19 @@ export class PrequotePersistenceService {
   }
 
   private async owned(tx: Prisma.TransactionClient, lease: PrequoteLease) {
+    if (demandOwner(lease.integrationClientId).kind === 'CUSTOMER') {
+      const keyRow = await tx.apiIdempotencyRecord.findUnique({
+        where: { id: lease.recordId },
+        select: { key: true },
+      });
+      if (!keyRow) throw lost();
+      await customerAttempt(
+        tx,
+        lease.integrationClientId,
+        keyRow.key,
+        CREATE_MPQ,
+      );
+    }
     const [record] = await tx.$queryRaw<
       { id: string; resourceId: string; requestHash: string }[]
     >`SELECT * FROM "ApiIdempotencyRecord" WHERE id=${lease.recordId}::uuid AND ${ownerSql(lease.integrationClientId)} FOR UPDATE`;

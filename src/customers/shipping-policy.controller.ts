@@ -30,6 +30,10 @@ import {
 import { PrismaService } from '../prisma/prisma.service.js';
 import { fingerprint } from '../idempotency/idempotency.service.js';
 import { DomainException } from '../common/domain-error.js';
+import {
+  lockHumanAttempt,
+  SHIPPING_POLICY,
+} from '../idempotency/human-attempt.js';
 class ShippingPolicyDto {
   @ApiProperty({ enum: ['REQUESTER', 'RECIPIENT'] })
   @IsIn(['REQUESTER', 'RECIPIENT'])
@@ -106,6 +110,14 @@ export class ShippingPolicyController {
           );
         return { payer: old.payer, revision: old.revision };
       }
+      await lockHumanAttempt(tx, {
+        namespace: 'POLICY',
+        ownerId: req.user.id,
+        actorUserId: req.user.id,
+        key,
+        operation: SHIPPING_POLICY,
+        resource: id,
+      });
       if (client.shippingPolicyRevision !== body.expectedRevision)
         throw new DomainException(
           'SHIPPING_POLICY_REVISION_CONFLICT',
