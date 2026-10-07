@@ -56,6 +56,14 @@ export class HttpErrorFilter implements ExceptionFilter {
     const requestId =
       (res.locals.requestId as string | undefined) ?? randomUUID();
     res.setHeader('X-Request-Id', requestId);
+    if (
+      domainCode === 'TRACKING_RATE_LIMITED' &&
+      exception instanceof DomainException
+    )
+      res.setHeader(
+        'Retry-After',
+        String(Math.min(600, Math.max(1, exception.retryAfter ?? 60))),
+      );
     const code = errors.length
       ? 'VALIDATION_ERROR'
       : (domainCode ?? `HTTP_${status}`);

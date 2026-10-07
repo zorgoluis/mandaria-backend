@@ -5,6 +5,39 @@ const optional = <T extends z.ZodTypeAny>(type: T) =>
   z.preprocess((v) => (v === '' ? undefined : v), type.optional());
 
 const schema = z.object({
+  LOCATION_IP_PER_MINUTE: z.coerce.number().int().min(1).max(10000).default(60),
+  LOCATION_TRACKING_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  SHARED_TRACKING_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  LOCATION_DRIVER_PER_MINUTE: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(300)
+    .default(30),
+  LOCATION_OWNER_PER_MINUTE: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(10000)
+    .default(60),
+  LOCATION_RECIPIENT_PER_MINUTE: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(300)
+    .default(12),
+  LOCATION_LINK_MUTATIONS_PER_TEN_MINUTES: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .default(5),
   CUSTOMER_ADMISSION_ENABLED: z
     .enum(['true', 'false'])
     .default('false')

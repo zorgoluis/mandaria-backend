@@ -9,6 +9,7 @@ export class DomainException extends HttpException {
     readonly code: string,
     status: number,
     message: string,
+    readonly retryAfter?: number,
   ) {
     super({ code, message }, status);
   }

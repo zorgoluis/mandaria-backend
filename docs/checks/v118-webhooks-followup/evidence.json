@@ -1,0 +1,249 @@
+{
+  "verdict": "PARTIAL",
+  "recordedAt": "2026-10-07T04:17:43.560Z",
+  "scope": "One complete-file attempt; no approved suites repeated; no source/test changes.",
+  "environment": {
+    "node": "v24.15.0",
+    "postgres": "18.6",
+    "vitest": "4.1.11",
+    "prisma": "6.19.3",
+    "pool": "forks",
+    "maxWorkers": 1,
+    "fileParallelism": false,
+    "database": "mandaria_v118_webhooks_followup_test",
+    "template": "mandaria_v118_clean_test",
+    "port": 65063,
+    "migrations": 42,
+    "LOCATION_TRACKING_ENABLED": false,
+    "SHARED_TRACKING_ENABLED": false,
+    "dotenv": "Absent test-only path; no .env loaded",
+    "receivers": "Synthetic loopback HTTP; no external service"
+  },
+  "previous": {
+    "result": ".tmp/v118/webhooks3-final-result.json",
+    "log": ".tmp/v118/webhooks3-final.log",
+    "passed": 40,
+    "total": 54,
+    "exitCode": 1,
+    "admitted": false
+  },
+  "attempt": {
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "vitest.config.e2e.ts",
+      "test/b2b-webhooks.e2e-spec.ts",
+      "--pool=forks",
+      "--maxWorkers=1",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile=.tmp/v118/followup-webhooks.json"
+    ],
+    "node": "v24.15.0",
+    "exitCode": 1,
+    "signal": null
+  },
+  "counts": {
+    "total": 54,
+    "completed": 35,
+    "pendingFromAssertions": 19,
+    "newlyAccredited": 0
+  },
+  "lastCompleted": "V1.12-D the boundary and the admin view changing the endpoint sends the retry to the new URL without rewriting history",
+  "firstUnfinished": "V1.12-D the boundary and the admin view an administrator can see what is owed without ever seeing a secret",
+  "reportCaution": "Reporter success=true and pending aggregate=0 are inconsistent with exit1 and 19 pending assertions; report is incomplete and not accepted.",
+  "diagnosis": [
+    "Worker forks exited unexpectedly after 22.91s; no assertion failure or test timeout recorded.",
+    "Parent exit1, signal null; child exit code/native stack unavailable in Vitest output.",
+    "PostgreSQL remained reachable after abort. No evidence establishes root cause, fixture interference, open resources, Windows fault or product defect.",
+    "Application event log read denied by sandbox; empty temporary event file is not evidence of absence.",
+    "Initial read-only identity SQL failed due shell quoting; corrected identity query passed before database creation."
+  ],
+  "baselineHashes": [
+    {
+      "path": ".env.example",
+      "sha256": "ae5f7a91cf4f651a1145e55c4df44dbad278780eaf8bbb222f4cba70bbccec6e",
+      "unchanged": true
+    },
+    {
+      "path": "docs/API_ACCESS.md",
+      "sha256": "5666f4c3e33da103f2b9ff3ebab931bdb1cde3232fc0cd7b30c759f1564110cb",
+      "unchanged": true
+    },
+    {
+      "path": "docs/openapi-b2b.json",
+      "sha256": "25ead040d338859b6f9addb8b0e6a3985eec278b2c14984a3be677977e3584db",
+      "unchanged": true
+    },
+    {
+      "path": "docs/openapi.json",
+      "sha256": "be064f835e859f4cf842052076e36a11cca587b9fe0a836dbab0d1ff0778caef",
+      "unchanged": true
+    },
+    {
+      "path": "prisma/migrations/20261007000100_location_tracking/migration.sql",
+      "sha256": "d67a663368b3b36662738e6574c28fe0a1e433dc7acdbb388c7967a4ce3aee42",
+      "unchanged": true
+    },
+    {
+      "path": "prisma/migrations/20261007000200_location_policy_epoch/migration.sql",
+      "sha256": "1f5320d5192ae1a423066280c92ead8ebca094758a6418d4f057b02af6b82e72",
+      "unchanged": true
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "sha256": "19a5fb3009574ee8f1c2b5875644189c3831afa0013ca469294d03a4a366dbce",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/export-public-b2b.mjs",
+      "sha256": "dc9b9da3b4b84b40f278384b0c96a9e7a096b5de88d433126e7c1d5db086ec0b",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/export-public-b2b.test.mjs",
+      "sha256": "c4711138b3e1768a069fbafe7a633d44c165dd7adeabb1a7420ea8f39667aeab",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/public-b2b-prose.json",
+      "sha256": "130e81ce21a76b723cb71dc0f7ad257bfc323803633159d163a8f41d8842a043",
+      "unchanged": true
+    },
+    {
+      "path": "src/app.module.ts",
+      "sha256": "2c7b873468b01aaa243f590ff260688f5eaae86b5d0e8f50a9b6833cb902f41e",
+      "unchanged": true
+    },
+    {
+      "path": "src/common/domain-error.ts",
+      "sha256": "235aca7460d46746c83a48690ad3ef895a3cab1ff7ea164ff2d76feef5a04cd4",
+      "unchanged": true
+    },
+    {
+      "path": "src/common/http-exception.filter.ts",
+      "sha256": "c9b86a4d681d7be211029eba045efcc8b54bd6848ce7b2e81f8097b76fecd2a1",
+      "unchanged": true
+    },
+    {
+      "path": "src/config/environment.ts",
+      "sha256": "1c552f2769dd411436f5cc9270983eeb2428ae5b241952cfaba6926efc16298c",
+      "unchanged": true
+    },
+    {
+      "path": "src/delivery-requests/public-delivery-tracking.ts",
+      "sha256": "2e3e310efcd547182244f0bf7ef4852e5869de42c2341d2f72189d73a71b799b",
+      "unchanged": true
+    },
+    {
+      "path": "src/integrations/integration-scopes.ts",
+      "sha256": "df74d7a44d011db8445ffa60b6cffeb8f98f84027cbac2a3964d51092fc995ae",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.controller.ts",
+      "sha256": "5e6a2b2ee463aead56968a53a6958f9be3df8b3aac2da8af0ececfb4e3de019f",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.dto.ts",
+      "sha256": "922a8b6ecd61f9bdf6b6cd0fb3c68a56486f58a47f61ffa285afc9f735238f26",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.module.ts",
+      "sha256": "7b0dade060d0ff0935c1a52c167fa1e9f0ae6a829a18bd2d686f98b691533302",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.responses.ts",
+      "sha256": "fb99e5cd9e4b20cca39c0e745413753a1465326670a1e5ab00ff37e64665e630",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.service.ts",
+      "sha256": "e4527114d9c1416af4825e1513f73b3fa40f9ba324444a40e2ef1bbf6e78cd12",
+      "unchanged": true
+    },
+    {
+      "path": "src/setup.ts",
+      "sha256": "71a55a04cdf5d8ccabb45e95d40fc3f90d0d3edbd134a8851f151ea99369a4fc",
+      "unchanged": true
+    },
+    {
+      "path": "test/b2b-webhooks.e2e-spec.ts",
+      "sha256": "9a10fd6ac6fdd53a8d0f3e2490b2d80da59c76fd07632e772a3aa20bb1e0bbd4",
+      "unchanged": true
+    },
+    {
+      "path": "test/direct-demand.e2e-spec.ts",
+      "sha256": "141f8e4629d8355505b1e6046e7bc4c9b5c6e8f3b31291b35c6221ffe3a7af28",
+      "unchanged": true
+    },
+    {
+      "path": "test/http.spec.ts",
+      "sha256": "9415526e8d78fce99ceb1d7ef066aea49fece266d37cb19782f509630bfef155",
+      "unchanged": true
+    },
+    {
+      "path": "test/location.spec.ts",
+      "sha256": "247390924d38f0cb812c45b86f4ade98ba37a71021bb99a00306bc6aa65c579b",
+      "unchanged": true
+    }
+  ],
+  "runner": {
+    "path": ".tmp/v118-run.mjs",
+    "sha256": "f666bc566f59c2d6c4118e99fb73f118df63ac28c379e5d7666e497a16819390"
+  },
+  "cleanup": {
+    "exitCode": 0,
+    "databasesRetained": true,
+    "signal": null,
+    "identityVerified": true,
+    "command": [
+      "pg_ctl",
+      "stop",
+      "-D",
+      "C:/Users/zorgl/AppData/Local/Temp/mandaria-v117-z5t2IE/pg",
+      "-m",
+      "fast",
+      "-w"
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "docs/checks/v118-webhooks-followup/followup-webhooks.log",
+      "sha256": "17979651883e89a4af722f653a5fcf71da69e45866b1500aef78c1143226d558"
+    },
+    {
+      "path": "docs/checks/v118-webhooks-followup/followup-webhooks.json",
+      "sha256": "d1f2107b498b8922095088ce212b5c51a9921a3ec69a794d341beabb1fbc8368"
+    },
+    {
+      "path": "docs/checks/v118-webhooks-followup/followup-webhooks-result.json",
+      "sha256": "a380e4ccd8071fc4911ea704f01755bea0885947bcb7773c163e823c49963095"
+    },
+    {
+      "path": "docs/checks/v118-webhooks-followup/followup-identity2.log",
+      "sha256": "44809307b442062dc5bb9d1ac97f6268db7291939be38840711a8a4cde80e931"
+    },
+    {
+      "path": "docs/checks/v118-webhooks-followup/followup-pg-health.log",
+      "sha256": "865248050df11714f2eb08a7a47806576d669b568fae93c7dc0122d1f785c55a"
+    },
+    {
+      "path": "docs/checks/v118-webhooks-followup/followup-stop.log",
+      "sha256": "3589d2bd01f8295cc7c9ec3f5e07625fcd347ccb6f33f2d80edafe5f5217c1fb"
+    },
+    {
+      "path": "docs/checks/v118-webhooks-followup/followup-stop-result.json",
+      "sha256": "aab3893788694d086809e572a5d116f21eeb8821a12ce661ebec1dcd2a3a77a9"
+    }
+  ],
+  "remaining": [
+    "Full 54-case exit0 webhooks run remains unaccredited; further diagnosis requires capturing child-process/native termination evidence.",
+    "Interfaces and real integration remain pending; V1.18 not complete or activated."
+  ]
+}

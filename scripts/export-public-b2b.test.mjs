@@ -7,6 +7,27 @@ import {
   checkPublicB2b,
 } from './export-public-b2b.mjs';
 const source = () => JSON.parse(readFileSync('docs/openapi.json', 'utf8'));
+test('GPS public projection is allowlisted, scoped and excludes stream and recipient capability operations', () => {
+  const d = publicB2bDocument(source());
+  assert.deepEqual(
+    d.paths['/api/v1/delivery-requests/{publicId}/location'].get['x-scopes'],
+    ['deliveries:read', 'deliveries:location:read'],
+  );
+  assert.deepEqual(
+    d.paths['/api/v1/delivery-requests/{publicId}/tracking-link'].post[
+      'x-scopes'
+    ],
+    ['deliveries:read', 'deliveries:tracking-links:manage'],
+  );
+  assert.deepEqual(
+    Object.keys(d.components.schemas.LocationViewResponse.properties).sort(),
+    ['location', 'observation', 'progress', 'publicId'],
+  );
+  for (const path of Object.keys(d.paths))
+    assert.doesNotMatch(path, /\/driver\/|\/customer\/|\/admin\/|\/shared\//);
+  assert.equal(d.components.schemas.LocationSampleDto, undefined);
+  assert.equal(d.components.securitySchemes['tracking-link'], undefined);
+});
 test('V1.17 exposes B2B terms and consent while excluding human demand, collection and administrative policy', () => {
   const full = source(),
     d = publicB2bDocument(full);
@@ -44,6 +65,11 @@ test('V1.17 exposes B2B terms and consent while excluding human demand, collecti
 });
 const path = '/api/v1/delivery-prequotes';
 const expected = [
+  'GET /api/v1/delivery-requests/{publicId}/location',
+  'GET /api/v1/delivery-requests/{publicId}/tracking-link',
+  'POST /api/v1/delivery-requests/{publicId}/tracking-link',
+  'POST /api/v1/delivery-requests/{publicId}/tracking-link/revoke',
+  'GET /api/v1/delivery-requests/{publicId}/tracking-link/attempt',
   'POST /api/v1/integrations/token',
   'GET /api/v1/integrations/me',
   'GET /api/v1/integrations/scope-check',

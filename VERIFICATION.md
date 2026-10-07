@@ -1,3 +1,70 @@
+## V1.18 — diagnóstico instrumentado de webhooks, 2026-10-06
+
+**PASS del archivo completo; causa de abortos anteriores NO acreditada.** [Evidencia nueva y54 resultados](docs/checks/v118-webhooks-diagnostic.json). Una reproducción instrumentada, sin reintentos ni reducción de cobertura:54/54, un archivo, exit0,29.31s. No se ejecutaron suites ajenas.
+
+- Node24.15.0/Vitest4.1.11/Prisma6.19.3/PostgreSQL18.6; forks/1 worker, fileParallelism=false. Base nueva mandaria_v118_webhooks_diagnostic1_test clonada de plantilla42, clúster identificado loopback65063. GPS/enlaces false, sin .env ni receptores externos.
+- Instrumentación local ignorada por Git: .tmp/v118-diag-preload.cjs y .tmp/v118-diag-run.mjs. Captura spawn/PID, stderr, exit/close/code/signal y solicitudes kill; memoria/recursos cada1s; report-on-fatalerror/report-uncaught-exception/report-exclude-env. Reporter verbose para ubicar casos; pool, concurrencia y límites sin cambio. No instalación ni configuración global.
+- Padre PID36428, worker40124. A04:35:34.495Z el padre solicitó SIGTERM; exit del hijo04:35:34.559Z (code null, signal SIGTERM); padre exit0. Corresponde al cierre normal observado, tras completar el archivo. No extrapolar ese cierre a abortos anteriores. stderr vacío, sin reporte fatal de Node ni dump generado.
+- Código instalado de Vitest cli-api.CnMVyzaz.js: emitUnexpectedExit ignora argumentos code/signal y sólo comunica Worker exited unexpectedly; el preload captura esos argumentos sin modificar node_modules.
+- Consulta limitada de Application/event1000 para node.exe durante04:15:20–04:16:20Z no devolvió coincidencias. No demuestra ausencia de crash. No herramientas procdump/cdb/windbg en PATH; no se instalaron ni se habilitó WER global. No hubo fallo reproducido que justifique corregir producto.
+- Todos los logs/reportes crudos están en .tmp/v118/diagnostic1/, ignorados; sólo metadatos, hashes y54 nombres/resultados seguros se conservan en evidencia versionable. Los reportes Node/dumps futuros pueden contener memoria sensible: nunca publicarlos.
+-26 huellas previas idénticas. Verificaciones históricas475 unitarias/38 públicas/73 E2E no repetidas; sumando únicamente este archivo completo son127 E2E únicos en5 archivos, no toda la suite. Los intentos35/54 y40/54 siguen excluidos.
+- Clúster de diagnóstico detenido tras verificar directorio/puerto, bases sintéticas conservadas. git diff --check ejecutado sin errores. Sin cambios de producto/pruebas/configuración compartida.
+
+El pendiente de acreditar webhooks queda cerrado localmente. La intermitencia queda documentada y sin causa demostrada: instrumentar si reaparece, sin responsabilizar al último caso registrado. V1.18 no completa; interfaces/integración real, volumen observado y retención backups siguen pendientes. Sin producción/frontend/Docker/commit/push/despliegue/activación.
+
+## V1.18 — reintento focalizado de webhooks, 2026-10-06
+
+**PARTIAL; pendiente no cerrado.** Se ejecutó una vez el archivo completo sin modificar cobertura, producto ni configuración. [Evidencia, comando, hashes y entorno](docs/checks/v118-webhooks-followup/evidence.json), [log](docs/checks/v118-webhooks-followup/followup-webhooks.log), [reporte incompleto](docs/checks/v118-webhooks-followup/followup-webhooks.json).
+
+- Nuevo: Node24.15.0, Vitest4.1.11, PostgreSQL18.6 local65063, base nueva mandaria_v118_webhooks_followup_test clonada de plantilla sintética con42 migraciones. Sin migraciones repetidas ni Docker. Flags GPS/enlaces false; receptores HTTP sólo loopback.
+- Comando: node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/b2b-webhooks.e2e-spec.ts --pool=forks --maxWorkers=1 --reporter=default --reporter=json --outputFile=.tmp/v118/followup-webhooks.json (entorno aislado preparado por runner registrado).
+- Resultado: exit1, señal padre null,22.91s;35/54 completados,19 pendientes. Worker forks exited unexpectedly. Último completado: “changing the endpoint sends the retry to the new URL without rewriting history”; siguiente pendiente: “an administrator can see what is owed without ever seeing a secret”. No se identifica el punto interno exacto de la caída: el reporte no incluye stack nativo ni código del hijo.
+- El JSON informa success=true y agregado pending=0, pero contiene19 assertions pending y la ejecución tiene exit1/unhandled error. Se conserva como evidencia incompleta; **cero casos nuevos acreditados**. No se suman35 ni los40 del intento anterior.
+- Diagnóstico acotado: PostgreSQL respondió después del aborto; no timeout/aserción fallida registrados. No demuestra causa de Windows, fuga de recursos, interferencia de fixtures ni defecto reproducible de producto. Lectura del registro Application denegada por sandbox; no equivale a ausencia de eventos. No hubo más corridas. Para continuar hace falta evidencia de terminación del proceso hijo/dump, no repetir hasta obtener verde.
+- Históricos conservados:475 unitarias,38 públicas y73 E2E en cuatro archivos aprobados durante implementación; no reejecutados.26 huellas de fuentes registradas siguen idénticas. El consolidado anterior conserva su dictamen original.
+- Limpieza: clúster iniciado para esta tarea detenido tras validar directorio/puerto; base y logs sintéticos retenidos. Primer SQL de identidad falló por quoting, corregido antes de crear base; ninguna modificación de datos por ese fallo.
+
+No V1.18 completa: interfaces/integración real pendientes. Sin frontend, producción, Coita, commit/push/despliegue/activación.
+
+## V1.18 — implementación GPS/enlaces, 2026-10-06
+
+**PARTIAL de verificación integral local.** Backend implementado; no V1.18 completa ni autorización de activación. [Contratos y despliegue futuro](docs/V1.18-LOCATION-IMPLEMENTATION.md), [evidencia con comandos/exit codes/huellas](docs/checks/v118-location.json). No se ejecutaron Docker, Coita, frontend, producción ni despliegue. Funciones false por defecto. Las cifras V1.17 siguientes son históricas y no se suman.
+
+| Verificación nueva de esta tarea | Resultado |
+|---|---|
+| Prisma generate / validate / migrate status | exit0;42 migraciones |
+| Migración limpia y40→42 | exit0, DBs nuevas en PG18.6 loopback65063; sin reset del origen |
+| Preservación incremental | ocho tablas:118 usuarios,180 MDR,87 MQ,52 asignaciones,276 ledger,286 eventos ejecución,0 intentos humanos,18 outbox; conteos/huellas idénticos.40 checksums históricos preservados |
+| Drift | exit2 antes y después, salida idéntica:12 FKs SQL de V1.17 no representadas en Prisma. No nuevo drift; no declarar diff vacío |
+| Build / TypeScript tsconfig y tsconfig.build | exit0 |
+| Oxlint / ESLint src,test,prisma | exit0 |
+| OpenAPI, API_ACCESS, público y comprobaciones | exit0; cinco nuevas operaciones B2B y componentes seguros revisados explícitamente |
+| Contratos públicos |38/38, exit0 |
+| Unitarias |475/475,37 archivos, exit0; sin omitidas en corrida aprobada |
+| direct-demand E2E completo |29/29, exit0 con threads, contrato201/200, rollback y orden final |
+| public-delivery-tracking E2E completo |2/2, exit0 |
+| delivery-execution E2E completo |29/29, exit0 |
+| customers E2E completo |13/13, exit0 |
+| b2b-webhooks E2E |**NO acreditado**: véase abajo; no contado |
+| Total E2E acreditado |73 casos únicos/cuatro archivos completos; no sumar repeticiones |
+
+Cobertura GPS nueva: ownership/scopes, Driver flotilla/independiente y administrador/ajeno rechazados; fase de titular/destinatario; precisión101 rechazada/100 aceptada; capturas atrasadas, duplicados/conflictos y secuencia atrasada; versión estable y retiro terminal; incidencia concurrente GPS, transferencia a nuevo custodio, retorno sin cambio de ledger, cancelación concurrente; límite exacto60s/600s y24h/1h usando reloj inyectado en pruebas HTTP sobre PostgreSQL; emisión de una entrega del secreto, respuesta perdida, reinicio, rollback forzado de recibo, revoke vs ISSUE/CAS y POST tardío; sin GPS legacy ni sin asignación. Tests de tiempo usan doble sólo del reloj; persistencia, transacciones, guards y HTTP son reales locales. Routing/correo/destinatarios externos son sintéticos/simulados; no se acredita integración de apps.
+
+Incidencias de verificación conservadas: primer generate EPERM del sandbox, repetido autorizado exit0; primer arranque PG sin override de puerto falló, corregido con identidad loopback65063 explícita. Primer runner test rechazó DATABASE_URL idéntica a TEST_DATABASE_URL; corregido antes de casos. Helpers asíncronos de pruebas se corrigieron. Frontera600s detectó comparación timestamp/timestamptz incorrecta y se corrigió a UTC; prueba posterior pasó. Unitarias detectaron mock sin $executeRaw, actualizado conforme al nuevo contrato y475/475 aprobadas. Varias corridas de direct-demand abortaron (worker forks o proceso3221226505); nunca contadas; archivo final completado con threads. No se atribuye una causa nativa sin evidencia.
+
+Webhooks: primer intento threads terminó3221226505 sin reporte completo. Segundo forks ejecutó54 casos pero falló afterAll al borrar MDR referenciada por DeliveryShippingTerms inmutable. Se corrigió sólo fixture: exigir base nueva, conservar historia y desactivar su zona sintética; no tocar triggers ni semántica de producto. Tercer intento con el fixture corregido abortó el worker tras40/54, exit1. **No se acredita este archivo ni se declara resuelta la intermitencia.** Pendiente ejecutar íntegro una vez en entorno que complete el runner; no se sigue consumiendo ejecuciones aquí. El runner local, reportes parciales y logs quedan en `.tmp/v118/`, con hashes/command metadata en consolidado.
+
+Límites: sin benchmark ni cifra de entregas simultáneas aprobada; retención de backups/WAL pendiente. Las lecturas retiran muestra a600s, pero purga física sin lectores depende del worker acotado30s/500 filas y de su disponibilidad. Respuestas ya autorizadas en vuelo no pueden revocarse retroactivamente; clientes deben aplicar watermarks/expiry locales. Despliegue mixto no acreditado. No se ejecutó toda la suite E2E del repositorio. Interfaces y portal consumidor no implementados.
+
+Reproducción: crear base PostgreSQL nueva terminada `_test` en clúster aislado, fijar DOTENV_CONFIG_PATH a archivo ausente, DATABASE_URL a URL inerte diferente y TEST_DATABASE_URL a esa base; aplicar42 migraciones usando explícitamente la URL de esa base, nunca principal. `npm run build`; `npx vitest run --config vitest.config.e2e.ts test/direct-demand.e2e-spec.ts --pool=threads --maxWorkers=1 --reporter=json --outputFile=<reporte>`; usar otra base nueva por archivo webhooks. Comandos exactos/puerto/flags ejecutados constan en evidencia. `npm run docs:b2b:check` recompila: no ejecutarlo simultáneamente con tests que importan dist.
+
+## V1.18 — análisis y diseño, 2026-10-06 (histórico previo a implementación)
+
+**Sólo evidencia estática; NO implementación ni PASS funcional.** Revisados continuidad, contratos V1.17/DRIVER/B2B, ownership XOR, autoridad/asignaciones y locks, materializador publicVersion, Swagger público y limitador instalado. Confirmado GET B2B status con integration-bearer + deliveries:read y ausencia de `/api/v1/delivery-requests/{publicId}/location`. AppModule configura100/60s; ThrottlerGuard usa IP+clase+handler y almacenamiento predeterminado en memoria, sin garantía de cuota distribuida. setup no expone Retry-After en CORS actualmente.
+
+Entregados [diseño propuesto](docs/V1.18-LOCATION-DESIGN.md) y [handoff](docs/V1.18-LOCATION-HANDOFF.md), con matriz de visibilidad, DTOs/scopes no implementados, control acotado de muestras, revocación/respuesta perdida, carga estimada, migración y pruebas futuras. Lecturas de archivos/JSON, comprobación de referencias y git diff --check; sin build, tests, benchmarks, PostgreSQL, Docker o servicios externos. Las cifras de pruebas siguientes pertenecen a V1.17 y no acreditan GPS. Sin cambios de producto/OpenAPI generado/configuración/versión ni commit/push/activación. Pendiente aprobar las tres decisiones agrupadas del diseño y autorizar implementación posterior.
+
 ## V1.17 — cierre contractual de recuperación humana, 2026-10-06
 
 **PASS local del alcance solicitado.** Sin activación ni publicación. [Contrato/rutas/DTOs y procedimiento WEB](docs/V1.17-COMMAND-RECONCILIATION.md); [consolidado con comandos, exit codes, hashes y todos los intentos](docs/checks/v117-command-recovery.json). La implementación A–E previa y sus cifras siguientes son históricas; no se suman a esta tarea.

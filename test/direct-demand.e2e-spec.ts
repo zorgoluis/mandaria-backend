@@ -1,7 +1,15 @@
 import 'reflect-metadata';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import type { INestApplication, LoggerService } from '@nestjs/common';
@@ -866,8 +874,11 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
     await cancel(c.deliveryRequestPublicId).expect(200);
   }, 30000);
   it('transfer keeps custody, the shipping declaration and original economic charge; former Driver loses write authority', async () => {
+    enableLocation();
     const d = await start();
     expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    const oldGps = await gps(d);
+    await oldGps.send().expect(200);
     expect((await step(d, 'AT_PICKUP')).status).toBe(200);
     const body = await cashBody(d),
       key = randomUUID();
@@ -886,6 +897,11 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
       })
       .expect(201);
     const before = (await status(d.c.deliveryRequestPublicId).expect(200)).body;
+    expect(
+      (await ownLocation(d.c.deliveryRequestPublicId).expect(200)).body.location
+        .sample,
+    ).toBeNull();
+    await oldGps.send({ ...oldGps.sample, sequence: 2 }).expect(409);
     const entries = await prisma.creditLedgerEntry.count({
       where: { referenceId: d.id },
     });
@@ -931,6 +947,17 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
     const recipient = { ...d, token: t.indy };
     const next = await head(recipient);
     expect(next.phase).toBe('PICKED_UP');
+    await oldGps.send({ ...oldGps.sample, sequence: 3 }).expect(404);
+    expect(
+      (await ownLocation(d.c.deliveryRequestPublicId).expect(200)).body.location
+        .sample,
+    ).toBeNull();
+    const newGps = await gps(recipient);
+    await newGps.send().expect(200);
+    expect(
+      (await ownLocation(d.c.deliveryRequestPublicId).expect(200)).body.location
+        .sample.latitude,
+    ).toBe(17.42);
     await cash(recipient, {
       ...body,
       assignmentId: next.activeAssignmentId,
@@ -1662,7 +1689,463 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
     expect(rows[0].startedAt).toBeNull();
     expect(rows[0].state).toBe('CANCELLED');
   });
+  const enableLocation = () => {
+    app.get(ConfigService).set('LOCATION_TRACKING_ENABLED', true);
+    app.get(ConfigService).set('SHARED_TRACKING_ENABLED', true);
+    app.get(ConfigService).set('LOCATION_DRIVER_PER_MINUTE', 1000);
+    app.get(ConfigService).set('LOCATION_OWNER_PER_MINUTE', 1000);
+    app.get(ConfigService).set('LOCATION_RECIPIENT_PER_MINUTE', 1000);
+    app.get(ConfigService).set('LOCATION_LINK_MUTATIONS_PER_TEN_MINUTES', 100);
+  };
+  const ownLocation = (id: string, name = 'personal') =>
+    api()
+      .get(`/api/v1/customer/delivery-requests/${id}/location`)
+      .auth(t[name], bearer);
+  const linkPath = (id: string) =>
+    `/api/v1/customer/delivery-requests/${id}/tracking-link`;
+  const linkWrite = (
+    id: string,
+    expectedLinkRevision: string,
+    key = randomUUID(),
+    revoke = false,
+  ) =>
+    api()
+      .post(linkPath(id) + (revoke ? '/revoke' : ''))
+      .auth(t.personal, bearer)
+      .set('Idempotency-Key', key)
+      .send({ expectedLinkRevision });
+  async function gps(d: Awaited<ReturnType<typeof start>>) {
+    const e = await head(d),
+      path = `/api/v1/driver/dispatches/${d.id}/assignments/${e.activeAssignmentId}`;
+    const before = await api()
+      .get(path + '/location-stream')
+      .auth(d.token, bearer)
+      .expect(200);
+    const opened = await api()
+      .post(path + '/location-stream')
+      .auth(d.token, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({ expectedStreamRevision: before.body.streamRevision })
+      .expect(200);
+    const sample = {
+      streamId: opened.body.streamId,
+      sequence: 1,
+      capturedAt: new Date().toISOString(),
+      latitude: 17.42,
+      longitude: -93.38,
+      accuracyMeters: 12,
+    };
+    const send = (body = sample, token = d.token) =>
+      api()
+        .put(path + '/location')
+        .auth(token, bearer)
+        .send(body);
+    return { path, sample, send };
+  }
+  async function finishGps(d: Awaited<ReturnType<typeof start>>) {
+    const e = await head(d);
+    const ordered = [
+      'TO_PICKUP',
+      'AT_PICKUP',
+      'PICKED_UP',
+      'TO_DROPOFF',
+      'AT_DROPOFF',
+    ];
+    for (const phase of ordered.slice(
+      e.phase ? ordered.indexOf(e.phase) + 1 : 0,
+    )) {
+      if (phase === 'PICKED_UP') await cash(d, await cashBody(d)).expect(200);
+      expect((await step(d, phase)).status).toBe(200);
+    }
+    await appDeliver(d.id);
+  }
+  it('V1.18: owner/recipient phase gates, sample ordering, privacy, terminal withdrawal and independent authority', async () => {
+    enableLocation();
+    const d = await start('personal', true),
+      id = d.c.deliveryRequestPublicId;
+    expect((await ownLocation(id).expect(200)).body.location.sample).toBeNull();
+    const initial = await api()
+      .get(linkPath(id))
+      .auth(t.personal, bearer)
+      .expect(200);
+    const issued = await linkWrite(id, initial.body.linkRevision).expect(201);
+    const token = 'Tracking ' + new URL(issued.body.url).hash.slice(3);
+    const shared = () =>
+      api().get('/api/v1/shared/delivery-tracking').set('Authorization', token);
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    const g = await gps(d);
+    await g.send().expect(200);
+    expect((await g.send().expect(200)).body.outcome).toBe('DUPLICATE');
+    await g.send({ ...g.sample, latitude: 18 }).expect(409);
+    await g.send({ ...g.sample, sequence: 2, accuracyMeters: 101 }).expect(422);
+    await g
+      .send({
+        ...g.sample,
+        sequence: 2,
+        capturedAt: new Date(Date.now() - 121000).toISOString(),
+      })
+      .expect(422);
+    const newer=await g.send({...g.sample,sequence:3,capturedAt:new Date().toISOString(),accuracyMeters:100}).expect(200);
+    const delayed=await g.send({...g.sample,sequence:2}).expect(200);
+    expect(delayed.body).toMatchObject({outcome:'SUPERSEDED',acknowledgedSequence:null,currentSequence:3,locationVersion:newer.body.locationVersion});
+    const observed = (await ownLocation(id).expect(200)).body;
+    expect(observed.location.sample.latitude).toBe(17.42);
+    expect((await ownLocation(id).expect(200)).body.location).toEqual(
+      observed.location,
+    );
+    expect((await shared().expect(200)).body.location.sample).toBeNull();
+    await ownLocation(id, 'other').expect(404);
+    await g.send(g.sample, t.A).expect(403);
+    await g.send(g.sample, t.otro).expect(404);
+    expect((await step(d, 'AT_PICKUP')).status).toBe(200);
+    await cash(d, await cashBody(d)).expect(200);
+    expect((await step(d, 'PICKED_UP')).status).toBe(200);
+    const visible = await shared().expect(200);
+    expect(visible.body.location.sample.latitude).toBe(17.42);
+    expect(Object.keys(visible.body).sort()).toEqual([
+      'location',
+      'observation',
+      'progress',
+      'publicId',
+    ]);
+    expect(JSON.stringify(visible.body)).not.toMatch(
+      /contact|reasonDetail|driverId|actor|secret|shippingPayment/,
+    );
+    expect(visible.headers['cache-control']).toContain('no-store');
+    await finishGps(d);
+    const terminal = (await shared().expect(200)).body;
+    expect(terminal.progress.terminalOutcome.type).toBe('DELIVERED');
+    expect(terminal.location.sample).toBeNull();
+    expect(BigInt(terminal.location.locationVersion)).toBeGreaterThan(
+      BigInt(visible.body.location.locationVersion),
+    );
+    await g.send({ ...g.sample, sequence: 3 }).expect(404);
+    expect(
+      await prisma.deliveryLocationHead.findFirst({
+        where: { deliveryRequest: { publicId: id } },
+        select: { sample: true, sampleHash: true },
+      }),
+    ).toEqual({ sample: null, sampleHash: null });
+    expect(logs.join('\n')).not.toContain(token);
+    expect(logs.join('\n')).not.toContain(issued.body.url);
+  });
+  it('V1.18: durable one-time emission, explicit revocation fences late issuance, and concurrent CAS has one winner', async () => {
+    enableLocation();
+    const d = await start(),
+      id = d.c.deliveryRequestPublicId;
+    const initial = (
+      await api().get(linkPath(id)).auth(t.personal, bearer).expect(200)
+    ).body;
+    const key = randomUUID();
+    const pending = () =>
+      api()
+        .get(linkPath(id) + '/attempt')
+        .auth(t.personal, bearer)
+        .set('Idempotency-Key', key)
+        .query({
+          operation: 'ISSUE',
+          expectedLinkRevision: initial.linkRevision,
+        });
+    expect((await pending().expect(200)).body.state).toBe('PENDING_OR_UNKNOWN');
+    // Controlled failure in this dedicated synthetic database proves head/token/receipt atomicity.
+    await prisma.$executeRawUnsafe(
+      `CREATE FUNCTION v118_fail_receipt() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'CONTROLLED_LINK_RECEIPT_FAILURE'; END $$`,
+    );
+    await prisma.$executeRawUnsafe(
+      `CREATE TRIGGER v118_fail_receipt BEFORE UPDATE OF receipt ON "DeliveryTrackingLinkHead" FOR EACH ROW EXECUTE FUNCTION v118_fail_receipt()`,
+    );
+    try {
+      await linkWrite(id, initial.linkRevision, key).expect(500);
+    } finally {
+      await prisma.$executeRawUnsafe(
+        `DROP TRIGGER v118_fail_receipt ON "DeliveryTrackingLinkHead"`,
+      );
+      await prisma.$executeRawUnsafe(`DROP FUNCTION v118_fail_receipt()`);
+    }
+    expect((await pending().expect(200)).body.state).toBe('PENDING_OR_UNKNOWN');
+    expect(
+      (await api().get(linkPath(id)).auth(t.personal, bearer).expect(200)).body,
+    ).toMatchObject({ linkRevision: initial.linkRevision, status: 'NONE' });
+    const issued = await linkWrite(id, initial.linkRevision, key).expect(201);
+    expect(issued.body.secretAvailable).toBe(true);
+    const replay = await linkWrite(id, initial.linkRevision, key).expect(200);
+    expect(replay.body.secretAvailable).toBe(false);
+    expect(replay.body.url).toBeUndefined();
+    await app.close();
+    app = await bootstrap();
+    enableLocation();
+    const recovery = () =>
+      api()
+        .get(linkPath(id) + '/attempt')
+        .auth(t.personal, bearer)
+        .set('Idempotency-Key', key)
+        .query({
+          operation: 'ISSUE',
+          expectedLinkRevision: initial.linkRevision,
+        });
+    expect((await recovery().expect(200)).body.state).toBe(
+      'APPLIED_SECRET_UNAVAILABLE',
+    );
+    await linkWrite(id, issued.body.linkRevision, randomUUID(), true).expect(
+      200,
+    );
+    await api()
+      .get('/api/v1/shared/delivery-tracking')
+      .set(
+        'Authorization',
+        'Tracking ' + new URL(issued.body.url).hash.slice(3),
+      )
+      .expect(404);
+    const meta = (
+      await api().get(linkPath(id)).auth(t.personal, bearer).expect(200)
+    ).body;
+    const late = randomUUID();
+    await linkWrite(id, meta.linkRevision, randomUUID(), true).expect(200);
+    await linkWrite(id, meta.linkRevision, late).expect(409);
+    expect(
+      (
+        await api()
+          .get(linkPath(id) + '/attempt')
+          .auth(t.personal, bearer)
+          .set('Idempotency-Key', late)
+          .query({
+            operation: 'ISSUE',
+            expectedLinkRevision: meta.linkRevision,
+          })
+          .expect(200)
+      ).body.state,
+    ).toBe('SUPERSEDED');
+    const last = (
+      await api().get(linkPath(id)).auth(t.personal, bearer).expect(200)
+    ).body;
+    const race = await Promise.all([
+      linkWrite(id, last.linkRevision),
+      linkWrite(id, last.linkRevision, randomUUID(), true),
+    ]);
+    expect(race.filter((x) => [200, 201].includes(x.status))).toHaveLength(1);
+    expect(race.filter((x) => x.status === 409)).toHaveLength(1);
+    await finishGps(d);
+  });
+  it('V1.18: fleet GPS concurrent with cancellation withdraws coordinates and denies late writes', async () => {
+    enableLocation();
+    const d = await start(),
+      id = d.c.deliveryRequestPublicId;
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    const g = await gps(d);
+    await g.send().expect(200);
+    const before = (await ownLocation(id).expect(200)).body;
+    const race = await Promise.all([
+      g.send({
+        ...g.sample,
+        sequence: 2,
+        capturedAt: new Date().toISOString(),
+      }),
+      cancel(id),
+    ]);
+    expect(race[1].status).toBe(200);
+    expect([200, 404, 409]).toContain(race[0].status);
+    const after = (await ownLocation(id).expect(200)).body;
+    expect(after.location.sample).toBeNull();
+    expect(BigInt(after.location.locationVersion)).toBeGreaterThan(
+      BigInt(before.location.locationVersion),
+    );
+    await g.send({ ...g.sample, sequence: 3 }).expect(404);
+  });
+  it('V1.18: exact freshness, erasure, link expiry and terminal grace boundaries use validated capture time', async () => {
+    enableLocation();
+    const d = await start(),
+      id = d.c.deliveryRequestPublicId;
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    const g = await gps(d);
+    await g.send().expect(200);
+    const { LocationClock } =
+      await import('../dist/location/location.service.js');
+    const clock = app.get(LocationClock),
+      mock = vi.spyOn(clock, 'now');
+    const sample = (await ownLocation(id).expect(200)).body.location.sample;
+    mock.mockResolvedValue(new Date(sample.freshUntil));
+    expect((await ownLocation(id).expect(200)).body.observation.freshness).toBe(
+      'RECENT',
+    );
+    mock.mockResolvedValue(new Date(new Date(sample.freshUntil).getTime() + 1));
+    expect((await ownLocation(id).expect(200)).body.observation.freshness).toBe(
+      'STALE',
+    );
+    mock.mockResolvedValue(new Date(sample.eraseAfter));
+    const erased = (await ownLocation(id).expect(200)).body;
+    expect(erased.location.sample).toBeNull();
+    expect(erased.observation.freshness).toBe('UNAVAILABLE');
+    expect((await g.send().expect(200)).body.outcome).toBe('SUPERSEDED');
+    mock.mockRestore();
+    const meta = (
+      await api().get(linkPath(id)).auth(t.personal, bearer).expect(200)
+    ).body;
+    const issued = (await linkWrite(id, meta.linkRevision).expect(201)).body;
+    const shared = () =>
+      api()
+        .get('/api/v1/shared/delivery-tracking')
+        .set('Authorization', 'Tracking ' + new URL(issued.url).hash.slice(3));
+    const expiry = vi
+      .spyOn(clock, 'now')
+      .mockResolvedValue(new Date(issued.expiresAt));
+    await shared().expect(404);
+    expiry.mockRestore();
+    await finishGps(d);
+    const terminal = (await shared().expect(200)).body;
+    const end =
+      new Date(terminal.progress.terminalOutcome.occurredAt).getTime() +
+      3600000;
+    const grace = vi.spyOn(clock, 'now').mockResolvedValue(new Date(end - 1));
+    await shared().expect(200);
+    grace.mockResolvedValue(new Date(end));
+    await shared().expect(404);
+    grace.mockRestore();
+  });
+  it('V1.18: B2B explicit scopes and ownership; unassigned and legacy never fabricate GPS', async () => {
+    enableLocation();
+    const input = conversion();
+    const created = await api()
+      .post('/api/v1/delivery-requests')
+      .auth(t.b2b, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({ ...input.deliveryRequest, payerContact: input.payerContact })
+      .expect(201);
+    const id = created.body.publicId,
+      path = '/api/v1/delivery-requests/' + id + '/location';
+    await api().get(path).auth(t.b2b, bearer).expect(403);
+    const client = await prisma.integrationClient.findUniqueOrThrow({
+      where: { code: `${PREFIX}CLIENT_${run}` },
+    });
+    const credential = await api()
+      .post(`/api/v1/admin/integrations/${client.id}/credentials`)
+      .auth(t.sa, bearer)
+      .send({
+        scopes: [
+          'deliveries:read',
+          'deliveries:location:read',
+          'deliveries:tracking-links:manage',
+        ],
+      })
+      .expect(201);
+    const auth = await api()
+      .post('/api/v1/integrations/token')
+      .send({
+        clientId: credential.body.clientId,
+        clientSecret: credential.body.clientSecret,
+      })
+      .expect(200);
+    const token = auth.body.accessToken;
+    const view = await api().get(path).auth(token, bearer).expect(200);
+    expect(view.body.progress.trackingMode).toBeNull();
+    expect(view.body.location.unavailableReason).toBe('NO_ASSIGNMENT');
+    await ownLocation(id).expect(404);
+    await api()
+      .post(`/api/v1/delivery-requests/${id}/tracking-link`)
+      .auth(token, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({ expectedLinkRevision: '1' })
+      .expect(409);
+    const direct = await create();
+    await api()
+      .get(
+        '/api/v1/delivery-requests/' +
+          direct.deliveryRequestPublicId +
+          '/location',
+      )
+      .auth(token, bearer)
+      .expect(404);
+    await cancel(direct.deliveryRequestPublicId).expect(200);
+    const business = await create('business', 'RECIPIENT');
+    expect((await accept(business, 'business')).status).toBe(200);
+    app.get(ConfigService).set('DETAILED_EXECUTION_ENABLED', false);
+    const dispatch = await prisma.dispatch.findFirstOrThrow({
+      where: {
+        deliveryRequest: { publicId: business.deliveryRequestPublicId },
+      },
+    });
+    await fundForAward(prisma, dispatch.id, { providerId: providers.A });
+    await claim(t.A, dispatch.id).expect(200);
+    await assign(t.A, dispatch.id, {
+      driverId: drivers.ana,
+      vehicleId: vehicles.fleet1,
+    }).expect(201);
+    const legacy = (
+      await ownLocation(business.deliveryRequestPublicId, 'business').expect(
+        200,
+      )
+    ).body;
+    expect(legacy.progress.trackingMode).toBe('LEGACY');
+    expect(legacy.location.unavailableReason).toBe('LEGACY_UNSUPPORTED');
+    await cancel(business.deliveryRequestPublicId, 'business').expect(200);
+  });
+  it('V1.18: incident versus GPS and confirmed return remove the position without changing credit history', async () => {
+    enableLocation();
+    const d = await start(),
+      id = d.c.deliveryRequestPublicId;
+    expect((await step(d, 'TO_PICKUP')).status).toBe(200);
+    const g = await gps(d);
+    await g.send().expect(200);
+    expect((await step(d, 'AT_PICKUP')).status).toBe(200);
+    await cash(d, await cashBody(d)).expect(200);
+    expect((await step(d, 'PICKED_UP')).status).toBe(200);
+    const e = await head(d);
+    const race = await Promise.all([
+      api()
+        .post(`/api/v1/driver/dispatches/${d.id}/custody-incidents`)
+        .auth(d.token, bearer)
+        .set('Idempotency-Key', randomUUID())
+        .send({
+          assignmentId: e.activeAssignmentId,
+          expectedRevision: e.revision,
+          reasonCode: 'VEHICLE_FAILURE',
+          reasonDetail: 'Synthetic incident',
+        }),
+      g.send({
+        ...g.sample,
+        sequence: 2,
+        capturedAt: new Date().toISOString(),
+      }),
+    ]);
+    expect(race[0].status).toBe(201);
+    expect([200, 409]).toContain(race[1].status);
+    expect((await ownLocation(id).expect(200)).body).toMatchObject({
+      progress: { attentionRequired: true },
+      location: { sample: null },
+    });
+    const count = await prisma.creditLedgerEntry.count({
+      where: { referenceId: d.id },
+    });
+    const incident = race[0].body;
+    const result = await api()
+      .post(
+        `/api/v1/admin/dispatches/${d.id}/custody-incidents/${incident.id}/resolve`,
+      )
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        assignmentId: incident.execution.activeAssignmentId,
+        expectedRevision: incident.execution.revision,
+        type: 'RETURN_TO_ORIGIN',
+        reason: 'Synthetic return',
+        occurredAt: new Date().toISOString(),
+        confirmationMethod: 'PHONE',
+        custodianConfirmed: true,
+        originConfirmed: true,
+        originContactLabel: 'Synthetic restaurant',
+        originContactRole: 'Manager',
+      });
+    expect(result.status).toBe(200);
+    const view = (await ownLocation(id).expect(200)).body;
+    expect(view.progress.terminalOutcome.type).toBe('RETURNED_TO_ORIGIN');
+    expect(view.location.sample).toBeNull();
+    expect(
+      await prisma.creditLedgerEntry.count({ where: { referenceId: d.id } }),
+    ).toBe(count);
+  });
   it('admission remains explicitly gated, and logs exclude tokens and private payer data', async () => {
+    const { LocationService } =
+      await import('../dist/location/location.service.js');
+    await app.get(LocationService).cleanup();
     app.get(ConfigService).set('CUSTOMER_ADMISSION_ENABLED', false);
     const caps = await api()
       .get('/api/v1/customer/capabilities')

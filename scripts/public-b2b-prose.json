@@ -1,4 +1,6 @@
 {
+  "Revisión decimal consultada; obliga a reconciliar conflictos antes de otra intención.": "Revisión decimal consultada; obliga a reconciliar conflictos antes de otra intención.",
+  "UUID por intención. Conservar clave, operación y revisión; nunca guardar secretos ni cuerpos.": "UUID por intención. Conservar clave, operación y revisión; nunca guardar secretos ni cuerpos.",
   "Sólo nuevas ejecuciones detalladas en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar publicVersion numéricamente por solicitud para ordenar fotografías públicas; revision describe únicamente la ejecución interna.": "Progreso reportado del servicio en ASSIGNED. Ausente en servicios anteriores: no inferir hitos. Comparar publicVersion numéricamente por solicitud para ordenar fotografías públicas; revision describe únicamente la ejecución interna.",
   "RETURNED_TO_ORIGIN acompaña CANCELLED y deliveredAt=null. Consultar por polling; no se emite delivery.completed ni nuevos webhooks.": "RETURNED_TO_ORIGIN acompaña CANCELLED y deliveredAt=null. Consultar periódicamente el estado; no se emite delivery.completed por una devolución física.",
   "Requiere atención operativa. No expone motivo, actores ni contactos privados.": "El servicio requiere atención operativa y conserva la custodia del pedido.",

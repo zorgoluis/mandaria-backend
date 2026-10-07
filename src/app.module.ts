@@ -1,4 +1,5 @@
 import { CustomersModule } from './customers/customers.module.js';
+import { LocationModule } from './location/location.module.js';
 import { ExecutionModule } from './delivery-execution/execution.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -48,6 +49,7 @@ import { PartnerApplicationsModule } from './partner-applications/partner-applic
     PrequotesModule,
     ExecutionModule,
     CustomersModule,
+    LocationModule,
     PartnerApplicationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

@@ -1,5 +1,9 @@
 # Mandaria — V1.12-E Webhook Operations & Observability
 
+## V1.18 — ubicación y enlace temporal (backend local)
+
+[Implementación y configuración](docs/V1.18-LOCATION-IMPLEMENTATION.md), [WEB](docs/V1.18-WEB.md), [APP DRIVER](docs/V1.18-DRIVER-APP.md) y [B2B](docs/V1.18-B2B.md). Última muestra, versionado GPS independiente, ventanas aprobadas y enlaces de una entrega del secreto con CAS/revocación. Migraciones41/42 y OpenAPI regenerado. LOCATION_TRACKING_ENABLED y SHARED_TRACKING_ENABLED false por defecto. No activa V1.17/V1.18; interfaces/integración real pendientes, sin capacidad simultánea ni retención de backups aprobadas. Evidencia nueva y limitaciones en VERIFICATION; diseño original conservado.
+
 ## V1.17 B–E — clientes directos y pagador
 
 **Cierre contractual local (2026-10-06):** [recuperación sin cuerpo original y reanudación entre dispositivos](docs/V1.17-COMMAND-RECONCILIATION.md). Consultas/cierres humanos para MPQ, conversión, aceptación y política; contexto MPQ/MQ/términos finales desde MDR propia. Cierre de MPQ impide publicación, pero conserva routing/presupuesto ya autorizado. WEB debe resincronizar OpenAPI humano. Nueva migración40; admisión sin activar, sin disponibilidad remota acreditada. Resultados de esta ampliación en VERIFICATION; cifras A–E siguientes son históricas.

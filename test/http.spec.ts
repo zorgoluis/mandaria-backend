@@ -20,6 +20,8 @@ beforeAll(async () => {
     .overrideProvider(PrismaService)
     .useValue({
       $queryRaw: query,
+      // GPS startup reconciles only its persisted policy epoch; this suite mocks PostgreSQL.
+      $executeRaw: vi.fn().mockResolvedValue(0),
       user: { findUnique: vi.fn().mockResolvedValue(null) },
     })
     .compile();

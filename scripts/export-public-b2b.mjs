@@ -18,6 +18,41 @@ const methods = new Set([
 // Explicit method + path approval. Prefix matching is deliberately insufficient.
 export const APPROVED_OPERATIONS = [
   [
+    'get',
+    '/api/v1/delivery-requests/{publicId}/location',
+    'deliveryLocation',
+    'Consultar ubicación propia',
+    'GPS desde TO_PICKUP sujeto a fase, atención operativa y frescura. locationVersion ordena posición y publicVersion progreso por MDR. No acredita custodia, entrega ni cobro. Requiere deliveries:read y deliveries:location:read.',
+  ],
+  [
+    'get',
+    '/api/v1/delivery-requests/{publicId}/tracking-link',
+    'trackingLinkMetadata',
+    'Consultar metadata de enlace',
+    'No devuelve secreto. Consultar no prolonga vigencia. Requiere deliveries:read y deliveries:tracking-links:manage.',
+  ],
+  [
+    'post',
+    '/api/v1/delivery-requests/{publicId}/tracking-link',
+    'issueTrackingLink',
+    'Emitir enlace temporal',
+    'CAS mediante expectedLinkRevision e Idempotency-Key. URL secreta únicamente en primera respuesta; reintento sin secreto. TTL máximo 24h. Reconciliar respuesta incierta antes de revocar o reemplazar explícitamente.',
+  ],
+  [
+    'post',
+    '/api/v1/delivery-requests/{publicId}/tracking-link/revoke',
+    'revokeTrackingLink',
+    'Revocar enlace',
+    'Incrementa revisión incluso sin enlace. Emisión tardía con revisión anterior no puede aplicar. Un 409 requiere consultar metadata; no acredita revocación. No modifica entrega ni pagos.',
+  ],
+  [
+    'get',
+    '/api/v1/delivery-requests/{publicId}/tracking-link/attempt',
+    'trackingLinkAttempt',
+    'Reconciliar intento propio',
+    'Consulta con operación, clave y revisión original, sin cuerpo ni secreto. APPLIED_SECRET_UNAVAILABLE, APPLIED_REVOKED, PENDING_OR_UNKNOWN o SUPERSEDED. SUPERSEDED impide un efecto futuro con esa revisión; no acredita ausencia histórica de efectos ni revocación del enlace actual.',
+  ],
+  [
     'post',
     '/api/v1/integrations/token',
     'issueToken',
@@ -127,6 +162,14 @@ const approved = new Map(
   APPROVED_OPERATIONS.map(([m, p, ...copy]) => [`${m} ${p}`, copy]),
 );
 const schemas = new Set([
+  'LocationViewResponse',
+  'LocationProgressResponse',
+  'LocationPositionResponse',
+  'LocationSampleResponse',
+  'LocationObservationResponse',
+  'TrackingLinkResponse',
+  'TrackingAttemptResponse',
+  'TrackingLinkDto',
   'IntegrationTokenDto',
   'IntegrationTokenResponse',
   'IntegrationMeResponse',

@@ -1,0 +1,642 @@
+{
+  "verdict": "PASS_COMPLETE_FILE",
+  "rootCause": "UNCONFIRMED_NOT_REPRODUCED",
+  "recordedAt": "2026-10-07T04:37:46.077Z",
+  "invocation": {
+    "started": "2026-10-07T04:35:04.666Z",
+    "node": "v24.15.0",
+    "pid": 36428,
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "vitest.config.e2e.ts",
+      "test/b2b-webhooks.e2e-spec.ts",
+      "--pool=forks",
+      "--maxWorkers=1",
+      "--reporter=verbose",
+      "--reporter=json",
+      "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v118\\diagnostic1/report.json"
+    ],
+    "pool": "forks",
+    "workers": 1,
+    "database": "mandaria_v118_webhooks_diagnostic1_test",
+    "instrumentation": "--require=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v118-diag-preload.cjs --report-on-fatalerror --report-uncaught-exception --report-exclude-env"
+  },
+  "result": {
+    "code": 0,
+    "signal": null,
+    "pid": 36428,
+    "started": "2026-10-07T04:35:04.666Z",
+    "finished": "2026-10-07T04:35:34.614Z"
+  },
+  "runtime": {
+    "node": "v24.15.0",
+    "vitest": "4.1.11",
+    "prisma": "6.19.3",
+    "postgres": "18.6",
+    "pool": "forks",
+    "maxWorkers": 1,
+    "fileParallelism": false,
+    "outerTimeoutMs": 600000,
+    "database": "mandaria_v118_webhooks_diagnostic1_test",
+    "template": "mandaria_v118_clean_test",
+    "migrations": 42,
+    "host": "127.0.0.1",
+    "port": 65063
+  },
+  "changes": [
+    "Ignored local preload observes ChildProcess spawn/exit/close/error/kill without replacing termination behavior.",
+    "stderr captured locally; Node fatal/uncaught reports enabled, excluding environment variables; report files remain ignored.",
+    "Memory and active resource types sampled once per second with unref timer.",
+    "Verbose reporter replaces default for per-case diagnostic output; JSON preserved.",
+    "No product/test/dependency/shared configuration changes; no tools installed/global configuration changes."
+  ],
+  "flags": {
+    "LOCATION_TRACKING_ENABLED": false,
+    "SHARED_TRACKING_ENABLED": false,
+    "externalServices": false,
+    "dotenvLoaded": false
+  },
+  "observation": {
+    "completed": 54,
+    "failed": 0,
+    "omitted": 0,
+    "files": 1,
+    "vitestDurationSeconds": 29.31,
+    "parentPid": 36428,
+    "workerPid": 40124,
+    "workerExit": {
+      "code": null,
+      "signal": "SIGTERM",
+      "requestedByParent": true
+    },
+    "parentExit": {
+      "code": 0,
+      "signal": null
+    },
+    "stderrBytes": 228,
+    "nodeFatalReports": 0,
+    "peakWorkerRssBytes": 492781568,
+    "lifecycle": [
+      {
+        "time": "2026-10-07T04:35:04.714Z",
+        "pid": 36428,
+        "event": "start",
+        "ppid": 32348,
+        "node": "v24.15.0",
+        "execArgv": []
+      },
+      {
+        "time": "2026-10-07T04:35:05.051Z",
+        "pid": 36428,
+        "event": "child-spawn",
+        "child": 17256
+      },
+      {
+        "time": "2026-10-07T04:35:05.124Z",
+        "pid": 36428,
+        "event": "child-exit",
+        "child": 17256,
+        "code": 0,
+        "hex": "0x0",
+        "signal": null
+      },
+      {
+        "time": "2026-10-07T04:35:05.127Z",
+        "pid": 36428,
+        "event": "child-close",
+        "child": 17256,
+        "code": 0,
+        "signal": null
+      },
+      {
+        "time": "2026-10-07T04:35:05.212Z",
+        "pid": 36428,
+        "event": "child-spawn",
+        "child": 40124
+      },
+      {
+        "time": "2026-10-07T04:35:34.495Z",
+        "pid": 36428,
+        "event": "child-kill-request",
+        "child": 40124,
+        "signal": "SIGTERM"
+      },
+      {
+        "time": "2026-10-07T04:35:34.559Z",
+        "pid": 36428,
+        "event": "child-exit",
+        "child": 40124,
+        "code": null,
+        "hex": null,
+        "signal": "SIGTERM"
+      },
+      {
+        "time": "2026-10-07T04:35:34.565Z",
+        "pid": 36428,
+        "event": "child-close",
+        "child": 40124,
+        "code": null,
+        "signal": "SIGTERM"
+      },
+      {
+        "time": "2026-10-07T04:35:34.569Z",
+        "pid": 36428,
+        "event": "own-exit",
+        "code": 0
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "V1.12-C a completed delivery reaches the client that asked for it a provider delivery is POSTed as the recorded event, with its id in a header",
+      "status": "passed",
+      "durationMs": 338.46190000000024
+    },
+    {
+      "name": "V1.12-C a completed delivery reaches the client that asked for it an independent delivery arrives the same way, with its own execution mode",
+      "status": "passed",
+      "durationMs": 265.89919999999984
+    },
+    {
+      "name": "V1.12-C a completed delivery reaches the client that asked for it the body carries no internal identifier and no secret",
+      "status": "passed",
+      "durationMs": 218.5576000000001
+    },
+    {
+      "name": "V1.12-C a completed delivery reaches the client that asked for it every 2xx counts as delivered",
+      "status": "passed",
+      "durationMs": 806.0705999999991
+    },
+    {
+      "name": "V1.12-C a failing client cannot undo a delivery every non-2xx is a transport failure and nothing else changes",
+      "status": "passed",
+      "durationMs": 1542.0920999999998
+    },
+    {
+      "name": "V1.12-C a failing client cannot undo a delivery a receiver that never answers is cut off by the timeout",
+      "status": "passed",
+      "durationMs": 1874.6707999999999
+    },
+    {
+      "name": "V1.12-C a failing client cannot undo a delivery a permitted destination with nobody listening fails cleanly",
+      "status": "passed",
+      "durationMs": 218.11419999999998
+    },
+    {
+      "name": "V1.12-C a failing client cannot undo a delivery a redirect is not followed: it is recorded as a failure",
+      "status": "passed",
+      "durationMs": 199.76260000000002
+    },
+    {
+      "name": "V1.12-C a failing client cannot undo a delivery a failed attempt and its event survive a restart",
+      "status": "passed",
+      "durationMs": 410.7456999999995
+    },
+    {
+      "name": "V1.12-C without a destination there is nothing to attempt a disabled endpoint means no request and no attempt",
+      "status": "passed",
+      "durationMs": 695.8523999999998
+    },
+    {
+      "name": "V1.12-C without a destination there is nothing to attempt no endpoint at all behaves the same way",
+      "status": "passed",
+      "durationMs": 602.0088999999989
+    },
+    {
+      "name": "V1.12-C one client, one destination the event of one client never reaches the receiver of another",
+      "status": "passed",
+      "durationMs": 590.0700000000015
+    },
+    {
+      "name": "V1.12-C configuring a destination is an administrative act only SUPER_ADMIN may write it",
+      "status": "passed",
+      "durationMs": 23.516200000000026
+    },
+    {
+      "name": "V1.12-C configuring a destination is an administrative act only SUPER_ADMIN may trigger a delivery by hand",
+      "status": "passed",
+      "durationMs": 273.72839999999997
+    },
+    {
+      "name": "V1.12-C configuring a destination is an administrative act a destination Mandaria must not call is refused with a reason",
+      "status": "passed",
+      "durationMs": 16.737299999998868
+    },
+    {
+      "name": "V1.12-C configuring a destination is an administrative act a manual delivery makes exactly one more attempt and leaves the event alone",
+      "status": "passed",
+      "durationMs": 271.34070000000065
+    },
+    {
+      "name": "V1.12-C attempts are history SQL cannot turn a failure into a success or move it to another endpoint",
+      "status": "passed",
+      "durationMs": 274.9890000000014
+    },
+    {
+      "name": "V1.12-C attempts are history SQL cannot move an endpoint to another client, nor invent one",
+      "status": "passed",
+      "durationMs": 6.198400000001129
+    },
+    {
+      "name": "V1.12-C attempts are history an attempt cannot be attached to an event of another client",
+      "status": "passed",
+      "durationMs": 197.19200000000274
+    },
+    {
+      "name": "V1.12-D reliable delivery a provider delivery is signed, delivered on the first attempt and closed",
+      "status": "passed",
+      "durationMs": 256.58669999999984
+    },
+    {
+      "name": "V1.12-D reliable delivery an independent delivery travels the same way",
+      "status": "passed",
+      "durationMs": 228.27059999999983
+    },
+    {
+      "name": "V1.12-D reliable delivery a failure is rescheduled, and the retry that succeeds carries the same event",
+      "status": "passed",
+      "durationMs": 231.72000000000116
+    },
+    {
+      "name": "V1.12-D reliable delivery five failures exhaust it, and nothing is deleted",
+      "status": "passed",
+      "durationMs": 231.62739999999758
+    },
+    {
+      "name": "V1.12-D reliable delivery a terminal answer stops it at once, without spending the schedule",
+      "status": "passed",
+      "durationMs": 186.18090000000302
+    },
+    {
+      "name": "V1.12-D reliable delivery an administrator can rescue an exhausted handover",
+      "status": "passed",
+      "durationMs": 257.1418999999987
+    },
+    {
+      "name": "V1.12-D the work survives the process an event committed while nothing could send it is found after a restart",
+      "status": "passed",
+      "durationMs": 676.9287000000004
+    },
+    {
+      "name": "V1.12-D the work survives the process an abandoned lease expires and another worker takes the work over",
+      "status": "passed",
+      "durationMs": 270.67369999999937
+    },
+    {
+      "name": "V1.12-D the work survives the process two workers against the same database do not do the same work twice",
+      "status": "passed",
+      "durationMs": 798.299500000001
+    },
+    {
+      "name": "V1.12-D the secret and its rotation is shown once and never again",
+      "status": "passed",
+      "durationMs": 9.844600000000355
+    },
+    {
+      "name": "V1.12-D the secret and its rotation is stored encrypted, never in plain text, and never leaks anywhere else",
+      "status": "passed",
+      "durationMs": 264.26170000000275
+    },
+    {
+      "name": "V1.12-D the secret and its rotation rotating changes what new attempts sign, and rewrites no history",
+      "status": "passed",
+      "durationMs": 255.9462999999996
+    },
+    {
+      "name": "V1.12-D the secret and its rotation without a secret nothing is sent, and it resumes once there is one",
+      "status": "passed",
+      "durationMs": 379.77440000000206
+    },
+    {
+      "name": "V1.12-D the boundary and the admin view an event older than the boundary is never taken by the worker",
+      "status": "passed",
+      "durationMs": 290.73939999999857
+    },
+    {
+      "name": "V1.12-D the boundary and the admin view a disabled endpoint pauses the work and re-enabling resumes it, losing nothing",
+      "status": "passed",
+      "durationMs": 254.3120999999992
+    },
+    {
+      "name": "V1.12-D the boundary and the admin view changing the endpoint sends the retry to the new URL without rewriting history",
+      "status": "passed",
+      "durationMs": 218.05099999999948
+    },
+    {
+      "name": "V1.12-D the boundary and the admin view an administrator can see what is owed without ever seeing a secret",
+      "status": "passed",
+      "durationMs": 215.28700000000026
+    },
+    {
+      "name": "V1.12-D the boundary and the admin view only SUPER_ADMIN may issue a secret or read the delivery state",
+      "status": "passed",
+      "durationMs": 17.39259999999922
+    },
+    {
+      "name": "V1.12-E answering «what happened with my order» the reference the client already has is enough to find the event and read its transport",
+      "status": "passed",
+      "durationMs": 317.8642000000036
+    },
+    {
+      "name": "V1.12-E answering «what happened with my order» the detail gathers the envelope, the frozen payload, the destination and every attempt",
+      "status": "passed",
+      "durationMs": 199.16790000000037
+    },
+    {
+      "name": "V1.12-E answering «what happened with my order» an event outside reliable delivery is NO_DELIVERY with a reason, and no reason is a fault",
+      "status": "passed",
+      "durationMs": 234.59480000000258
+    },
+    {
+      "name": "V1.12-E answering «what happened with my order» filters and pages agree with each other, without repeating or skipping a row",
+      "status": "passed",
+      "durationMs": 719.5197000000007
+    },
+    {
+      "name": "V1.12-E acting on a handover that is stuck a rescue queues work and says so; it never claims the event was delivered",
+      "status": "passed",
+      "durationMs": 357.6889999999985
+    },
+    {
+      "name": "V1.12-E acting on a handover that is stuck a handover that fails again returns to EXHAUSTED and can be rescued once more",
+      "status": "passed",
+      "durationMs": 342.2929000000004
+    },
+    {
+      "name": "V1.12-E acting on a handover that is stuck two simultaneous rescues do not queue the same work twice",
+      "status": "passed",
+      "durationMs": 199.01740000000063
+    },
+    {
+      "name": "V1.12-E acting on a handover that is stuck a rescue refuses what it has no business touching, and says which is which",
+      "status": "passed",
+      "durationMs": 213.84130000000005
+    },
+    {
+      "name": "V1.12-E acting on a handover that is stuck a manual redelivery reports what actually happened, not that the call returned 200",
+      "status": "passed",
+      "durationMs": 234.64930000000095
+    },
+    {
+      "name": "V1.12-E acting on a handover that is stuck a manual redelivery with nowhere to send says SKIPPED instead of pretending",
+      "status": "passed",
+      "durationMs": 155.84280000000217
+    },
+    {
+      "name": "V1.12-E acting on a handover that is stuck two simultaneous redeliveries never put the same event on the wire twice",
+      "status": "passed",
+      "durationMs": 966.3801999999996
+    },
+    {
+      "name": "V1.12-E acting on a handover that is stuck a redelivery while a worker holds the lease is refused rather than run alongside it",
+      "status": "passed",
+      "durationMs": 231.26050000000032
+    },
+    {
+      "name": "V1.12-E the operational surface is administrative, and keeps its secrets separates what the database knows from what only the answering instance knows",
+      "status": "passed",
+      "durationMs": 417.23829999999725
+    },
+    {
+      "name": "V1.12-E the operational surface is administrative, and keeps its secrets no secret reaches any of it, in any form",
+      "status": "passed",
+      "durationMs": 364.5904999999984
+    },
+    {
+      "name": "V1.12-E the operational surface is administrative, and keeps its secrets reading or acting on it requires SUPER_ADMIN",
+      "status": "passed",
+      "durationMs": 208.01870000000054
+    },
+    {
+      "name": "V1.12-E the operational surface is administrative, and keeps its secrets reading the operational view changes nothing: not the event, not the credits",
+      "status": "passed",
+      "durationMs": 317.3761999999988
+    },
+    {
+      "name": "V1.12-E the operational surface is administrative, and keeps its secrets SQL cannot rewrite the outbox to make the operational view lie",
+      "status": "passed",
+      "durationMs": 304.85440000000017
+    }
+  ],
+  "sourceHashes": [
+    {
+      "path": ".env.example",
+      "sha256": "ae5f7a91cf4f651a1145e55c4df44dbad278780eaf8bbb222f4cba70bbccec6e",
+      "unchanged": true
+    },
+    {
+      "path": "docs/API_ACCESS.md",
+      "sha256": "5666f4c3e33da103f2b9ff3ebab931bdb1cde3232fc0cd7b30c759f1564110cb",
+      "unchanged": true
+    },
+    {
+      "path": "docs/openapi-b2b.json",
+      "sha256": "25ead040d338859b6f9addb8b0e6a3985eec278b2c14984a3be677977e3584db",
+      "unchanged": true
+    },
+    {
+      "path": "docs/openapi.json",
+      "sha256": "be064f835e859f4cf842052076e36a11cca587b9fe0a836dbab0d1ff0778caef",
+      "unchanged": true
+    },
+    {
+      "path": "prisma/migrations/20261007000100_location_tracking/migration.sql",
+      "sha256": "d67a663368b3b36662738e6574c28fe0a1e433dc7acdbb388c7967a4ce3aee42",
+      "unchanged": true
+    },
+    {
+      "path": "prisma/migrations/20261007000200_location_policy_epoch/migration.sql",
+      "sha256": "1f5320d5192ae1a423066280c92ead8ebca094758a6418d4f057b02af6b82e72",
+      "unchanged": true
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "sha256": "19a5fb3009574ee8f1c2b5875644189c3831afa0013ca469294d03a4a366dbce",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/export-public-b2b.mjs",
+      "sha256": "dc9b9da3b4b84b40f278384b0c96a9e7a096b5de88d433126e7c1d5db086ec0b",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/export-public-b2b.test.mjs",
+      "sha256": "c4711138b3e1768a069fbafe7a633d44c165dd7adeabb1a7420ea8f39667aeab",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/public-b2b-prose.json",
+      "sha256": "130e81ce21a76b723cb71dc0f7ad257bfc323803633159d163a8f41d8842a043",
+      "unchanged": true
+    },
+    {
+      "path": "src/app.module.ts",
+      "sha256": "2c7b873468b01aaa243f590ff260688f5eaae86b5d0e8f50a9b6833cb902f41e",
+      "unchanged": true
+    },
+    {
+      "path": "src/common/domain-error.ts",
+      "sha256": "235aca7460d46746c83a48690ad3ef895a3cab1ff7ea164ff2d76feef5a04cd4",
+      "unchanged": true
+    },
+    {
+      "path": "src/common/http-exception.filter.ts",
+      "sha256": "c9b86a4d681d7be211029eba045efcc8b54bd6848ce7b2e81f8097b76fecd2a1",
+      "unchanged": true
+    },
+    {
+      "path": "src/config/environment.ts",
+      "sha256": "1c552f2769dd411436f5cc9270983eeb2428ae5b241952cfaba6926efc16298c",
+      "unchanged": true
+    },
+    {
+      "path": "src/delivery-requests/public-delivery-tracking.ts",
+      "sha256": "2e3e310efcd547182244f0bf7ef4852e5869de42c2341d2f72189d73a71b799b",
+      "unchanged": true
+    },
+    {
+      "path": "src/integrations/integration-scopes.ts",
+      "sha256": "df74d7a44d011db8445ffa60b6cffeb8f98f84027cbac2a3964d51092fc995ae",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.controller.ts",
+      "sha256": "5e6a2b2ee463aead56968a53a6958f9be3df8b3aac2da8af0ececfb4e3de019f",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.dto.ts",
+      "sha256": "922a8b6ecd61f9bdf6b6cd0fb3c68a56486f58a47f61ffa285afc9f735238f26",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.module.ts",
+      "sha256": "7b0dade060d0ff0935c1a52c167fa1e9f0ae6a829a18bd2d686f98b691533302",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.responses.ts",
+      "sha256": "fb99e5cd9e4b20cca39c0e745413753a1465326670a1e5ab00ff37e64665e630",
+      "unchanged": true
+    },
+    {
+      "path": "src/location/location.service.ts",
+      "sha256": "e4527114d9c1416af4825e1513f73b3fa40f9ba324444a40e2ef1bbf6e78cd12",
+      "unchanged": true
+    },
+    {
+      "path": "src/setup.ts",
+      "sha256": "71a55a04cdf5d8ccabb45e95d40fc3f90d0d3edbd134a8851f151ea99369a4fc",
+      "unchanged": true
+    },
+    {
+      "path": "test/b2b-webhooks.e2e-spec.ts",
+      "sha256": "9a10fd6ac6fdd53a8d0f3e2490b2d80da59c76fd07632e772a3aa20bb1e0bbd4",
+      "unchanged": true
+    },
+    {
+      "path": "test/direct-demand.e2e-spec.ts",
+      "sha256": "141f8e4629d8355505b1e6046e7bc4c9b5c6e8f3b31291b35c6221ffe3a7af28",
+      "unchanged": true
+    },
+    {
+      "path": "test/http.spec.ts",
+      "sha256": "9415526e8d78fce99ceb1d7ef066aea49fece266d37cb19782f509630bfef155",
+      "unchanged": true
+    },
+    {
+      "path": "test/location.spec.ts",
+      "sha256": "247390924d38f0cb812c45b86f4ade98ba37a71021bb99a00306bc6aa65c579b",
+      "unchanged": true
+    }
+  ],
+  "localArtifacts": [
+    {
+      "path": ".tmp/v118/diagnostic1/invocation.json",
+      "sha256": "e925ce369dc257d4321b6fd1fca7056254ccbcc0ae809de647117ffd18262d69"
+    },
+    {
+      "path": ".tmp/v118/diagnostic1/pg-stop.json",
+      "sha256": "73365040868c399584862f6f28a118af8d8aa053a4eb0d332e7b2d51c4320e0a"
+    },
+    {
+      "path": ".tmp/v118/diagnostic1/pg-stop.log",
+      "sha256": "3589d2bd01f8295cc7c9ec3f5e07625fcd347ccb6f33f2d80edafe5f5217c1fb"
+    },
+    {
+      "path": ".tmp/v118/diagnostic1/prior-application-events.json",
+      "sha256": "a5338d955b09046ec0b16f3a9625b7955c763aae07dc722e474e6078745f932f"
+    },
+    {
+      "path": ".tmp/v118/diagnostic1/process-36428.jsonl",
+      "sha256": "8ad4fbe7ecaf14cd9b98c0b3e391b67f8c3f4816b5a47bcfe412587f6a5b1606"
+    },
+    {
+      "path": ".tmp/v118/diagnostic1/process-40124.jsonl",
+      "sha256": "515c9d9ebfe8fccb90645c2dc7e0b4893d1e727c3841fb9d3406e85c8224ee94"
+    },
+    {
+      "path": ".tmp/v118/diagnostic1/report.json",
+      "sha256": "0ef19e4a219c0adefd86d6bdc497b52b556ca9186bc7038268a91f1692c238e9"
+    },
+    {
+      "path": ".tmp/v118/diagnostic1/result.json",
+      "sha256": "b38ded09dd8783acd41354078307fe9937c81d7423d47fc084e72af8283734dd"
+    },
+    {
+      "path": ".tmp/v118/diagnostic1/stderr.log",
+      "sha256": "62627d3b226bca4b83c25d26f3f0788f89702dd29f12c824cf075f48cee57732"
+    },
+    {
+      "path": ".tmp/v118/diagnostic1/stdout.log",
+      "sha256": "745f5f5d713a3a4cd8475d6de1ae071afb023f2c68239c107f7207fcb1130632"
+    }
+  ],
+  "instrumentation": [
+    {
+      "path": ".tmp/v118-diag-preload.cjs",
+      "sha256": "069f60f16d667ad8c9a690e549e582196611500d1305c4c9635452a9b1221245"
+    },
+    {
+      "path": ".tmp/v118-diag-run.mjs",
+      "sha256": "8d88600d288b7e8ab0e22165731508dadd19b5078e9cca38070d148fcca9be58"
+    }
+  ],
+  "priorFailures": {
+    "latestCompleted": 35,
+    "previousCompleted": 40,
+    "admitted": 0,
+    "cause": "Unknown; last case recorded is not causal evidence."
+  },
+  "operatingSystemEvidence": {
+    "query": "Application event1000 node.exe only; 2026-10-07T04:15:20Z through04:16:20Z",
+    "matches": 0,
+    "meaning": "No matching event returned; not evidence that no native crash occurred."
+  },
+  "nativeDump": {
+    "created": false,
+    "reason": "Instrumented reproduction completed. No procdump/cdb/windbg found on PATH; no installation/global WER change performed."
+  },
+  "cleanup": {
+    "dataRetained": true,
+    "identityVerified": true,
+    "exitCode": 0
+  },
+  "historical": {
+    "unit": 475,
+    "publicContract": 38,
+    "e2ePreviouslyApproved": 73,
+    "reexecuted": false,
+    "combinedUniqueE2E": 127,
+    "combinedFiles": 5,
+    "fullRepositorySuite": false
+  },
+  "limits": [
+    "A passing instrumented run does not establish cause or eliminate previous intermittent aborts. Instrumentation can affect timing.",
+    "Normal SIGTERM observed here must not be attributed retroactively to previous unexpected exits.",
+    "Interfaces and real integration remain pending; V1.18 not complete or activated."
+  ]
+}

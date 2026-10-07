@@ -36,7 +36,7 @@ export function setup(app: INestApplication) {
     credentials: false,
     // Browsers may only read non-safelisted response headers that are exposed explicitly; Mandaria
     // Web needs this one to tell an idempotent replay from a new movement.
-    exposedHeaders: ['Idempotent-Replayed', 'X-Request-Id'],
+    exposedHeaders: ['Idempotent-Replayed', 'X-Request-Id', 'Retry-After'],
   });
   app.setGlobalPrefix('api/v1', {
     exclude: [{ path: 'health', method: RequestMethod.GET }],
@@ -72,6 +72,13 @@ export function setup(app: INestApplication) {
     new DocumentBuilder()
       .setTitle('Mandaria Core')
       .setVersion('1.12.0')
+      .addSecurity('tracking-link', {
+        type: 'apiKey',
+        in: 'header',
+        name: 'Authorization',
+        description:
+          'Tracking selector.secret; never put the secret in the API URL.',
+      })
       .addBearerAuth({
         type: 'http',
         scheme: 'bearer',

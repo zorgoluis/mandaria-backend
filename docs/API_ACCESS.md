@@ -140,7 +140,12 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/customer/delivery-requests/{publicId} | bearer | — | — | Detalle propio e instrucciones persistidas |
 | POST | /api/v1/customer/delivery-requests/{publicId}/cancel | bearer | — | — | Cancelar solicitud propia; repetición segura, custodia bloquea cancelación ordinaria |
 | GET | /api/v1/customer/delivery-requests/{publicId}/consent-context | bearer | — | — | Recuperar MPQ/MQ y hash final propios entre dispositivos; no renueva vigencia ni fabrica consentimiento |
+| GET | /api/v1/customer/delivery-requests/{publicId}/location | bearer | — | — | Consultar última ubicación autorizada |
 | GET | /api/v1/customer/delivery-requests/{publicId}/status | bearer | — | — | Fotografía logística propia; ordenar por publicVersion por solicitud |
+| GET | /api/v1/customer/delivery-requests/{publicId}/tracking-link | bearer | — | — | Consultar metadata del enlace sin recuperar secreto |
+| POST | /api/v1/customer/delivery-requests/{publicId}/tracking-link | bearer | — | — | Emitir o sustituir enlace temporal |
+| GET | /api/v1/customer/delivery-requests/{publicId}/tracking-link/attempt | bearer | — | — | Reconciliar emisión o revocación sin cuerpo original |
+| POST | /api/v1/customer/delivery-requests/{publicId}/tracking-link/revoke | bearer | — | — | Revocar y cerrar técnicamente emisiones anteriores |
 | GET | /api/v1/customer/profile | bearer | — | — | Consultar perfil propio activo; un JWT B2B no es válido |
 | POST | /api/v1/customer/profile | bearer | — | — | Crear perfil propio verificado, conservando rol operativo y sesiones |
 | PATCH | /api/v1/customer/profile | bearer | — | — | Actualizar nombres con expectedRevision; no cambia tipo, usuario ni permisos |
@@ -154,15 +159,23 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/delivery-requests | integration-bearer | — | deliveries:create | Crear DeliveryRequest (qué transportar) |
 | GET | /api/v1/delivery-requests/{publicId} | integration-bearer | — | deliveries:read | Consultar mi DeliveryRequest |
 | POST | /api/v1/delivery-requests/{publicId}/cancel | integration-bearer | — | deliveries:cancel | Cancelar mi DeliveryRequest |
+| GET | /api/v1/delivery-requests/{publicId}/location | integration-bearer | — | deliveries:read, deliveries:location:read | Consultar última ubicación autorizada |
 | GET | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:read | Historial de Quotes de mi DeliveryRequest |
 | POST | /api/v1/delivery-requests/{publicId}/quotes | integration-bearer | — | quotes:create | Cotizar mi DeliveryRequest |
 | GET | /api/v1/delivery-requests/{publicId}/status | integration-bearer | — | deliveries:read | Consultar el estado logístico de mi DeliveryRequest |
+| GET | /api/v1/delivery-requests/{publicId}/tracking-link | integration-bearer | — | deliveries:read, deliveries:tracking-links:manage | Consultar metadata del enlace sin recuperar secreto |
+| POST | /api/v1/delivery-requests/{publicId}/tracking-link | integration-bearer | — | deliveries:read, deliveries:tracking-links:manage | Emitir o sustituir enlace temporal |
+| GET | /api/v1/delivery-requests/{publicId}/tracking-link/attempt | integration-bearer | — | deliveries:read, deliveries:tracking-links:manage | Reconciliar emisión o revocación sin cuerpo original |
+| POST | /api/v1/delivery-requests/{publicId}/tracking-link/revoke | integration-bearer | — | deliveries:read, deliveries:tracking-links:manage | Revocar y cerrar técnicamente emisiones anteriores |
 | PATCH | /api/v1/driver/availability | bearer | DRIVER | — | Cambiar mi disponibilidad |
 | GET | /api/v1/driver/credits | bearer | DRIVER | — | Mi saldo de créditos como repartidor independiente |
 | GET | /api/v1/driver/credits/ledger | bearer | DRIVER | — | Mi historial de créditos |
 | GET | /api/v1/driver/dispatches/{dispatchId} | bearer | DRIVER | — | Detalle ofrecido al independiente o asignado a mi Driver |
 | GET | /api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/attempt | bearer | DRIVER | — | Consultar intento técnico propio |
 | POST | /api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/attempt/close | bearer | DRIVER | — | Cerrar explícitamente intento técnico propio |
+| PUT | /api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/location | bearer | DRIVER | — | Publicar última muestra GPS propia; no confirma hitos, custodia ni cobro |
+| GET | /api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/location-stream | bearer | DRIVER | — | Consultar sesión GPS de la asignación propia vigente |
+| POST | /api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/location-stream | bearer | DRIVER | — | Iniciar sesión GPS mediante CAS; sustituye dispositivo anterior |
 | POST | /api/v1/driver/dispatches/{dispatchId}/custody-incidents | bearer | DRIVER | — | Reportar incidencia del Driver asignado bajo custodia |
 | POST | /api/v1/driver/dispatches/{dispatchId}/deliver | bearer | DRIVER | — | Compatibilidad legacy independiente; ejecución detallada requiere execution-completion |
 | GET | /api/v1/driver/dispatches/{dispatchId}/execution | bearer | DRIVER | — | Consultar progreso propio de flotilla o independiente |
@@ -226,5 +239,6 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | PATCH | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Editar vehículo de mi proveedor |
 | GET | /api/v1/provider/vehicles/{vehicleId}/assignments | bearer | PROVIDER_ADMIN | — | Historial de Drivers del vehículo |
 | POST | /api/v1/public/partner-applications | Pública | — | — | Enviar solicitud de socio (landing) |
+| GET | /api/v1/shared/delivery-tracking | tracking-link | — | — | Consultar seguimiento mínimo del destinatario |
 | GET | /api/v1/users | bearer | SUPER_ADMIN | — | Listar usuarios |
 | GET | /health | Pública | — | — | HealthController_check |
