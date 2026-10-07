@@ -1,5 +1,9 @@
 # Mandaria — V1.12-E Webhook Operations & Observability
 
+## Independientes: recuperación TAKE/RELEASE V1.19
+
+[Contrato APP y despliegue coordinado](docs/V1.19-INDEPENDENT-ATTEMPTS.md): consulta de recibo propio y cierre explícito con Idempotency-Key. La ausencia de resultado no acredita fracaso; un cierre confirmado impide el POST tardío sólo si el escritor participa en este protocolo. Las llamadas antiguas sin clave conservan compatibilidad, sin esa garantía. RELEASE devuelve créditos mediante SERVICE_REFUND según reglas, no efectivo al cliente. Contrato humano en docs/openapi.json; rutas Driver excluidas del público B2B. Implementación verificada localmente, no desplegada.
+
 ## V1.18 — ubicación y enlace temporal (backend local)
 
 [Implementación y configuración](docs/V1.18-LOCATION-IMPLEMENTATION.md), [WEB](docs/V1.18-WEB.md), [APP DRIVER](docs/V1.18-DRIVER-APP.md) y [B2B](docs/V1.18-B2B.md). Última muestra, versionado GPS independiente, ventanas aprobadas y enlaces de una entrega del secreto con CAS/revocación. Migraciones41/42 y OpenAPI regenerado. LOCATION_TRACKING_ENABLED y SHARED_TRACKING_ENABLED false por defecto. No activa V1.17/V1.18; interfaces/integración real pendientes, sin capacidad simultánea ni retención de backups aprobadas. Evidencia nueva y limitaciones en VERIFICATION; diseño original conservado.
@@ -140,7 +144,7 @@ V1.2 agregó DeliveryProvider y ProviderMembership al Core V1.0 y a las integrac
 - `deliveries/`: V1.11 cierre operativo de la entrega, compartido por el flujo de proveedor y el independiente; V1.12 traducción del estado interno al estado logístico público del cliente B2B.
 - `b2b-events/`: V1.12-B registro durable de eventos B2B; construye `delivery.completed` desde el modelo público y lo escribe dentro de la transacción que entrega.
 - `b2b-webhooks/`: V1.12-C/D/E transporte del evento: configuración del destino, política SSRF de la URL, el intento HTTP con timeout y su historial append-only, V1.12-D el worker con lease, la política de reintentos y la firma HMAC con su secreto cifrado, y V1.12-E la vista operativa —estado de transporte derivado, listado, detalle, salud y rescate— que lee y programa, pero no entrega.
-- `credits/`: V1.10-A cuentas de créditos, ledger inmutable, recargas, ajustes y cobro atómico CLAIM/TAKE; sin refunds todavía.
+- `credits/`: cuentas de créditos, ledger inmutable, recargas, ajustes, cobro atómico CLAIM/TAKE y SERVICE_REFUND compensatorio conforme a las reglas vigentes. No es devolución de efectivo al cliente.
 - `credit-policies/`: V1.10-B políticas de créditos versionadas y cálculo puro del costo de un servicio; no debita cuentas.
 - `health/`, `common/`, `config/`, `prisma/`: infraestructura compartida.
 - `prisma/migrations/`: SQL versionado; no se usa db push ni reset.

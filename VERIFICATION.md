@@ -1,3 +1,77 @@
+
+## V1.19 — reconciliación TAKE/RELEASE, 2026-10-07
+
+**PASS local del alcance implementado; no despliegue ni integración Android.** [Contrato y límites](docs/V1.19-INDEPENDENT-ATTEMPTS.md), [evidencia trazable](docs/checks/v119-independent-attempts.json). Node24.15.0, PostgreSQL18.6 exclusivo en55444, Vitest4.1.11 forks/un worker; bases sintéticas nuevas, sin .env/Docker ni entornos reservados.
+
+| Ejecución nueva completa | Resultado |
+|---|---|
+| independent-attempts.e2e-spec.ts instrumentado |16/16, exit0|
+| independent-drivers.e2e-spec.ts |23/23, exit0|
+| delivery-execution.e2e-spec.ts |29/29, exit0|
+| credit-refunds.e2e-spec.ts |22/22, exit0|
+| independent-drivers.spec.ts + credit-refunds.spec.ts |32/32, exit0|
+| npm run test:public-b2b |40/40, exit0|
+
+Total90 E2E únicos, no suma de repeticiones. Tras normalizar UUID del despacho y clave, otra ejecución instrumentada completa `uuid-attempts` pasó16/16; build, tipos raíz y ESLint focal reejecutados y aprobados. Las otras regresiones preceden sólo esa normalización localizada. Recibos consultables tras reinicio de aplicación y lectura desde proceso Node nuevo; aislamiento, original/cierre concurrentes, cierre antes del POST tardío, rollback completo por fallo controlado de recibo, refund compensatorio único, propiedad perdida, cash/custodia/incidencia y legacy. Regresión de transferencia/cierre/outbox en archivo de ejecución completo.
+
+Reproducción previa real HTTP/PG: consulta vacía seguida de TAKE retrasado aplicado; RELEASE404 tras CANCELLED/EXPIRED/refund. Clock de prueba adelantado10min con ventana1min y JWT válido; no reloj global ni estado de producción. Corrección elimina lectura autorizada postcommit.
+
+Migración limpia43 y actualización42→43 normales, sin reset:57 tablas previas comparadas y5 filas sintéticas preservadas;42 checksums históricos sin cambio. Nueva migración00300 se ordena después de las42 existentes. Experimento previo con nombre00100 intercalaba orden; se corrigió sólo la migración nueva no publicada y se acreditó con bases nuevas. No equivale a restauración de datos reales.
+
+Prisma validate/generate/status, TypeScript sin emisión raíz/build, build, Oxlint y ESLint focal aprobados. Oxlint conserva advertencia anterior readFileSync no usado en verify-authorized-acceptance-c3-regression.mjs:4. docs:b2b genera desde Swagger; docs:b2b:check aprobado, operaciones Driver excluidas del público. No se ejecutaron suites completas ajenas.
+
+**Intentos excluidos:** ajustes iniciales de fixture (vehículos/login/rate limit/reloj), expectativa de error SQL P0001 corregida al mapper409 existente, compilación inicial del helper de clave y ESLint de salto de línea; no son PASS previos. Repetición final `verified-attempts` abortó10/16 con Worker exited unexpectedly, exit1; code/signal hijo no capturados. Una reproducción instrumentada `diagnostic-attempts` pasó16/16: captura PID/stderr/exit/kill/reportes, mismo pool y concurrencia. SIGTERM de esa corrida fue precedido por kill explícito del pool al terminar; no explica el aborto anterior. No causa nativa confirmada ni casos parciales contados. Logs/reportes completos locales ignorados y hashes en evidencia.
+
+Pendientes: sincronización APP y fixtures nuevos; llamadas sin clave e instancias viejas no quedan protegidas por cierre. APP mantiene bloqueado RELEASE LEGACY/UNKNOWN. No se inventó perfil SUSPENDED con asignación ACTIVE (regla existente lo rechaza). Política de devolución de efectivo sigue separada. GPS/enlaces deshabilitados; entornos43130/55441,43131/55442,43132/55443 intactos. Clúster exclusivo55444 detenido con pg_ctl exit0; datos y logs conservados. Resultados anteriores siguientes son históricos.
+
+## V1.19 — resultados finales reportados por APP, 2026-10-07
+
+Fuente: coordinación de la tarea APP `01a116d1-0789-7603-ac6f-a4a81547f4d5`. Reporta C y D LEGACY DELIVERED, A recupera REPORT después de transferencia sin nuevas escrituras, B continúa TO_DROPOFF/AT_DROPOFF/DELIVER. SQL final informado:3 despachos DELIVERED,4 asignaciones (3COMPLETED/A TRANSFERRED),16 eventos,18 recibos/comandos (incluyendo cierre técnico y resolución),2 declaraciones únicas55.00 MXN,ledger4/awards3/saldo79 intactos,3 outbox DELIVERY_COMPLETED, GPS0.
+
+**No reejecutado ni consultado desde BACKEND en esta actualización.** No suma casos ni acredita revisión visual propia. APP aún cierra evidencia/lectura visual del recibo A por overlay System UI y anuncia parada exclusiva43132/55443 conservando datos; parada pendiente de confirmación. No volver a preparar/verificar estados iniciales ni consumir operaciones. Nueva verificación únicamente documental y git diff --check; evidencia propia de transferencia siguiente permanece inalterada.
+
+## V1.19 — transferencia sintética coordinada para Android, 2026-10-07
+
+**PASS de la única resolución administrativa autorizada; no es una ejecución Android.** [Evidencia](docs/checks/v119-operative-transfer.json), [handoff actualizado](docs/V1.19-ANDROID-OPERATIVE-FIXTURES.md). Autorización humana comprobada en la tarea APP; REPORT ya existía. Preflight y apply de `.tmp/native-v119-operative/transfer-v119.mjs`: ambos exit0, sobre API43132/PG55443/base mandaria_v119_operative_local reidentificados (Node35792/PG9808). Sin cambio de producto/flags ni reinicio.
+
+GET execution/incidente/candidatos200: revisión5/PICKED_UP/HELD/incidencia abierta y B elegible. UUID durable y cuerpo con confirmaciones explícitamente sintéticas persistidos antes del único POST resolve200; GET resolution-attempt200 APPLIED. Resultado21:31:27 UTC: A TRANSFERRED, B nueva assignment ad5727ff-641f-4823-a078-128aac77c225 ACTIVE; resolución ef9990cb-c81c-4f80-a708-c9b5414df700. Revisión6, fase/chain conservadas, único custodio HELD, incidencia resuelta. Lecturas PostgreSQL REPEATABLE READ READ ONLY antes/después: +1 assignment/evento/recibo/resolución; declaración55.00 MXN íntegra, términos/ledger idénticos, saldo79, sin evento outbox adicional. Once huellas actuales separadas de baseline inicial; los cambios Android anteriores son legítimos, no se exigió igualdad con la preparación.
+
+Syntax/diff y privacidad de evidencia comprobados; sin suites de producto repetidas ni pruebas de concurrencia nuevas. No se declara aquí comprobado el rechazo de A desde Android ni la continuación/entrega de B: APP debe ejecutarlos. Entorno encendido entregado por coordinación autorizada; otras bases/puertos intactos. No SQL operativo de escritura, Docker, producción, commit/push/despliegue. Preparación y pruebas anteriores siguientes permanecen históricas.
+
+## V1.19 — preparación operativa nativa ejecutada, 2026-10-07
+
+**PASS del alcance de preparación backend, no de operaciones Android futuras.** [Handoff](docs/V1.19-ANDROID-OPERATIVE-FIXTURES.md), [comandos/resultados/identidad/once huellas](docs/checks/v119-operative-native-ready.json). Nuevos API43132/PG55443/base mandaria_v119_operative_local, puertos/directorio ausentes antes de crear.42 migrate deploy y bootstrap SUPER_ADMIN exit0; configuración/actores/servicios por APIs reales con routing/correo locales. Tres ACTIVE: LEGACY RECIPIENT creado con detailed=false, dos DETAILED REQUESTER/CASH/PICKUP/55.00 MXN creados después de reiniciar únicamente Node nuevo con detailed/authorized-accept=true y atestación v2 exacta. Cuarto par receptor activo/libre. GPS/enlaces false; cero destinos webhook, polling0.
+
+Verificaciones nuevas: build exit0; Driver me/detalle200, progress detallado200/phase=null/revision1/ADVANCE; LEGACY execution404 y clasificación explícita200; asignaciones ACTIVE; receptor sin entrega, foreign execution404, operador403/anónimo401, operador sin ADVANCE/DELIVER en acciones. Candidatos antes de custodia409; elegibilidad del receptor comprobada en precondiciones actuales por API/SQL read-only, no se consumió PICKED_UP para habilitar ese listado.42 migraciones finalizadas, cero comandos/incidencias/resoluciones/declaraciones y sólo dos eventos ASSIGNED legítimos; ledger4 (recarga100 y tres awards-7), balance79. Stop/start ejecutados exit0, puertos liberados/reabiertos, compartidos sin cambios de PID/inicio. Repetir prepare exit0 sin duplicados ni escrituras operativas; once huellas iguales a la primera verificación y snapshot final19:12:19.081Z. Snapshot independiente probado para futuros deltas; no exige estados iniciales después de Android. Syntax/Oxlint/diff y referencias comprobados.18 logs/metadatos revisados sin coincidencias de secretos locales; manifiesto sin secretos, privados ignorados.
+
+Intento fallido conservado: prepare creó datos pero verificación SQL exit1 suponiendo request.id interno en respuesta B2B. Corrección sólo de herramienta: resolver deliveryRequestId desde despacho mediante lectura. Verify completo posterior exit0; no repetir writes ni contar el intento inicial como PASS. Login respetó5/min con esperas, sin modificar límites. Pruebas históricas Swagger/LEGACY y suites de producto no reejecutadas ni sumadas. Android no ejecutado; ninguna transferencia/entrega/colección probada en esta tarea. Entorno nuevo queda encendido, datos preservados; sin producto, Docker, bases anteriores, frontend, producción, commit/push/despliegue.
+
+## V1.19 — coordinación de nuevos fixtures operativos, 2026-10-07
+
+**Revisión estática; no fixtures nuevos preparados.** [Pedido local para el encargado](docs/V1.19-ANDROID-OPERATIVE-FIXTURE-REQUEST.md). Confirmado preparador nativo limitado a destino fijo LEGACY/RECIPIENT; REQUESTER requiere términos/atestación v2 y admisión detallada. Código de asignación/transferencia exige recursos libres: cuatro pares recomendados para tres servicios ACTIVE simultáneos y receptor. Se leyó evidencia externa del repositorio APP `androidApp/checks/v119-legacy-android.json`: PASS, once huellas iguales; su pedido actualizado reporta parada exclusiva. No es Android ejecutado aquí ni prueba nueva de procesos. Sólo lectura de archivos y git diff --check; sin API/DB/build/suites ni operaciones reservadas. Evidencia backend previa siguiente conservada; las URLs no implican disponibilidad actual.
+
+## V1.19 — fixture nativo independiente preparado, 2026-10-07
+
+**PASS de preparación y lecturas backend reales; Android pendiente.** [Handoff](docs/V1.19-LEGACY-FIXTURE.md), [manifiesto nuevo/once huellas](docs/checks/v119-legacy-native-ready.json). Exclusivo PG55442/API43131, procesos4372/8188, base mandaria_v119_legacy_local. Puertos/directorio comprobados antes de crear; SQL identidad antes de migrar/preparar.42 migrate deploy y seed normal SUPER_ADMIN exit0. Sin copia de base compartida ni datos reales.
+
+Nuevo preparador de pruebas nativas: init/start/prepare/verify/stop, sólo destino fijo aislado, credenciales aleatorias privadas con ACL; snapshot dist, sin cambios de producto. Actores por invitación/activación local, configuración y flujo MDR/MQ/CLAIM/assignment mediante APIs autorizadas. RECIPIENT confirmado, no REQUESTER. DRIVER me/detalle200 con FLEET/LEGACY explícito; asignación ACTIVE en API proveedor y DB read-only; cero ejecuciones/hitos. Endpoint detallado404 esperado para LEGACY, rol operador403/anónimo401, otro UUID409 INDEPENDENT_NOT_APPROVED. No ejecución de hitos/cierre. Repetición del preparador conserva referencias y las once huellas. Nueva baseline2026-10-07T17:19:47.926Z, previa a futuras lecturas Android; diagnóstico anterior preservado aparte.
+
+Primer verify del preparador supuso200 en execution y luego404 para otro servicio: fallos de expectativa contrastados con código, corregidos sólo en herramienta; posterior verify completo y repetición aprobados. `node --check`/Oxlint focalizado/git diff --check aprobados. No suites de producto repetidas ni prueba Android realizada. Inicio probado; parada sólo preparada con guards y documentada, entorno queda encendido. Compartido conserva PIDs44408/6448. Sin Docker/externos/producción/commit/push; detailed=false sólo en proceso nuevo, GPS/enlaces false. Credenciales nunca en evidencia.
+
+## V1.19 — inspección del fixture LEGACY, 2026-10-07
+
+**BLOCKED para fixture ACTIVE LEGACY en entorno compartido.** [Informe](docs/V1.19-LEGACY-FIXTURE.md), [manifiesto/once huellas](docs/checks/v119-legacy-fixture.json). Nuevas comprobaciones: PID/puertos/launcher, GET health200, identidad PG55441/base/directorio y42 migraciones, inventario FLEET y huellas de once tablas en RepeatableRead READ ONLY. Cero ACTIVE LEGACY, una COMPLETED LEGACY. Código create/reassign y DTO no ofrecen excepción por petición; preparador exige Docker y cambia flag compartido. No se ejecutó ni se alteró la instancia para obtener ese resultado.
+
+No fixture creado ni consulta autenticada de un ACTIVE LEGACY acreditada; no se crearon/expusieron credenciales. Propuesta de API/base nativas independientes documentada, no ejecutada. Huellas son diagnóstico previo, no post-preparación. Acceso inicial CIM fue denegado por sandbox; lectura autorizada posterior identificó procesos. Cambios sólo documentación y scripts locales de lectura ignorados; sin SQL de escritura operacional, config, .env, tests, Docker o producción. diff --check verificado. Resultados Android previos son históricos, no se repitieron ni se suman.
+
+## Corrección Swagger DriverAttemptResponse — 2026-10-07
+
+**PASS local contractual**, sobre HEAD `b97b9d1`, sin commit/despliegue. Lectura de servicio reconcileDriver y DriverAttemptParamsDto confirma soporte previo ADVANCE/REPORT/DELIVER/COLLECT_SHIPPING; sólo faltaba la última operación en ApiProperty de respuesta. Se corrige fuente y regenera con `npm run docs:b2b` (incluye nest build): exit0. OpenAPI completo cambia únicamente ese enum; público y API_ACCESS sin diferencia semántica.
+
+Prueba nueva contrasta enum exacto de respuesta con query en GET intento y POST cierre, referencia de respuesta200, Bearer humano y exclusión de rutas humanas/Driver y DTO del público. Prueba focalizada antes de regenerar: falla por omisión, acreditando detección. Después `npm run test:public-b2b`:39/39 exit0; `npm run docs:b2b:check`:exit0. `tsc --noEmit --project tsconfig.build.json`:exit0; `tsc --noEmit --project tsconfig.json`:exit0 al terminar builds. Primer chequeo raíz falló por TS2307 de imports dist al lanzarse durante nest build: interferencia del procedimiento, no se contó como aprobado ni se cambió código para ocultarla. Oxlint focalizado y git diff --check:exit0. Sin PostgreSQL/E2E ni suites ajenas por no cambiar comportamiento. Evidencia funcional anterior sigue histórica.
+
+Handoff con revisión y SHA-256 exactos en [DRIVER-APP-EXECUTION](docs/DRIVER-APP-EXECUTION.md). Nota coordinadora preexistente de BITACORA y nul conservados. Sin Docker, frontend, producción, permisos/configuración, activación, commit ni push.
+
 ## V1.18 — diagnóstico instrumentado de webhooks, 2026-10-06
 
 **PASS del archivo completo; causa de abortos anteriores NO acreditada.** [Evidencia nueva y54 resultados](docs/checks/v118-webhooks-diagnostic.json). Una reproducción instrumentada, sin reintentos ni reducción de cobertura:54/54, un archivo, exit0,29.31s. No se ejecutaron suites ajenas.

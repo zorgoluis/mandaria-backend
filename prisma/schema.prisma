@@ -23,6 +23,7 @@ enum CredentialStatus {
 /// Account state is derived (V1.6.1): active = ACTIVE; inactive without passwordHash = INVITED
 /// (never activated); inactive with passwordHash = DISABLED. A CHECK forbids active without password.
 model User {
+  independentDispatchAttempts IndependentDispatchAttempt[]
   humanCommandAttempts HumanCommandAttempt[]
   sessionVersion Int @default(0)
   customerAccount CustomerAccount?
@@ -1376,6 +1377,20 @@ model AuthorizedQuoteAcceptance {
   dispatch Dispatch @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
   record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   credential IntegrationCredential? @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+}
+
+/// Durable own receipts; dispatchId is an opaque scope, not an access grant or Dispatch FK.
+model IndependentDispatchAttempt {
+ actorUserId String @db.Uuid
+ dispatchId String @db.Uuid
+ operation String
+ key String @db.Uuid
+ state String
+ hash String
+ response Json
+ recordedAt DateTime @default(now()) @db.Timestamp(3)
+ actor User @relation(fields:[actorUserId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+ @@id([actorUserId,dispatchId,operation,key])
 }
 
 model DeliveryExecution {

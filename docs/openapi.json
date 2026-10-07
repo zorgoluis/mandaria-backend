@@ -47102,9 +47102,797 @@
         ]
       }
     },
+    "/api/v1/driver/dispatches/{dispatchId}/independent-attempt": {
+      "get": {
+        "description": "Lectura sin efectos. APPLIED devuelve resultado original incluso sin permiso para ver el despacho actual. Ausencia es PENDING_OR_UNKNOWN: jamás autoriza reenviar ni descarta un POST tardío. No revela existencia del recurso ni recibos ajenos; no exige APPROVED para recuperar un recibo propio.",
+        "operationId": "DriverDispatchesController_attempt",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "TAKE",
+                "RELEASE"
+              ]
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID original, mismo actor/operación/dispatch. Nunca cuerpo original.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndependentAttemptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, motivo o campos inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de DRIVER. SUPER_ADMIN y PROVIDER_ADMIN no pueden tomar ni liberar servicios haciéndose pasar por el repartidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sin perfil Driver, o Dispatch/vehículo inexistente o ajeno.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar intento propio TAKE/RELEASE",
+        "tags": [
+          "Driver Independent Dispatches"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
+    "/api/v1/driver/dispatches/{dispatchId}/independent-attempt/close": {
+      "post": {
+        "description": "Sin body. Comparte lock durable con el comando: si éste confirmó devuelve APPLIED; si cierre gana devuelve CLOSED_NO_EFFECTS y un POST tardío con esa clave falla409 INDEPENDENT_ATTEMPT_CLOSED. No libera un servicio, devuelve efectivo ni repite una acción física. Timeout del cierre conserva incertidumbre: consultar la misma clave. Sólo protege escritores con clave; no neutraliza llamadas antiguas sin ella. Puede cerrar UUID opaco aún inexistente sin revelar datos.",
+        "operationId": "DriverDispatchesController_closeAttempt",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "TAKE",
+                "RELEASE"
+              ]
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "La misma clave original que usó el comando.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteServiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndependentAttemptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: UUID, motivo o campos inválidos; campos desconocidos rechazados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "maxDrivers must not be less than 1"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Se requiere access JWT humano de un User ACTIVE; un token B2B no es válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol global distinto de DRIVER. SUPER_ADMIN y PROVIDER_ADMIN no pueden tomar ni liberar servicios haciéndose pasar por el repartidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sin perfil Driver, o Dispatch/vehículo inexistente o ajeno.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Límite de peticiones por IP excedido (100/minuto).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno sanitizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_500"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/admin/providers"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cerrar explícitamente un intento TAKE/RELEASE",
+        "tags": [
+          "Driver Independent Dispatches"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
     "/api/v1/driver/dispatches/{dispatchId}/take": {
       "post": {
-        "description": "Operación atómica: en una sola transacción el Dispatch pasa a CLAIMED a nombre de este repartidor y se crea su DeliveryAssignment ACTIVE en modo INDEPENDENT. Nunca queda un claim sin asignación ni una asignación sin claim. El repartidor se resuelve desde el JWT y la pertenencia del vehículo se relee en la base de datos, así que un vehicleId de un proveedor o de otro repartidor responde 404. Bloquea la misma fila de Dispatch que el claim de proveedor: si un proveedor reclama y un independiente toma a la vez, gana exactamente uno y el otro recibe 409. Máximo una asignación ACTIVE por Dispatch, por Driver y por Vehicle, contando flotilla e independiente: un repartidor ocupado en un servicio de proveedor no puede tomar uno propio, y al revés. Devuelve el servicio con access OWNER y su paymentContext. Mandaria no verifica si el repartidor dispone del efectivo para adelantar la mercancía. V1.10-D: tomar un servicio monetizado cobra en la misma transacción el creditCost congelado a la cuenta de créditos del repartidor (un SERVICE_AWARD por servicio); sin saldo suficiente no hay claim, ni asignación, ni cargo. Liberar no devuelve créditos todavía.",
+        "description": "Operación atómica: en una sola transacción el Dispatch pasa a CLAIMED a nombre de este repartidor y se crea su DeliveryAssignment ACTIVE en modo INDEPENDENT. Nunca queda un claim sin asignación ni una asignación sin claim. El repartidor se resuelve desde el JWT y la pertenencia del vehículo se relee en la base de datos, así que un vehicleId de un proveedor o de otro repartidor responde 404. Bloquea la misma fila de Dispatch que el claim de proveedor: si un proveedor reclama y un independiente toma a la vez, gana exactamente uno y el otro recibe 409. Máximo una asignación ACTIVE por Dispatch, por Driver y por Vehicle, contando flotilla e independiente: un repartidor ocupado en un servicio de proveedor no puede tomar uno propio, y al revés. Devuelve el servicio con access OWNER y su paymentContext. Mandaria no verifica si el repartidor dispone del efectivo para adelantar la mercancía. V1.10-D: tomar un servicio monetizado cobra en la misma transacción el creditCost congelado a la cuenta de créditos del repartidor (un SERVICE_AWARD por servicio); sin saldo suficiente no hay claim, ni asignación, ni cargo. Liberar devuelve los créditos conforme a SERVICE_REFUND compensatorio; no devuelve efectivo al cliente. Con clave se devuelve un recibo mínimo original, no datos actuales del despacho.",
         "operationId": "DriverDispatchesController_take",
         "parameters": [
           {
@@ -47114,6 +47902,15 @@
             "description": "Dispatch.id. Un Dispatch que no puedo tomar ni tengo tomado responde 404 igual que un id inexistente: los ids no se pueden sondear.",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID durable recomendado. Con clave: IndependentCommandResponse y reconciliación. Sin clave: respuesta histórica DriverDispatchResponse, sin protección contra replay/cierre.",
+            "required": false,
+            "schema": {
               "type": "string"
             }
           }
@@ -47134,7 +47931,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DriverDispatchResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/IndependentCommandResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DriverDispatchResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -47354,7 +48158,7 @@
             }
           },
           "409": {
-            "description": "INDEPENDENT_NOT_APPROVED: el Driver no está habilitado como independiente, o su perfil está SUSPENDED, REJECTED o PENDING. | DISPATCH_ALREADY_CLAIMED (lo tomó un proveedor u otro repartidor) | DISPATCH_EXPIRED | DISPATCH_CANCELLED | DISPATCH_NOT_OPEN_TO_INDEPENDENT (ese ServiceType no admite independientes) | DISPATCH_RETAKE_NOT_ALLOWED (yo lo liberé) | DRIVER_NOT_ELIGIBLE | VEHICLE_NOT_ELIGIBLE | DRIVER_BUSY | VEHICLE_BUSY (ya tengo, o el vehículo tiene, una asignación ACTIVE en cualquiera de los dos modelos) | TAKE_CONFLICT | INSUFFICIENT_CREDITS (mi saldo no cubre el creditCost del servicio; no se toma nada) | CREDIT_ACCOUNT_UNAVAILABLE | CREDIT_SNAPSHOT_UNAVAILABLE (servicio monetizado sin costo congelado) | CREDIT_MOVEMENT_CONFLICT.",
+            "description": "INDEPENDENT_ATTEMPT_CLOSED | IDEMPOTENCY_KEY_REUSED | INDEPENDENT_RELEASE_LEGACY_UNSUPPORTED (RELEASE con clave sin ejecución detallada) | CUSTODY_INCIDENT_OPEN | CUSTODY_OPERATION_FORBIDDEN | SHIPPING_COLLECTION_REQUIRES_RESOLUTION | INDEPENDENT_NOT_APPROVED: el Driver no está habilitado como independiente, o su perfil está SUSPENDED, REJECTED o PENDING. | DISPATCH_ALREADY_CLAIMED (lo tomó un proveedor u otro repartidor) | DISPATCH_EXPIRED | DISPATCH_CANCELLED | DISPATCH_NOT_OPEN_TO_INDEPENDENT (ese ServiceType no admite independientes) | DISPATCH_RETAKE_NOT_ALLOWED (yo lo liberé) | DRIVER_NOT_ELIGIBLE | VEHICLE_NOT_ELIGIBLE | DRIVER_BUSY | VEHICLE_BUSY (ya tengo, o el vehículo tiene, una asignación ACTIVE en cualquiera de los dos modelos) | TAKE_CONFLICT | INSUFFICIENT_CREDITS (mi saldo no cubre el creditCost del servicio; no se toma nada) | CREDIT_ACCOUNT_UNAVAILABLE | CREDIT_SNAPSHOT_UNAVAILABLE (servicio monetizado sin costo congelado) | CREDIT_MOVEMENT_CONFLICT.",
             "content": {
               "application/json": {
                 "schema": {
@@ -47529,7 +48333,7 @@
     },
     "/api/v1/driver/dispatches/{dispatchId}/release": {
       "post": {
-        "description": "Operación atómica con motivo obligatorio: la asignación ACTIVE pasa a CANCELLED con el motivo, se limpia el claim independiente y el Dispatch vuelve a OPEN para quien pueda tomarlo (un proveedor candidato u otro repartidor); si la ventana ya cerró queda EXPIRED, igual que la liberación de proveedor de V1.7. El repartidor y el vehículo quedan libres. No existe reasignación para el rol DRIVER: un repartidor no puede pasarle el servicio a otro ni asignarse uno ajeno; liberar es la única salida. Quien libera no puede volver a tomar ese mismo Dispatch. V1.10-E: si el servicio se había cobrado, liberarlo devuelve en la misma transacción el 100% de esos créditos a la cuenta del repartidor, con un SERVICE_REFUND que compensa al SERVICE_AWARD original.",
+        "description": "Con clave exige ejecución DETAILED; LEGACY/UNKNOWN permanecen bloqueados en APP hasta definir política de custodia. En cualquier llamada, custodia, incidencia abierta o declaración de efectivo impiden liberar. Respuesta histórica sin clave se captura dentro de la transacción, sin lectura autorizada posterior al commit. Operación atómica con motivo obligatorio: la asignación ACTIVE pasa a CANCELLED con el motivo, se limpia el claim independiente y el Dispatch vuelve a OPEN para quien pueda tomarlo (un proveedor candidato u otro repartidor); si la ventana ya cerró queda EXPIRED, igual que la liberación de proveedor de V1.7. El repartidor y el vehículo quedan libres. No existe reasignación para el rol DRIVER: un repartidor no puede pasarle el servicio a otro ni asignarse uno ajeno; liberar es la única salida. Quien libera no puede volver a tomar ese mismo Dispatch. V1.10-E: si el servicio se había cobrado, liberarlo devuelve en la misma transacción el 100% de esos créditos a la cuenta del repartidor, con un SERVICE_REFUND que compensa al SERVICE_AWARD original.",
         "operationId": "DriverDispatchesController_release",
         "parameters": [
           {
@@ -47539,6 +48343,15 @@
             "description": "Dispatch.id. Un Dispatch que no puedo tomar ni tengo tomado responde 404 igual que un id inexistente: los ids no se pueden sondear.",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID durable recomendado. Con clave: IndependentCommandResponse y reconciliación. Sin clave: respuesta histórica DriverDispatchResponse, sin protección contra replay/cierre.",
+            "required": false,
+            "schema": {
               "type": "string"
             }
           }
@@ -47559,7 +48372,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DriverDispatchResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/IndependentCommandResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DriverDispatchResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -47779,7 +48599,7 @@
             }
           },
           "409": {
-            "description": "INDEPENDENT_NOT_APPROVED: el Driver no está habilitado como independiente, o su perfil está SUSPENDED, REJECTED o PENDING. | DISPATCH_NOT_CLAIMED_BY_DRIVER: el Dispatch no está tomado por este repartidor. | CREDIT_REFUND_INTEGRITY_ERROR: el servicio se cobró y su cargo no aparece.",
+            "description": "INDEPENDENT_ATTEMPT_CLOSED | IDEMPOTENCY_KEY_REUSED | INDEPENDENT_RELEASE_LEGACY_UNSUPPORTED (RELEASE con clave sin ejecución detallada) | CUSTODY_INCIDENT_OPEN | CUSTODY_OPERATION_FORBIDDEN | SHIPPING_COLLECTION_REQUIRES_RESOLUTION | INDEPENDENT_NOT_APPROVED: el Driver no está habilitado como independiente, o su perfil está SUSPENDED, REJECTED o PENDING. | DISPATCH_NOT_CLAIMED_BY_DRIVER: el Dispatch no está tomado por este repartidor. | CREDIT_REFUND_INTEGRITY_ERROR: el servicio se cobró y su cargo no aparece.",
             "content": {
               "application/json": {
                 "schema": {
@@ -78111,6 +78931,79 @@
           }
         }
       },
+      "IndependentAttemptCreditsResponse": {
+        "type": "object",
+        "properties": {
+          "awardEntryId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Cargo original propio; null si adjudicación legítimamente gratuita."
+          },
+          "refundEntryId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Refund de créditos propio que compensa awardEntryId. Nunca devolución de efectivo."
+          },
+          "amount": {
+            "type": "number",
+            "description": "Movimiento confirmado de esta operación, en créditos enteros: TAKE negativo, RELEASE positivo, o0. No es saldo actual."
+          }
+        },
+        "required": [
+          "awardEntryId",
+          "refundEntryId",
+          "amount"
+        ]
+      },
+      "IndependentCommandResponse": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "TAKE",
+              "RELEASE"
+            ]
+          },
+          "dispatchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assignmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dispatchStatus": {
+            "type": "string",
+            "enum": [
+              "CLAIMED",
+              "OPEN",
+              "EXPIRED"
+            ],
+            "description": "Estado al confirmar el intento; no sustituye la fotografía actual."
+          },
+          "assignmentStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ]
+          },
+          "credits": {
+            "$ref": "#/components/schemas/IndependentAttemptCreditsResponse"
+          }
+        },
+        "required": [
+          "operation",
+          "dispatchId",
+          "assignmentId",
+          "dispatchStatus",
+          "assignmentStatus",
+          "credits"
+        ]
+      },
       "DriverDispatchZoneResponse": {
         "type": "object",
         "properties": {
@@ -78541,6 +79434,55 @@
           "items"
         ]
       },
+      "IndependentAttemptResponse": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "TAKE",
+              "RELEASE"
+            ]
+          },
+          "dispatchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "APPLIED",
+              "PENDING_OR_UNKNOWN",
+              "CLOSED_NO_EFFECTS"
+            ]
+          },
+          "result": {
+            "nullable": true,
+            "description": "Sólo el resultado histórico del actor autenticado. Nunca datos del ejecutor actual.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IndependentCommandResponse"
+              }
+            ]
+          },
+          "canPrepareNewAttempt": {
+            "type": "boolean",
+            "description": "true sólo tras cierre durable. Permite preparar, no enviar automáticamente; elegibilidad se revalida al comando."
+          }
+        },
+        "required": [
+          "operation",
+          "dispatchId",
+          "state",
+          "result",
+          "canPrepareNewAttempt"
+        ]
+      },
+      "CompleteServiceDto": {
+        "type": "object",
+        "properties": {}
+      },
       "TakeDispatchDto": {
         "type": "object",
         "properties": {
@@ -78553,10 +79495,6 @@
         "required": [
           "vehicleId"
         ]
-      },
-      "CompleteServiceDto": {
-        "type": "object",
-        "properties": {}
       },
       "CreditAccountResponse": {
         "type": "object",
@@ -80834,7 +81772,8 @@
             "enum": [
               "ADVANCE",
               "REPORT",
-              "DELIVER"
+              "DELIVER",
+              "COLLECT_SHIPPING"
             ]
           },
           "canStartNewAttempt": {

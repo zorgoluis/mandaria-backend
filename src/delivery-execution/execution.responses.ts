@@ -218,7 +218,8 @@ export class DriverAttemptResponse {
   @ApiProperty({ enum: ['APPLIED', 'PENDING_OR_UNKNOWN', 'CLOSED_NO_EFFECTS'] })
   state!: string;
   @ApiProperty({ format: 'uuid' }) assignmentId!: string;
-  @ApiProperty({ enum: ['ADVANCE', 'REPORT', 'DELIVER'] }) operation!: string;
+  @ApiProperty({ enum: ['ADVANCE', 'REPORT', 'DELIVER', 'COLLECT_SHIPPING'] })
+  operation!: string;
   @ApiProperty({
     description:
       'La clave está cerrada sin efectos y esta asignación seguía ACTIVE; no reserva el servicio ni ordena repetir acciones físicas.',

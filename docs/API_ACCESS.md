@@ -181,6 +181,8 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/driver/dispatches/{dispatchId}/execution | bearer | DRIVER | — | Consultar progreso propio de flotilla o independiente |
 | POST | /api/v1/driver/dispatches/{dispatchId}/execution-completion | bearer | DRIVER | — | Confirmar entrega propia |
 | POST | /api/v1/driver/dispatches/{dispatchId}/execution-events | bearer | DRIVER | — | Registrar siguiente hito del Driver asignado |
+| GET | /api/v1/driver/dispatches/{dispatchId}/independent-attempt | bearer | DRIVER | — | Consultar intento propio TAKE/RELEASE |
+| POST | /api/v1/driver/dispatches/{dispatchId}/independent-attempt/close | bearer | DRIVER | — | Cerrar explícitamente un intento TAKE/RELEASE |
 | POST | /api/v1/driver/dispatches/{dispatchId}/release | bearer | DRIVER | — | Liberar un servicio que tomé |
 | POST | /api/v1/driver/dispatches/{dispatchId}/shipping-collection | bearer | DRIVER | — | Declarar efectivo del envío recibido en recogida |
 | POST | /api/v1/driver/dispatches/{dispatchId}/take | bearer | DRIVER | — | Tomar un servicio |

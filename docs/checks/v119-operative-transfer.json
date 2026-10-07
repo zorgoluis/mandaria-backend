@@ -1,0 +1,431 @@
+{
+  "status": "PASS",
+  "scope": "Single synthetic SUPER_ADMIN TRANSFER; Android operations excluded",
+  "at": "2026-10-07T21:31:27.860Z",
+  "identity": {
+    "database": "mandaria_v119_operative_local",
+    "port": "55443",
+    "directory": "C:/Users/zorgl/Documents/mandaria-backend/.tmp/native-v119-operative/pgdata"
+  },
+  "processes": [
+    {
+      "port": 43132,
+      "pid": 35792,
+      "path": "C:\\nvm4w\\nodejs\\node.exe",
+      "started": "2026-10-07T21:05:38.8740220Z"
+    },
+    {
+      "port": 55443,
+      "pid": 9808,
+      "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+      "started": "2026-10-07T21:05:37.0205450Z"
+    }
+  ],
+  "dispatchId": "d02ff4da-93e4-4f00-add8-8cfda4e321f5",
+  "incidentId": "884d30ce-c7a2-481c-8089-6803f8b6dd9f",
+  "resolution": {
+    "id": "ef9990cb-c81c-4f80-a708-c9b5414df700",
+    "type": "TRANSFER",
+    "incidentId": "884d30ce-c7a2-481c-8089-6803f8b6dd9f",
+    "fromAssignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+    "toAssignmentId": "ad5727ff-641f-4823-a078-128aac77c225"
+  },
+  "attempt": {
+    "state": "APPLIED",
+    "resolutionId": "ef9990cb-c81c-4f80-a708-c9b5414df700",
+    "canStartNewAttempt": false
+  },
+  "before": {
+    "at": "2026-10-07T21:31:27.215Z",
+    "hashes": {
+      "Dispatch": {
+        "count": 3,
+        "md5": "a4a5b5f490195c3c8eb319f824d88742"
+      },
+      "DeliveryAssignment": {
+        "count": 3,
+        "md5": "eda2d48025c25963a9d1ae83832c84be"
+      },
+      "DeliveryExecution": {
+        "count": 2,
+        "md5": "5cd5d371a7f41e66ecc067bd3f5fc919"
+      },
+      "DeliveryExecutionEvent": {
+        "count": 12,
+        "md5": "ae780124eb88e771de20c38a0eda910e"
+      },
+      "DeliveryExecutionCommand": {
+        "count": 14,
+        "md5": "38722f7e736486b107426edd4babea3b"
+      },
+      "DeliveryCustodyIncident": {
+        "count": 1,
+        "md5": "bfa91fbbbfecf175d1ecd4f23edba457"
+      },
+      "DeliveryCustodyResolution": {
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "CreditLedgerEntry": {
+        "count": 4,
+        "md5": "eadea24246386e9019c41be8c6baba17"
+      },
+      "DeliveryLocationHead": {
+        "count": 3,
+        "md5": "04eb3efde0aacb4249f9831f84192028"
+      },
+      "DeliveryShippingTerms": {
+        "count": 3,
+        "md5": "b50b00b98512aac5e00f7ef38c725fef"
+      },
+      "ShippingCollectionDeclaration": {
+        "count": 2,
+        "md5": "717e50d959592a403b2f442bd7fbed5d"
+      }
+    },
+    "head": {
+      "dispatchId": "d02ff4da-93e4-4f00-add8-8cfda4e321f5",
+      "chainId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+      "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+      "revision": 5,
+      "phase": 3,
+      "recordedAt": "2026-10-07T21:23:47.086Z"
+    },
+    "assignments": [
+      {
+        "id": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "status": "ACTIVE",
+        "driverId": "3444fea5-da22-459e-b3ad-84373f78136b",
+        "vehicleId": "9f5ead1d-9a91-4f17-9907-402e55f06619",
+        "custodyResolutionId": null
+      }
+    ],
+    "issues": [
+      {
+        "id": "884d30ce-c7a2-481c-8089-6803f8b6dd9f",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "resolvedAt": null
+      }
+    ],
+    "declaration": {
+      "deliveryRequestId": "df17a6c0-f561-4813-aac1-786929d805aa",
+      "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+      "amount": "55",
+      "currency": "MXN",
+      "termsHash": "5d0afc43133c886cbc0ad7ff3d261a84d8896dc2883c43a6817836dae2c425c2",
+      "occurredAt": "2026-10-07T21:22:53.972Z",
+      "recordedAt": "2026-10-07T21:22:58.562Z"
+    },
+    "balances": [
+      {
+        "id": "4071f981-4242-455f-9eca-8bfd86deb2c9",
+        "balance": 79
+      }
+    ],
+    "events": [
+      {
+        "id": "a4da87f9-2a65-42e9-a854-cae36ce03878",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 1,
+        "phase": 0,
+        "kind": "ASSIGNED"
+      },
+      {
+        "id": "c72f562d-d60f-4daa-962e-6b7f4ee29753",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 2,
+        "phase": 1,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "3428f6e7-7496-4cd5-990c-6718ac4ca6b8",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 3,
+        "phase": 2,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "f337b656-8dbe-419e-af07-c7af3c36b395",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 4,
+        "phase": 3,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "6cede29e-54ce-47ed-b76c-c820fe780cc1",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 5,
+        "phase": 3,
+        "kind": "INCIDENT"
+      }
+    ],
+    "resolutions": [],
+    "outbox": 2
+  },
+  "after": {
+    "at": "2026-10-07T21:31:27.798Z",
+    "hashes": {
+      "Dispatch": {
+        "count": 3,
+        "md5": "a4a5b5f490195c3c8eb319f824d88742"
+      },
+      "DeliveryAssignment": {
+        "count": 4,
+        "md5": "056f4df89f8cbfefc9352045123f409e"
+      },
+      "DeliveryExecution": {
+        "count": 2,
+        "md5": "98a9fb319ff51c4ed7a78cf30c0b7bc3"
+      },
+      "DeliveryExecutionEvent": {
+        "count": 13,
+        "md5": "1785af64e4d5ac4a738430bee03c0679"
+      },
+      "DeliveryExecutionCommand": {
+        "count": 15,
+        "md5": "467fb1e018df8f689bd23eabd935a572"
+      },
+      "DeliveryCustodyIncident": {
+        "count": 1,
+        "md5": "b738161d3b1f76e5a0542d459f629aea"
+      },
+      "DeliveryCustodyResolution": {
+        "count": 1,
+        "md5": "6fee7f8d39788d68c7cc5a57ba3f991f"
+      },
+      "CreditLedgerEntry": {
+        "count": 4,
+        "md5": "eadea24246386e9019c41be8c6baba17"
+      },
+      "DeliveryLocationHead": {
+        "count": 3,
+        "md5": "9764c915c567b990c4d8a67e7ae285ed"
+      },
+      "DeliveryShippingTerms": {
+        "count": 3,
+        "md5": "b50b00b98512aac5e00f7ef38c725fef"
+      },
+      "ShippingCollectionDeclaration": {
+        "count": 2,
+        "md5": "717e50d959592a403b2f442bd7fbed5d"
+      }
+    },
+    "head": {
+      "dispatchId": "d02ff4da-93e4-4f00-add8-8cfda4e321f5",
+      "chainId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+      "assignmentId": "ad5727ff-641f-4823-a078-128aac77c225",
+      "revision": 6,
+      "phase": 3,
+      "recordedAt": "2026-10-07T21:31:27.584Z"
+    },
+    "assignments": [
+      {
+        "id": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "status": "TRANSFERRED",
+        "driverId": "3444fea5-da22-459e-b3ad-84373f78136b",
+        "vehicleId": "9f5ead1d-9a91-4f17-9907-402e55f06619",
+        "custodyResolutionId": null
+      },
+      {
+        "id": "ad5727ff-641f-4823-a078-128aac77c225",
+        "status": "ACTIVE",
+        "driverId": "6a3cf9b7-f731-4d94-a4cf-dcd76df29dda",
+        "vehicleId": "10ca92e6-042f-4e76-ad89-850c3658356f",
+        "custodyResolutionId": "ef9990cb-c81c-4f80-a708-c9b5414df700"
+      }
+    ],
+    "issues": [
+      {
+        "id": "884d30ce-c7a2-481c-8089-6803f8b6dd9f",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "resolvedAt": "2026-10-07T21:31:27.454Z"
+      }
+    ],
+    "declaration": {
+      "deliveryRequestId": "df17a6c0-f561-4813-aac1-786929d805aa",
+      "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+      "amount": "55",
+      "currency": "MXN",
+      "termsHash": "5d0afc43133c886cbc0ad7ff3d261a84d8896dc2883c43a6817836dae2c425c2",
+      "occurredAt": "2026-10-07T21:22:53.972Z",
+      "recordedAt": "2026-10-07T21:22:58.562Z"
+    },
+    "balances": [
+      {
+        "id": "4071f981-4242-455f-9eca-8bfd86deb2c9",
+        "balance": 79
+      }
+    ],
+    "events": [
+      {
+        "id": "a4da87f9-2a65-42e9-a854-cae36ce03878",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 1,
+        "phase": 0,
+        "kind": "ASSIGNED"
+      },
+      {
+        "id": "c72f562d-d60f-4daa-962e-6b7f4ee29753",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 2,
+        "phase": 1,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "3428f6e7-7496-4cd5-990c-6718ac4ca6b8",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 3,
+        "phase": 2,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "f337b656-8dbe-419e-af07-c7af3c36b395",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 4,
+        "phase": 3,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "6cede29e-54ce-47ed-b76c-c820fe780cc1",
+        "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "revision": 5,
+        "phase": 3,
+        "kind": "INCIDENT"
+      },
+      {
+        "id": "65cfeaa9-252b-465f-9b2e-da03a5114d83",
+        "assignmentId": "ad5727ff-641f-4823-a078-128aac77c225",
+        "revision": 6,
+        "phase": 3,
+        "kind": "TRANSFER"
+      }
+    ],
+    "resolutions": [
+      {
+        "id": "ef9990cb-c81c-4f80-a708-c9b5414df700",
+        "type": "TRANSFER",
+        "incidentId": "884d30ce-c7a2-481c-8089-6803f8b6dd9f",
+        "fromAssignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+        "toAssignmentId": "ad5727ff-641f-4823-a078-128aac77c225"
+      }
+    ],
+    "outbox": 2
+  },
+  "progress": {
+    "trackingMode": "DETAILED",
+    "revision": 6,
+    "phase": "PICKED_UP",
+    "activeAssignmentId": "ad5727ff-641f-4823-a078-128aac77c225",
+    "custodyStatus": "HELD",
+    "openIncidentId": null,
+    "allowedActions": [
+      "REPORT_INCIDENT"
+    ],
+    "lastRecordedAt": "2026-10-07T21:31:27.584Z"
+  },
+  "delta": {
+    "Dispatch": 0,
+    "DeliveryAssignment": 1,
+    "DeliveryExecution": 0,
+    "DeliveryExecutionEvent": 1,
+    "DeliveryExecutionCommand": 1,
+    "DeliveryCustodyIncident": 0,
+    "DeliveryCustodyResolution": 1,
+    "CreditLedgerEntry": 0,
+    "DeliveryLocationHead": 0,
+    "DeliveryShippingTerms": 0,
+    "ShippingCollectionDeclaration": 0
+  },
+  "assertions": {
+    "singleActiveCustodian": true,
+    "phaseAndChainPreserved": true,
+    "ledgerUnchanged": true,
+    "declaration55MXNUnchanged": true,
+    "noNewOutbox": true
+  },
+  "audit": [
+    {
+      "at": "2026-10-07T21:31:27.105Z",
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200,
+      "requestId": "0f2e2281-a13f-48e9-802d-1577c5c6c90b"
+    },
+    {
+      "at": "2026-10-07T21:31:27.254Z",
+      "method": "GET",
+      "path": "/admin/dispatches/d02ff4da-93e4-4f00-add8-8cfda4e321f5/execution",
+      "status": 200,
+      "requestId": "2857c78c-e546-40ab-a6c1-f626e74e0455"
+    },
+    {
+      "at": "2026-10-07T21:31:27.290Z",
+      "method": "GET",
+      "path": "/admin/dispatches/d02ff4da-93e4-4f00-add8-8cfda4e321f5/custody-incidents/884d30ce-c7a2-481c-8089-6803f8b6dd9f",
+      "status": 200,
+      "requestId": "7181a285-85d7-468e-9773-ac90439b8b65"
+    },
+    {
+      "at": "2026-10-07T21:31:27.346Z",
+      "method": "GET",
+      "path": "/admin/dispatches/d02ff4da-93e4-4f00-add8-8cfda4e321f5/custody-transfer-candidates?mode=FLEET&page=1&pageSize=100",
+      "status": 200,
+      "requestId": "8162a6db-c158-4a09-9173-518fa312c45d"
+    },
+    {
+      "at": "2026-10-07T21:31:27.685Z",
+      "method": "POST",
+      "path": "/admin/dispatches/d02ff4da-93e4-4f00-add8-8cfda4e321f5/custody-incidents/884d30ce-c7a2-481c-8089-6803f8b6dd9f/resolve",
+      "status": 200,
+      "requestId": "d853a27d-bc04-4622-b2cc-2c06031f792c"
+    },
+    {
+      "at": "2026-10-07T21:31:27.742Z",
+      "method": "GET",
+      "path": "/admin/dispatches/d02ff4da-93e4-4f00-add8-8cfda4e321f5/custody-incidents/884d30ce-c7a2-481c-8089-6803f8b6dd9f/resolution-attempt",
+      "status": 200,
+      "requestId": "331eb8bd-d34d-4479-a027-310ce24f0312"
+    },
+    {
+      "at": "2026-10-07T21:31:27.836Z",
+      "method": "GET",
+      "path": "/admin/dispatches/d02ff4da-93e4-4f00-add8-8cfda4e321f5/execution",
+      "status": 200,
+      "requestId": "28d42a0c-c3f9-440d-bf32-4422e047e7a5"
+    }
+  ],
+  "commands": [
+    {
+      "command": "node --check .tmp/native-v119-operative/transfer-v119.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node .tmp/native-v119-operative/transfer-v119.mjs preflight",
+      "exitCode": 0
+    },
+    {
+      "command": "node .tmp/native-v119-operative/transfer-v119.mjs apply",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "toolSha256": "72b22b1863400f4b205909fe16b7c01095d9813e464a7c5e9f4ee822354fc64e",
+  "identityVerification": "Loopback listeners + launcher/PID + database/port/data_directory checked before resolve",
+  "changedTableHashes": [
+    "DeliveryAssignment",
+    "DeliveryExecution",
+    "DeliveryExecutionEvent",
+    "DeliveryExecutionCommand",
+    "DeliveryCustodyIncident",
+    "DeliveryCustodyResolution",
+    "DeliveryLocationHead"
+  ],
+  "privacy": {
+    "localCredentialAndKeyComparison": "PASS",
+    "jwtPattern": "none",
+    "privateMarkerIgnored": true
+  }
+}

@@ -4,6 +4,38 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación Git autorizada (2026-10-07):** preparación de commit y push en la rama actual `v1.18-GPS_seguimiento_temporal` del contrato/recuperación independientes V1.19, corrección Swagger y herramientas/evidencia de fixtures acumuladas. Verificación de esta tarea: revisión del alcance y `git diff --check`; resultados de suites anteriores conservados como históricos, no reejecutados. Archivo local residual `nul` excluido; configuración privada y `.tmp` fuera del commit. No despliegue ni activación.
+
+- **Handoff independientes APP/fixtures (2026-10-07):** leídos contrato final y pedido backend. TAKE/RELEASE con UUID key retornan IndependentCommandResponse; consulta/cierre propios con canPrepareNewAttempt e INDEPENDENT_ATTEMPT_CLOSED, no protocolo ejecución. APPLIED histórico permanece válido tras404 actual. Preparación nativa nueva migración43 pendiente, no usar entornos reservados; APP integración contractual y backend fixtures pueden avanzar por separado. LEGACY/UNKNOWN RELEASE bloqueado; suspensión independiente con ACTIVE es estado prohibido, no fixture a fabricar.
+
+- **Independientes V1.19 — corrección y reconciliación local (2026-10-07):** reproducidos TAKE tardío después de consulta vacía y RELEASE404 después de commit/refund al vencer ventana. Respuesta transaccional, recibos TAKE/RELEASE propios, GET sin efectos y cierre durable coordinado; migración43 incremental. RELEASE bloqueado por custodia/incidencia/efectivo; keyed LEGACY bloqueado, compatibilidad antigua sin clave explícitamente sin fencing. [Contrato APP](docs/V1.19-INDEPENDENT-ATTEMPTS.md), [evidencia](docs/checks/v119-independent-attempts.json), [fixtures pendientes](docs/V1.19-INDEPENDENT-FIXTURE-REQUEST.md). Nuevos resultados:90 E2E únicos/4 archivos,32 unitarios/2 archivos y40 contrato público; tipos/build/linters/docs y migraciones limpia/42→43 aprobados. Repetición abortada10/16 excluida; reproducción instrumentada16/16 aprobada sin causa del aborto acreditada. Entorno exclusivo PG55444 detenido al terminar, datos/logs conservados, sin tocar los tres entornos reservados ni consumir Android. APP aún debe integrar contrato y usar claves; no desplegado/activado. Entradas siguientes se conservan como historia.
+
+- **Independientes V1.19 — revisión coordinadora (2026-10-07):** leído pedido APP V1.19-INDEPENDIENTE-BACKEND. APP reporta33 unitarias/10 Compose sintéticas, sin integración real. Brechas reportadas: TAKE/RELEASE sin recibo/cierre, RELEASE podría devolver404 tras commit/refund (inspección, sin reproducción), descripción refund desactualizada. Siguiente prompt BACKEND pide reproducción y reconciliación explícita/resultado durable antes de fixtures finales; no reutilizar recibos de ejecución por inferencia. No aprobar liberación LEGACY/UNKNOWN ni política monetaria por esta coordinación.
+
+- **Cierre operativo reportado por APP V1.19 — 2026-10-07:** tarea APP 01a116d1-0789-7603-ac6f-a4a81547f4d5 informa C/D DELIVERED, recuperación REPORT de A después de transferencia y continuación B hasta DELIVERED sin nueva recogida/cobro. Reporta SQL final:3 Dispatch DELIVERED,4 assignments (3COMPLETED/A TRANSFERRED),16 eventos,18 recibos,2 declaraciones55.00,ledger4/awards3/saldo79,3 outbox DELIVERY_COMPLETED y GPS0. **Reporte externo, no reejecutado aquí.** APP termina evidencia visual de sólo lectura y anuncia parada exclusiva43132/55443; parada aún no confirmada. No reconstruir ni reiniciar fixtures consumidos. Evidencia propia de transferencia permanece separada; esta actualización sólo documental/diff, sin API/DB ni mensajes operativos.
+
+- **Transferencia sintética coordinada Android V1.19 — 2026-10-07 21:31 UTC:** autorización del propietario en APP verificada; tras REPORT real, revalidados entorno43132/55443, revisión5/PICKED_UP/HELD e incidencia abierta, B elegible por API. Único resolve SUPER_ADMIN200 y recibo APPLIED; resolución ef9990cb-c81c-4f80-a708-c9b5414df700, assignment B ad5727ff-641f-4823-a078-128aac77c225 ACTIVE, A TRANSFERRED, revisión6/misma fase y chain. Declaración55.00 MXN/ledger/saldo79 conservados, sin nuevo outbox. [Evidencia/deltas](docs/checks/v119-operative-transfer.json) y [handoff](docs/V1.19-ANDROID-OPERATIVE-FIXTURES.md). APP notificada para continuar aTransferred/bComplete; entorno sigue encendido Node35792/PG9808. Sin avanzar/cobrar/entregar desde backend ni tocar otros fixtures. Verificaciones nuevas API/SQL read-only/syntax/diff; suites y Android no repetidos aquí. Baseline inicial siguiente es histórica, no restaurar estados consumidos. Sin producto/flags/Docker/producción/commit/push.
+
+- **Fixtures operativos Android V1.19 preparados — 2026-10-07:** [entrega real](docs/V1.19-ANDROID-OPERATIVE-FIXTURES.md) y [manifiesto](docs/checks/v119-operative-native-ready.json). Entorno nuevo API43132/PG55443 mandaria_v119_operative_local;42 migraciones normales, bootstrap admin y preparación restante por APIs. Cuatro pares exclusivos: A custodia REQUESTER, B receptor libre, C entrega REQUESTER, D LEGACY; tres ACTIVE, detallados phase=null/revision1. LEGACY creado con false y conservado tras activar detailed/authorized-accept sólo en proceso nuevo. GPS/enlaces false, routing/correo locales, webhooks0. Comprobados API Driver/permisos, stop/start exclusivo, repetición sin duplicados y once huellas finales19:12:19.081Z; ledger100-21=79, sin comandos/declaraciones/incidencias/transferencias/entregas. Primer verificador falló por ID interno omitido en B2B; corregida sólo herramienta, verificaciones posteriores completas exit0. Build/syntax/Oxlint/diff; sin suites ajenas ni Android. Compartidos intactos; nuevo entorno queda encendido PID Node45456/PG17700. Credenciales privadas por alias; APP debe consumir sólo manifiesto nuevo. Sin producto/Docker/producción/commit/push.
+
+- **Coordinación fixtures operativos V1.19 (2026-10-07):** APP reporta implementación de comandos/recuperación con23 unitarias/15 Compose sintéticas; integración real pendiente. Leído pedido backend de entorno nuevo y cuatro pares exclusivos. Siguiente prompt autoriza preparación nativa aislada, LEGACY antes de activar admisión detallada sólo en proceso nuevo; no consumir hitos/cobros/incidencias/transferencia durante preparación. Verificar deltas operativos después de Android, no igualdad de huellas propia de lecturas.
+
+- **Coordinación fixtures operativos Android V1.19 — 2026-10-07:** APP solicita nuevos REQUESTER/CASH/PICKUP, transferencia, entrega separada y LEGACY consumible; entregado [pedido concreto](docs/V1.19-ANDROID-OPERATIVE-FIXTURE-REQUEST.md), sin preparar ni consumir datos en esta coordinación. Preparador nativo actual fija LEGACY/RECIPIENT y no cubre el alcance; Docker descartado. Recomendados cuatro pares Driver/Vehicle para tres servicios ACTIVE y un receptor libre. Evidencia APP leída reporta lectura LEGACY anterior PASS/once huellas iguales y parada del entorno43131; no se reejecutó Android ni se consultó disponibilidad actual. Nuevo entorno/IDs/comandos aún no reservados; sólo revisión estática y diff, cambios existentes conservados.
+
+- **V1.19 fixture LEGACY nativo independiente listo — 2026-10-07:** API43131/PG55442 `mandaria_v119_legacy_local`, directorio exclusivo .tmp/native-v119-legacy, migración normal42/seed SUPER_ADMIN y resto por APIs. Driver fc49057c-f932-4a90-a07f-103fccabd215, Dispatch74cb67e3-5301-4909-abd7-2438250a9b86, Assignment35fb22cf-52a5-4715-90fc-99644848cf2b ACTIVE/LEGACY; sin hitos ni consumo. Credenciales privadas accounts.json entrada driver; manifiesto y once huellas nuevas en [entrega](docs/V1.19-LEGACY-FIXTURE.md)/[evidencia](docs/checks/v119-legacy-native-ready.json). DRIVER me/detalle200, ejecución detallada404 legítimo, permisos401/403/409 comprobados. Repetición sin duplicados/huellas idénticas; comandos exclusivos documentados. Compartido43130/55441 intacto, flags false sólo en nuevo proceso. Listo para lecturas Android, no prueba de emulador realizada. Conservado antecedente bloqueado y cambios anteriores; sin Docker/externos/producción/commit/push.
+
+- **V1.19 LEGACY activo — impedimento confirmado, 2026-10-07:** entorno nativo43130/PG55441 mandaria_native_local disponible e identificado (Node44408/PG6448),42 migraciones. Inventario read-only: cero FLEET ACTIVE LEGACY; sólo una LEGACY COMPLETED. API create/reassign inicializa DETAILED con flag compartido true; DTO sin override, preparador existente exige Docker/cambio de flag. No se forzó preparación. [Informe y propuesta independiente](docs/V1.19-LEGACY-FIXTURE.md), [manifiesto con once huellas diagnósticas](docs/checks/v119-legacy-fixture.json). Sin fixture/credenciales nuevos; huellas NO son baseline posterior a preparación. Sin writes operativos ni cambios compartidos; escenarios Android ya acreditados no repetidos.
+
+- **V1.19 lectura Android y fixture LEGACY pendiente (2026-10-07):** leído pedido actualizado androidApp/V1.19-PEDIDO-BACKEND.md. Escenarios flotilla detallada, independiente y tokens ya reportados aprobados por APP; no repetir preparación inicial. Siguiente BACKEND prepara sólo FLEET ACTIVE LEGACY legítimo con herramientas existentes en entorno nativo identificado; no cambiar flag compartido, borrar ejecución ni reabrir cerradas. Si incompatible, documentar causa/propuesta aislada sin simular aprobación. Dispositivo físico sigue pendiente separado, no bloqueo de emulador.
+
+- **Backend nativo local (2026-10-07):** autorizado detener Docker y ejecutar Node/PostgreSQL nativos. Mandaria Docker detenido con volúmenes conservados; copia pg_dump/restore de su base sintética a clúster PG18 dedicado en 127.0.0.1:55441, base mandaria_native_local. Node en puerto43130, health200 y contrato Driver actual comprobados; 42 migraciones al día, build aprobado. Configuración privada en .tmp/native-local/runtime.json, launcher server.mjs, logs y PID ignorados; cuentas existentes conservadas y flags previos sin ampliación. No cambia .env habitual ni producción.
+
+- **Docker local actualizado y arrancado (2026-10-07):** autorización explícita del propietario. Reconstruido código actual con compose.desktop-local.yml y secretos locales existentes; PostgreSQL/backend/gateway healthy, HTTP health200, 42 migraciones al día y Swagger DriverAttemptResponse incluye COLLECT_SHIPPING. Datos conservados. Reparado arranque Docker Desktop apartando con respaldo directorios de sockets run y docker-secrets-engine tras detener Docker/WSL; sin factory reset ni borrado de volúmenes. Configuración de flags local existente conservada; no activación global de funciones ni producción.
+
+- **Corrección contractual APP DRIVER — 2026-10-07:** DriverAttemptResponse.operation ya describe COLLECT_SHIPPING admitido por DTO y servicio. Sólo Swagger, sin permisos/comportamiento nuevos. Regenerado OpenAPI completo; público B2B y API_ACCESS sin cambios semánticos. Regresión nueva verifica concordancia en consulta/cierre y exclusión humana/Driver. Nuevas verificaciones:39/39 públicas, build, tipos raíz/build, docs:b2b:check, Oxlint focalizado y diff --check aprobados. Primer tsc raíz chocó con reconstrucción dist; ejecución posterior aislada aprobada. [Handoff APP con revisión/hash](docs/DRIVER-APP-EXECUTION.md). Base b97b9d1, cambios locales no publicados/desplegados; sin historial Driver ni cola programada. Nota coordinadora previa y nul conservados.
+
+- **Revisión coordinadora análisis APP V1.19 (2026-10-07):** leído informe móvil aportado por propietario: Android Kotlin/Compose reutilizable, lógica mock no contractual; iOS sólo ejemplo. Verificación propia backend: rama v1.18-GPS_seguimiento_temporal HEAD b97b9d1, sin cambios rastreados antes de esta nota, nul preservado. Confirmada discrepancia Swagger DriverAttemptResponse.operation omite COLLECT_SHIPPING admitido por DTO consulta. Se entregan prompts separados BACKEND de corrección contractual y APP de separación demo/sesión/lecturas Android; historial completo/cola programada no se autorizan como endpoints nuevos, no sustituir por simulación. Alcance iOS pendiente; protocolos durables desde arquitectura sin activar escrituras operativas aún.
+
 - **Publicación autorizada V1.18 — 2026-10-06:** propietario solicita commit y push a la rama actual `v1.18-GPS_seguimiento_temporal`. Se incluyen backend GPS/enlaces, migraciones incrementales, contratos, handoffs y evidencia local existente. Verificación de esta tarea: revisión Git, contenido preparado y diff --check; no se repiten suites. Reportes crudos de diagnóstico `.tmp`, secretos y `nul` quedan fuera. GPS/enlaces siguen deshabilitados, sin despliegue ni activación. El resultado Git se confirma al finalizar.
 
 - **Coordinación WEB V1.18 (2026-10-06):** revisados handoffs WEB/B2B e implementación; webhooks54/54 acreditados por evidencia del agente, no repetidos aquí; abortos anteriores siguen sin causa. Prompt FRONTEND para GPS de cliente, gestión enlace y pantalla /track, respetando ISSUE/REVOKE con CAS y estados reales (no CLOSED_NO_EFFECTS genérico), secreto efímero, watermarks/versiones y cuotas agregadas. APP DRIVER conserva publicación GPS. Flags deshabilitados fuera de pruebas aisladas, sin activación.
@@ -527,6 +559,33 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-07 — Commit y push solicitados por el propietario
+
+Se prepara publicación de los cambios acumulados V1.19 en la rama actual, conservando continuidad y evidencia. Revisión de archivos y diff, sin repetir pruebas ya acreditadas ni tocar entornos. Exclusión del archivo residual `nul` y recursos privados ignorados. El resultado de commit/push se informa con el hash confirmado en la entrega; no implica despliegue, activación ni integración Android verificada.
+
+### 2026-10-07 — Brechas independientes V1.19
+
+Solicitud: reproducir respuestas inciertas y RELEASE404, implementar reconciliación durable autorizada y entregar contrato APP sin tocar fixtures reservados. Se agregó IndependentDispatchAttempt, locks compartidos comando/cierre, respuesta mínima original y captura transaccional de la respuesta antigua. Sin cuerpos privados en recibos, sin permiso nuevo sobre estado actual ajeno; restricciones de custodia/incidencia/declaración aplicadas también a RELEASE sin clave. OpenAPI humano y API_ACCESS regenerados, B2B excluye Driver; se corrigió descripción de créditos/refund y se añadió prueba contractual.
+
+Verificación nueva: cuatro archivos E2E completos suman90 casos únicos,32 unitarios,40 contrato público, tipos raíz/build, build, Oxlint (advertencia anterior conservada), ESLint focal y docscheck. Prisma validate/generate/status y migración limpia43; actualización42→43 preserva hashes de57 tablas previas con5 filas sintéticas. Intentos fallidos de fixture/configuración y aborto10/16 conservados y excluidos. Un intento instrumentado posterior pasó16/16; no demuestra la causa del aborto. Evidencia y límites en el informe enlazado. No se reejecutó toda la suite del repositorio.
+
+Resultado: backend verificado localmente, handoff disponible; integración Android y fixtures independientes finales pendientes. Escritores sin clave/instancias antiguas quedan fuera del protocolo y requieren despliegue coordinado; no autorizar RELEASE LEGACY/UNKNOWN en APP ni devolución de efectivo por inferencia. Preservados todos los cambios anteriores. Sin Docker, producción, móviles, commit/push/despliegue/activación.
+
+### 2026-10-07 — Recepción de resultados operativos APP V1.19
+
+- Solicitud/coordinación recibida: conservar fixtures consumidos y no ejecutar más operaciones; APP informa cierre de los tres servicios y asume parada del entorno exclusivo al terminar evidencia visual.
+- Cambios: continuidad, VERIFICATION y guía local distinguen reporte APP de verificación backend propia.
+- Verificación nueva: sólo lectura documental y git diff --check. No consultas de base/API, pruebas Android ni nuevas escrituras operativas.
+- Resultado/pendientes: datos y evidencia inicial/transferencia conservados; resultados finales atribuidos a APP. Falta confirmación de parada43132/55443 y cierre visual por APP. Sin producto/Docker/producción/commit/push.
+
+### 2026-10-07 — Resolución sintética A→B coordinada con APP
+
+- Solicitud: ejecutar únicamente transferencia SUPER_ADMIN después de incidencia registrada desde Android, con autorización humana comprobada en la tarea APP.
+- Cambios: herramienta puntual privada con identidad estricta de procesos/base, UUID durable y reconciliación; único POST autorizado. Documentación/handoff y evidencia sanitizada antes/después. Sin código de producto ni flags.
+- Verificaciones ejecutadas: preflight y apply exit0; GET de incidencia/ejecución/candidatos200, resolve200, recibo APPLIED200; once huellas READ ONLY, una sola asignación/custodio, fase y chain preservadas, ledger/saldo/declaración/términos intactos y ningún outbox adicional. Syntax y git diff --check.
+- Resultado: A TRANSFERRED; B ACTIVE en assignment ad5727ff-641f-4823-a078-128aac77c225, PICKED_UP/revisión6. Entorno43132/55443 permanece encendido para APP.
+- Pendientes: APP comprueba autoridad de A, continuación y entrega B desde Compose; no acreditados por estas lecturas backend. Evidencia inicial y pruebas históricas conservadas. Sin Docker/producción/commit/push/despliegue.
 
 ### 2026-10-06 — V1.17 implementación parcial, identidad A
 
@@ -2405,3 +2464,88 @@ Cambios: sólo instrumentación .tmp y documentación/evidencia; implementación
 ## 2026-10-06 — commit y push V1.18 autorizados
 
 Solicitud: publicar los cambios existentes en la rama actual. Alcance: implementación, documentación y evidencia V1.18, preservando historial. Verificaciones actuales: estado de rama, revisión del contenido preparado y git diff --check; pruebas funcionales anteriores son históricas. Reportes locales de diagnóstico y nul excluidos. Resultado de commit/push confirmado en la entrega. Sin despliegue ni activación; interfaces e integración real pendientes.
+
+
+## 2026-10-07 — Recepción análisis móvil V1.19
+
+- Solicitud/contexto: informe móvil adjunto con inventario, brechas y etapas.
+- Cambios: continuidad y prompts de siguiente etapa en conversación; sin producto modificado.
+- Verificación actual: lectura adjunto y continuidad, Git rama/HEAD/status y contraste DTO consulta/respuesta; git diff --check. No compilación móvil ni pruebas.
+- Resultado: discrepancia COLLECT_SHIPPING confirmada; base backend local identificada, no disponibilidad remota. Adaptar semántica de interfaz a backend preservando componentes.
+- Pendientes: corrección contractual por agente backend; arquitectura/sesión/lecturas APP; decisiones de alcance iOS e historial/cola separadas. Sin Docker, servicios, commit/push ni activación.
+
+## 2026-10-07 — concordancia de operaciones de reconciliación DRIVER
+
+Solicitud: corregir omisión Swagger COLLECT_SHIPPING señalada por APP. Servicio y DTO admitían la operación; corregida únicamente ApiProperty de respuesta. Añadida comprobación contractual de cuatro operaciones, GET/POST cierre, autenticación y exclusión B2B; regenerados contratos por comandos existentes. Verificaciones nuevas:39 pruebas públicas, build, tipos raíz/build, comprobación documental, Oxlint focalizado y diff --check. Primera prueba contra JSON anterior detectó defecto; primer tsc raíz falló por build concurrente y después pasó sin cambios adicionales. Estado exacto y hash entregados en handoff APP. Sin cambios de comportamiento, DB, permisos, Docker, producción, commit/push/despliegue/activación. No se repiten ni atribuyen pruebas históricas a esta tarea.
+
+
+### 2026-10-07 — Arranque Docker local con backend actual
+
+- Solicitud: levantar el backend actual en Docker; diagnóstico del error de socket dockerInference aportado durante el arranque.
+- Trabajo: inicio Docker Desktop, recuperación de sockets temporales inaccesibles con respaldo de sus directorios (Secrets Engine contenía sólo engine.sock); reconstrucción y up del Compose local aislado existente, sin reset ni seed. Migraciones automáticas únicamente sobre mandaria_desktop_local.
+- Verificación nueva: build Docker y compose up --wait exit0; postgres/backend/gateway healthy; HTTP /health200; Swagger con ADVANCE/REPORT/DELIVER/COLLECT_SHIPPING; Prisma migrate status:42 migraciones, esquema actualizado. Sin suites repetidas.
+- Resultado: API http://127.0.0.1:43130/api/v1 y Swagger /docs disponibles. Datos/cuentas locales preservados; secretos no publicados.
+- Límites: flags del Compose conservados (precotizaciones false, ejecución detallada true; nuevas funciones con sus defaults). No acredita todos los flujos end-to-end. Sin .env operativo, cambios de producto, commit, push ni despliegue remoto.
+
+
+### 2026-10-07 — Cambio de Docker a ejecución nativa
+
+- Solicitud: levantar backend y PostgreSQL nativos y bajar Mandaria Docker.
+- Trabajo: detener backend/gateway, dump local sintético, copia al workspace ignorado, detener PostgreSQL Docker; crear clúster nativo aislado con SCRAM en puerto55441 y restaurar sin modificar origen. Compilar código actual e iniciar launcher Node oculto en puerto43130 con configuración dedicada. Docker Desktop permanece disponible; contenedores Mandaria detenidos.
+- Verificaciones nuevas: build exit0; Prisma status42 migraciones al día; health200; Swagger incluye COLLECT_SHIPPING; puertos nativos/PIDs comprobados y tres contenedores exited. Primer status bajo sandbox no pudo conectarse; comprobación autorizada posterior aprobada. No suites repetidas.
+- Datos: cuentas e historial copiados desde Docker local; futuras escrituras nativas no se sincronizan de regreso. Contraseñas locales existentes en .tmp/docker-desktop-local/accounts.json; nuevo secreto PG sólo archivos privados ignorados.
+- Límites: Node escucha 0.0.0.0 según main existente; PostgreSQL sólo loopback. Correo local/routing simulado y polling webhook0; flags sin activaciones nuevas. No frontend, producción, commit ni push.
+
+
+## 2026-10-07 — Coordinación fixture LEGACY activo para APP
+
+- Contexto: propietario entrega pruebas Android y pedido BACKEND actualizado.
+- Cambios: continuidad y prompt específico para único fixture pendiente.
+- Verificación actual: lectura de continuidad y pedido móvil, git diff --check; sin pruebas Android nuevas ni servicios.
+- Resultado: no repetir casos ya acreditados ni confundir fixture con permiso de cierre desde app.
+- Pendientes: preparación LEGACY legítima, lectura Android real y dispositivo físico. Sin producto, Docker, commit/push ni publicación.
+
+## 2026-10-07 — fixture LEGACY activo Android
+
+Solicitud: preparar exclusivamente FLEET ACTIVE LEGACY sin cambiar flag compartido ni forzar estados. Leído pedido Android actualizado; identificados API43130 y PG55441/base mandaria_native_local. Cero ACTIVE LEGACY; única LEGACY COMPLETED. Servicio crea ejecución con flag true y herramienta existente requiere Docker/reinicio con false: incompatible con restricciones. Resultado BLOCKED, documentada alternativa con API/base independientes; no ejecutada. Once huellas en snapshot read-only diagnóstico, no baseline posterior a preparación. Ninguna credencial/fixture nuevo ni escritura operativa. Health e identidad comprobados; sin pruebas repetidas, activación ni consumo. Cambios existentes preservados. Ver docs/V1.19-LEGACY-FIXTURE.md y manifiesto; sin commit/push/despliegue.
+
+## 2026-10-07 — entrega LEGACY independiente para Android
+
+Solicitud: preparar entorno nativo exclusivo tras impedimento compartido. Creado scripts/prepare-native-v119-legacy.mjs, PG55442/base mandaria_v119_legacy_local y API43131 con configuración sintética privada y snapshot dist. Migraciones normales42 y seed administrador; demás actores/configuración/servicio por APIs autorizadas. Assignment ACTIVE/LEGACY comprobado con Driver real; sin hitos ni consumo. Handoff incluye URL emulador10.0.2.2, credenciales sólo archivo privado, referencias, once huellas posteriores y comandos exclusivos. Preparador repetido sin duplicados ni cambios en once huellas. Dos expectativas iniciales del verificador (execution200 y UUID ajeno404) corregidas al contrato real404/409, sin producto. Syntax/Oxlint/diff aprobados; no E2E ajenas ni Android. Entorno nuevo queda encendido, compartido conserva procesos y configuración; sin Docker/servicios externos/producción/commit/push. Antecedente y huellas diagnósticas previas conservados.
+
+## 2026-10-07 — pedido de fixtures operativos Android nuevos
+
+Solicitud de coordinación APP: identificar preparador compatible o dejar pedido concreto para REQUESTER/CASH/PICKUP, custodia/transferencia, entrega separada y LEGACY consumible, sin usar fixtures anteriores. Revisados preparadores y contratos reales; el nativo actual no admite REQUESTER ni otro destino, el de escritorio requiere Docker. Entregado docs/V1.19-ANDROID-OPERATIVE-FIXTURE-REQUEST.md con propuesta de entorno nuevo, flujo API/atestación v2, cuatro pares recomendados para disponibilidad simultánea, comandos reservados a APP y transferencia exclusivamente SUPER_ADMIN, baseline posterior y entrega privada. No se crearon actores/servicios ni se ejecutaron comandos operativos. Leída evidencia APP de lecturas LEGACY PASS/once huellas iguales y reporte de parada exclusiva; documentada como evidencia aportada, sin reejecutar Android ni probar procesos. Actualizados informe LEGACY, estado actual y VERIFICATION; revisión de referencias y git diff --check. Pendiente ejecutar la preparación nueva y entregar su propio manifiesto; no hay nuevos IDs reservados ni URL disponible acreditada. Sin producto, bases, configuración, Docker, commit/push/despliegue.
+
+## 2026-10-07 — preparación operativa Android V1.19 ejecutada
+
+Solicitud: ejecutar el pedido previo con entorno nuevo, cuatro pares y escenarios reservados para Android. Creado scripts/prepare-native-v119-operative.mjs y clúster/base/API exclusivos43132/55443. Preflight confirmó puertos libres/directorio inexistente; identidad SQL y procesos acotados antes de preparación.42 migraciones/seed admin normales; todo recurso/configuración/servicio restante mediante APIs autorizadas. Primero LEGACY RECIPIENT con false, después reinicio sólo del Node nuevo con detailed y authorized-accept true para dos REQUESTER v2 exactos. Driver B queda libre. Ningún hito, declaración, incidencia, transferencia o entrega consumido; saldo sintético79 tras100-3x7.
+
+Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/términos, checks SQL read-only, parada/arranque exclusivos, preparación repetida sin duplicados, snapshot final once huellas iguales y privacidad de18 logs/metadata/manifiesto. Syntax/Oxlint/diff/referencias. Primer prepare exit1 por error de herramienta: request.id no existe en respuesta pública; corregido acceso mediante Dispatch, sin alterar producto ni repetir escrituras; verify y prepare posteriores exit0. Credenciales sólo en archivo privado ignorado/ACL. Handoff y manifiesto nuevos, petición anterior marcada como antecedente cumplido, VERIFICATION y estado actual actualizados. Datos/procesos de entornos previos preservados. Nuevo entorno encendido; quedan Android/operaciones reservadas y resolución SUPER_ADMIN coordinada, con deltas esperados en vez de igualdad total. Sin Docker, frontend, Coita, producción, commit/push/despliegue.
+
+
+## 2026-10-07 — Handoff preparación operativa Android
+
+- Solicitud/contexto: APP necesita nuevos fixtures para comandos ya implementados localmente.
+- Cambios: continuidad y prompt BACKEND específico en conversación.
+- Verificaciones actuales: lectura de continuidad y V1.19-ANDROID-OPERATIVE-FIXTURE-REQUEST; git diff --check. Sin ejecución de servicios/pruebas.
+- Resultado: alcance cuatro recursos y entorno exclusivo definido; pruebas móviles reportadas no reejecutadas.
+- Pendientes: preparar manifiesto, luego recorrido Compose real y recuperación; dispositivo físico separado. Sin producto, Docker, commit/push ni activación.
+
+
+## 2026-10-07 — Coordinación independientes y recuperación
+
+- Contexto: APP entrega implementación local y pedido fixtures/brechas.
+- Cambios: continuidad y prompt BACKEND; sin producto.
+- Verificación: lectura del pedido y continuidad, git diff --check. Hallazgos funcionales del pedido no reproducidos aquí.
+- Resultado: priorizar contrato durable TAKE/RELEASE y respuesta postliberación, separar créditos de efectivo.
+- Pendientes: backend corrección/pruebas/handoff, fixtures exclusivos, APP integración real, físico. Sin Docker, commit/push ni despliegue.
+
+
+## 2026-10-07 — Coordinación contrato independiente corregido
+
+- Contexto: propietario entrega corrección verificada backend y fixtures pendientes.
+- Cambios: continuidad y dos prompts separados para APP/BACKEND.
+- Verificación actual: lectura contratos/continuidad y git diff --check, sin pruebas reejecutadas.
+- Resultado: distinguir recibos/estado actual, compatibilidad sin key sin protección, ledger créditos distinto de efectivo.
+- Pendientes: sincronización móvil, preparación y recorrido real; físico/GPS separados. Sin producto, servicios, Docker, commit/push ni activación.

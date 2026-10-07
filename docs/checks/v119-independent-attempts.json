@@ -1,0 +1,709 @@
+{
+  "date": "2026-10-07",
+  "baseHead": "b97b9d1be54a2c37601e51990d66ccaf73d0203f",
+  "state": "local uncommitted; no deployment",
+  "node": "v24.15.0",
+  "postgres": "18.6",
+  "vitest": "4.1.11",
+  "environment": {
+    "port": 55444,
+    "dataDirectory": ".tmp/v119-independent/pgdata",
+    "synthetic": true,
+    "docker": false,
+    "reservedPortsUntouched": [
+      43130,
+      55441,
+      43131,
+      55442,
+      43132,
+      55443
+    ],
+    "gps": false,
+    "sharedLinks": false,
+    "webhooksPollSeconds": 0
+  },
+  "reproduction": {
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "vitest.config.e2e.ts",
+      "test/independent-attempts.e2e-spec.ts",
+      "--pool=forks",
+      "--maxWorkers=1",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\repro-expiry-valid-token.json"
+    ],
+    "at": "2026-10-07T22:19:29.558Z",
+    "node": "v24.15.0",
+    "exitCode": 0,
+    "signal": null,
+    "report": {
+      "path": ".tmp/v119-independent/repro-expiry-valid-token.json",
+      "sha256": "afaf4ba688c4b1665a8b05ae7fadc71fe71dd5e0a0a82b334dbc345c6a5ba4a5"
+    },
+    "log": {
+      "path": ".tmp/v119-independent/repro-expiry-valid-token.log",
+      "sha256": "c06c46f5cf790260490d64a69e2d81e3969ac4d98ab6e83e16a983e476e2ea1d"
+    },
+    "confirmed": [
+      "Delayed TAKE may apply after empty current-state read",
+      "RELEASE returned 404 after assignment CANCELLED and exact compensating refund on EXPIRED dispatch"
+    ],
+    "testOnlyClock": "dispatch TTL 1 minute; date advance 10 minutes; valid JWT",
+    "source": {
+      "path": ".tmp/v119-independent/reproduction-before-fix.ts",
+      "sha256": "c85b924e659619b90353e6ee48a978c750e54a855892a4c15ecb1e2a1e8c0ac1"
+    }
+  },
+  "suites": [
+    {
+      "label": "uuid-attempts",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\uuid-attempts.json"
+      ],
+      "at": "2026-10-07T22:46:09.932Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "tests": 16,
+      "passed": 16,
+      "failed": 0,
+      "success": true,
+      "report": {
+        "path": ".tmp/v119-independent/uuid-attempts.json",
+        "sha256": "02f6862a7c6af42a15f1bce517246803f140d250b954bf8353c757eecb5e67bd"
+      },
+      "log": {
+        "path": ".tmp/v119-independent/uuid-attempts.log",
+        "sha256": "6f54de4b6992950f90cc3bfd11599728ba9857c6bc16540e56f858d65d3d9c79"
+      },
+      "files": [
+        {
+          "name": "independent-attempts.e2e-spec.ts",
+          "status": "passed",
+          "tests": 16
+        }
+      ]
+    },
+    {
+      "label": "final-independent",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-drivers.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\final-independent.json"
+      ],
+      "at": "2026-10-07T22:34:34.771Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "tests": 23,
+      "passed": 23,
+      "failed": 0,
+      "success": true,
+      "report": {
+        "path": ".tmp/v119-independent/final-independent.json",
+        "sha256": "34da39506e2b468f50456f37c43701428e03f3bb9e961776f31f761e913d623a"
+      },
+      "log": {
+        "path": ".tmp/v119-independent/final-independent.log",
+        "sha256": "bb92d5c54aa63f104fdf61a73f93f0697a50bf83beb609a03b210b854fb77342"
+      },
+      "files": [
+        {
+          "name": "independent-drivers.e2e-spec.ts",
+          "status": "passed",
+          "tests": 23
+        }
+      ]
+    },
+    {
+      "label": "final-custody",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/delivery-execution.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\final-custody.json"
+      ],
+      "at": "2026-10-07T22:35:04.277Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "tests": 29,
+      "passed": 29,
+      "failed": 0,
+      "success": true,
+      "report": {
+        "path": ".tmp/v119-independent/final-custody.json",
+        "sha256": "d65b07be0bfb9ba1db46ac616a761c0f7f6491b5b99722198f9f31980f1b57ef"
+      },
+      "log": {
+        "path": ".tmp/v119-independent/final-custody.log",
+        "sha256": "483e3945a659f6c48c5a3d58aa028f332b7fc3bd2e038b826ba26ce0d681a84a"
+      },
+      "files": [
+        {
+          "name": "delivery-execution.e2e-spec.ts",
+          "status": "passed",
+          "tests": 29
+        }
+      ]
+    },
+    {
+      "label": "final-refunds",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/credit-refunds.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\final-refunds.json"
+      ],
+      "at": "2026-10-07T22:35:15.501Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "tests": 22,
+      "passed": 22,
+      "failed": 0,
+      "success": true,
+      "report": {
+        "path": ".tmp/v119-independent/final-refunds.json",
+        "sha256": "c519a7468da4de526729c6e182000d57bbd16e7b60ee300827cc39bde6cdf201"
+      },
+      "log": {
+        "path": ".tmp/v119-independent/final-refunds.log",
+        "sha256": "d03a98bc5c8615bd05ac3c1db9643f26706468d6486f9a816d54cc4c7df76515"
+      },
+      "files": [
+        {
+          "name": "credit-refunds.e2e-spec.ts",
+          "status": "passed",
+          "tests": 22
+        }
+      ]
+    },
+    {
+      "label": "unit-pertinent",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/independent-drivers.spec.ts",
+        "test/credit-refunds.spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=json",
+        "--outputFile=.tmp/v119-independent/unit-pertinent.json"
+      ],
+      "at": "2026-10-07T22:36:22.727Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "tests": 32,
+      "passed": 32,
+      "failed": 0,
+      "success": true,
+      "report": {
+        "path": ".tmp/v119-independent/unit-pertinent.json",
+        "sha256": "366afee267993ac5727bfe82bcf2a86d3299b086c79b952ca8f954ea2099da1f"
+      },
+      "log": {
+        "path": ".tmp/v119-independent/unit-pertinent.log",
+        "sha256": "ebda33a2f367be691e07e16753cf049a8a069d12e6cb9c147694cc43c23d76e9"
+      },
+      "files": [
+        {
+          "name": "credit-refunds.spec.ts",
+          "status": "passed",
+          "tests": 10
+        },
+        {
+          "name": "independent-drivers.spec.ts",
+          "status": "passed",
+          "tests": 22
+        }
+      ]
+    }
+  ],
+  "uniqueE2E": 90,
+  "uniqueUnit": 32,
+  "publicContract": {
+    "command": "npm run test:public-b2b",
+    "exitCode": 0,
+    "tests": 40,
+    "log": {
+      "path": ".tmp/v119-independent/public-contract.log",
+      "sha256": "1200d7b0450408429d07c89328ef22b25e1e5b54b7321db5424fb4e94e0eb284"
+    }
+  },
+  "docsCheck": {
+    "command": "npm run docs:b2b:check",
+    "exitCode": 0,
+    "log": {
+      "path": ".tmp/v119-independent/docs-check.log",
+      "sha256": "5ed885bf528e701226675b29e1caa6d3920287ca25ba9efef4db89fa353f0e34"
+    }
+  },
+  "quality": [
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.json"
+      ],
+      "at": "2026-10-07T22:45:17.937Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "log": {
+        "path": ".tmp/v119-independent/types-root.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "tsconfig.build.json"
+      ],
+      "at": "2026-10-07T22:34:51.694Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "log": {
+        "path": ".tmp/v119-independent/types-build.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "src/independent-drivers",
+        "test/independent-attempts.e2e-spec.ts"
+      ],
+      "at": "2026-10-07T22:43:41.167Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "log": {
+        "path": ".tmp/v119-independent/eslint-final.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "status"
+      ],
+      "at": "2026-10-07T22:43:07.549Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "log": {
+        "path": ".tmp/v119-independent/migration-status.log",
+        "sha256": "783dc6f7a3811e37343719f2d5debae39fd6d552f9006d5da15c3ceb0c278c52"
+      }
+    }
+  ],
+  "otherExecuted": [
+    {
+      "command": "npm run docs:b2b",
+      "exitCode": 0,
+      "includes": "nest build, openapi.cli, generate-api-access, public exporter"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "prisma validate and prisma generate with isolated DATABASE_URL",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0,
+      "warning": "Existing unused readFileSync in verify-authorized-acceptance-c3-regression.mjs:4; not changed",
+      "log": {
+        "path": ".tmp/v119-independent/oxlint.log",
+        "sha256": "12f25763e49dc54f164ff694bea35b22c7d647187f4b46a6eff22348c2a2951e"
+      }
+    }
+  ],
+  "migration": {
+    "name": "20261007000300_independent_dispatch_attempts",
+    "clean": {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "deploy"
+      ],
+      "at": "2026-10-07T22:32:39.320Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null
+    },
+    "upgrade": {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "deploy"
+      ],
+      "at": "2026-10-07T22:33:16.138Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null
+    },
+    "history": {
+      "status": "PASS",
+      "tables": 57,
+      "rows": 5,
+      "before": 42,
+      "after": 43
+    },
+    "report": {
+      "path": ".tmp/v119-independent/history-final-result.json",
+      "sha256": "44cc5885bf12d86a14ded26e4c5ecc949c5689039b4c32ab7e433aa2559d6417"
+    },
+    "limit": "57 prior tables compared, five synthetic preexisting rows; not a production backup simulation"
+  },
+  "excludedAttempts": [
+    {
+      "label": "current-attempts-result.json",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\current-attempts.json"
+      ],
+      "at": "2026-10-07T22:24:53.361Z",
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "label": "current-attempts2-result.json",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\current-attempts2.json"
+      ],
+      "at": "2026-10-07T22:25:45.731Z",
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "label": "current-attempts3-result.json",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\current-attempts3.json"
+      ],
+      "at": "2026-10-07T22:27:49.290Z",
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "label": "repro-baseline-fixed-fixture-result.json",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\repro-baseline-fixed-fixture.json"
+      ],
+      "at": "2026-10-07T22:18:31.106Z",
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "label": "repro-baseline-result.json",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\repro-baseline.json"
+      ],
+      "at": "2026-10-07T22:17:58.855Z",
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "label": "repro-confirmed-result.json",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\repro-confirmed.json"
+      ],
+      "at": "2026-10-07T22:18:55.486Z",
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "label": "verified-attempts-result.json",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\verified-attempts.json"
+      ],
+      "at": "2026-10-07T22:39:54.948Z",
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null
+    }
+  ],
+  "abort": {
+    "label": "verified-attempts",
+    "exitCode": 1,
+    "completedBeforeAbort": 10,
+    "total": 16,
+    "log": {
+      "path": ".tmp/v119-independent/verified-attempts.log",
+      "sha256": "e9abc9d15edbdaf4ce19c0969fd83ce7db481f7a05a7d73e0afa6663f09b5e66"
+    },
+    "cause": "Not established; Worker exited unexpectedly, no recorded child code/signal in this uninstrumented attempt",
+    "diagnostic": "One instrumented complete file run, unchanged forks/one worker,16/16 exit0. Child SIGTERM follows captured explicit pool kill request at successful teardown; does not explain prior abort.",
+    "files": [
+      {
+        "path": ".tmp/v119-independent/diagnostic/process-22168.jsonl",
+        "sha256": "b6be907caf836e86f0c1a78ee474116bad5a50116df94e0ac7a2d23e32f27487"
+      },
+      {
+        "path": ".tmp/v119-independent/diagnostic/process-30920.jsonl",
+        "sha256": "051dbe73be17755c8e232b056a6273ea18a61314a539157220356afffa785c3c"
+      },
+      {
+        "path": ".tmp/v119-independent/diagnostic/process-40160.jsonl",
+        "sha256": "b126dd4c1251fa743d188dc005d8953805d7215f1791082ebb7a009f454e8f03"
+      },
+      {
+        "path": ".tmp/v119-independent/diagnostic/process-44508.jsonl",
+        "sha256": "87842e6a02e439320f048432bcf98d84a46bd3eb2ee3f7dba4a0d6c439974f21"
+      },
+      {
+        "path": ".tmp/v119-independent/diagnostic/process-45192.jsonl",
+        "sha256": "19b27ae68046a8c86b4e18f5765a7317eb6211c6b3fa44d3f41ace1ab7dff621"
+      },
+      {
+        "path": ".tmp/v119-independent/diagnostic/process-4708.jsonl",
+        "sha256": "a50f1fb315bde8f24645a6dbfff0413ed5c7b06edc17e5952bacbe87d47f1cb3"
+      }
+    ],
+    "privacy": "Local ignored diagnostic files, no contents published"
+  },
+  "limits": [
+    "No Android integration executed",
+    "No new Android fixtures prepared or consumed",
+    "Unkeyed/old-server writers do not participate in closure fencing",
+    "Keyed legacy release blocked pending custody policy; historical unkeyed behavior retained",
+    "Commercial profile suspension during ACTIVE assignment is already rejected; no unsupported state fabricated",
+    "No proof of native abort cause"
+  ],
+  "artifacts": [
+    {
+      "path": "docs/openapi.json",
+      "sha256": "cda3164bc0c32e7ef00de2017f8675974ea050b55dc623f6b4b1c40b3c340228"
+    },
+    {
+      "path": "docs/API_ACCESS.md",
+      "sha256": "d0c85913521531235fa74416dc5896153f38cc1f5353ad5d99191b2df13f275d"
+    },
+    {
+      "path": "docs/openapi-b2b.json",
+      "sha256": "25ead040d338859b6f9addb8b0e6a3985eec278b2c14984a3be677977e3584db"
+    },
+    {
+      "path": "docs/V1.19-INDEPENDENT-ATTEMPTS.md",
+      "sha256": "084c6d17264978a2af0542c98ee9b644d93110ec5a9b9784d6b800caaee12938"
+    }
+  ],
+  "finalNormalization": {
+    "change": "Canonical UUID scope for uppercase/lowercase dispatch and key; same receipt and one award",
+    "completeRun": {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\uuid-attempts.json"
+      ],
+      "at": "2026-10-07T22:46:09.932Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null
+    },
+    "priorInstrumentedRun": {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/independent-attempts.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\diagnostic-attempts.json"
+      ],
+      "at": "2026-10-07T22:41:28.041Z",
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null
+    },
+    "note": "Both complete16/16; counted once. Existing regression files completed before this localized normalization, product outside keyed protocol unchanged."
+  },
+  "cleanup": {
+    "command": [
+      "C:/Program Files/PostgreSQL/18/bin/pg_ctl.exe",
+      "-D",
+      "C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\v119-independent\\pgdata",
+      "-m",
+      "fast",
+      "-w",
+      "stop"
+    ],
+    "at": "2026-10-07T22:47:01.463Z",
+    "node": "v24.15.0",
+    "exitCode": 0,
+    "signal": null
+  },
+  "productFiles": [
+    {
+      "path": "src/independent-drivers/independent-dispatches.service.ts",
+      "sha256": "d1f2907cd8d3f2bb88092348db2d066496354ddb6013c4d9e6675ddb2ca68bf4"
+    },
+    {
+      "path": "src/independent-drivers/driver-dispatches.controller.ts",
+      "sha256": "b7111e3b7778fcbfecae7821b1239561ea9a166f189f9f821289e9265fb91d99"
+    },
+    {
+      "path": "src/independent-drivers/independent-attempts.ts",
+      "sha256": "8b6033d8ed55c1618982af33e3899e604a42ba1d58974ef054d6b1393c215b86"
+    },
+    {
+      "path": "src/independent-drivers/independent-attempts.responses.ts",
+      "sha256": "da98873a5d0bac87218e41719fb4e51e7d2428aba9ed519ad93c1bf0de837079"
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "sha256": "cee2a9937f9972dccf2dcd6451fd726443e11ce63ddf0e21c1165fd227756491"
+    },
+    {
+      "path": "prisma/migrations/20261007000300_independent_dispatch_attempts/migration.sql",
+      "sha256": "9ad5ec1d04ab68d78058ad2597140bf93d9230de21f78dcf70a43b32cf17ab7a"
+    },
+    {
+      "path": "test/independent-attempts.e2e-spec.ts",
+      "sha256": "c66427068bac8a204bf02792dd56ebf2c06e7733e06d267f93dad41c03af6c02"
+    },
+    {
+      "path": "scripts/export-public-b2b.test.mjs",
+      "sha256": "8348ea7fa245d875a06658a5f74fee02e0d42b27af2a11063a2c6c7a501a4569"
+    }
+  ]
+}

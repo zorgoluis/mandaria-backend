@@ -1,5 +1,20 @@
+import {
+  attemptActor,
+  attemptHash,
+  attemptKey,
+  attemptLock,
+  attemptReceipt,
+  replay,
+  saveAttempt,
+} from './independent-attempts.js';
+import type {
+  IndependentOperation,
+  IndependentCommandResult,
+} from './independent-attempts.js';
 import { ConfigService } from '@nestjs/config';
 import {
+  executionHead,
+  executionError,
   initializeExecution,
   executionView,
   lockExecutionDispatch,
@@ -75,6 +90,138 @@ export class IndependentDispatchesService {
     private readonly webhooks: B2bWebhooksService,
     private readonly executionConfig: ConfigService = new ConfigService(),
   ) {}
+
+  private async commandView(
+    tx: Prisma.TransactionClient,
+    driverId: string,
+    dispatchId: string,
+  ) {
+    const dispatch = await tx.dispatch.findUniqueOrThrow({
+      where: { id: dispatchId },
+      select: driverDispatchSelect,
+    });
+    return withExecutionInstructions(
+      tx,
+      dispatchId,
+      driverDispatchView(dispatch, driverId, new Date()),
+    );
+  }
+
+  async reconcile(
+    userId: string,
+    dispatchId: string,
+    operation: IndependentOperation,
+    key: string,
+    close = false,
+  ) {
+    key = attemptKey(key);
+    dispatchId = dispatchId.toLowerCase();
+    return this.prisma.$transaction(async (tx) => {
+      if (close) await attemptLock(tx, userId, dispatchId, operation, key);
+      await attemptActor(tx, userId);
+      let receipt = await attemptReceipt(
+        tx,
+        userId,
+        dispatchId,
+        operation,
+        key,
+      );
+      if (!receipt && close) {
+        await tx.$executeRaw`INSERT INTO "IndependentDispatchAttempt" ("actorUserId","dispatchId",operation,key,state,hash,response) VALUES (${userId}::uuid,${dispatchId}::uuid,${operation},${key}::uuid,'CLOSED_NO_EFFECTS','','{}'::jsonb)`;
+        receipt = await attemptReceipt(tx, userId, dispatchId, operation, key);
+      }
+      return {
+        operation,
+        dispatchId,
+        state: receipt?.state ?? 'PENDING_OR_UNKNOWN',
+        result: receipt?.state === 'APPLIED' ? receipt.response : null,
+        canPrepareNewAttempt: receipt?.state === 'CLOSED_NO_EFFECTS',
+      };
+    });
+  }
+
+  private async command(
+    userId: string,
+    dispatchId: string,
+    operation: IndependentOperation,
+    key: string,
+    body: { vehicleId: string } | { reason: string; reasonDetail?: string },
+    work: (tx: Prisma.TransactionClient) => Promise<unknown>,
+  ): Promise<IndependentCommandResult> {
+    key = attemptKey(key);
+    dispatchId = dispatchId.toLowerCase();
+    const hash = attemptHash(body);
+    let replayed = false;
+    const result = await this.transaction(async (tx) => {
+      await attemptLock(tx, userId, dispatchId, operation, key);
+      await lockExecutionDispatch(tx, dispatchId);
+      await attemptActor(tx, userId);
+      const receipt = await attemptReceipt(
+        tx,
+        userId,
+        dispatchId,
+        operation,
+        key,
+      );
+      if (receipt) {
+        replayed = true;
+        return replay(receipt, hash);
+      }
+      await work(tx);
+      const assignment = await tx.deliveryAssignment.findFirstOrThrow({
+        where: { dispatchId, driver: { userId } },
+        orderBy: { assignedAt: 'desc' },
+      });
+      const award = await tx.creditLedgerEntry.findFirst({
+        where: {
+          referenceId: dispatchId,
+          type: 'SERVICE_AWARD',
+          creditAccount: {
+            independentDriverProfileId: assignment.independentDriverProfileId,
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      const refund =
+        operation === 'RELEASE' && award
+          ? await tx.creditLedgerEntry.findFirst({
+              where: { reversesEntryId: award.id, type: 'SERVICE_REFUND' },
+            })
+          : null;
+      const dispatch = await tx.dispatch.findUniqueOrThrow({
+        where: { id: dispatchId },
+      });
+      const result: IndependentCommandResult = {
+        operation,
+        dispatchId,
+        assignmentId: assignment.id,
+        dispatchStatus:
+          operation === 'TAKE'
+            ? 'CLAIMED'
+            : dispatch.status === 'EXPIRED'
+              ? 'EXPIRED'
+              : 'OPEN',
+        assignmentStatus: operation === 'TAKE' ? 'ACTIVE' : 'CANCELLED',
+        credits: {
+          awardEntryId: award?.id ?? null,
+          refundEntryId: refund?.id ?? null,
+          amount:
+            operation === 'TAKE' ? (award?.amount ?? 0) : (refund?.amount ?? 0),
+        },
+      };
+      await saveAttempt(tx, userId, dispatchId, operation, key, hash, result);
+      return result;
+    });
+    // No success audit before the outer transaction (including the receipt) commits.
+    this.logger.log({
+      event: replayed
+        ? 'INDEPENDENT_COMMAND_REPLAYED'
+        : 'INDEPENDENT_COMMAND_APPLIED',
+      actorUserId: userId,
+      ...result,
+    });
+    return result;
+  }
 
   /** The driver's own capability, as returned inside GET /driver/me. */
   async profileForUser(userId: string) {
@@ -240,11 +387,33 @@ export class IndependentDispatchesService {
    * SQL. The partial unique indexes on ACTIVE rows (dispatch, driver, vehicle) are the last line
    * of defence and are global, so fleet and independent work exclude each other (§29, §30).
    */
-  async take(userId: string, dispatchId: string, vehicleId: string) {
-    const actor = await this.approvedDriver(this.prisma, userId);
+  async take(
+    userId: string,
+    dispatchId: string,
+    vehicleId: string,
+    key?: string,
+    txClient?: Prisma.TransactionClient,
+  ): Promise<
+    | IndependentCommandResult
+    | Awaited<ReturnType<IndependentDispatchesService['commandView']>>
+  > {
+    if (key !== undefined)
+      return this.command(
+        userId,
+        dispatchId,
+        'TAKE',
+        key,
+        { vehicleId },
+        (tx) => this.take(userId, dispatchId, vehicleId, undefined, tx),
+      );
+    const transact = txClient
+      ? async <T>(fn: (tx: Prisma.TransactionClient) => Promise<T>) =>
+          fn(txClient)
+      : this.transaction.bind(this);
+    const actor = await this.approvedDriver(txClient ?? this.prisma, userId);
     const outcome = await this.charging(
       { dispatchId, driverId: actor.driverId, actorUserId: userId },
-      this.transaction(async (tx) => {
+      transact(async (tx) => {
         const dispatch = await this.lock(tx, dispatchId);
         const now = new Date();
         const released = await tx.deliveryAssignment.findFirst({
@@ -321,7 +490,12 @@ export class IndependentDispatchesService {
           },
           userId,
         );
-        return { kind: 'taken' as const, assignmentId: assignment.id, award };
+        return {
+          kind: 'taken' as const,
+          assignmentId: assignment.id,
+          award,
+          view: await this.commandView(tx, actor.driverId, dispatchId),
+        };
       }),
     );
     if (outcome.kind === 'expired') {
@@ -337,22 +511,24 @@ export class IndependentDispatchesService {
         REJECTION_MESSAGES.DISPATCH_EXPIRED,
       );
     }
-    this.logger.log({
-      event: 'INDEPENDENT_DISPATCH_TAKEN',
-      dispatchId,
-      assignmentId: outcome.assignmentId,
-      profileId: actor.profileId,
-      driverId: actor.driverId,
-      vehicleId,
-      actorUserId: userId,
-    });
-    this.logAward(outcome.award, {
-      dispatchId,
-      profileId: actor.profileId,
-      driverId: actor.driverId,
-      actorUserId: userId,
-    });
-    return this.viewFor(actor.driverId, dispatchId);
+    if (!txClient) {
+      this.logger.log({
+        event: 'INDEPENDENT_DISPATCH_TAKEN',
+        dispatchId,
+        assignmentId: outcome.assignmentId,
+        profileId: actor.profileId,
+        driverId: actor.driverId,
+        vehicleId,
+        actorUserId: userId,
+      });
+      this.logAward(outcome.award, {
+        dispatchId,
+        profileId: actor.profileId,
+        driverId: actor.driverId,
+        actorUserId: userId,
+      });
+    }
+    return outcome.view;
   }
 
   /**
@@ -367,11 +543,34 @@ export class IndependentDispatchesService {
     userId: string,
     dispatchId: string,
     input: { reason: IndependentReleaseReason; reasonDetail?: string },
-  ) {
-    const actor = await this.approvedDriver(this.prisma, userId);
+    key?: string,
+    txClient?: Prisma.TransactionClient,
+  ): Promise<
+    | IndependentCommandResult
+    | Awaited<ReturnType<IndependentDispatchesService['commandView']>>
+  > {
+    if (key !== undefined)
+      return this.command(
+        userId,
+        dispatchId,
+        'RELEASE',
+        key,
+        input,
+        async (tx) => {
+          const head = await executionHead(tx, dispatchId);
+          if (!head)
+            throw executionError('INDEPENDENT_RELEASE_LEGACY_UNSUPPORTED');
+          return this.release(userId, dispatchId, input, undefined, tx);
+        },
+      );
+    const actor = await this.approvedDriver(txClient ?? this.prisma, userId);
+    const transact = txClient
+      ? async <T>(fn: (tx: Prisma.TransactionClient) => Promise<T>) =>
+          fn(txClient)
+      : this.transaction.bind(this);
     const outcome = await this.reversing(
       { dispatchId, driverId: actor.driverId, actorUserId: userId },
-      this.prisma.$transaction(async (tx) => {
+      transact(async (tx: Prisma.TransactionClient) => {
         const dispatch = await this.lock(tx, dispatchId);
         if (
           dispatch.status !== 'CLAIMED' ||
@@ -381,6 +580,21 @@ export class IndependentDispatchesService {
             'DISPATCH_NOT_CLAIMED_BY_DRIVER',
             'Dispatch is not currently taken by this driver',
           );
+        const head = await executionHead(tx, dispatchId);
+        if (
+          await tx.deliveryCustodyIncident.count({
+            where: { dispatchId, resolvedAt: null },
+          })
+        )
+          throw executionError('CUSTODY_INCIDENT_OPEN');
+        if (head && head.phase >= 3)
+          throw executionError('CUSTODY_OPERATION_FORBIDDEN');
+        if (
+          await tx.shippingCollectionDeclaration.count({
+            where: { dispatchId },
+          })
+        )
+          throw executionError('SHIPPING_COLLECTION_REQUIRES_RESOLUTION');
         const now = new Date();
         const [active] = await tx.$queryRaw<
           { id: string; vehicleId: string }[]
@@ -437,35 +651,38 @@ export class IndependentDispatchesService {
           refund,
           assignmentId: active?.id ?? null,
           vehicleId: active?.vehicleId ?? null,
+          view: await this.commandView(tx, actor.driverId, dispatchId),
         };
       }),
     );
-    this.logger.log({
-      event: 'INDEPENDENT_DISPATCH_RELEASED',
-      dispatchId,
-      assignmentId: outcome.assignmentId,
-      profileId: actor.profileId,
-      driverId: actor.driverId,
-      vehicleId: outcome.vehicleId,
-      actorUserId: userId,
-      reason: input.reason,
-    });
-    this.logger.log({
-      ...refundLogFields(outcome.refund),
-      dispatchId,
-      profileId: actor.profileId,
-      driverId: actor.driverId,
-      actorUserId: userId,
-    });
-    if (outcome.expired)
+    if (!txClient) {
       this.logger.log({
-        event: 'DISPATCH_EXPIRED',
+        event: 'INDEPENDENT_DISPATCH_RELEASED',
         dispatchId,
+        assignmentId: outcome.assignmentId,
+        profileId: actor.profileId,
+        driverId: actor.driverId,
+        vehicleId: outcome.vehicleId,
+        actorUserId: userId,
+        reason: input.reason,
+      });
+      this.logger.log({
+        ...refundLogFields(outcome.refund),
+        dispatchId,
+        profileId: actor.profileId,
         driverId: actor.driverId,
         actorUserId: userId,
-        reason: 'RELEASED_AFTER_WINDOW',
       });
-    return this.viewFor(actor.driverId, dispatchId);
+      if (outcome.expired)
+        this.logger.log({
+          event: 'DISPATCH_EXPIRED',
+          dispatchId,
+          driverId: actor.driverId,
+          actorUserId: userId,
+          reason: 'RELEASED_AFTER_WINDOW',
+        });
+    }
+    return outcome.view;
   }
 
   /**

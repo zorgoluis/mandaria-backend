@@ -1,0 +1,160 @@
+{
+  "status": "BLOCKED_SHARED_ENVIRONMENT",
+  "fixturePrepared": false,
+  "driverId": null,
+  "dispatchId": null,
+  "assignmentId": null,
+  "trackingMode": null,
+  "assignmentStatus": null,
+  "revision": "b97b9d1be54a2c37601e51990d66ccaf73d0203f",
+  "branch": "v1.18-GPS_seguimiento_temporal",
+  "inspectedAt": "2026-10-07T17:04:51.779Z",
+  "environment": {
+    "api": "http://127.0.0.1:43130",
+    "health": {
+      "status": "ok",
+      "database": "up"
+    },
+    "database": {
+      "database": "mandaria_native_local",
+      "port": "55441",
+      "directory": "C:/Users/zorgl/Documents/mandaria-backend/.tmp/native-local/pgdata",
+      "started": "2026-10-07 10:37:46.927842-06"
+    },
+    "migrations": [
+      {
+        "finished": 42
+      }
+    ],
+    "processes": [
+      {
+        "id": 44408,
+        "name": "node",
+        "started": "2026-10-07T16:38:55.4310299Z",
+        "path": "C:\\nvm4w\\nodejs\\node.exe",
+        "expectedLauncher": true
+      },
+      {
+        "id": 6448,
+        "name": "postgres",
+        "started": "2026-10-07T16:37:46.6856554Z",
+        "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+        "expectedLauncher": true
+      }
+    ],
+    "configuredFlags": {
+      "detailed": "true",
+      "gps": "false",
+      "shared": "false",
+      "mailProvider": "local_outbox",
+      "webhookPoll": "0"
+    }
+  },
+  "fleetAssignmentInventory": [
+    {
+      "status": "ACTIVE",
+      "detailed": true,
+      "count": 1
+    },
+    {
+      "status": "CANCELLED",
+      "detailed": true,
+      "count": 10
+    },
+    {
+      "status": "COMPLETED",
+      "detailed": false,
+      "count": 1
+    },
+    {
+      "status": "COMPLETED",
+      "detailed": true,
+      "count": 1
+    },
+    {
+      "status": "RETURNED",
+      "detailed": true,
+      "count": 2
+    }
+  ],
+  "blocker": "Only existing FLEET LEGACY assignment is COMPLETED. New assignments call initializeExecution with instance flag=true. No supported per-request legacy override; available preparer invokes Docker and changes shared flag.",
+  "provenance": {
+    "fixture": "None created; no simulated success",
+    "reads": "GET /health plus PostgreSQL REPEATABLE READ READ ONLY identity/inventory/hashes",
+    "operationalWrites": 0,
+    "credentialsCreated": false,
+    "sharedConfigurationChanged": false
+  },
+  "fingerprints": {
+    "purpose": "Diagnostic read-only snapshot only; not a prepared-fixture baseline for Android",
+    "at": "2026-10-07T17:04:51.779Z",
+    "algorithm": "Per table: md5(concat(md5(to_jsonb(row)::text) ordered by JSON id then full JSON text)); empty table md5(empty). One RepeatableRead read-only transaction.",
+    "tables": [
+      {
+        "table": "Dispatch",
+        "count": 6,
+        "md5": "bc6b9db13d8210144196a6c3e681fa28"
+      },
+      {
+        "table": "DeliveryAssignment",
+        "count": 15,
+        "md5": "d62d85623aaf1cdc89c035c8a546affa"
+      },
+      {
+        "table": "DeliveryExecution",
+        "count": 4,
+        "md5": "96d39d479e8319e0a1c90a3d62324a4b"
+      },
+      {
+        "table": "DeliveryExecutionEvent",
+        "count": 40,
+        "md5": "9fb3752b2c270136ed2d2837d1713b12"
+      },
+      {
+        "table": "DeliveryExecutionCommand",
+        "count": 15,
+        "md5": "c5a0d133b9d0e5adf8fe4ee6e9da4ded"
+      },
+      {
+        "table": "DeliveryCustodyIncident",
+        "count": 2,
+        "md5": "aed2e96e126e6eb0d298d13a73e80bd9"
+      },
+      {
+        "table": "DeliveryCustodyResolution",
+        "count": 2,
+        "md5": "dce3c1f320a09bfec8d0c1618e5f7e6c"
+      },
+      {
+        "table": "CreditLedgerEntry",
+        "count": 6,
+        "md5": "292d27c94d8c44fb1f3d2533ba54331b"
+      },
+      {
+        "table": "DeliveryLocationHead",
+        "count": 6,
+        "md5": "59bafed62a2125ff778edef0694e0f16"
+      },
+      {
+        "table": "DeliveryShippingTerms",
+        "count": 2,
+        "md5": "cf9838411aee7c768340bd9d4d626e3e"
+      },
+      {
+        "table": "ShippingCollectionDeclaration",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    ]
+  },
+  "requiredNext": "Proposed separate native API and PostgreSQL database; not started or prepared. After legal API preparation collect fresh eleven-table hashes before Android reads.",
+  "restrictions": {
+    "dockerUsed": false,
+    "productChanged": false,
+    "closedAssignmentReopened": false,
+    "executionDeleted": false,
+    "constraintsDisabled": false,
+    "requesterTermsFabricated": false,
+    "fixtureConsumed": false
+  }
+}
