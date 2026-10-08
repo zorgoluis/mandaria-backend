@@ -2,6 +2,10 @@
 
 ## Independientes: recuperación TAKE/RELEASE V1.19
 
+[Entorno nativo de independientes](docs/V1.19-INDEPENDENT-NATIVE-FIXTURES.md): API43133/PG55445, entrega inicial histórica; APP informó consumo y parada. No reabrir estados consumidos.
+
+[Nuevo entorno GPS exclusivo para APP](docs/V1.19-GPS-NATIVE-FIXTURES.md): API43134/PG55446, escenarios separados basic/transfer/incident/terminal/negative y receptor libre. GPS/enlaces habilitados sólo allí, sin muestras iniciales; credenciales/enlaces privados y comandos exclusivos start/snapshot/stop. Consultar manifiesto y vigencia antes de consumir.
+
 [Contrato APP y despliegue coordinado](docs/V1.19-INDEPENDENT-ATTEMPTS.md): consulta de recibo propio y cierre explícito con Idempotency-Key. La ausencia de resultado no acredita fracaso; un cierre confirmado impide el POST tardío sólo si el escritor participa en este protocolo. Las llamadas antiguas sin clave conservan compatibilidad, sin esa garantía. RELEASE devuelve créditos mediante SERVICE_REFUND según reglas, no efectivo al cliente. Contrato humano en docs/openapi.json; rutas Driver excluidas del público B2B. Implementación verificada localmente, no desplegada.
 
 ## V1.18 — ubicación y enlace temporal (backend local)

@@ -4,6 +4,22 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación Git autorizada (2026-10-08):** preparado commit de herramientas nativas independientes/GPS, guías, manifiestos y evidencia de transferencia en rama actual `v1.18-GPS_seguimiento_temporal`. Revisados11 archivos previstos: JSON válidos, sin coincidencias con secretos privados locales; syntax de ambos preparadores, Oxlint focal y diff aprobados en esta tarea. Verificaciones operativas anteriores conservadas como históricas; no se repitieron ni tocaron entornos reservados por APP. `.tmp`, credenciales y residual `nul` excluidos. Commit/push solicitados por el propietario; sin despliegue ni activación.
+
+- **Transferencia GPS sintética coordinada (2026-10-08):** autorización humana de integración/coordinar SUPER_ADMIN comprobada en APP. Preflight/apply sólo sobre43134/55446 identificados, Node19608/PG41652; incidencia d5bf4472-169f-4e7a-9af4-98c652bb8eff abierta, revisión5/PICKED_UP y E elegible. Único resolve200 y recibo APPLIED: resolución9cdc2dd0-ceac-4f50-9cc4-87bc4e2b32ef, assignment E5f7177cd-f324-47b9-b3f9-64d3e18900c1 ACTIVE, revisión6/misma fase/cadena, anterior TRANSFERRED. Ledger/saldo65/términos/declaraciones/outbox conservados; GPS sin stream/muestra y generación incrementada. Otras incidencias/ejecuciones sin cambios. [Evidencia](docs/checks/v119-gps-transfer.json). Sin publicar GPS ni cerrar entorno; APP continuará receptor y verificará rechazo del emisor anterior. Nueva prueba API y SQL read-only antes/después, syntax/diff; suites/Android no reejecutados aquí. Sin producto/flags/Docker/commit/push.
+
+- **Handoff integración GPS Android (2026-10-07):** leídos informe APP y guía nativa43134/55446. APP reporta50 unitarias/15 regresiones Compose y emulador con transporte sintético; no reejecutado aquí. Prompt APP para start/verify/snapshot antes de consumir fixtures, stream/ACK/reinicio e invalidaciones reales y proyecciones B2B/shared. Enlaces TTL absoluto, no init ni restaurar fixtures consumidos. Credenciales B2B sólo verificador anfitrión, no APK. Separar Compose, HTTP complementario, resolución SUPER_ADMIN y prueba física pendiente.
+
+- **Parada GPS solicitada por APP, estado ya detenido (2026-10-08 05:48 UTC):** sin listeners43134/55446 ni PID19608/41652; pg_ctl status del datadir exclusivo confirmó no server running. No fue necesario ejecutar stop ni reiniciar; no atribuir causa/forma de terminación. Archivos de datos/referencias/credenciales conservados, sin lectura SQL nueva. APP reporta cero consumo/streams, no reejecutado aquí. Guía GPS actualizada con start→verify→snapshot y enlaces que vencen9oct05:38 UTC sin pausar TTL. Verificación nueva de procesos/puertos/archivos y diff; preparación anterior histórica. No otros entornos, producto, Docker, commit/push.
+
+- **Nuevo handoff GPS Android V1.19 preparado (2026-10-07 local / 2026-10-08 05:44 UTC):** pedido APP distinto del entorno independiente ya consumido. API43134/PG55446 `mandaria_v119_gps_local`, Node19608/PG41652 encendidos;43 migraciones normales, build03dd2aa congelado. [Guía](docs/V1.19-GPS-NATIVE-FIXTURES.md), [manifiesto/huellas](docs/checks/v119-gps-native-ready.json). Cinco FLEET ACTIVE DETAILED: A TO_PICKUP, B/C PICKED_UP, D AT_DROPOFF, F phase=null; E receptor libre. Todos RECIPIENT, cinco awards7/saldo65,12 avances iniciales por APIs Driver. GPS/enlaces true sólo aquí; cero streams/muestras/incidencias/resoluciones/declaraciones/entregas. Credenciales y cinco enlaces privados. Nueva verificación: build/docs/syntax/Oxlint, HTTP Driver/B2B/destinatario y permisos,43 migraciones; snapshot/stop/start/repetición prepare exit0,13 tablas idénticas salvo cuotas separadas. Primer verificador falló por me.driver.id frente a me.id; corregida sólo herramienta y corrida completa posterior aprobada. Entornos anteriores intactos; sin producto/Docker/producción/commit/push. Pendientes APP GPS simulado/físico y transferencia coordinada posterior, no acreditados por preparación.
+
+- **Reconciliación de entrega independiente V1.19 (2026-10-07):** preparación ya ejecutada; contrastados guía, manifiesto y reporte posterior `androidApp/V1.19-INDEPENDIENTE-NATIVO.md`. APP reporta consumo y parada; comprobación nueva de listeners43133/55445 sin resultados. No reiniciar ni duplicar los estados iniciales consumidos. Actualizada guía distinguiendo entrega histórica de estado actual detenido. Verificación nueva: lectura documental y `git diff --check`; sin pruebas de producto nuevas ni escrituras operativas. Historial previo conservado; sin commit/push.
+
+- **V1.19 independientes acreditado en APP e inicio GPS (2026-10-07):** leído informe móvil V1.19-INDEPENDIENTE-NATIVO;13 etapas Compose y13 invariantes snapshot reportadas, sin duplicados; no reejecutadas aquí. Pendientes concretos UNKNOWN activo (alcanzabilidad no demostrada), independent=null, VEHICLE_BUSY aislado y físico; no fabricar estados ni cerrar esa cobertura. Siguiente APP integra protocolo GPS V1.18 en Android preservando diseño, sin reabrir fixtures consumidos; backend preparará datos nuevos cuando APP entregue pedido exacto.
+
+- **Fixtures independientes V1.19 listos para APP (2026-10-07 23:06 UTC):** nuevo entorno exclusivo API43133/PG55445 `mandaria_v119_independent_local`, Node15064/PG40864 encendidos; revisión03dd2aa, build congelado y43 migraciones. [Guía](docs/V1.19-INDEPENDENT-NATIVE-FIXTURES.md), [manifiesto/huellas](docs/checks/v119-independent-native-ready.json). Doce Drivers APPROVED, nueve ofertas OPEN sin asignación (trackingMode=null, futuro TAKE DETAILED), un FLEET ACTIVE LEGACY de sólo lectura. Costo independiente14/saldo13 para driverC,100 para los demás. Ningún TAKE/RELEASE/cierre/hito/cobro/incidencia reservado ejecutado. API real Driver, baseline once tablas+intentos0, snapshot/stop/start y repetición sin cambios acreditados. Ventana real vence2026-10-08 22:59 UTC; no renovar ni reabrir automáticamente. GPS/enlaces false, correo/routing locales, sin destinos webhooks. Entornos reservados intactos. Credenciales sólo privadas. Pendiente Android y deltas; sin producto/commit/push/activación.
+
 - **Publicación Git autorizada (2026-10-07):** preparación de commit y push en la rama actual `v1.18-GPS_seguimiento_temporal` del contrato/recuperación independientes V1.19, corrección Swagger y herramientas/evidencia de fixtures acumuladas. Verificación de esta tarea: revisión del alcance y `git diff --check`; resultados de suites anteriores conservados como históricos, no reejecutados. Archivo local residual `nul` excluido; configuración privada y `.tmp` fuera del commit. No despliegue ni activación.
 
 - **Handoff independientes APP/fixtures (2026-10-07):** leídos contrato final y pedido backend. TAKE/RELEASE con UUID key retornan IndependentCommandResponse; consulta/cierre propios con canPrepareNewAttempt e INDEPENDENT_ATTEMPT_CLOSED, no protocolo ejecución. APPLIED histórico permanece válido tras404 actual. Preparación nativa nueva migración43 pendiente, no usar entornos reservados; APP integración contractual y backend fixtures pueden avanzar por separado. LEGACY/UNKNOWN RELEASE bloqueado; suspensión independiente con ACTIVE es estado prohibido, no fixture a fabricar.
@@ -559,6 +575,14 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-07 — Preparación nativa de independientes para Android
+
+Solicitud: ejecutar pedido de fixtures independientes sin consumir operaciones ni usar entornos anteriores. Creado `scripts/prepare-native-v119-independent.mjs`, reutilizando infraestructura del preparador nativo con destinos fijos nuevos, ACL privada, identidad SQL/procesos, migraciones normales y bootstrap administrador. Proveedores/recursos/cobertura/tarifa/políticas/recargas/solicitudes/quotes/accept y LEGACY por APIs; ninguna escritura SQL operacional. LEGACY creado con admisión detallada false sólo en el proceso nuevo, después true para futuras asignaciones. Preparación termina en ofertas, no inventa hitos ni custodia.
+
+Verificaciones nuevas: build, docs:b2b:check, sintaxis Node, Oxlint focal, diff; lecturas autorizadas de12 Drivers, vehículos, saldos, diez servicios y nueve ofertas listadas. Migración43 finalizada; once huellas y IndependentDispatchAttempt separado. Snapshot/stop/start/repetición prepare comprobados: doce huellas iguales, no duplicados. Se conservaron y corrigieron sólo en herramienta:429 activación (cuota10/min), DTO400 vehículo (status no admitido) y aserción GPS (10 cabeceras automáticas vacías, cero muestras). Los dos rechazos de preparación fueron acreditados sin efectos antes de reanudar; no se borraron datos ni restricciones. Suites de producto anteriores no repetidas.
+
+Resultado: entorno encendido listo para APP, documentación y manifiesto sin secretos. Android debe ejecutar TAKE/RELEASE, cierres tardíos, avances, incidencias y declaración de efectivo sobre escenarios separados; luego comprobar deltas legítimos y referencias económicas, no igualdad total. LEGACY sólo lectura. Credenciales privadas por alias; ningún acceso a producción/Coita/Docker, sin cambios móviles, commit/push/despliegue/activación remota.
 
 ### 2026-10-07 — Commit y push solicitados por el propietario
 
@@ -2549,3 +2573,21 @@ Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/t
 - Verificación actual: lectura contratos/continuidad y git diff --check, sin pruebas reejecutadas.
 - Resultado: distinguir recibos/estado actual, compatibilidad sin key sin protección, ledger créditos distinto de efectivo.
 - Pendientes: sincronización móvil, preparación y recorrido real; físico/GPS separados. Sin producto, servicios, Docker, commit/push ni activación.
+
+
+## 2026-10-07 — Coordinación GPS Android tras independientes
+
+- Contexto: entrega integración independiente real, entornos detenidos.
+- Cambios: continuidad y prompt APP GPS basado en handoff real.
+- Verificación: lecturas de continuidad, V1.18-DRIVER-APP e informe APP; git diff --check. Sin pruebas/servicios nuevos.
+- Resultado: fase principal independientes acreditada por APP con límites conservados; GPS siguiente, evidencia física separada.
+- Pendientes: casos independientes residuales, GPS implementación/fixtures/integración y físico. Sin Docker, producto, commit/push ni activación.
+
+
+## 2026-10-07 — Continuación integración GPS nativa
+
+- Contexto: APP entrega GPS implementado y fixtures preparados detenidos.
+- Cambios: continuidad y prompt APP; sin producto.
+- Verificaciones actuales: lectura continuidad, informe móvil GPS y guía fixture; git diff --check. Sin servicios ni pruebas nuevas.
+- Resultado: recorrido real definido con límites/cuotas vigentes y conservación de datos.
+- Pendientes: integración GPS Android/backend/proyecciones, físico y casos residuales independientes. Sin Docker, commit/push ni publicación.
