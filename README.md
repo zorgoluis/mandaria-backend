@@ -2,6 +2,8 @@
 
 ## Independientes: recuperación TAKE/RELEASE V1.19
 
+[Residuales independientes y fixture flotilla sin perfil](docs/V1.19-INDEPENDENT-RESIDUAL-FIXTURES.md): entorno exclusivo43136/55448, API real independent=null, ACTIVE LEGACY/DETAILED y Driver libre; análisis de UNKNOWN/VEHICLE_BUSY sin fabricar estados. Credenciales privadas, comandos y baseline en la guía; Compose pendiente APP.
+
 [Fixtures GPS físicos exclusivos](docs/V1.19-GPS-PHYSICAL-FIXTURES.md): nuevo API43135/PG55447, tres escenarios reservados; teléfono por adb reverse, sin LAN. Herramientas snapshot/observe sanitizan GPS real. Preparación backend acreditada; validación física corresponde a APP, no reutilizar GPS anterior consumido.
 
 [Entorno nativo de independientes](docs/V1.19-INDEPENDENT-NATIVE-FIXTURES.md): API43133/PG55445, entrega inicial histórica; APP informó consumo y parada. No reabrir estados consumidos.

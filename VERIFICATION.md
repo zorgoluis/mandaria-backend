@@ -1,4 +1,14 @@
 
+## V1.19 — residuales independientes, 2026-10-09
+
+**PASS de preparación y análisis backend; Compose pendiente APP.** [Guía y matriz](docs/V1.19-INDEPENDENT-RESIDUAL-FIXTURES.md), [evidencia](docs/checks/v119-independent-residual-ready.json). No es un nuevo PASS de GPS/TAKE/RELEASE/recuperación anteriores.
+
+Nuevo entorno43136/55448 identificado por puertos libres/directorio ausente antes de init y por SQL/PID/launcher antes de preparar; 43/43 migraciones normales. Driver A ACTIVE FLEET DETAILED sin primer hito, Driver D ACTIVE FLEET LEGACY sin ejecución y B libre, todos independent=null real. GET me/detalle/ejecución autorizados; vehículos/mercado/TAKE independiente409 INDEPENDENT_NOT_APPROVED. No cambios en11 tablas operativas, CreditAccount ni IndependentDispatchAttempt después de rechazos o stop/start/repetición del preparador. Saldo86, dos awards de7, cero refunds e intentos independientes. Credenciales y respuestas completas privadas; manifiesto sin secretos.
+
+Ejecutados: `npm run build`, syntax Node y Oxlint focal de `scripts/prepare-native-v119-independent-residual.mjs`; init/start/prepare, snapshot/stop/start/prepare, verificación SQL read-only financiera y comparación contra baseline inicial, exit0. La primera lectura auxiliar final sin elevación no alcanzó55448; repetida en el contexto autorizado completó exit0, sin modificar producto ni atribuir causa de red. Warning inicial de estilo regex corregido; Oxlint posterior limpio. `git diff --check` y privacidad documental revisados al cierre. No pruebas Android, suites generales ni contratos regenerados.
+
+Inspección separada: classifier SQL garantiza LEGACY/DETAILED al existir ACTIVE; null por ausencia histórica no es UNKNOWN. Constraints de propietario/perfil/asignación y transferencia impiden vehículo propio independiente ocupado por otro Driver; DRIVER_BUSY precede a VEHICLE_BUSY si las validaciones previas permiten llegar. No prueba HTTP artificial de esos estados; fuentes y pruebas existentes inspeccionadas, no reejecutadas, en la guía. Pendiente Compose breve de flotilla sin perfil; defensas móviles desconocidas siguen sintéticas.
+
 ## V1.19 — preparación nueva para GPS físico, 2026-10-08
 
 **PASS de preparación backend; validación física pendiente APP.** [Guía](docs/V1.19-GPS-PHYSICAL-FIXTURES.md), [manifiesto/huellas](docs/checks/v119-gps-physical-ready.json). Puertos43135/55447 y directorio ausentes comprobados antes de init; SQL/PID/launcher/datadir identificados antes de writes.43 migraciones normales/seed admin, resto por APIs; build505e7a3 congelado. No reutiliza anteriores ni copia .env. Loopback exclusivamente; adb reverse todavía no ejecutado por BACKEND.

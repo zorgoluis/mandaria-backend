@@ -4,6 +4,14 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación Git de residuales V1.19 autorizada (2026-10-09):** preparación de commit/push en la rama actual `v1.18-GPS_seguimiento_temporal`; siete archivos de herramienta, guía, manifiesto y continuidad revisados. Verificaciones nuevas: sintaxis Node, Oxlint focal, JSON, diff y comparación contra13 valores privados locales sin coincidencias. Evidencia funcional previa conservada como histórica; sin arrancar entornos ni repetir suites. `.tmp`, credenciales y residual `nul` excluidos; sin despliegue ni activación.
+
+- **Cierre documental APP V1.19 revisado (2026-10-09):** revisados informe técnico y plan de publicación APP. Validación funcional local histórica conservada; distribución pendiente por red release, divulgación GPS, atribución, verificación 16KB/API37 y continuidad de firma. Siguiente propuesta APP: corregir aislamiento de red release sin inventar destino y preparar cambios restantes sujetos a datos del propietario. Canal, custodio, HTTPS y política operativa/privacidad no elegidos. Revisión documental únicamente; sin suites, servicios, firma, publicación ni activación.
+
+- **Consolidación V1.19 solicitada (2026-10-09):** leído cierre residual APP y continuidad móvil: independent=null PASS Compose A/D/B,13 huellas iguales y entorno detenido según evidencia APP, no reejecutado aquí. ACTIVE UNKNOWN/VEHICLE_BUSY aislado conservan clasificación no alcanzable actual, no PASS nativo. Siguiente APP prepara informe de cierre y plan de distribución Android con trazabilidad por revisión, límites físicos/API y condiciones operativas/backend, sin repetir suites ni firmar/publicar. Estados anteriores de fixtures listos/Compose pendiente quedan históricos.
+
+- **Residuales independientes V1.19 cerrados en backend (2026-10-09):** [análisis/guía](docs/V1.19-INDEPENDENT-RESIDUAL-FIXTURES.md), [manifiesto](docs/checks/v119-independent-residual-ready.json). Nuevo entorno exclusivo43136/55448, base mandaria_v119_independent_residual_local, build1a72959 congelado/43 migraciones; GPS/enlaces false, locales sin externos. Driver sólo flotilla independent=null comprobado por HTTP, acceso OWNER y rechazo409 de vehículos/mercado/TAKE independiente;13 huellas iguales, saldo86, dos awards7 y cero intentos/refunds. ACTIVE LEGACY y DETAILED preparados sin hitos; Driver libre con activeDeliveryAssignment=null. ACTIVE UNKNOWN y VEHICLE_BUSY aislado en TAKE no alcanzables en flujos válidos actuales según clasificador/propiedad/constraints, sin fabricar fixtures. Nuevos build/syntax/Oxlint, APIs/SQL, snapshot/stop/start y preparación repetida aprobados; APP Compose pendiente, suites y GPS anteriores no repetidos. Entorno encendido Node14828/PG44044 al verificar; datos privados ignorados. Sin producto, Docker, otros entornos, commit/push ni activación.
+
 - **Publicación Git autorizada (2026-10-09):** preparación de commit/push en `v1.18-GPS_seguimiento_temporal` de herramienta, guía y manifiesto GPS físico, más continuidad acumulada. Verificaciones nuevas: seis archivos revisados sin coincidencias con secretos locales conocidos, JSON de evidencia válido y sin coordenadas, syntax/Oxlint focal/diff aprobados. Resultados operativos previos conservados como históricos; no se reiniciaron entornos ni reejecutaron pruebas físicas. Privados/.tmp y residual `nul` excluidos; sin despliegue ni activación.
 
 - **Cierre de cobertura independiente V1.19 (2026-10-09):** propietario solicita continuar tras reporte físico GPS. Se prepara prompt BACKEND para independent=null real y análisis de alcanzabilidad UNKNOWN/null con ACTIVE y VEHICLE_BUSY aislado; no fabricar estados, reordenar guards ni relajar constraints. Revisión coordinadora sólo documental/búsqueda de fuentes, sin pruebas nuevas. Validación física reportada por APP no equivale a publicación/autonomía diaria; pendientes operativos conservados.
@@ -2606,3 +2614,36 @@ Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/t
 - Verificaciones actuales: lectura continuidad, límites del informe APP y búsqueda guards; git diff --check. No servicios/DB ni suites.
 - Resultado: clasificar escenarios alcanzables y defensas de cliente, no exigir fixtures imposibles ni declarar aprobado lo no probado.
 - Pendientes: revisión backend, fixture de flotilla sin perfil, prueba APP acotada y consolidación. Sin Docker, producto, commit/push ni despliegue.
+
+## 2026-10-09 — análisis y preparación de residuales independientes
+
+- Solicitud: cerrar independent=null, ACTIVE UNKNOWN/null y VEHICLE_BUSY aislado, sin repetir protocolos acreditados ni cambiar producto.
+- Cambios: preparador nativo exclusivo reutilizando mecanismos de APIs/seed bootstrap; guía con matriz y pruebas APP, manifiesto sanitizado, README/VERIFICATION y enlace al contrato de intentos. Historial conservado.
+- Verificación nueva: build/syntax/Oxlint, migraciones normales43/43, salud, me/detalle/ejecución Driver, rechazos409 del perfil ausente,13 huellas antes/después, saldo86 y ledger; snapshot/stop/start/preparación repetida sin duplicados. Lectura auxiliar final sin elevación no alcanzó PG; contexto autorizado completó sin cambios. Inspección de constraints y código separada de pruebas; suites históricas no reejecutadas.
+- Resultado: independent=null preparado; ACTIVE UNKNOWN y VEHICLE_BUSY aislado independiente no alcanzables por los flujos legales actuales, con demostración documentada. Ningún hito, incidencia, cobro de efectivo, transferencia o cierre consumido. Entorno43136/55448 encendido, sin externos/GPS/enlaces.
+- Pendientes: Compose breve de APP con driverA/B, mantener defensas sintéticas ante contrato desconocido. Sin cambios de producto, entornos anteriores, Docker, producción, commit/push ni activación. Residual nul conservado.
+
+
+## 2026-10-09 — Preparación de cierre y plan publicación V1.19
+
+- Solicitud: continuar consolidación tras validación residual móvil.
+- Cambios: continuidad y prompt APP documental de cierre/release.
+- Verificación actual: lectura continuidad backend/móvil y evidencia residual; inventario archivos de build; git diff --check. No pruebas ni build nuevos.
+- Resultado: distinguir validación local por alcance de autorización para publicar; revisar firma/configuración/canales y compatibilidad sin inferirlos aprobados.
+- Pendientes: informe APP y matriz bloqueo de activación; no crear keystore ni usar producción. Sin Docker, commit/push ni despliegue.
+
+### 2026-10-09 — Revisión de cierre y distribución Android
+
+- Solicitud: revisar entrega de cierre técnico y plan de publicación APP.
+- Cambios: continuidad coordinadora; separación de validación local y candidato distribuible.
+- Verificaciones actuales: lectura de continuidad y hallazgos D1-D5; git diff --check. Evidencia funcional anterior no reejecutada.
+- Resultado: siguientes correcciones y decisiones identificadas, sin aprobar canal ni destino.
+- Pendientes: red release, privacidad, mapas, binario y firma; decisiones del propietario y comprobación posterior del candidato.
+
+### 2026-10-09 — Publicación Git de residuales independientes
+
+- Solicitud: commit y push a la rama actual.
+- Cambios: incluir herramienta nativa exclusiva, guía, manifiesto y documentación/continuidad acumulada, conservando las entradas previas.
+- Verificaciones ejecutadas ahora: node --check, Oxlint focal, JSON válido, git diff --check, exclusión Git de privados y revisión de siete archivos contra13 valores privados locales sin coincidencias.
+- Resultado: conjunto revisado para publicar; pruebas operativas anteriores históricas, no reejecutadas. Sin tocar datos, procesos, Docker ni producción.
+- Pendientes: condiciones de distribución/activación documentadas siguen vigentes. Archivo residual nul conservado fuera del commit.
