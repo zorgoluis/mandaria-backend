@@ -2,6 +2,8 @@
 
 ## Independientes: recuperación TAKE/RELEASE V1.19
 
+[Fixtures GPS físicos exclusivos](docs/V1.19-GPS-PHYSICAL-FIXTURES.md): nuevo API43135/PG55447, tres escenarios reservados; teléfono por adb reverse, sin LAN. Herramientas snapshot/observe sanitizan GPS real. Preparación backend acreditada; validación física corresponde a APP, no reutilizar GPS anterior consumido.
+
 [Entorno nativo de independientes](docs/V1.19-INDEPENDENT-NATIVE-FIXTURES.md): API43133/PG55445, entrega inicial histórica; APP informó consumo y parada. No reabrir estados consumidos.
 
 [Nuevo entorno GPS exclusivo para APP](docs/V1.19-GPS-NATIVE-FIXTURES.md): API43134/PG55446, escenarios separados basic/transfer/incident/terminal/negative y receptor libre. GPS/enlaces habilitados sólo allí, sin muestras iniciales; credenciales/enlaces privados y comandos exclusivos start/snapshot/stop. Consultar manifiesto y vigencia antes de consumir.

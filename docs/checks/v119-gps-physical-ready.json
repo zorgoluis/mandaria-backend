@@ -1,0 +1,855 @@
+{
+  "status": "READY_FOR_PHYSICAL_ANDROID_GPS",
+  "at": "2026-10-09T05:52:37.588Z",
+  "api": "http://127.0.0.1:43135/api/v1",
+  "identity": {
+    "database": "mandaria_v119_gps_physical_local",
+    "port": "55447",
+    "directory": "C:/Users/zorgl/Documents/mandaria-backend/.tmp/native-v119-gps-physical/pgdata",
+    "started": "2026-10-08 23:51:59.381945-06"
+  },
+  "processes": [
+    {
+      "port": 43135,
+      "address": "127.0.0.1",
+      "pid": 24924,
+      "name": "node.exe",
+      "path": "C:\\nvm4w\\nodejs\\node.exe",
+      "started": "2026-10-09T05:51:59.6016000Z"
+    },
+    {
+      "port": 55447,
+      "address": "127.0.0.1",
+      "pid": 38512,
+      "name": "postgres.exe",
+      "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+      "started": "2026-10-09T05:51:59.2793580Z"
+    }
+  ],
+  "revision": {
+    "head": "505e7a37527b82109a68d2c34c219ba4af86afa9",
+    "openapiSha256": "cda3164bc0c32e7ef00de2017f8675974ea050b55dc623f6b4b1c40b3c340228",
+    "sourceFiles": [
+      {
+        "path": "docs/V1.18-DRIVER-APP.md",
+        "sha256": "cd0440b1243be5a27ed0537c3c28a25e5a537f0c4dd3f49bbfd5feaed2d9248d"
+      },
+      {
+        "path": "docs/V1.18-B2B.md",
+        "sha256": "3ef3d6036d891c1406918615b44a29b0b306a3a780d956ee6701cdec812923c9"
+      },
+      {
+        "path": "docs/V1.18-WEB.md",
+        "sha256": "8b40a7cad4c0b7d22cceab9cffcfc22e6644d2f80f7a89aa00049bd0bee8bb32"
+      },
+      {
+        "path": "docs/openapi.json",
+        "sha256": "cda3164bc0c32e7ef00de2017f8675974ea050b55dc623f6b4b1c40b3c340228"
+      },
+      {
+        "path": "src/location/location.controller.ts",
+        "sha256": "5e6a2b2ee463aead56968a53a6958f9be3df8b3aac2da8af0ececfb4e3de019f"
+      },
+      {
+        "path": "src/location/location.dto.ts",
+        "sha256": "922a8b6ecd61f9bdf6b6cd0fb3c68a56486f58a47f61ffa285afc9f735238f26"
+      },
+      {
+        "path": "src/location/location.responses.ts",
+        "sha256": "fb99e5cd9e4b20cca39c0e745413753a1465326670a1e5ab00ff37e64665e630"
+      },
+      {
+        "path": "src/location/location.service.ts",
+        "sha256": "e4527114d9c1416af4825e1513f73b3fa40f9ba324444a40e2ef1bbf6e78cd12"
+      },
+      {
+        "path": "src/setup.ts",
+        "sha256": "71a55a04cdf5d8ccabb45e95d40fc3f90d0d3edbd134a8851f151ea99369a4fc"
+      },
+      {
+        "path": "src/common/http-exception.filter.ts",
+        "sha256": "c9b86a4d681d7be211029eba045efcc8b54bd6848ce7b2e81f8097b76fecd2a1"
+      },
+      {
+        "path": "src/delivery-assignments/delivery-assignments.service.ts",
+        "sha256": "99af9327397db38002111e158044c9a0b368860744dc8345e27c1b4d66237eb8"
+      },
+      {
+        "path": "src/delivery-execution/execution.persistence.ts",
+        "sha256": "30472d4ad54e4df2dff2f0f03b78b364c956e3fabddeaddad97e33e996b2baf4"
+      },
+      {
+        "path": "src/delivery-execution/execution.responses.ts",
+        "sha256": "c29c33a976f0d2f77edaf76bfd8b5d3fafc38de513663edf2b6bb39804bcbfbf"
+      }
+    ],
+    "copiedAt": "2026-10-09T05:48:47.286Z",
+    "build": {
+      "files": 666,
+      "sha256": "054bd3325a7b154811ecd3c5983ff66d6f2d1c439a78edb5e430949c693c7c6a",
+      "algorithm": "SHA256(JSON array of ordered relative path + file SHA256)"
+    },
+    "preparerSha256": "c5cea74785c8e572e06567f52bc3828791c29aaab9a72ee09de4b1905d4d4e62",
+    "nodeVersion": "v24.15.0"
+  },
+  "preparerSha256": "e42fd827a49d1c771ab0fc7cd140d9f9cc054efb8d6f7bc0faebe9e3594766c6",
+  "providerId": "2cada1d8-da48-494f-9cd7-9456a3cba741",
+  "operatorUserId": "93f9fcf1-4aca-4057-8323-953a96b221f0",
+  "scenarios": [
+    {
+      "alias": "physical-main",
+      "driverAlias": "driverA",
+      "driverId": "3e638e17-d5bb-479a-aa3e-4e0200f7703f",
+      "userId": "2e479cb9-117f-40c8-90c3-46011637240a",
+      "vehicleId": "722246e3-ccc2-4ca2-b898-9f6ae4ad6722",
+      "pairingId": "9d78c22c-2544-4492-b750-596e8effaa63",
+      "providerId": "2cada1d8-da48-494f-9cd7-9456a3cba741",
+      "dispatchId": "20e3aef6-fc2b-4f01-beca-e1241c5f6daf",
+      "assignmentId": "eca2d66d-f3de-4bd2-a2b7-4eb2072f2ab5",
+      "requestPublicId": "MDR-000001",
+      "quotePublicId": "MQ-000001",
+      "trackingMode": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "phase": "PICKED_UP",
+      "linkExpiresAt": "2026-10-10T05:50:16.968Z",
+      "assignmentStatus": "ACTIVE",
+      "revision": 4,
+      "allowedActions": [
+        "ADVANCE",
+        "REPORT_INCIDENT"
+      ],
+      "stream": {
+        "streamId": null,
+        "streamRevision": "5",
+        "lastSequence": 0,
+        "canPublish": true
+      },
+      "ownerProjection": {
+        "publicId": "MDR-000001",
+        "progress": {
+          "publicVersion": "12",
+          "status": "ASSIGNED",
+          "trackingMode": "DETAILED",
+          "assignmentState": "ACTIVE",
+          "phase": "PICKED_UP",
+          "attentionRequired": false,
+          "terminalOutcome": null
+        },
+        "location": {
+          "locationVersion": "9",
+          "assignmentGeneration": "4",
+          "availability": "UNAVAILABLE",
+          "unavailableReason": "NO_SAMPLE",
+          "sample": null
+        },
+        "observation": {
+          "evaluatedAt": "2026-10-09T05:52:22.978Z",
+          "freshness": "UNAVAILABLE"
+        }
+      },
+      "recipientProjection": {
+        "publicId": "MDR-000001",
+        "progress": {
+          "publicVersion": "12",
+          "status": "ASSIGNED",
+          "trackingMode": "DETAILED",
+          "assignmentState": "ACTIVE",
+          "phase": "PICKED_UP",
+          "attentionRequired": false,
+          "terminalOutcome": null
+        },
+        "location": {
+          "locationVersion": "9",
+          "assignmentGeneration": "4",
+          "availability": "UNAVAILABLE",
+          "unavailableReason": "NO_SAMPLE",
+          "sample": null
+        },
+        "observation": {
+          "evaluatedAt": "2026-10-09T05:52:23.794Z",
+          "freshness": "UNAVAILABLE"
+        }
+      }
+    },
+    {
+      "alias": "physical-incident",
+      "driverAlias": "driverB",
+      "driverId": "fdbadab7-05a5-4b11-8b29-c970e5074f16",
+      "userId": "884a581c-e6b5-4e31-852b-a5e0a6174c5e",
+      "vehicleId": "e6ac9243-46da-42e4-99c5-28c74fb8dc29",
+      "pairingId": "6720d4b8-88c7-4657-9800-8e198439a35c",
+      "providerId": "2cada1d8-da48-494f-9cd7-9456a3cba741",
+      "dispatchId": "c0a82759-a523-40f8-b0ae-6db3e863abe7",
+      "assignmentId": "344b8be2-f07c-40fc-9bcb-3c56a05d5ff8",
+      "requestPublicId": "MDR-000002",
+      "quotePublicId": "MQ-000002",
+      "trackingMode": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "phase": "PICKED_UP",
+      "linkExpiresAt": "2026-10-10T05:50:29.040Z",
+      "assignmentStatus": "ACTIVE",
+      "revision": 4,
+      "allowedActions": [
+        "ADVANCE",
+        "REPORT_INCIDENT"
+      ],
+      "stream": {
+        "streamId": null,
+        "streamRevision": "5",
+        "lastSequence": 0,
+        "canPublish": true
+      },
+      "ownerProjection": {
+        "publicId": "MDR-000002",
+        "progress": {
+          "publicVersion": "12",
+          "status": "ASSIGNED",
+          "trackingMode": "DETAILED",
+          "assignmentState": "ACTIVE",
+          "phase": "PICKED_UP",
+          "attentionRequired": false,
+          "terminalOutcome": null
+        },
+        "location": {
+          "locationVersion": "9",
+          "assignmentGeneration": "4",
+          "availability": "UNAVAILABLE",
+          "unavailableReason": "NO_SAMPLE",
+          "sample": null
+        },
+        "observation": {
+          "evaluatedAt": "2026-10-09T05:52:29.432Z",
+          "freshness": "UNAVAILABLE"
+        }
+      },
+      "recipientProjection": {
+        "publicId": "MDR-000002",
+        "progress": {
+          "publicVersion": "12",
+          "status": "ASSIGNED",
+          "trackingMode": "DETAILED",
+          "assignmentState": "ACTIVE",
+          "phase": "PICKED_UP",
+          "attentionRequired": false,
+          "terminalOutcome": null
+        },
+        "location": {
+          "locationVersion": "9",
+          "assignmentGeneration": "4",
+          "availability": "UNAVAILABLE",
+          "unavailableReason": "NO_SAMPLE",
+          "sample": null
+        },
+        "observation": {
+          "evaluatedAt": "2026-10-09T05:52:30.238Z",
+          "freshness": "UNAVAILABLE"
+        }
+      }
+    },
+    {
+      "alias": "physical-terminal",
+      "driverAlias": "driverC",
+      "driverId": "b025d1fd-6132-4846-9f66-4779e2f3f8fc",
+      "userId": "df6eb5a2-08da-471e-99ba-61d6efc6589f",
+      "vehicleId": "703f4b17-d954-4bd5-84f8-1873cbf4bbe4",
+      "pairingId": "1b07a179-81d7-4a76-9380-41022dc6c55b",
+      "providerId": "2cada1d8-da48-494f-9cd7-9456a3cba741",
+      "dispatchId": "c9141bb1-acbc-479a-9dbc-2f8ad91091cf",
+      "assignmentId": "efa4f0f9-1ef5-4a8a-a2f6-60f466a67b1b",
+      "requestPublicId": "MDR-000003",
+      "quotePublicId": "MQ-000003",
+      "trackingMode": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "phase": "AT_DROPOFF",
+      "linkExpiresAt": "2026-10-10T05:50:44.322Z",
+      "assignmentStatus": "ACTIVE",
+      "revision": 6,
+      "allowedActions": [
+        "DELIVER",
+        "REPORT_INCIDENT"
+      ],
+      "stream": {
+        "streamId": null,
+        "streamRevision": "5",
+        "lastSequence": 0,
+        "canPublish": true
+      },
+      "ownerProjection": {
+        "publicId": "MDR-000003",
+        "progress": {
+          "publicVersion": "14",
+          "status": "ASSIGNED",
+          "trackingMode": "DETAILED",
+          "assignmentState": "ACTIVE",
+          "phase": "AT_DROPOFF",
+          "attentionRequired": false,
+          "terminalOutcome": null
+        },
+        "location": {
+          "locationVersion": "11",
+          "assignmentGeneration": "4",
+          "availability": "UNAVAILABLE",
+          "unavailableReason": "NO_SAMPLE",
+          "sample": null
+        },
+        "observation": {
+          "evaluatedAt": "2026-10-09T05:52:35.895Z",
+          "freshness": "UNAVAILABLE"
+        }
+      },
+      "recipientProjection": {
+        "publicId": "MDR-000003",
+        "progress": {
+          "publicVersion": "14",
+          "status": "ASSIGNED",
+          "trackingMode": "DETAILED",
+          "assignmentState": "ACTIVE",
+          "phase": "AT_DROPOFF",
+          "attentionRequired": false,
+          "terminalOutcome": null
+        },
+        "location": {
+          "locationVersion": "11",
+          "assignmentGeneration": "4",
+          "availability": "UNAVAILABLE",
+          "unavailableReason": "NO_SAMPLE",
+          "sample": null
+        },
+        "observation": {
+          "evaluatedAt": "2026-10-09T05:52:36.697Z",
+          "freshness": "UNAVAILABLE"
+        }
+      }
+    }
+  ],
+  "audit": {
+    "migrations": [
+      {
+        "migration_name": "20260915000100_core",
+        "checksum": "15ef5c7720ed4204902f28dadc8a92e6930c1676637737247f7a2fa8de0cfdbd",
+        "finished": true
+      },
+      {
+        "migration_name": "20260915000200_b2b_credentials",
+        "checksum": "6ac55bf00ab6bb806a5456cef2598fc90c5fced447e7c58175cb8cc1c10fc211",
+        "finished": true
+      },
+      {
+        "migration_name": "20260915000300_delivery_providers",
+        "checksum": "b3a2b59f937417f644fcfaae2b9d335b58d24e83315fd945a294f760c13fc8e8",
+        "finished": true
+      },
+      {
+        "migration_name": "20260915000400_drivers_vehicles",
+        "checksum": "14e72f3f8f145383d76e927f7ecb3ce90b14ec0854f33de782dfa78ac2dd24a7",
+        "finished": true
+      },
+      {
+        "migration_name": "20260915000500_delivery_requests",
+        "checksum": "428a563f06c95ed9218bafccc7702735db4a2881f97ff398b156a62e4987a248",
+        "finished": true
+      },
+      {
+        "migration_name": "20260915000600_routing_pricing_quotes",
+        "checksum": "3cc9cde497bd95e95f3ec2731525a5a7babbc14f662bc3f155395451b9e9251d",
+        "finished": true
+      },
+      {
+        "migration_name": "20260916000700_user_invitations",
+        "checksum": "d74492faba74c658bcee7c149318f44381374666f4703a18f194b6506634b03c",
+        "finished": true
+      },
+      {
+        "migration_name": "20260917000800_dispatch_engine",
+        "checksum": "99962151d4781cd6f1cca9eafcff01ed8920b664af0baf976d22e026650e2195",
+        "finished": true
+      },
+      {
+        "migration_name": "20260917000900_delivery_assignments",
+        "checksum": "420a438c39dea2638909385b01c2c073fe06e75937dd26e1400bd7e50c478091",
+        "finished": true
+      },
+      {
+        "migration_name": "20260918001000_independent_drivers",
+        "checksum": "591491d294f35351b41bc0c251c03abdb53a40d0dc3ca1e7db8eb513bf7d6711",
+        "finished": true
+      },
+      {
+        "migration_name": "20260921001100_credit_accounts_ledger",
+        "checksum": "92eff77704adde75fbcf56090fcb211dca41deebef866303d389ead6716d0455",
+        "finished": true
+      },
+      {
+        "migration_name": "20260921001200_credit_ledger_purge_test_only",
+        "checksum": "b2986fb38d71cfd0ba5729e0a0f8a8d712e931fe6d8bfe01928840b0c11c98b0",
+        "finished": true
+      },
+      {
+        "migration_name": "20260922001300_credit_policies",
+        "checksum": "78a76c98f1cc51a5ca73ed8bac76da706ab9b1576ad62618e42cecd339791ce6",
+        "finished": true
+      },
+      {
+        "migration_name": "20260922001400_dispatch_credit_snapshots",
+        "checksum": "c9e6976ed18a1fb63a2ac4834df15fb4af73d3c46359dbcc2512148384e507fa",
+        "finished": true
+      },
+      {
+        "migration_name": "20260923000100_dispatch_credit_consumption",
+        "checksum": "a16b91b96290eb9666ddd0ca4bc9ebec9d085cbe027e857039e10c4dea2eefe8",
+        "finished": true
+      },
+      {
+        "migration_name": "20260923000200_award_integrity_boundary",
+        "checksum": "add61f760fb86f7ad96906046d8dad899ac9612b49439a974482c9dedb6ba6a9",
+        "finished": true
+      },
+      {
+        "migration_name": "20260923000300_service_refunds",
+        "checksum": "26b29c25286c9837223ed7febe9f7cddbb14f3bff21b175192b8b7cfeddbe31a",
+        "finished": true
+      },
+      {
+        "migration_name": "20260923001500_delivery_completion_states",
+        "checksum": "7b9644eb63c6ccdd0dc8a6d787de98bcac4c51df2a5aa1092e875e5eda48c7b9",
+        "finished": true
+      },
+      {
+        "migration_name": "20260923001600_delivery_completion_rules",
+        "checksum": "c3d17da54b5cbd612f528e277ffa3585f60547a17c11d2024bf669e05fbc5f8f",
+        "finished": true
+      },
+      {
+        "migration_name": "20260924000100_b2b_event_outbox",
+        "checksum": "151f30e77275a22e9d9317b38c22d488c2707ab26fe4bb501dd4c56c0b6fb2d1",
+        "finished": true
+      },
+      {
+        "migration_name": "20260925000100_b2b_webhook_delivery",
+        "checksum": "a34e2e9e44644c3235507cec97c5ffaadc951222693821bcd461defbd597f95f",
+        "finished": true
+      },
+      {
+        "migration_name": "20260926000100_reliable_webhook_delivery",
+        "checksum": "ee4cdf516357f59d5eafb82f3993948b3fe6102b818d062ba657f1a53b30d863",
+        "finished": true
+      },
+      {
+        "migration_name": "20260927000100_webhook_operations",
+        "checksum": "0719c84ea5bc09778f31c187611cd6ba03384d882c509a02a2df2b10a7e33b0a",
+        "finished": true
+      },
+      {
+        "migration_name": "20260928000100_b2b_public_execution_identity",
+        "checksum": "5cfd79f36bf88c53612c70bd86d3105667517cd83f3542d9dc31a0152d5f931a",
+        "finished": true
+      },
+      {
+        "migration_name": "20260928000100_prequote_persistence",
+        "checksum": "046ac61147b41e8e1cc75c965933d6a2aa44aae871e4630f137cac79860ec8df",
+        "finished": true
+      },
+      {
+        "migration_name": "20260928000200_prequote_execution_hardening",
+        "checksum": "660b45a2767d1e733c26b917a5e5667a556b8b266c4c5f0f886782052aa6a709",
+        "finished": true
+      },
+      {
+        "migration_name": "20260928000300_prequote_consumption",
+        "checksum": "114242a0f011cc377af8b38967244fc594ad62b12676b6a70a67534d62793ad3",
+        "finished": true
+      },
+      {
+        "migration_name": "20260928000400_prequote_conversion",
+        "checksum": "6ec76940d4e22f8001382885b2aa55ba9fd43901549eaeef9f0fcf66ac350c7d",
+        "finished": true
+      },
+      {
+        "migration_name": "20260929000100_authorized_quote_acceptance",
+        "checksum": "4eb06a432d5b0dae0c4c089b4769c99c06d15b61ba945f975a39a2ab6cad26c2",
+        "finished": true
+      },
+      {
+        "migration_name": "20261001000100_prequote_restore_search_path",
+        "checksum": "d2f3e2b44255fc1c6c74943d7b5f4212093aef99d4e914c4bf4782085a4e3fc1",
+        "finished": true
+      },
+      {
+        "migration_name": "20261002000100_execution_states",
+        "checksum": "5cc2680d2124a0196ca40e83d46dc4b96bbc8a165523596c6624b56dd82cd9bf",
+        "finished": true
+      },
+      {
+        "migration_name": "20261002000200_delivery_execution",
+        "checksum": "371462285a2569e7b84812d999a6f14ebf92951f1b69fe32ad3d19720bedc0de",
+        "finished": true
+      },
+      {
+        "migration_name": "20261003000100_execution_attempt_closure",
+        "checksum": "f767b176174918d6528212a584531ca0f796efab242b6eddf5031e9558383f55",
+        "finished": true
+      },
+      {
+        "migration_name": "20261004000100_driver_execution_authority",
+        "checksum": "3e35a325ff2b9552b04512fc4c467b422c2ff2717774ece8e0b0babf1804065c",
+        "finished": true
+      },
+      {
+        "migration_name": "20261004000100_partner_applications",
+        "checksum": "bd96acebc7ed72e7e2897bca5930dc2b9adbd7f3596307d60a2632901beee35b",
+        "finished": true
+      },
+      {
+        "migration_name": "20261004000200_provider_historical_attempts",
+        "checksum": "b3665997bcccdb905d3805ec8834833b17080fece8ee8b438c9cf7ce62ff0df2",
+        "finished": true
+      },
+      {
+        "migration_name": "20261004000300_public_delivery_tracking",
+        "checksum": "e7f97bed8f0f54dbac6eb8e83df6ba3fa986953ba9cacf2d383006dd821e82a6",
+        "finished": true
+      },
+      {
+        "migration_name": "20261006000100_customer_identity",
+        "checksum": "8451c571e54fe0c8e3945957d5a116277580bfeeea7702e404265704dba91ef7",
+        "finished": true
+      },
+      {
+        "migration_name": "20261006000200_direct_demand_and_shipping",
+        "checksum": "f6b8cfd38971843b2210bfd8db8c76f78af753c571574bd1577beaccfb0998e7",
+        "finished": true
+      },
+      {
+        "migration_name": "20261006000300_human_command_reconciliation",
+        "checksum": "d67f2185e09b26cfe38988c40ae3ba0798a09dcebee6b62cb47f28c01be5e9c9",
+        "finished": true
+      },
+      {
+        "migration_name": "20261007000100_location_tracking",
+        "checksum": "d67a663368b3b36662738e6574c28fe0a1e433dc7acdbb388c7967a4ce3aee42",
+        "finished": true
+      },
+      {
+        "migration_name": "20261007000200_location_policy_epoch",
+        "checksum": "1f5320d5192ae1a423066280c92ead8ebca094758a6418d4f057b02af6b82e72",
+        "finished": true
+      },
+      {
+        "migration_name": "20261007000300_independent_dispatch_attempts",
+        "checksum": "9ad5ec1d04ab68d78058ad2597140bf93d9230de21f78dcf70a43b32cf17ab7a",
+        "finished": true
+      }
+    ],
+    "logging": [
+      {
+        "name": "log_min_error_statement",
+        "setting": "panic"
+      },
+      {
+        "name": "log_parameter_max_length",
+        "setting": "0"
+      },
+      {
+        "name": "log_parameter_max_length_on_error",
+        "setting": "0"
+      },
+      {
+        "name": "log_statement",
+        "setting": "none"
+      }
+    ],
+    "accounts": [
+      {
+        "balance": 79
+      }
+    ],
+    "ledger": 4
+  },
+  "flags": {
+    "LOCATION_TRACKING_ENABLED": true,
+    "SHARED_TRACKING_ENABLED": true,
+    "DETAILED_EXECUTION_ENABLED": true
+  },
+  "credentialsFile": "C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\native-v119-gps-physical\\accounts.json",
+  "projectionAccessFile": "C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\native-v119-gps-physical\\projection-access-private.json",
+  "phoneApi": "http://127.0.0.1:43135/api/v1",
+  "phoneTransport": "adb reverse tcp:43135 tcp:43135; APP must select physical device; not verified by BACKEND",
+  "baseline": {
+    "at": "2026-10-09T05:53:12.669Z",
+    "identity": {
+      "database": "mandaria_v119_gps_physical_local",
+      "port": "55447",
+      "directory": "C:/Users/zorgl/Documents/mandaria-backend/.tmp/native-v119-gps-physical/pgdata",
+      "started": "2026-10-08 23:51:59.381945-06"
+    },
+    "processes": [
+      {
+        "port": 43135,
+        "address": "127.0.0.1",
+        "pid": 24924,
+        "name": "node.exe",
+        "path": "C:\\nvm4w\\nodejs\\node.exe",
+        "started": "2026-10-09T05:51:59.6016000Z"
+      },
+      {
+        "port": 55447,
+        "address": "127.0.0.1",
+        "pid": 38512,
+        "name": "postgres.exe",
+        "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+        "started": "2026-10-09T05:51:59.2793580Z"
+      }
+    ],
+    "tables": [
+      {
+        "table": "Dispatch",
+        "count": 3,
+        "md5": "27576837a3c35a967c3fcd616cbacac0"
+      },
+      {
+        "table": "DeliveryAssignment",
+        "count": 3,
+        "md5": "c5a01530621bd2578c06e548aad9f9b3"
+      },
+      {
+        "table": "DeliveryExecution",
+        "count": 3,
+        "md5": "8a5212dcd9ff4d83f2fbcc7d1d9972b3"
+      },
+      {
+        "table": "DeliveryExecutionEvent",
+        "count": 14,
+        "md5": "3df8dfe31052c07d27d867144d18019c"
+      },
+      {
+        "table": "DeliveryExecutionCommand",
+        "count": 11,
+        "md5": "8b81e029507a4067c8876bca3cec9234"
+      },
+      {
+        "table": "DeliveryCustodyIncident",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryCustodyResolution",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "CreditLedgerEntry",
+        "count": 4,
+        "md5": "b77495b76a04b77f591090b674834a61"
+      },
+      {
+        "table": "DeliveryLocationHead",
+        "count": 3,
+        "md5": "7cecb9847518a4e54c0408bf0e92733e"
+      },
+      {
+        "table": "DeliveryShippingTerms",
+        "count": 3,
+        "md5": "16c37d8f2a3314cbf82860fe2aed559f"
+      },
+      {
+        "table": "ShippingCollectionDeclaration",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "IndependentDispatchAttempt",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryTrackingLinkHead",
+        "count": 3,
+        "md5": "7f49034a7c9c73d3337c09c344e4c1b2"
+      },
+      {
+        "table": "LocationRateBucket",
+        "count": 11,
+        "md5": "817f8614f06bd7ab552207f4c3abde15"
+      }
+    ],
+    "heads": [
+      {
+        "deliveryRequestId": "2122bfc1-a45e-4659-8898-2511dd445870",
+        "version": "9",
+        "generation": "4",
+        "streamRevision": "5",
+        "lastSequence": 0,
+        "streamId": null,
+        "trackingEnabled": true,
+        "hasSample": false,
+        "accuracyMeters": null,
+        "capturedAt": null,
+        "receivedAt": null,
+        "eraseAfter": null
+      },
+      {
+        "deliveryRequestId": "79648dc3-a369-4a99-86f4-4ccde5f506b1",
+        "version": "9",
+        "generation": "4",
+        "streamRevision": "5",
+        "lastSequence": 0,
+        "streamId": null,
+        "trackingEnabled": true,
+        "hasSample": false,
+        "accuracyMeters": null,
+        "capturedAt": null,
+        "receivedAt": null,
+        "eraseAfter": null
+      },
+      {
+        "deliveryRequestId": "f18e9c1d-6e00-4d12-98d2-5c7e742eb0b2",
+        "version": "11",
+        "generation": "4",
+        "streamRevision": "5",
+        "lastSequence": 0,
+        "streamId": null,
+        "trackingEnabled": true,
+        "hasSample": false,
+        "accuracyMeters": null,
+        "capturedAt": null,
+        "receivedAt": null,
+        "eraseAfter": null
+      }
+    ],
+    "privacy": "GPS coordinates, sampleHash and openReceipt excluded before hashing and serialization; physical capture belongs to APP",
+    "source": ".tmp/native-v119-gps-physical/snapshot-1791525192670.json",
+    "sha256": "ba952672c86ae326e995094130bcc6ba3357b5b97650040f8d2fad2e110e3b70"
+  },
+  "repeatability": {
+    "before": ".tmp/native-v119-gps-physical/snapshot-1791525096322.json",
+    "after": ".tmp/native-v119-gps-physical/snapshot-1791525192670.json",
+    "unchangedTables": [
+      "Dispatch",
+      "DeliveryAssignment",
+      "DeliveryExecution",
+      "DeliveryExecutionEvent",
+      "DeliveryExecutionCommand",
+      "DeliveryCustodyIncident",
+      "DeliveryCustodyResolution",
+      "CreditLedgerEntry",
+      "DeliveryLocationHead",
+      "DeliveryShippingTerms",
+      "ShippingCollectionDeclaration",
+      "IndependentDispatchAttempt",
+      "DeliveryTrackingLinkHead"
+    ],
+    "quotaChangesExpected": true
+  },
+  "commands": [
+    {
+      "file": ".tmp/native-v119-gps-physical/run-observe-1791525076047.json",
+      "sha256": "55f26debbd28bebfe7f54494be143d482ddda3b0f34d6e135386e4d8b19f8844",
+      "command": [
+        "node",
+        "scripts/prepare-native-v119-gps-physical.mjs",
+        "observe"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "at": "2026-10-09T05:51:23.880Z"
+    },
+    {
+      "file": ".tmp/native-v119-gps-physical/run-prepare-1791525129835.json",
+      "sha256": "8ea35d83dfc3de1018ec22f423a8b21a18f1fc5f4a4944d879d275086d796da8",
+      "command": [
+        "node",
+        "scripts/prepare-native-v119-gps-physical.mjs",
+        "prepare"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "at": "2026-10-09T05:52:37.614Z"
+    },
+    {
+      "file": ".tmp/native-v119-gps-physical/run-snapshot-1791525093352.json",
+      "sha256": "954ce02136e830b34ddb6168736ef3a2a48c6dc091519f27e247bc631cd805c6",
+      "command": [
+        "node",
+        "scripts/prepare-native-v119-gps-physical.mjs",
+        "snapshot"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "at": "2026-10-09T05:51:36.340Z"
+    },
+    {
+      "file": ".tmp/native-v119-gps-physical/run-snapshot-1791525189939.json",
+      "sha256": "d62cbd0fa139f4f2ae249abe89e0a351309400c56d090c45cab2d8051f062833",
+      "command": [
+        "node",
+        "scripts/prepare-native-v119-gps-physical.mjs",
+        "snapshot"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "at": "2026-10-09T05:53:12.684Z"
+    },
+    {
+      "file": ".tmp/native-v119-gps-physical/run-start-1791525116985.json",
+      "sha256": "b21052ffb0180aa31b5d89c3e40d8d8996b89dbea463fb7aa32355da05066178",
+      "command": [
+        "node",
+        "scripts/prepare-native-v119-gps-physical.mjs",
+        "start"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "at": "2026-10-09T05:52:02.741Z"
+    },
+    {
+      "file": ".tmp/native-v119-gps-physical/run-stop-1791525102696.json",
+      "sha256": "338dd5bb140d04f8ebcb6ba90c3fa5ad8e72019c0b73db714bc295581da46435",
+      "command": [
+        "node",
+        "scripts/prepare-native-v119-gps-physical.mjs",
+        "stop"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "at": "2026-10-09T05:51:44.285Z"
+    }
+  ],
+  "newChecks": [
+    "build exit0",
+    "docs:b2b:check exit0",
+    "node --check exit0",
+    "Oxlint preparer exit0",
+    "API initial-state verification exit0",
+    "observe/start/snapshot/stop/prepare repeat exit0"
+  ],
+  "reserved": [
+    "POST location-stream",
+    "PUT location",
+    "REPORT",
+    "DELIVER"
+  ],
+  "limits": {
+    "ipPerMinute": 60,
+    "driverPerMinute": 30,
+    "ownerPerMinute": 60,
+    "recipientPerMinute": 12,
+    "linkMutationsPerTenMinutes": 5
+  },
+  "privacy": {
+    "realGpsCapturedByBackend": false,
+    "loggingReview": "setup HTTP metadata only; filter omits body/SQL; GPS cleanup count only; PG query/parameters excluded",
+    "locationSnapshot": "sample/sampleHash/openReceipt excluded before hashing; metadata only",
+    "phoneIdentifierCollected": false,
+    "rawCoordinatesInPublicEvidence": false,
+    "privateLogsScanned": 17
+  }
+}

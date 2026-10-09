@@ -4,6 +4,12 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación Git autorizada (2026-10-09):** preparación de commit/push en `v1.18-GPS_seguimiento_temporal` de herramienta, guía y manifiesto GPS físico, más continuidad acumulada. Verificaciones nuevas: seis archivos revisados sin coincidencias con secretos locales conocidos, JSON de evidencia válido y sin coordenadas, syntax/Oxlint focal/diff aprobados. Resultados operativos previos conservados como históricos; no se reiniciaron entornos ni reejecutaron pruebas físicas. Privados/.tmp y residual `nul` excluidos; sin despliegue ni activación.
+
+- **Cierre de cobertura independiente V1.19 (2026-10-09):** propietario solicita continuar tras reporte físico GPS. Se prepara prompt BACKEND para independent=null real y análisis de alcanzabilidad UNKNOWN/null con ACTIVE y VEHICLE_BUSY aislado; no fabricar estados, reordenar guards ni relajar constraints. Revisión coordinadora sólo documental/búsqueda de fuentes, sin pruebas nuevas. Validación física reportada por APP no equivale a publicación/autonomía diaria; pendientes operativos conservados.
+
+- **Fixtures GPS físicos nuevos preparados (2026-10-08 23:53 local):** autorización humana en APP verificada; entorno exclusivo API43135/PG55447 `mandaria_v119_gps_physical_local`, revisión505e7a3/build congelado/43 migraciones, Node24924/PG38512 encendidos. [Guía](docs/V1.19-GPS-PHYSICAL-FIXTURES.md), [manifiesto](docs/checks/v119-gps-physical-ready.json). physical-main A y physical-incident B PICKED_UP, physical-terminal C AT_DROPOFF/DELIVER permitido; todos FLEET ACTIVE RECIPIENT,11 avances por Driver API, saldo79. Cero streams/muestras/incidencias/cierres consumidos. GPS/shared/detailed sólo aquí; sin externos. Revisión estática logging y configuración PG exclusiva sin SQL/parámetros; snapshot excluye coordenadas/sampleHash, observe sólo metadatos. Nuevas comprobaciones build/docs/syntax/Oxlint/API/SQL, start/stop/snapshot/observe y prepare repetido exit0;13 tablas estables salvo cuotas. Credenciales/enlaces privados (vencen9oct23:50 local), APP conectará con adb reverse y comprobará físico30min; no acreditado aquí. Sin tocar anteriores/producto/Docker/commit/push ni envío entre chats.
+
 - **Publicación Git autorizada (2026-10-08):** preparado commit de herramientas nativas independientes/GPS, guías, manifiestos y evidencia de transferencia en rama actual `v1.18-GPS_seguimiento_temporal`. Revisados11 archivos previstos: JSON válidos, sin coincidencias con secretos privados locales; syntax de ambos preparadores, Oxlint focal y diff aprobados en esta tarea. Verificaciones operativas anteriores conservadas como históricas; no se repitieron ni tocaron entornos reservados por APP. `.tmp`, credenciales y residual `nul` excluidos. Commit/push solicitados por el propietario; sin despliegue ni activación.
 
 - **Transferencia GPS sintética coordinada (2026-10-08):** autorización humana de integración/coordinar SUPER_ADMIN comprobada en APP. Preflight/apply sólo sobre43134/55446 identificados, Node19608/PG41652; incidencia d5bf4472-169f-4e7a-9af4-98c652bb8eff abierta, revisión5/PICKED_UP y E elegible. Único resolve200 y recibo APPLIED: resolución9cdc2dd0-ceac-4f50-9cc4-87bc4e2b32ef, assignment E5f7177cd-f324-47b9-b3f9-64d3e18900c1 ACTIVE, revisión6/misma fase/cadena, anterior TRANSFERRED. Ledger/saldo65/términos/declaraciones/outbox conservados; GPS sin stream/muestra y generación incrementada. Otras incidencias/ejecuciones sin cambios. [Evidencia](docs/checks/v119-gps-transfer.json). Sin publicar GPS ni cerrar entorno; APP continuará receptor y verificará rechazo del emisor anterior. Nueva prueba API y SQL read-only antes/después, syntax/diff; suites/Android no reejecutados aquí. Sin producto/flags/Docker/commit/push.
@@ -2591,3 +2597,12 @@ Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/t
 - Verificaciones actuales: lectura continuidad, informe móvil GPS y guía fixture; git diff --check. Sin servicios ni pruebas nuevas.
 - Resultado: recorrido real definido con límites/cuotas vigentes y conservación de datos.
 - Pendientes: integración GPS Android/backend/proyecciones, físico y casos residuales independientes. Sin Docker, commit/push ni publicación.
+
+
+## 2026-10-09 — Continuación cobertura residual independientes
+
+- Solicitud: continuar cierre de pendientes antes de consolidar V1.19.
+- Cambios: continuidad y prompt BACKEND de revisión/fixtures limitados.
+- Verificaciones actuales: lectura continuidad, límites del informe APP y búsqueda guards; git diff --check. No servicios/DB ni suites.
+- Resultado: clasificar escenarios alcanzables y defensas de cliente, no exigir fixtures imposibles ni declarar aprobado lo no probado.
+- Pendientes: revisión backend, fixture de flotilla sin perfil, prueba APP acotada y consolidación. Sin Docker, producto, commit/push ni despliegue.
