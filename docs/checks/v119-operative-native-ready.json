@@ -1,0 +1,425 @@
+{
+  "status": "READY_FOR_ANDROID_OPERATIONS",
+  "at": "2026-10-07T19:11:29.420Z",
+  "api": "http://127.0.0.1:43132/api/v1",
+  "emulatorApi": "http://10.0.2.2:43132/api/v1",
+  "identity": {
+    "database": "mandaria_v119_operative_local",
+    "port": "55443",
+    "directory": "C:/Users/zorgl/Documents/mandaria-backend/.tmp/native-v119-operative/pgdata",
+    "started": "2026-10-07 13:10:07.953481-06"
+  },
+  "processes": [
+    {
+      "port": 43132,
+      "address": "127.0.0.1",
+      "pid": 45456,
+      "name": "node.exe",
+      "path": "C:\\nvm4w\\nodejs\\node.exe",
+      "started": "2026-10-07T19:10:08.2097690Z"
+    },
+    {
+      "port": 55443,
+      "address": "127.0.0.1",
+      "pid": 17700,
+      "name": "postgres.exe",
+      "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+      "started": "2026-10-07T19:10:07.7928390Z"
+    }
+  ],
+  "revision": {
+    "head": "b97b9d1be54a2c37601e51990d66ccaf73d0203f",
+    "openapiSha256": "a21972342b0e1ce61899c48ac2d71858b14c5a6a6360460ebc072b6eb6127077",
+    "sourceFiles": [
+      {
+        "path": "src/delivery-assignments/delivery-assignments.service.ts",
+        "sha256": "99af9327397db38002111e158044c9a0b368860744dc8345e27c1b4d66237eb8"
+      },
+      {
+        "path": "src/delivery-execution/execution.persistence.ts",
+        "sha256": "30472d4ad54e4df2dff2f0f03b78b364c956e3fabddeaddad97e33e996b2baf4"
+      },
+      {
+        "path": "src/delivery-execution/execution.responses.ts",
+        "sha256": "c29c33a976f0d2f77edaf76bfd8b5d3fafc38de513663edf2b6bb39804bcbfbf"
+      }
+    ],
+    "copiedAt": "2026-10-07T19:05:59.511Z",
+    "build": {
+      "files": 660,
+      "sha256": "adeabcac1bd7945dc20c09015ca568c34e73d100ced7a3df233c543bd864d0d6",
+      "algorithm": "SHA256(JSON array of ordered relative path + file SHA256)"
+    },
+    "preparerSha256": "e89be4028914ff4c4c5a2b78f7b5d0fe1685310cf3edbb8227df10d6ef78a11a",
+    "nodeVersion": "v24.15.0"
+  },
+  "preparerSha256": "7f717d4539d01e12ccd911b95027dbd50aea3a0f6072e9c4568fbdc166bd4fe9",
+  "scenarios": [
+    {
+      "alias": "custody-requester",
+      "driverAlias": "driverA",
+      "driverId": "3444fea5-da22-459e-b3ad-84373f78136b",
+      "userId": "7d6fb9bd-a70e-43cf-9ea2-9d9db1f947da",
+      "vehicleId": "9f5ead1d-9a91-4f17-9907-402e55f06619",
+      "pairingId": "31cde77c-7a5d-40b9-a500-9efe2d3ba765",
+      "providerId": "e84e93e6-e352-4352-b7e9-edb14036cd7f",
+      "dispatchId": "d02ff4da-93e4-4f00-add8-8cfda4e321f5",
+      "assignmentId": "98349062-c1e6-44b3-8d3a-ba5694af5b91",
+      "requestPublicId": "MDR-000002",
+      "quotePublicId": "MQ-000002",
+      "trackingMode": "DETAILED",
+      "payer": "REQUESTER",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "5d0afc43133c886cbc0ad7ff3d261a84d8896dc2883c43a6817836dae2c425c2",
+      "assignmentStatus": "ACTIVE",
+      "phase": null,
+      "revision": 1,
+      "allowedActions": [
+        "ADVANCE"
+      ],
+      "shippingPayment": {
+        "payer": "REQUESTER",
+        "method": "CASH",
+        "dueAt": "PICKUP",
+        "amount": "55.00",
+        "currency": "MXN",
+        "termsHash": "5d0afc43133c886cbc0ad7ff3d261a84d8896dc2883c43a6817836dae2c425c2",
+        "termsVersion": 1,
+        "evidenceStatus": "NOT_DECLARED"
+      }
+    },
+    {
+      "alias": "custody-recipient",
+      "driverAlias": "driverB",
+      "driverId": "6a3cf9b7-f731-4d94-a4cf-dcd76df29dda",
+      "userId": "f3a7a7a8-8aba-4264-943e-cdff7d4f93eb",
+      "vehicleId": "10ca92e6-042f-4e76-ad89-850c3658356f",
+      "pairingId": "3a78fd48-59b6-4dc4-b542-30c767225e5b",
+      "providerId": "e84e93e6-e352-4352-b7e9-edb14036cd7f",
+      "assignmentId": null,
+      "dispatchId": null,
+      "assignmentStatus": null,
+      "trackingMode": null,
+      "initiallyFree": true
+    },
+    {
+      "alias": "delivery-requester",
+      "driverAlias": "driverC",
+      "driverId": "dc798246-eff3-4b70-9cbf-fb67797fdaea",
+      "userId": "5e6ba56e-d922-4c6f-9a60-0861af93de3f",
+      "vehicleId": "4ddd4eeb-f97f-469e-868d-5a7534141fff",
+      "pairingId": "d0e9d494-48bd-4b40-a913-f6cdc7ddc43d",
+      "providerId": "e84e93e6-e352-4352-b7e9-edb14036cd7f",
+      "dispatchId": "be1855c1-c28a-4e1e-806b-33a07ed62290",
+      "assignmentId": "74fe6fc5-bd5d-43f8-8fd3-a0a78427bce1",
+      "requestPublicId": "MDR-000003",
+      "quotePublicId": "MQ-000003",
+      "trackingMode": "DETAILED",
+      "payer": "REQUESTER",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "12bb5f68f34e8e361b824979dcfe1f4d26a96534ae76ab7098201f140fe46617",
+      "assignmentStatus": "ACTIVE",
+      "phase": null,
+      "revision": 1,
+      "allowedActions": [
+        "ADVANCE"
+      ],
+      "shippingPayment": {
+        "payer": "REQUESTER",
+        "method": "CASH",
+        "dueAt": "PICKUP",
+        "amount": "55.00",
+        "currency": "MXN",
+        "termsHash": "12bb5f68f34e8e361b824979dcfe1f4d26a96534ae76ab7098201f140fe46617",
+        "termsVersion": 1,
+        "evidenceStatus": "NOT_DECLARED"
+      }
+    },
+    {
+      "alias": "legacy-consumable",
+      "driverAlias": "driverD",
+      "driverId": "711b6c2a-e6d4-4812-92c3-eba58090d56d",
+      "userId": "98fd04e6-574a-49d3-8a79-5c9d8e06f3ca",
+      "vehicleId": "ed24e0f2-1b80-47cc-9307-89fde3d1786a",
+      "pairingId": "e689e3c8-9fa5-45fb-ad8f-51af22be04f2",
+      "providerId": "e84e93e6-e352-4352-b7e9-edb14036cd7f",
+      "dispatchId": "0b823e0f-433e-4cb9-a8f5-6c803c103843",
+      "assignmentId": "e96cd41a-caea-4bf4-961f-24a8d6954263",
+      "requestPublicId": "MDR-000001",
+      "quotePublicId": "MQ-000001",
+      "trackingMode": "LEGACY",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "assignmentStatus": "ACTIVE",
+      "phase": null,
+      "revision": null,
+      "executionField": "omitted"
+    }
+  ],
+  "providerAdminUserId": "752c109f-c7dc-446a-82d2-4c0f0ecdda6e",
+  "baseline": {
+    "algorithm": "md5(concat(md5(to_jsonb(row)::text) ORDER BY JSON id, full JSON text))",
+    "tables": [
+      {
+        "table": "Dispatch",
+        "count": 3,
+        "md5": "e6d1f0fc8124b5e93c2281e071aa9bb8"
+      },
+      {
+        "table": "DeliveryAssignment",
+        "count": 3,
+        "md5": "13d02b2345f2be0e44c18f636af5f676"
+      },
+      {
+        "table": "DeliveryExecution",
+        "count": 2,
+        "md5": "b8f9277567ea226d24af29f1e959312e"
+      },
+      {
+        "table": "DeliveryExecutionEvent",
+        "count": 2,
+        "md5": "72d5b8a81f0471b62f748e98c73beea8"
+      },
+      {
+        "table": "DeliveryExecutionCommand",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryCustodyIncident",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryCustodyResolution",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "CreditLedgerEntry",
+        "count": 4,
+        "md5": "eadea24246386e9019c41be8c6baba17"
+      },
+      {
+        "table": "DeliveryLocationHead",
+        "count": 3,
+        "md5": "cfee7cc9020fd38ecd2844772ad2aca9"
+      },
+      {
+        "table": "DeliveryShippingTerms",
+        "count": 3,
+        "md5": "b50b00b98512aac5e00f7ef38c725fef"
+      },
+      {
+        "table": "ShippingCollectionDeclaration",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    ],
+    "migrations": {
+      "total": 42,
+      "finished": 42
+    },
+    "economic": {
+      "ledgerEntries": 4,
+      "serviceAwards": 3,
+      "balance": 79
+    },
+    "recipientEligibility": "Current preconditions verified read-only; future resolution revalidates. Candidate route requires custody phase and returned409.",
+    "capturedAt": "2026-10-07T19:12:19.081Z"
+  },
+  "flags": {
+    "detailed": true,
+    "authorizedAcceptance": true,
+    "gps": false,
+    "shared": false,
+    "prequote": false,
+    "conversion": false,
+    "customer": false
+  },
+  "checks": {
+    "driverMe": 200,
+    "driverDetail": 200,
+    "detailedProgress": 200,
+    "legacyExecution": 404,
+    "foreignExecution": 404,
+    "operatorDriverRoute": 403,
+    "anonymous": 401,
+    "preCustodyCandidates": 409
+  },
+  "credentialsFile": "C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\native-v119-operative\\accounts.json",
+  "mailOutbox": "C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\native-v119-operative\\mail-outbox",
+  "reservedOperations": [
+    "ADVANCE",
+    "COLLECT_SHIPPING",
+    "REPORT",
+    "DELIVER",
+    "SUPER_ADMIN resolution"
+  ],
+  "commands": {
+    "start": "node scripts/prepare-native-v119-operative.mjs start",
+    "stop": "node scripts/prepare-native-v119-operative.mjs stop",
+    "verify": "node scripts/prepare-native-v119-operative.mjs verify",
+    "prepare": "node scripts/prepare-native-v119-operative.mjs prepare",
+    "snapshot": "node scripts/prepare-native-v119-operative.mjs snapshot"
+  },
+  "repeatPreparationSameElevenHashes": true,
+  "exclusiveStopStartVerified": true,
+  "sharedEnvironment": {
+    "before": [
+      {
+        "port": 55441,
+        "address": "127.0.0.1",
+        "pid": 6448,
+        "name": "postgres",
+        "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+        "started": "2026-10-07T16:37:46.6856554Z"
+      },
+      {
+        "port": 43130,
+        "address": "0.0.0.0",
+        "pid": 44408,
+        "name": "node",
+        "path": "C:\\nvm4w\\nodejs\\node.exe",
+        "started": "2026-10-07T16:38:55.4310299Z"
+      }
+    ],
+    "after": [
+      {
+        "port": 55441,
+        "address": "127.0.0.1",
+        "pid": 6448,
+        "name": "postgres",
+        "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+        "started": "2026-10-07T16:37:46.6856554Z"
+      },
+      {
+        "port": 43130,
+        "address": "0.0.0.0",
+        "pid": 44408,
+        "name": "node",
+        "path": "C:\\nvm4w\\nodejs\\node.exe",
+        "started": "2026-10-07T16:38:55.4310299Z"
+      }
+    ],
+    "same": true
+  },
+  "verificationRuns": [
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-operative.mjs init",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-operative.mjs start",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-operative.mjs prepare",
+      "exitCode": 1,
+      "reason": "Verifier assumed internal MDR id in B2B response. Fixtures created successfully; read-only verification failed. Corrected verifier only."
+    },
+    {
+      "command": "node scripts/prepare-native-v119-operative.mjs verify",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-operative.mjs stop",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-operative.mjs start",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-operative.mjs prepare",
+      "exitCode": 0,
+      "reusedExistingSteps": true
+    },
+    {
+      "command": "node scripts/prepare-native-v119-operative.mjs snapshot",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/prepare-native-v119-operative.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node node_modules/oxlint/bin/oxlint scripts/prepare-native-v119-operative.mjs",
+      "exitCode": 0
+    }
+  ],
+  "migrationRun": {
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "node_modules/prisma/build/index.js",
+      "migrate",
+      "deploy"
+    ],
+    "at": "2026-10-07T19:05:56.735Z",
+    "exitCode": 0,
+    "signal": null
+  },
+  "bootstrapRun": {
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "node_modules/tsx/dist/cli.mjs",
+      "prisma/seed.ts"
+    ],
+    "at": "2026-10-07T19:05:57.830Z",
+    "exitCode": 0,
+    "signal": null
+  },
+  "preflight": {
+    "at": "2026-10-07T19:00:34.8657218Z",
+    "listeners": [
+      {
+        "port": 55441,
+        "address": "127.0.0.1",
+        "pid": 6448,
+        "name": "postgres",
+        "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+        "started": "2026-10-07T16:37:46.6856554Z"
+      },
+      {
+        "port": 43130,
+        "address": "0.0.0.0",
+        "pid": 44408,
+        "name": "node",
+        "path": "C:\\nvm4w\\nodejs\\node.exe",
+        "started": "2026-10-07T16:38:55.4310299Z"
+      }
+    ],
+    "newDirectoryExists": false,
+    "postgresBinExists": true
+  },
+  "knownLimits": [
+    "Android not executed by BACKEND in this task; emulator URL uses the standard host alias.",
+    "Recipient B preconditions verified read-only; the candidates endpoint requires custody phase and returns409 before pickup. Eligibility is revalidated at future resolution.",
+    "No operational Driver commands or custody resolution executed; APP and coordinated SUPER_ADMIN must consume new fixtures.",
+    "Initial-state verify/prepare fail if fixtures were consumed; no reset. Use snapshot to review expected deltas."
+  ],
+  "logPrivacy": {
+    "at": "2026-10-07T19:13:12.364Z",
+    "logFilesChecked": 18,
+    "secretValueMatches": 0,
+    "manifestSecretValueMatches": 0
+  },
+  "finalReadChecks": {
+    "at": "2026-10-07T19:17:04.015Z",
+    "gps": {
+      "heads": 3,
+      "samples": 0,
+      "enabled": 0
+    },
+    "healthHttp": 200,
+    "database": "up"
+  }
+}

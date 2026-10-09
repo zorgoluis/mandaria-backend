@@ -7,6 +7,64 @@ import {
   checkPublicB2b,
 } from './export-public-b2b.mjs';
 const source = () => JSON.parse(readFileSync('docs/openapi.json', 'utf8'));
+
+test('Driver reconciliation response matches supported query operations and remains private', () => {
+  const full = source();
+  const pub = publicB2bDocument(full);
+  const operations = ['ADVANCE', 'REPORT', 'DELIVER', 'COLLECT_SHIPPING'];
+  const response = full.components.schemas.DriverAttemptResponse;
+  assert.deepEqual(response.properties.operation.enum, operations);
+  for (const [path, method] of [
+    [
+      '/api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/attempt',
+      'get',
+    ],
+    [
+      '/api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/attempt/close',
+      'post',
+    ],
+  ]) {
+    const endpoint = full.paths[path][method];
+    const operation = endpoint.parameters.find(
+      (p) => p.in === 'query' && p.name === 'operation',
+    );
+    assert.deepEqual(operation.schema.enum, operations);
+    assert.deepEqual(operation.schema.enum, response.properties.operation.enum);
+    assert.equal(
+      endpoint.responses['200'].content['application/json'].schema.$ref,
+      '#/components/schemas/DriverAttemptResponse',
+    );
+    assert.deepEqual(endpoint.security, [{ bearer: [] }]);
+    assert.equal(pub.paths[path], undefined);
+  }
+  assert.equal(pub.components.schemas.DriverAttemptResponse, undefined);
+  for (const path of Object.keys(pub.paths))
+    assert.doesNotMatch(
+      path,
+      /^\/api\/v1\/(driver|customer|admin|auth|users|provider)(\/|$)/,
+    );
+});
+test('GPS public projection is allowlisted, scoped and excludes stream and recipient capability operations', () => {
+  const d = publicB2bDocument(source());
+  assert.deepEqual(
+    d.paths['/api/v1/delivery-requests/{publicId}/location'].get['x-scopes'],
+    ['deliveries:read', 'deliveries:location:read'],
+  );
+  assert.deepEqual(
+    d.paths['/api/v1/delivery-requests/{publicId}/tracking-link'].post[
+      'x-scopes'
+    ],
+    ['deliveries:read', 'deliveries:tracking-links:manage'],
+  );
+  assert.deepEqual(
+    Object.keys(d.components.schemas.LocationViewResponse.properties).sort(),
+    ['location', 'observation', 'progress', 'publicId'],
+  );
+  for (const path of Object.keys(d.paths))
+    assert.doesNotMatch(path, /\/driver\/|\/customer\/|\/admin\/|\/shared\//);
+  assert.equal(d.components.schemas.LocationSampleDto, undefined);
+  assert.equal(d.components.securitySchemes['tracking-link'], undefined);
+});
 test('V1.17 exposes B2B terms and consent while excluding human demand, collection and administrative policy', () => {
   const full = source(),
     d = publicB2bDocument(full);
@@ -44,6 +102,11 @@ test('V1.17 exposes B2B terms and consent while excluding human demand, collecti
 });
 const path = '/api/v1/delivery-prequotes';
 const expected = [
+  'GET /api/v1/delivery-requests/{publicId}/location',
+  'GET /api/v1/delivery-requests/{publicId}/tracking-link',
+  'POST /api/v1/delivery-requests/{publicId}/tracking-link',
+  'POST /api/v1/delivery-requests/{publicId}/tracking-link/revoke',
+  'GET /api/v1/delivery-requests/{publicId}/tracking-link/attempt',
   'POST /api/v1/integrations/token',
   'GET /api/v1/integrations/me',
   'GET /api/v1/integrations/scope-check',
@@ -488,4 +551,54 @@ test('human recovery stays private and human response schemas reflect real nulla
     );
   }
   assert.ok(full.components.schemas.ConsentContext.properties.shippingTerms);
+});
+
+test('independent TAKE/RELEASE recovery is human-only with explicit keyed and legacy response contracts', () => {
+  const full = source(),
+    pub = publicB2bDocument(full);
+  const prefix = '/api/v1/driver/dispatches/{dispatchId}';
+  for (const [suffix, method] of [
+    ['/take', 'post'],
+    ['/release', 'post'],
+    ['/independent-attempt', 'get'],
+    ['/independent-attempt/close', 'post'],
+  ]) {
+    const operation = full.paths[prefix + suffix][method];
+    assert.deepEqual(operation.security, [{ bearer: [] }]);
+    assert.equal(pub.paths[prefix + suffix], undefined);
+    const key = operation.parameters.find(
+      (p) => p.in === 'header' && p.name === 'Idempotency-Key',
+    );
+    assert.ok(key);
+    assert.equal(key.required, suffix.includes('attempt'));
+    if (suffix.includes('attempt'))
+      assert.deepEqual(
+        operation.parameters.find((p) => p.name === 'operation').schema.enum,
+        ['TAKE', 'RELEASE'],
+      );
+    else
+      assert.equal(
+        operation.responses['200'].content['application/json'].schema.oneOf
+          .length,
+        2,
+      );
+  }
+  assert.deepEqual(
+    full.components.schemas.IndependentAttemptResponse.properties.state.enum,
+    ['APPLIED', 'PENDING_OR_UNKNOWN', 'CLOSED_NO_EFFECTS'],
+  );
+  for (const name of [
+    'IndependentAttemptResponse',
+    'IndependentCommandResponse',
+    'IndependentAttemptCreditsResponse',
+  ])
+    assert.equal(pub.components.schemas[name], undefined);
+  assert.doesNotMatch(
+    full.paths[prefix + '/take'].post.description,
+    /Liberar no devuelve créditos todavía/,
+  );
+  assert.match(
+    full.paths[prefix + '/release'].post.description,
+    /SERVICE_REFUND/,
+  );
 });

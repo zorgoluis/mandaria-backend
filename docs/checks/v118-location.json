@@ -1,0 +1,2274 @@
+{
+  "verdict": "PARTIAL",
+  "reason": "Webhooks complete-file verification not accredited after native worker abort; no activation or V1.18-complete claim.",
+  "generatedAt": "2026-10-07T04:03:38.853Z",
+  "branch": "v1.18-GPS_seguimiento_temporal",
+  "baseline": "b0f908c8f2b2d54d1a950b3f53dff8815d851bf7",
+  "runtime": {
+    "node": "v24.15.0",
+    "postgres": "18.6",
+    "prisma": "6.19.3",
+    "vitest": "4.1.11",
+    "host": "Windows",
+    "port": 65063,
+    "databases": "Only mandaria_v118_*_test copies in isolated mandaria-v117-z5t2IE cluster"
+  },
+  "executedThisTask": {
+    "unit": {
+      "label": "units-final",
+      "passed": 475,
+      "files": 37
+    },
+    "public": {
+      "label": "public-tests-contract",
+      "passed": 38
+    },
+    "e2eUnique": 73,
+    "verified": [
+      {
+        "file": "test/direct-demand.e2e-spec.ts",
+        "label": "direct-order2",
+        "total": 29,
+        "reportSha256": "db23f1926667963992a9ea2723ab9ba351087447e1f35b959f33e1d4a052529b"
+      },
+      {
+        "file": "test/public-delivery-tracking.e2e-spec.ts",
+        "label": "tracking",
+        "total": 2,
+        "reportSha256": "58c7b106caa377cefbb51960df996cd1fad9939c1dd0bb05cd39b7c2944661e4"
+      },
+      {
+        "file": "test/delivery-execution.e2e-spec.ts",
+        "label": "custody",
+        "total": 29,
+        "reportSha256": "2fb715b88bb3d0bc026f2c6b76cdd0c4825129c391b491d31c84801c95b1790f"
+      },
+      {
+        "file": "test/customers.e2e-spec.ts",
+        "label": "customers",
+        "total": 13,
+        "reportSha256": "c74b5fd985feb48919c5f8a5b86d06ddbbedaa5adaa0a4290069d4efc82986e9"
+      }
+    ]
+  },
+  "unverified": [
+    {
+      "file": "test/b2b-webhooks.e2e-spec.ts",
+      "attempts": [
+        "webhooks",
+        "webhooks2-forks",
+        "webhooks3-final"
+      ],
+      "reason": "threads native3221226505; forks54 assertions but teardown immutable financial history; corrected fixture then fork worker aborted40/54. No failed/partial attempt counted."
+    }
+  ],
+  "migration": {
+    "rows": [
+      {
+        "table": "User",
+        "before": "118:edd3270a5600b832abf628aaeeb0feb6",
+        "after": "118:edd3270a5600b832abf628aaeeb0feb6",
+        "equal": true
+      },
+      {
+        "table": "DeliveryRequest",
+        "before": "180:c0ade1a07be2b5b0639bb9facb7a319f",
+        "after": "180:c0ade1a07be2b5b0639bb9facb7a319f",
+        "equal": true
+      },
+      {
+        "table": "DeliveryQuote",
+        "before": "87:5e777eefdd7fd054512a098e6037724a",
+        "after": "87:5e777eefdd7fd054512a098e6037724a",
+        "equal": true
+      },
+      {
+        "table": "DeliveryAssignment",
+        "before": "52:8fc523c20ecc0ef6cc53f8d7d3d87740",
+        "after": "52:8fc523c20ecc0ef6cc53f8d7d3d87740",
+        "equal": true
+      },
+      {
+        "table": "CreditLedgerEntry",
+        "before": "276:4b6b29a01e8c5ae136988eecbaa624c8",
+        "after": "276:4b6b29a01e8c5ae136988eecbaa624c8",
+        "equal": true
+      },
+      {
+        "table": "DeliveryExecutionEvent",
+        "before": "286:117ef5d170e9e0a2f08266da3b4905ab",
+        "after": "286:117ef5d170e9e0a2f08266da3b4905ab",
+        "equal": true
+      },
+      {
+        "table": "HumanCommandAttempt",
+        "before": "0:d41d8cd98f00b204e9800998ecf8427e",
+        "after": "0:d41d8cd98f00b204e9800998ecf8427e",
+        "equal": true
+      },
+      {
+        "table": "B2bOutboxEvent",
+        "before": "18:d619c812002356bc8aa96ecbf73ce2b9",
+        "after": "18:d619c812002356bc8aa96ecbf73ce2b9",
+        "equal": true
+      }
+    ],
+    "historicalMigrationHashesPreserved": true,
+    "driftSame": true
+  },
+  "attempts": [
+    {
+      "label": "access-contract",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/generate-api-access.ts"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/access-contract.log",
+        "sha256": "569791408c8ff690a51223a5b8e925c6fa669118e9899a7699022239fef334e7"
+      }
+    },
+    {
+      "label": "access-docs",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/generate-api-access.ts"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/access-docs.log",
+        "sha256": "569791408c8ff690a51223a5b8e925c6fa669118e9899a7699022239fef334e7"
+      }
+    },
+    {
+      "label": "access-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/generate-api-access.ts"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/access-final.log",
+        "sha256": "569791408c8ff690a51223a5b8e925c6fa669118e9899a7699022239fef334e7"
+      }
+    },
+    {
+      "label": "build-contract-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/build-contract-final.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "build-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/build-final.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "build",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/build.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "build2",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/build2.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "build3",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/build3.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "build4",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/build4.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "cluster-stop",
+      "command": [
+        "pg_ctl",
+        "stop",
+        "-D",
+        "C:/Users/zorgl/AppData/Local/Temp/mandaria-v117-z5t2IE/pg",
+        "-m",
+        "fast",
+        "-w"
+      ],
+      "identityVerified": true,
+      "signal": null,
+      "retainedSyntheticDatabases": true,
+      "exitCode": 0,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/cluster-stop.log",
+        "sha256": "3589d2bd01f8295cc7c9ec3f5e07625fcd347ccb6f33f2d80edafe5f5217c1fb"
+      }
+    },
+    {
+      "label": "create-clean",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "mandaria_v118_clean_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/create-clean.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "create-upgrade",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v117_recovery2_upgrade_test",
+        "mandaria_v118_upgrade_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/create-upgrade.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "custody-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_custody_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/custody-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "custody",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/delivery-execution.e2e-spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/custody.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/custody.json",
+      "counts": {
+        "total": 29,
+        "passed": 29,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/custody.log",
+        "sha256": "55f053bb1ef1d13d4fc9431b4b3c1a18cf0ec595eb8ac8f05c2591412bc75e07"
+      }
+    },
+    {
+      "label": "customers-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_customers_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/customers-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "customers",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/customers.e2e-spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/customers.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/customers.json",
+      "counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/customers.log",
+        "sha256": "bf7f46f2cc56a6e9e1bbf0353586b6c440f3bb09df9f6133c62c8b2f9f16e398"
+      }
+    },
+    {
+      "label": "direct-contract-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct_contract_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct-contract-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct-contract",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct-contract.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/direct-contract.json",
+      "counts": {
+        "total": 29,
+        "passed": 29,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/direct-contract.log",
+        "sha256": "7b6efbff0c3a7dbf53c27ec800022ec0402d3e4d39920a0648289b598f280a58"
+      }
+    },
+    {
+      "label": "direct-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct-final-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct_final_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct-final-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct-final.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/direct-final.json",
+      "counts": {
+        "total": 29,
+        "passed": 29,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/direct-final.log",
+        "sha256": "255483f595c3fcf4e4fcd1b93db87788e005888d45816a53c39e1226a6e3745f"
+      }
+    },
+    {
+      "label": "direct-order-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct_order_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct-order-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct-order",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct-order.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 3221226505,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct-order.log",
+        "sha256": "768132eeef02aefcb43bb5ee22a92f96f26d5c4eb5843c97c526731afd40e43a"
+      }
+    },
+    {
+      "label": "direct-order2-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct_order2_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct-order2-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct-order2",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct-order2.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/direct-order2.json",
+      "counts": {
+        "total": 29,
+        "passed": 29,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/direct-order2.log",
+        "sha256": "d898ad10868531af5d4b363d84dcac855c78e2de125a7ce53a1022537044d060"
+      }
+    },
+    {
+      "label": "direct",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct.log",
+        "sha256": "ff6ede4359b84ee4310f59ae34fae6a67fbf2202f8e32149bfc6bf9c3a7576f7"
+      }
+    },
+    {
+      "label": "direct-run",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct-run.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": ".tmp/v118/direct-run.json",
+      "counts": {
+        "total": 26,
+        "passed": 23,
+        "failed": 3,
+        "pending": 0,
+        "success": false
+      },
+      "log": {
+        "path": ".tmp/v118/direct-run.log",
+        "sha256": "fcf06e11ff4b7861f4a7c8d960c1d6444392ffa4998e9bc62e241af37c15cec6"
+      }
+    },
+    {
+      "label": "direct2-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct2_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct2-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct2",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct2.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/direct2.json",
+      "counts": {
+        "total": 26,
+        "passed": 26,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/direct2.log",
+        "sha256": "c6efae1be0f0d03593ad874c4b32453713c0cd1943278297af33c828565c0b1b"
+      }
+    },
+    {
+      "label": "direct3-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct3_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct3-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct3",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct3.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": ".tmp/v118/direct3.json",
+      "counts": {
+        "total": 27,
+        "passed": 8,
+        "failed": 0,
+        "pending": 1,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/direct3.log",
+        "sha256": "01d7d54bf4a9ca6d041b638f9f26ce5f3b3d9dc3df99523c6bee8eb0cc0d374e"
+      }
+    },
+    {
+      "label": "direct4-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct4_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct4-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct4",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct4.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": ".tmp/v118/direct4.json",
+      "counts": {
+        "total": 28,
+        "passed": 26,
+        "failed": 2,
+        "pending": 0,
+        "success": false
+      },
+      "log": {
+        "path": ".tmp/v118/direct4.log",
+        "sha256": "e50edb420d51786a96e572cf10f74839cb00ea3dafcc37341b24c48b0bcc6d8a"
+      }
+    },
+    {
+      "label": "direct5-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct5_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct5-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct5",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct5.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": ".tmp/v118/direct5.json",
+      "counts": {
+        "total": 28,
+        "passed": 27,
+        "failed": 1,
+        "pending": 0,
+        "success": false
+      },
+      "log": {
+        "path": ".tmp/v118/direct5.log",
+        "sha256": "bae6e2416750d48acf7f0b79a961615bfa3397ba9726e0cec73040bcf10ec35b"
+      }
+    },
+    {
+      "label": "direct6-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct6_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct6-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct6",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct6.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": ".tmp/v118/direct6.json",
+      "counts": {
+        "total": 29,
+        "passed": 8,
+        "failed": 0,
+        "pending": 1,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/direct6.log",
+        "sha256": "185a5fae5f9ad38be7866a94136852da9deee75db047328b54edd4080e38c1d7"
+      }
+    },
+    {
+      "label": "direct7-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_direct7_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/direct7-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "direct7-threads",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/direct7-threads.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/direct7-threads.json",
+      "counts": {
+        "total": 29,
+        "passed": 29,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/direct7-threads.log",
+        "sha256": "2cb1c45cca3ef3dafa777aed1ba8bbb81322fd0f31003880b89b3d0958020489"
+      }
+    },
+    {
+      "label": "docs-check",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/generate-api-access.ts",
+        "--check"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/docs-check.log",
+        "sha256": "138ae873357d855770d541b2d781edf4b5c8e47ead9a940fb643301f01e255af"
+      }
+    },
+    {
+      "label": "docs-contract-check",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/generate-api-access.ts",
+        "--check"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/docs-contract-check.log",
+        "sha256": "138ae873357d855770d541b2d781edf4b5c8e47ead9a940fb643301f01e255af"
+      }
+    },
+    {
+      "label": "drift-before",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "diff",
+        "--from-url",
+        "postgresql://postgres@127.0.0.1:65063/mandaria_v117_recovery2_upgrade_test",
+        "--to-schema-datamodel",
+        ".tmp/v118/schema-before.prisma",
+        "--exit-code"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 2,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/drift-before.log",
+        "sha256": "b809434508058d4c36d69a8f39934f077e18cf5885030833802bb51b271a5413"
+      }
+    },
+    {
+      "label": "drift",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "diff",
+        "--from-url",
+        "postgresql://postgres@127.0.0.1:65063/mandaria_v118_clean_test",
+        "--to-schema-datamodel",
+        "prisma/schema.prisma",
+        "--exit-code"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 2,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/drift.log",
+        "sha256": "b809434508058d4c36d69a8f39934f077e18cf5885030833802bb51b271a5413"
+      }
+    },
+    {
+      "label": "eslint-delivery",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "src",
+        "test",
+        "prisma"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/eslint-delivery.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "eslint-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "src",
+        "test",
+        "prisma"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/eslint-final.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "eslint",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/eslint/bin/eslint.js",
+        "src/location",
+        "src/delivery-requests/public-delivery-tracking.ts",
+        "src/config/environment.ts",
+        "src/integrations/integration-scopes.ts",
+        "src/common/http-exception.filter.ts",
+        "src/app.module.ts",
+        "src/setup.ts",
+        "test/direct-demand.e2e-spec.ts"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/eslint.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "focused-units",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "test/http.spec.ts",
+        "test/location.spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/focused-units.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/focused-units.json",
+      "counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/focused-units.log",
+        "sha256": "a45af927e197e06d4c64e7c2905fd436748a6100bde9b51113bde0a5b98c9517"
+      }
+    },
+    {
+      "label": "format-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "src/location",
+        "src/common/domain-error.ts",
+        "src/common/http-exception.filter.ts",
+        "src/config/environment.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "test/location.spec.ts",
+        "test/http.spec.ts",
+        "scripts/export-public-b2b.mjs",
+        "scripts/export-public-b2b.test.mjs"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/format-final.log",
+        "sha256": "b8b4715d366ba7e576dd5137f65c4cc56a130662bcb1502c22d90433a3e54c09"
+      }
+    },
+    {
+      "label": "format",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "src/location",
+        "src/delivery-requests/public-delivery-tracking.ts",
+        "src/config/environment.ts",
+        "src/integrations/integration-scopes.ts",
+        "src/common/http-exception.filter.ts",
+        "src/app.module.ts",
+        "src/setup.ts",
+        "test/direct-demand.e2e-spec.ts"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/format.log",
+        "sha256": "facc0d113b63171c370b23b97a397ec7851cf2328acea8d4c39218a6eb3899c9"
+      }
+    },
+    {
+      "label": "generate",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "generate"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/generate.log",
+        "sha256": "0aea6717ccef91bc2304e79f11ae35b27c41e3a58b48f139c6002f4a74e79bf7"
+      }
+    },
+    {
+      "label": "identity",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/psql.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-d",
+        "postgres",
+        "-X",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        "SELECT current_setting('data_directory'),inet_server_port();"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/identity.log",
+        "sha256": "139a3be9576871cb62592c3f06790a3c5a508a4f1b8b910255052bb6a436038a"
+      }
+    },
+    {
+      "label": "lint-delivery",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/oxlint/bin/oxlint",
+        "src/",
+        "test/",
+        "scripts/",
+        "--ignore-pattern",
+        "src/generated"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/lint-delivery.log",
+        "sha256": "1d51994590c2989ce41a5e8b569d6525ea9b6f8f5b96669914231a746be756a1"
+      }
+    },
+    {
+      "label": "lint-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/oxlint/bin/oxlint",
+        "src/",
+        "test/",
+        "scripts/",
+        "--ignore-pattern",
+        "src/generated"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/lint-final.log",
+        "sha256": "1d51994590c2989ce41a5e8b569d6525ea9b6f8f5b96669914231a746be756a1"
+      }
+    },
+    {
+      "label": "lint",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/oxlint/bin/oxlint",
+        "src/",
+        "test/",
+        "scripts/",
+        "--ignore-pattern",
+        "src/generated"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/lint.log",
+        "sha256": "1d51994590c2989ce41a5e8b569d6525ea9b6f8f5b96669914231a746be756a1"
+      }
+    },
+    {
+      "label": "migrate-clean",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "deploy"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/migrate-clean.log",
+        "sha256": "784436898abc0e8fe1fec4cc58657479aa281d3ddbf2daf50b7bbfda183fc041"
+      }
+    },
+    {
+      "label": "migrate-policy-clean",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "deploy"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/migrate-policy-clean.log",
+        "sha256": "77ac969868be4b1b98caa4c03c51de053bd1f5c4bab8ea13e76e26692671df08"
+      }
+    },
+    {
+      "label": "migrate-policy-upgrade",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "deploy"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/migrate-policy-upgrade.log",
+        "sha256": "f9e71a69efcaa25604406bebd646aa8ccb54f746c7413a0e5027ddbe3d6663a1"
+      }
+    },
+    {
+      "label": "migrate-upgrade",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "deploy"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/migrate-upgrade.log",
+        "sha256": "d84d3481128181396b10cd7c51c50bf5895c32559dd85b3c9f76228188133d4b"
+      }
+    },
+    {
+      "label": "migration-status",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "migrate",
+        "status"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/migration-status.log",
+        "sha256": "d7f9144ebb9187c31d89795b44f71032aa4f4950b502caa2120c264e2400ad92"
+      }
+    },
+    {
+      "label": "openapi-contract",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "dist/openapi.cli.js"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/openapi-contract.log",
+        "sha256": "627ae9c2938b2acb63ddfcb32767004f5d6f7a10d1904344927fc911cbba93ed"
+      }
+    },
+    {
+      "label": "openapi-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "dist/openapi.cli.js"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/openapi-final.log",
+        "sha256": "627ae9c2938b2acb63ddfcb32767004f5d6f7a10d1904344927fc911cbba93ed"
+      }
+    },
+    {
+      "label": "openapi",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "dist/openapi.cli.js"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/openapi.log",
+        "sha256": "627ae9c2938b2acb63ddfcb32767004f5d6f7a10d1904344927fc911cbba93ed"
+      }
+    },
+    {
+      "label": "public-check",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs",
+        "--check"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/public-check.log",
+        "sha256": "e67e340409d594a728191574b481a9fb4e0a9eb2f7b1f6f93e9b48df041b7008"
+      }
+    },
+    {
+      "label": "public-contract-check",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs",
+        "--check"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/public-contract-check.log",
+        "sha256": "e67e340409d594a728191574b481a9fb4e0a9eb2f7b1f6f93e9b48df041b7008"
+      }
+    },
+    {
+      "label": "public-contract",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/public-contract.log",
+        "sha256": "e67e340409d594a728191574b481a9fb4e0a9eb2f7b1f6f93e9b48df041b7008"
+      }
+    },
+    {
+      "label": "public-export",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/public-export.log",
+        "sha256": "3f18f76c8c7ad4c6173018d2f7099ab5789549f7065a34eae130250bec9bd9ac"
+      }
+    },
+    {
+      "label": "public-export2",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/public-export2.log",
+        "sha256": "e67e340409d594a728191574b481a9fb4e0a9eb2f7b1f6f93e9b48df041b7008"
+      }
+    },
+    {
+      "label": "public-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "scripts/export-public-b2b.mjs"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/public-final.log",
+        "sha256": "e67e340409d594a728191574b481a9fb4e0a9eb2f7b1f6f93e9b48df041b7008"
+      }
+    },
+    {
+      "label": "public-tests-contract",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "--test",
+        "--test-isolation=none",
+        "scripts/export-public-b2b.test.mjs",
+        "scripts/webhook-signature-example.test.mjs"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/public-tests-contract.log",
+        "sha256": "2e4405e9b410d2bcceb4e2f84086b1448848580ff71cf290fb343aae12105702"
+      }
+    },
+    {
+      "label": "public-tests-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "--test",
+        "--test-isolation=none",
+        "scripts/export-public-b2b.test.mjs",
+        "scripts/webhook-signature-example.test.mjs"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/public-tests-final.log",
+        "sha256": "245b41bb253174c77a88d363d20b6dd149f0bce91033524a58fd29728bd8478b"
+      }
+    },
+    {
+      "label": "public-tests",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "--test",
+        "--test-isolation=none",
+        "scripts/export-public-b2b.test.mjs",
+        "scripts/webhook-signature-example.test.mjs"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/public-tests.log",
+        "sha256": "76ffe1e5cad1357182c8ae14bf583b3093919f985d05fde0971af9e37bd2e539"
+      }
+    },
+    {
+      "label": "schema-validate",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prisma/build/index.js",
+        "validate"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/schema-validate.log",
+        "sha256": "cee181ad31bacb29345a02d90613d8e062aa6c91dc5c10ea7d78b410fba6272c"
+      }
+    },
+    {
+      "label": "tracking-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_tracking_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/tracking-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "tracking",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/public-delivery-tracking.e2e-spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/tracking.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/tracking.json",
+      "counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/tracking.log",
+        "sha256": "c0c07f99b707366ea15963ffa8efb8b13a119e536355b8fe03505e978e74c80b"
+      }
+    },
+    {
+      "label": "type-contract",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--pretty",
+        "false"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/type-contract.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "types-all",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--pretty",
+        "false"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/types-all.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "types-build-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "tsconfig.build.json",
+        "--pretty",
+        "false"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/types-build-final.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "types-build",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "tsconfig.build.json",
+        "--pretty",
+        "false"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/types-build.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "types-delivery",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--pretty",
+        "false"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/types-delivery.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "types-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--pretty",
+        "false"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/types-final.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "types",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--pretty",
+        "false"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/types.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "units-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/units-final.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": ".tmp/v118/units-final.json",
+      "counts": {
+        "total": 475,
+        "passed": 475,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/units-final.log",
+        "sha256": "8b2169cbab8e6dfabc04b095cd39439a6c56c3c1784d2613db6750b5d681cf79"
+      }
+    },
+    {
+      "label": "units",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/units.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": ".tmp/v118/units.json",
+      "counts": {
+        "total": 475,
+        "passed": 471,
+        "failed": 0,
+        "pending": 4,
+        "success": false
+      },
+      "log": {
+        "path": ".tmp/v118/units.log",
+        "sha256": "30dc6d6bd34f02cae8d6ef35ae751c9df18eec2f1f7c628f349f45689721fe69"
+      }
+    },
+    {
+      "label": "webhooks-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_webhooks_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/webhooks-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "webhooks-format",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "test/b2b-webhooks.e2e-spec.ts",
+        "test/direct-demand.e2e-spec.ts",
+        "src/location/location.controller.ts"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/webhooks-format.log",
+        "sha256": "7019cb0d1687871550a5607a315f90f3ccc93d769ba79b728cef434330ddaecc"
+      }
+    },
+    {
+      "label": "webhooks",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/b2b-webhooks.e2e-spec.ts",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/webhooks.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 3221226505,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/webhooks.log",
+        "sha256": "768132eeef02aefcb43bb5ee22a92f96f26d5c4eb5843c97c526731afd40e43a"
+      }
+    },
+    {
+      "label": "webhooks2-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_webhooks2_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/webhooks2-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "webhooks2-forks",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/b2b-webhooks.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/webhooks2-forks.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": ".tmp/v118/webhooks2-forks.json",
+      "counts": {
+        "total": 54,
+        "passed": 54,
+        "failed": 0,
+        "pending": 0,
+        "success": false
+      },
+      "log": {
+        "path": ".tmp/v118/webhooks2-forks.log",
+        "sha256": "544d2e64da6bfbf42d96222672022129f5819c2113a04a06c9e1c70340cffeca"
+      }
+    },
+    {
+      "label": "webhooks3-create",
+      "command": [
+        "C:/Program Files/PostgreSQL/18/bin/createdb.exe",
+        "-h",
+        "127.0.0.1",
+        "-p",
+        "65063",
+        "-U",
+        "postgres",
+        "-T",
+        "mandaria_v118_clean_test",
+        "mandaria_v118_webhooks3_test"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 0,
+      "signal": null,
+      "report": null,
+      "counts": null,
+      "log": {
+        "path": ".tmp/v118/webhooks3-create.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "label": "webhooks3-final",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/b2b-webhooks.e2e-spec.ts",
+        "--pool=forks",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=.tmp/v118/webhooks3-final.json"
+      ],
+      "node": "v24.15.0",
+      "exitCode": 1,
+      "signal": null,
+      "report": ".tmp/v118/webhooks3-final.json",
+      "counts": {
+        "total": 54,
+        "passed": 40,
+        "failed": 0,
+        "pending": 1,
+        "success": true
+      },
+      "log": {
+        "path": ".tmp/v118/webhooks3-final.log",
+        "sha256": "2f323ac1f6d5df427b2c3599e25558e542b57806d8a43355d83fa316dc879868"
+      }
+    }
+  ],
+  "sourceHashes": [
+    {
+      "path": ".env.example",
+      "sha256": "ae5f7a91cf4f651a1145e55c4df44dbad278780eaf8bbb222f4cba70bbccec6e"
+    },
+    {
+      "path": "docs/API_ACCESS.md",
+      "sha256": "5666f4c3e33da103f2b9ff3ebab931bdb1cde3232fc0cd7b30c759f1564110cb"
+    },
+    {
+      "path": "docs/openapi-b2b.json",
+      "sha256": "25ead040d338859b6f9addb8b0e6a3985eec278b2c14984a3be677977e3584db"
+    },
+    {
+      "path": "docs/openapi.json",
+      "sha256": "be064f835e859f4cf842052076e36a11cca587b9fe0a836dbab0d1ff0778caef"
+    },
+    {
+      "path": "prisma/migrations/20261007000100_location_tracking/migration.sql",
+      "sha256": "d67a663368b3b36662738e6574c28fe0a1e433dc7acdbb388c7967a4ce3aee42"
+    },
+    {
+      "path": "prisma/migrations/20261007000200_location_policy_epoch/migration.sql",
+      "sha256": "1f5320d5192ae1a423066280c92ead8ebca094758a6418d4f057b02af6b82e72"
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "sha256": "19a5fb3009574ee8f1c2b5875644189c3831afa0013ca469294d03a4a366dbce"
+    },
+    {
+      "path": "scripts/export-public-b2b.mjs",
+      "sha256": "dc9b9da3b4b84b40f278384b0c96a9e7a096b5de88d433126e7c1d5db086ec0b"
+    },
+    {
+      "path": "scripts/export-public-b2b.test.mjs",
+      "sha256": "c4711138b3e1768a069fbafe7a633d44c165dd7adeabb1a7420ea8f39667aeab"
+    },
+    {
+      "path": "scripts/public-b2b-prose.json",
+      "sha256": "130e81ce21a76b723cb71dc0f7ad257bfc323803633159d163a8f41d8842a043"
+    },
+    {
+      "path": "src/app.module.ts",
+      "sha256": "2c7b873468b01aaa243f590ff260688f5eaae86b5d0e8f50a9b6833cb902f41e"
+    },
+    {
+      "path": "src/common/domain-error.ts",
+      "sha256": "235aca7460d46746c83a48690ad3ef895a3cab1ff7ea164ff2d76feef5a04cd4"
+    },
+    {
+      "path": "src/common/http-exception.filter.ts",
+      "sha256": "c9b86a4d681d7be211029eba045efcc8b54bd6848ce7b2e81f8097b76fecd2a1"
+    },
+    {
+      "path": "src/config/environment.ts",
+      "sha256": "1c552f2769dd411436f5cc9270983eeb2428ae5b241952cfaba6926efc16298c"
+    },
+    {
+      "path": "src/delivery-requests/public-delivery-tracking.ts",
+      "sha256": "2e3e310efcd547182244f0bf7ef4852e5869de42c2341d2f72189d73a71b799b"
+    },
+    {
+      "path": "src/integrations/integration-scopes.ts",
+      "sha256": "df74d7a44d011db8445ffa60b6cffeb8f98f84027cbac2a3964d51092fc995ae"
+    },
+    {
+      "path": "src/location/location.controller.ts",
+      "sha256": "5e6a2b2ee463aead56968a53a6958f9be3df8b3aac2da8af0ececfb4e3de019f"
+    },
+    {
+      "path": "src/location/location.dto.ts",
+      "sha256": "922a8b6ecd61f9bdf6b6cd0fb3c68a56486f58a47f61ffa285afc9f735238f26"
+    },
+    {
+      "path": "src/location/location.module.ts",
+      "sha256": "7b0dade060d0ff0935c1a52c167fa1e9f0ae6a829a18bd2d686f98b691533302"
+    },
+    {
+      "path": "src/location/location.responses.ts",
+      "sha256": "fb99e5cd9e4b20cca39c0e745413753a1465326670a1e5ab00ff37e64665e630"
+    },
+    {
+      "path": "src/location/location.service.ts",
+      "sha256": "e4527114d9c1416af4825e1513f73b3fa40f9ba324444a40e2ef1bbf6e78cd12"
+    },
+    {
+      "path": "src/setup.ts",
+      "sha256": "71a55a04cdf5d8ccabb45e95d40fc3f90d0d3edbd134a8851f151ea99369a4fc"
+    },
+    {
+      "path": "test/b2b-webhooks.e2e-spec.ts",
+      "sha256": "9a10fd6ac6fdd53a8d0f3e2490b2d80da59c76fd07632e772a3aa20bb1e0bbd4"
+    },
+    {
+      "path": "test/direct-demand.e2e-spec.ts",
+      "sha256": "141f8e4629d8355505b1e6046e7bc4c9b5c6e8f3b31291b35c6221ffe3a7af28"
+    },
+    {
+      "path": "test/http.spec.ts",
+      "sha256": "9415526e8d78fce99ceb1d7ef066aea49fece266d37cb19782f509630bfef155"
+    },
+    {
+      "path": "test/location.spec.ts",
+      "sha256": "247390924d38f0cb812c45b86f4ade98ba37a71021bb99a00306bc6aa65c579b"
+    }
+  ],
+  "restrictions": {
+    "docker": false,
+    "production": false,
+    "coita": false,
+    "frontend": false,
+    "commit": false,
+    "push": false,
+    "deployment": false,
+    "activation": false
+  },
+  "pending": [
+    "Complete webhooks file with corrected fixture",
+    "WEB/DRIVER app and real B2B integration",
+    "Observed simultaneous volume",
+    "Backup/WAL location retention"
+  ],
+  "notes": [
+    "No previous task tests added to these counts.",
+    "Native abort causes unproven.",
+    "Prisma drift exit2 exactly matches previous schema/DB: SQL-only historical foreign keys.",
+    "Logs and reports retained locally; hashes provided; no credentials included in this evidence."
+  ]
+}

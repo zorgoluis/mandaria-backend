@@ -5347,6 +5347,2418 @@
           }
         ]
       }
+    },
+    "/api/v1/delivery-requests/{publicId}/location": {
+      "get": {
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Respuesta HTTP 200.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationViewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Respuesta HTTP 400. Códigos posibles: VALIDATION_ERROR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "publicId must match MDR-000000"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Respuesta HTTP 401.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Respuesta HTTP 403.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Respuesta HTTP 404. Códigos posibles: SHARED_TRACKING_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Respuesta HTTP 409. Códigos posibles: LOCATION_NOT_ACTIVE, LOCATION_PHASE_NOT_ALLOWED, LOCATION_STREAM_REPLACED, LOCATION_STREAM_REVISION_CONFLICT, LOCATION_SAMPLE_CONFLICT, LINK_REVISION_CONFLICT, LINK_NOT_ISSUABLE, IDEMPOTENCY_KEY_REUSED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Respuesta HTTP 422. Códigos posibles: LOCATION_CAPTURE_TIME_INVALID, LOCATION_ACCURACY_INSUFFICIENT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 422
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_422"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Respuesta HTTP 429. Códigos posibles: TRACKING_RATE_LIMITED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Respuesta HTTP 503. Códigos posibles: TRACKING_DISABLED, TRACKING_TEMPORARILY_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scopes": [
+          "deliveries:read",
+          "deliveries:location:read"
+        ],
+        "operationId": "deliveryLocation",
+        "summary": "Consultar ubicación propia",
+        "description": "GPS desde TO_PICKUP sujeto a fase, atención operativa y frescura. locationVersion ordena posición y publicVersion progreso por MDR. No acredita custodia, entrega ni cobro. Requiere deliveries:read y deliveries:location:read.",
+        "tags": [
+          "Solicitudes"
+        ],
+        "security": [
+          {
+            "integration-bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/delivery-requests/{publicId}/tracking-link": {
+      "get": {
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Respuesta HTTP 200.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackingLinkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Respuesta HTTP 400. Códigos posibles: VALIDATION_ERROR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "publicId must match MDR-000000"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Respuesta HTTP 401.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Respuesta HTTP 403.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Respuesta HTTP 404. Códigos posibles: SHARED_TRACKING_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Respuesta HTTP 409. Códigos posibles: LOCATION_NOT_ACTIVE, LOCATION_PHASE_NOT_ALLOWED, LOCATION_STREAM_REPLACED, LOCATION_STREAM_REVISION_CONFLICT, LOCATION_SAMPLE_CONFLICT, LINK_REVISION_CONFLICT, LINK_NOT_ISSUABLE, IDEMPOTENCY_KEY_REUSED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Respuesta HTTP 422. Códigos posibles: LOCATION_CAPTURE_TIME_INVALID, LOCATION_ACCURACY_INSUFFICIENT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 422
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_422"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Respuesta HTTP 429. Códigos posibles: TRACKING_RATE_LIMITED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Respuesta HTTP 503. Códigos posibles: TRACKING_DISABLED, TRACKING_TEMPORARILY_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scopes": [
+          "deliveries:read",
+          "deliveries:tracking-links:manage"
+        ],
+        "operationId": "trackingLinkMetadata",
+        "summary": "Consultar metadata de enlace",
+        "description": "No devuelve secreto. Consultar no prolonga vigencia. Requiere deliveries:read y deliveries:tracking-links:manage.",
+        "tags": [
+          "Solicitudes"
+        ],
+        "security": [
+          {
+            "integration-bearer": []
+          }
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID por intención. Conservar clave, operación y revisión; nunca guardar secretos ni cuerpos.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackingLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta HTTP 200.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackingLinkResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Respuesta HTTP 201.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackingLinkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Respuesta HTTP 400. Códigos posibles: VALIDATION_ERROR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "publicId must match MDR-000000"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Respuesta HTTP 401.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Respuesta HTTP 403.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Respuesta HTTP 404. Códigos posibles: SHARED_TRACKING_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Respuesta HTTP 409. Códigos posibles: LOCATION_NOT_ACTIVE, LOCATION_PHASE_NOT_ALLOWED, LOCATION_STREAM_REPLACED, LOCATION_STREAM_REVISION_CONFLICT, LOCATION_SAMPLE_CONFLICT, LINK_REVISION_CONFLICT, LINK_NOT_ISSUABLE, IDEMPOTENCY_KEY_REUSED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Respuesta HTTP 422. Códigos posibles: LOCATION_CAPTURE_TIME_INVALID, LOCATION_ACCURACY_INSUFFICIENT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 422
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_422"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Respuesta HTTP 429. Códigos posibles: TRACKING_RATE_LIMITED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Respuesta HTTP 503. Códigos posibles: TRACKING_DISABLED, TRACKING_TEMPORARILY_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scopes": [
+          "deliveries:read",
+          "deliveries:tracking-links:manage"
+        ],
+        "operationId": "issueTrackingLink",
+        "summary": "Emitir enlace temporal",
+        "description": "CAS mediante expectedLinkRevision e Idempotency-Key. URL secreta únicamente en primera respuesta; reintento sin secreto. TTL máximo 24h. Reconciliar respuesta incierta antes de revocar o reemplazar explícitamente.",
+        "tags": [
+          "Solicitudes"
+        ],
+        "security": [
+          {
+            "integration-bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/delivery-requests/{publicId}/tracking-link/revoke": {
+      "post": {
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID por intención. Conservar clave, operación y revisión; nunca guardar secretos ni cuerpos.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackingLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta HTTP 200.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackingLinkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Respuesta HTTP 400. Códigos posibles: VALIDATION_ERROR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "publicId must match MDR-000000"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Respuesta HTTP 401.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Respuesta HTTP 403.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Respuesta HTTP 404. Códigos posibles: SHARED_TRACKING_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Respuesta HTTP 409. Códigos posibles: LOCATION_NOT_ACTIVE, LOCATION_PHASE_NOT_ALLOWED, LOCATION_STREAM_REPLACED, LOCATION_STREAM_REVISION_CONFLICT, LOCATION_SAMPLE_CONFLICT, LINK_REVISION_CONFLICT, LINK_NOT_ISSUABLE, IDEMPOTENCY_KEY_REUSED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Respuesta HTTP 422. Códigos posibles: LOCATION_CAPTURE_TIME_INVALID, LOCATION_ACCURACY_INSUFFICIENT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 422
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_422"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Respuesta HTTP 429. Códigos posibles: TRACKING_RATE_LIMITED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Respuesta HTTP 503. Códigos posibles: TRACKING_DISABLED, TRACKING_TEMPORARILY_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scopes": [
+          "deliveries:read",
+          "deliveries:tracking-links:manage"
+        ],
+        "operationId": "revokeTrackingLink",
+        "summary": "Revocar enlace",
+        "description": "Incrementa revisión incluso sin enlace. Emisión tardía con revisión anterior no puede aplicar. Un 409 requiere consultar metadata; no acredita revocación. No modifica entrega ni pagos.",
+        "tags": [
+          "Solicitudes"
+        ],
+        "security": [
+          {
+            "integration-bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/delivery-requests/{publicId}/tracking-link/attempt": {
+      "get": {
+        "parameters": [
+          {
+            "name": "publicId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expectedLinkRevision",
+            "required": true,
+            "in": "query",
+            "description": "Revisión decimal consultada; obliga a reconciliar conflictos antes de otra intención.",
+            "schema": {
+              "example": "1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ISSUE",
+                "REVOKE"
+              ]
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID por intención. Conservar clave, operación y revisión; nunca guardar secretos ni cuerpos.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Respuesta HTTP 200.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackingAttemptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Respuesta HTTP 400. Códigos posibles: VALIDATION_ERROR.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "publicId must match MDR-000000"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Respuesta HTTP 401.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_401"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Respuesta HTTP 403.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 403
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_403"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Forbidden resource"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Respuesta HTTP 404. Códigos posibles: SHARED_TRACKING_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_404"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Respuesta HTTP 409. Códigos posibles: LOCATION_NOT_ACTIVE, LOCATION_PHASE_NOT_ALLOWED, LOCATION_STREAM_REPLACED, LOCATION_STREAM_REVISION_CONFLICT, LOCATION_SAMPLE_CONFLICT, LINK_REVISION_CONFLICT, LINK_NOT_ISSUABLE, IDEMPOTENCY_KEY_REUSED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_409"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Respuesta HTTP 422. Códigos posibles: LOCATION_CAPTURE_TIME_INVALID, LOCATION_ACCURACY_INSUFFICIENT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 422
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_422"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Respuesta HTTP 429. Códigos posibles: TRACKING_RATE_LIMITED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 429
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_429"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Respuesta HTTP 503. Códigos posibles: TRACKING_DISABLED, TRACKING_TEMPORARILY_UNAVAILABLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "requestId"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "example": 503
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "HTTP_503"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request failed"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": []
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/v1/delivery-requests/MDR-000123/status"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Correlación generada por Mandaria; también en X-Request-Id. Conservar junto con code y statusCode."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scopes": [
+          "deliveries:read",
+          "deliveries:tracking-links:manage"
+        ],
+        "operationId": "trackingLinkAttempt",
+        "summary": "Reconciliar intento propio",
+        "description": "Consulta con operación, clave y revisión original, sin cuerpo ni secreto. APPLIED_SECRET_UNAVAILABLE, APPLIED_REVOKED, PENDING_OR_UNKNOWN o SUPERSEDED. SUPERSEDED impide un efecto futuro con esa revisión; no acredita ausencia histórica de efectos ni revocación del enlace actual.",
+        "tags": [
+          "Solicitudes"
+        ],
+        "security": [
+          {
+            "integration-bearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -5441,6 +7853,8 @@
                 "quotes:accept",
                 "deliveries:create",
                 "deliveries:read",
+                "deliveries:location:read",
+                "deliveries:tracking-links:manage",
                 "deliveries:cancel"
               ]
             }
@@ -7347,6 +9761,280 @@
           "deliveryCollectionInstruction",
           "quote",
           "availabilityGuaranteed"
+        ]
+      },
+      "LocationProgressResponse": {
+        "type": "object",
+        "properties": {
+          "publicVersion": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "trackingMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY",
+              "DETAILED"
+            ],
+            "nullable": true
+          },
+          "assignmentState": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "ENDED",
+              "NONE"
+            ]
+          },
+          "phase": {
+            "type": "string",
+            "nullable": true
+          },
+          "attentionRequired": {
+            "type": "boolean"
+          },
+          "terminalOutcome": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "occurredAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        },
+        "required": [
+          "publicVersion",
+          "status",
+          "trackingMode",
+          "assignmentState",
+          "phase",
+          "attentionRequired",
+          "terminalOutcome"
+        ]
+      },
+      "LocationSampleResponse": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "accuracyMeters": {
+            "type": "number"
+          },
+          "capturedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "freshUntil": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "eraseAfter": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "accuracyMeters",
+          "capturedAt",
+          "receivedAt",
+          "freshUntil",
+          "eraseAfter"
+        ]
+      },
+      "LocationPositionResponse": {
+        "type": "object",
+        "properties": {
+          "locationVersion": {
+            "type": "string"
+          },
+          "assignmentGeneration": {
+            "type": "string"
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "UNAVAILABLE"
+            ]
+          },
+          "unavailableReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "sample": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocationSampleResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "locationVersion",
+          "assignmentGeneration",
+          "availability",
+          "unavailableReason",
+          "sample"
+        ]
+      },
+      "LocationObservationResponse": {
+        "type": "object",
+        "properties": {
+          "evaluatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "freshness": {
+            "type": "string",
+            "enum": [
+              "RECENT",
+              "STALE",
+              "UNAVAILABLE"
+            ]
+          }
+        },
+        "required": [
+          "evaluatedAt",
+          "freshness"
+        ]
+      },
+      "LocationViewResponse": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/LocationProgressResponse"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationPositionResponse"
+          },
+          "observation": {
+            "$ref": "#/components/schemas/LocationObservationResponse"
+          }
+        },
+        "required": [
+          "publicId",
+          "progress",
+          "location",
+          "observation"
+        ]
+      },
+      "TrackingLinkResponse": {
+        "type": "object",
+        "properties": {
+          "linkRevision": {
+            "type": "string"
+          },
+          "linkId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "ACTIVE",
+              "EXPIRED",
+              "REVOKED",
+              "TERMINAL"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "terminalAccessUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "secretAvailable": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "linkRevision",
+          "linkId",
+          "status",
+          "createdAt",
+          "expiresAt",
+          "terminalAccessUntil"
+        ]
+      },
+      "TrackingLinkDto": {
+        "type": "object",
+        "properties": {
+          "expectedLinkRevision": {
+            "type": "string",
+            "example": "1",
+            "description": "Revisión decimal consultada; obliga a reconciliar conflictos antes de otra intención."
+          }
+        },
+        "required": [
+          "expectedLinkRevision"
+        ]
+      },
+      "TrackingAttemptResponse": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "APPLIED_SECRET_UNAVAILABLE",
+              "APPLIED_REVOKED",
+              "PENDING_OR_UNKNOWN",
+              "SUPERSEDED"
+            ]
+          },
+          "linkRevision": {
+            "type": "string"
+          },
+          "currentLinkId": {
+            "type": "string",
+            "nullable": true
+          },
+          "secretAvailable": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "linkRevision",
+          "currentLinkId",
+          "secretAvailable"
         ]
       }
     }

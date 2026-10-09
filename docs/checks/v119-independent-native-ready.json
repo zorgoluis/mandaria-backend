@@ -1,0 +1,936 @@
+{
+  "status": "READY_FOR_ANDROID_TAKE",
+  "at": "2026-10-07T23:06:10.159Z",
+  "api": "http://127.0.0.1:43133/api/v1",
+  "emulatorApi": "http://10.0.2.2:43133/api/v1",
+  "identity": {
+    "database": "mandaria_v119_independent_local",
+    "port": "55445",
+    "directory": "C:/Users/zorgl/Documents/mandaria-backend/.tmp/native-v119-independent/pgdata",
+    "started": "2026-10-07 17:03:38.989379-06"
+  },
+  "processes": [
+    {
+      "port": 43133,
+      "address": "127.0.0.1",
+      "pid": 15064,
+      "name": "node.exe",
+      "path": "C:\\nvm4w\\nodejs\\node.exe",
+      "started": "2026-10-07T23:03:39.1820380Z"
+    },
+    {
+      "port": 55445,
+      "address": "127.0.0.1",
+      "pid": 40864,
+      "name": "postgres.exe",
+      "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+      "started": "2026-10-07T23:03:38.8072480Z"
+    }
+  ],
+  "revision": {
+    "head": "03dd2aa3b7f812fb34cb7d285d36ad9a21e0c061",
+    "openapiSha256": "cda3164bc0c32e7ef00de2017f8675974ea050b55dc623f6b4b1c40b3c340228",
+    "sourceFiles": [
+      {
+        "path": "src/independent-drivers/independent-dispatches.service.ts",
+        "sha256": "d1f2907cd8d3f2bb88092348db2d066496354ddb6013c4d9e6675ddb2ca68bf4"
+      },
+      {
+        "path": "src/independent-drivers/independent-attempts.ts",
+        "sha256": "8b6033d8ed55c1618982af33e3899e604a42ba1d58974ef054d6b1393c215b86"
+      },
+      {
+        "path": "src/independent-drivers/driver-dispatches.controller.ts",
+        "sha256": "b7111e3b7778fcbfecae7821b1239561ea9a166f189f9f821289e9265fb91d99"
+      },
+      {
+        "path": "src/delivery-assignments/delivery-assignments.service.ts",
+        "sha256": "99af9327397db38002111e158044c9a0b368860744dc8345e27c1b4d66237eb8"
+      },
+      {
+        "path": "src/delivery-execution/execution.persistence.ts",
+        "sha256": "30472d4ad54e4df2dff2f0f03b78b364c956e3fabddeaddad97e33e996b2baf4"
+      },
+      {
+        "path": "src/delivery-execution/execution.responses.ts",
+        "sha256": "c29c33a976f0d2f77edaf76bfd8b5d3fafc38de513663edf2b6bb39804bcbfbf"
+      }
+    ],
+    "copiedAt": "2026-10-07T22:54:25.354Z",
+    "build": {
+      "files": 666,
+      "sha256": "054bd3325a7b154811ecd3c5983ff66d6f2d1c439a78edb5e430949c693c7c6a",
+      "algorithm": "SHA256(JSON array of ordered relative path + file SHA256)"
+    },
+    "preparerSha256": "c0ff010865edf2c1cf714ce330d52915339a755df18f8c1a460303c6a99651ec",
+    "nodeVersion": "v24.15.0"
+  },
+  "preparerSha256": "4cafe6f670b05630227a70e1a17703919d7052fae1ef49630d22efd0341e2e63",
+  "actors": {
+    "driverA": {
+      "driverId": "6969db9a-3506-4c2d-aff5-b3afb21c44a6",
+      "userId": "60923dc7-1fce-41fc-a567-4f4fea39ac16",
+      "vehicleId": "2f33b6a3-fc6b-4b03-9989-fbf99e4defac",
+      "pairingId": "1ec4c925-9d86-485c-8719-8e38d882f50f",
+      "fleetVehicleId": "8ab0c23a-ba1e-48ed-ac4b-27b68edac097",
+      "independentProfileId": "d6d08faa-efbf-4e1d-b1d9-5bacab5f1610",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    },
+    "driverB": {
+      "driverId": "85efa94c-6ea6-4d41-96c8-2e987df264b1",
+      "userId": "f4b06c5c-497a-49dd-a3d5-9049de9124a0",
+      "vehicleId": "d3944e57-e67f-4514-b14d-972f678d8711",
+      "pairingId": "5dcb75e9-539c-4f7b-a63a-c9e7ff4134df",
+      "fleetVehicleId": "d6a1ae6e-6638-456c-a6ba-af10ea080287",
+      "independentProfileId": "fe499792-591a-4e5a-9ed1-980b375802f7",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    },
+    "driverC": {
+      "driverId": "fe087e92-b9db-4898-af4f-dea34018f0e6",
+      "userId": "8edaa4c9-0782-4684-a4be-fd039f5ba97d",
+      "vehicleId": "8529dceb-6542-494c-b089-e864b85204fa",
+      "pairingId": "969ea70f-db42-46a1-80cd-5693be77844b",
+      "fleetVehicleId": "97e4a8bf-0e4b-4eb1-8fd0-054d9e83e7bb",
+      "independentProfileId": "fd71e57c-c545-4be6-bea3-262e0a029072",
+      "initialCredits": 13,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 13
+    },
+    "driverD": {
+      "driverId": "9278aa3a-d4dc-4cf2-9079-d4e77c9c3fbc",
+      "userId": "498a4907-9c19-4bd3-9cd8-5d2302521306",
+      "vehicleId": "76dc1254-c531-429e-82e4-50f0c064254e",
+      "pairingId": "7e14b82d-03fd-4175-abeb-314f851520a7",
+      "fleetVehicleId": "7888e99c-f3f2-48a5-be22-3783cc274d33",
+      "independentProfileId": "124fc0ce-798a-489c-8a70-00df8331371b",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": false,
+      "activeDeliveryAssignment": "910f2fff-33eb-4de4-b34d-c5cfd1350d5b",
+      "credits": 100
+    },
+    "driverE": {
+      "driverId": "4a0bf43b-12dc-4b9d-b63b-4c17f957ad2e",
+      "userId": "577780af-639e-45fd-b9f6-c1fbce3676b6",
+      "vehicleId": "32432d21-d8f9-4673-8338-f32ce3a84f92",
+      "pairingId": "738e21f0-a96b-4cd9-b62d-0f3a3fed8826",
+      "fleetVehicleId": "9de18eb9-7379-450a-9978-93194229ecd0",
+      "independentProfileId": "1de018d6-3ae9-4ae8-a1a9-a5b1b549f6fd",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    },
+    "driverF": {
+      "driverId": "3b6eeee2-d746-4237-a824-52580d299e6e",
+      "userId": "876d2593-b116-44b1-acee-2e5b74b92db6",
+      "vehicleId": "2abb8bc5-f8c4-4937-a9d2-00a731e43e90",
+      "pairingId": "24bc93d2-236a-4fbc-aa7d-8ca3908e6ef6",
+      "fleetVehicleId": "c66a5ab6-08e0-4b4c-aba6-ce127f977ff7",
+      "independentProfileId": "634105ee-6260-4a6d-966a-64188e9f1a65",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    },
+    "driverG": {
+      "driverId": "ed1f2c87-64db-408f-8054-a97148c0c3a6",
+      "userId": "96864d9f-8f2a-478f-bf3a-e14ec95979f5",
+      "vehicleId": "e71e4750-25cc-48dd-aa5b-5eb07c199410",
+      "pairingId": "c3bdde47-ae4e-48dd-86bb-9c5887ca1919",
+      "fleetVehicleId": "e3aae3d0-b824-4c37-a36c-f699784cb0da",
+      "independentProfileId": "c88d42b9-0b66-49a1-9c90-3b7b90b7a24a",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    },
+    "driverH": {
+      "driverId": "1384a319-ee6e-4ad4-8f5e-6feae9cf760c",
+      "userId": "a7c95051-04dd-4ebb-a717-9085850277c1",
+      "vehicleId": "83dc800d-0392-448f-bc26-03ea79dd96c0",
+      "pairingId": "498a9c0b-025d-4a6f-8ea0-bc3d061f3c7f",
+      "fleetVehicleId": "7fc71291-fb14-4426-a51e-96eba2d5a890",
+      "independentProfileId": "12e53f95-2d7d-453b-ac1d-511bf76c7131",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    },
+    "driverI": {
+      "driverId": "d082873f-6f6b-4f4b-a268-f79a4fc87151",
+      "userId": "4774a9ca-202c-4d33-9225-6ef5b4bff90e",
+      "vehicleId": "adb6c8fc-a9c3-4a5b-af6c-996631b97e20",
+      "pairingId": "442c9ed6-7992-41ea-8d59-a2103e9b59d7",
+      "fleetVehicleId": "3de7129e-a83b-49f4-a484-5790e018f42e",
+      "independentProfileId": "db5c1c11-8db9-4ad8-a91a-33b12689bde6",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    },
+    "driverJ": {
+      "driverId": "646a6247-66db-4abe-985a-fb7919314264",
+      "userId": "e6484e82-3b4a-4b51-b212-8fd19f882c1c",
+      "vehicleId": "5f0c6dde-e7ef-48cf-8986-c7de270391d9",
+      "pairingId": "43a36edb-6650-453f-9b51-62e0db23b7f1",
+      "fleetVehicleId": "2bd56322-197f-4b05-b682-47a16a0348d0",
+      "independentProfileId": "12e21a8c-6711-4a72-a7a7-955df95ced88",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    },
+    "driverK": {
+      "driverId": "5545c400-d0c7-404a-9d7e-edbea6952806",
+      "userId": "169e2c1a-eb6c-4b25-98b3-3188694269f6",
+      "vehicleId": "2fa1102e-49b4-40f6-b0fa-68daba7133ac",
+      "pairingId": "10d0929d-971e-4393-a401-fabde38013bf",
+      "fleetVehicleId": "5c9b10ba-bdfc-4e38-a497-e380b26f9b0f",
+      "independentProfileId": "d5286e0d-c4e1-4a49-9844-93fe24a8e67e",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    },
+    "driverL": {
+      "driverId": "88d8c518-ee0c-439b-970f-94314b65a33c",
+      "userId": "e1cf97cf-cf7c-471b-9bad-9eb7c948578e",
+      "vehicleId": "bd301335-27a2-43c7-ae64-f0a7b0dc7b38",
+      "pairingId": "e82c5c5c-818e-405a-8ba5-50febd70d97b",
+      "fleetVehicleId": "dd0dc6c1-a006-49b2-9ee8-ce94ffdab8ba",
+      "independentProfileId": "86f5fd87-044c-4de3-86d6-b1cb0f717592",
+      "initialCredits": 100,
+      "role": "DRIVER",
+      "status": "ACTIVE",
+      "independentStatus": "APPROVED",
+      "canTakeServices": true,
+      "activeDeliveryAssignment": null,
+      "credits": 100
+    }
+  },
+  "scenarios": [
+    {
+      "alias": "legacy-readonly",
+      "driverAlias": "driverD",
+      "driverId": "9278aa3a-d4dc-4cf2-9079-d4e77c9c3fbc",
+      "userId": "498a4907-9c19-4bd3-9cd8-5d2302521306",
+      "vehicleId": "7888e99c-f3f2-48a5-be22-3783cc274d33",
+      "pairingId": "7e14b82d-03fd-4175-abeb-314f851520a7",
+      "providerId": "e16c457e-2d0e-4825-bb8e-b5fce4f28f28",
+      "dispatchId": "85ae7090-699f-457d-8c8f-fab786aa82b6",
+      "assignmentId": "910f2fff-33eb-4de4-b34d-c5cfd1350d5b",
+      "requestPublicId": "MDR-000001",
+      "quotePublicId": "MQ-000001",
+      "trackingMode": "LEGACY",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "status": "CLAIMED",
+      "assignmentStatus": "ACTIVE",
+      "phase": null,
+      "ready": "READ_ONLY",
+      "appSteps": [
+        "Only read; do not release or deliver"
+      ]
+    },
+    {
+      "alias": "take-normal",
+      "driverAlias": "driverA",
+      "driverId": "6969db9a-3506-4c2d-aff5-b3afb21c44a6",
+      "userId": "60923dc7-1fce-41fc-a567-4f4fea39ac16",
+      "vehicleId": "2f33b6a3-fc6b-4b03-9989-fbf99e4defac",
+      "pairingId": "1ec4c925-9d86-485c-8719-8e38d882f50f",
+      "fleetVehicleId": "8ab0c23a-ba1e-48ed-ac4b-27b68edac097",
+      "independentProfileId": "d6d08faa-efbf-4e1d-b1d9-5bacab5f1610",
+      "initialCredits": 100,
+      "dispatchId": "7f920461-21e9-457e-9dd8-510a11ad18f8",
+      "assignmentId": null,
+      "requestPublicId": "MDR-000002",
+      "quotePublicId": "MQ-000002",
+      "trackingMode": null,
+      "trackingModeAfterTake": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "expiresAt": "2026-10-08T22:59:18.704Z",
+      "status": "OPEN",
+      "assignmentStatus": null,
+      "phase": null,
+      "creditCost": 14,
+      "ready": "OFFER_ONLY_TAKE_RESERVED_FOR_APP",
+      "competitorAlias": null
+    },
+    {
+      "alias": "competition",
+      "driverAlias": "driverB",
+      "driverId": "85efa94c-6ea6-4d41-96c8-2e987df264b1",
+      "userId": "f4b06c5c-497a-49dd-a3d5-9049de9124a0",
+      "vehicleId": "d3944e57-e67f-4514-b14d-972f678d8711",
+      "pairingId": "5dcb75e9-539c-4f7b-a63a-c9e7ff4134df",
+      "fleetVehicleId": "d6a1ae6e-6638-456c-a6ba-af10ea080287",
+      "independentProfileId": "fe499792-591a-4e5a-9ed1-980b375802f7",
+      "initialCredits": 100,
+      "dispatchId": "437a8351-2faa-499d-b826-af10bbe51cea",
+      "assignmentId": null,
+      "requestPublicId": "MDR-000003",
+      "quotePublicId": "MQ-000003",
+      "trackingMode": null,
+      "trackingModeAfterTake": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "expiresAt": "2026-10-08T22:59:22.480Z",
+      "status": "OPEN",
+      "assignmentStatus": null,
+      "phase": null,
+      "creditCost": 14,
+      "ready": "OFFER_ONLY_TAKE_RESERVED_FOR_APP",
+      "competitorAlias": "driverK"
+    },
+    {
+      "alias": "insufficient",
+      "driverAlias": "driverC",
+      "driverId": "fe087e92-b9db-4898-af4f-dea34018f0e6",
+      "userId": "8edaa4c9-0782-4684-a4be-fd039f5ba97d",
+      "vehicleId": "8529dceb-6542-494c-b089-e864b85204fa",
+      "pairingId": "969ea70f-db42-46a1-80cd-5693be77844b",
+      "fleetVehicleId": "97e4a8bf-0e4b-4eb1-8fd0-054d9e83e7bb",
+      "independentProfileId": "fd71e57c-c545-4be6-bea3-262e0a029072",
+      "initialCredits": 13,
+      "dispatchId": "17bdce88-c683-4272-8249-1a8a90b1bd58",
+      "assignmentId": null,
+      "requestPublicId": "MDR-000004",
+      "quotePublicId": "MQ-000004",
+      "trackingMode": null,
+      "trackingModeAfterTake": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "expiresAt": "2026-10-08T22:59:26.249Z",
+      "status": "OPEN",
+      "assignmentStatus": null,
+      "phase": null,
+      "creditCost": 14,
+      "ready": "OFFER_ONLY_TAKE_RESERVED_FOR_APP",
+      "competitorAlias": null
+    },
+    {
+      "alias": "response-lost",
+      "driverAlias": "driverE",
+      "driverId": "4a0bf43b-12dc-4b9d-b63b-4c17f957ad2e",
+      "userId": "577780af-639e-45fd-b9f6-c1fbce3676b6",
+      "vehicleId": "32432d21-d8f9-4673-8338-f32ce3a84f92",
+      "pairingId": "738e21f0-a96b-4cd9-b62d-0f3a3fed8826",
+      "fleetVehicleId": "9de18eb9-7379-450a-9978-93194229ecd0",
+      "independentProfileId": "1de018d6-3ae9-4ae8-a1a9-a5b1b549f6fd",
+      "initialCredits": 100,
+      "dispatchId": "1e8766e6-faae-4a7a-9a12-ae3fea0c72ee",
+      "assignmentId": null,
+      "requestPublicId": "MDR-000005",
+      "quotePublicId": "MQ-000005",
+      "trackingMode": null,
+      "trackingModeAfterTake": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "expiresAt": "2026-10-08T22:59:30.063Z",
+      "status": "OPEN",
+      "assignmentStatus": null,
+      "phase": null,
+      "creditCost": 14,
+      "ready": "OFFER_ONLY_TAKE_RESERVED_FOR_APP",
+      "competitorAlias": "driverL"
+    },
+    {
+      "alias": "close-take",
+      "driverAlias": "driverF",
+      "driverId": "3b6eeee2-d746-4237-a824-52580d299e6e",
+      "userId": "876d2593-b116-44b1-acee-2e5b74b92db6",
+      "vehicleId": "2abb8bc5-f8c4-4937-a9d2-00a731e43e90",
+      "pairingId": "24bc93d2-236a-4fbc-aa7d-8ca3908e6ef6",
+      "fleetVehicleId": "c66a5ab6-08e0-4b4c-aba6-ce127f977ff7",
+      "independentProfileId": "634105ee-6260-4a6d-966a-64188e9f1a65",
+      "initialCredits": 100,
+      "dispatchId": "e4cd26a7-9b1f-491d-aa64-65f6a92393a5",
+      "assignmentId": null,
+      "requestPublicId": "MDR-000006",
+      "quotePublicId": "MQ-000006",
+      "trackingMode": null,
+      "trackingModeAfterTake": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "expiresAt": "2026-10-08T22:59:33.858Z",
+      "status": "OPEN",
+      "assignmentStatus": null,
+      "phase": null,
+      "creditCost": 14,
+      "ready": "OFFER_ONLY_TAKE_RESERVED_FOR_APP",
+      "competitorAlias": null
+    },
+    {
+      "alias": "close-release",
+      "driverAlias": "driverG",
+      "driverId": "ed1f2c87-64db-408f-8054-a97148c0c3a6",
+      "userId": "96864d9f-8f2a-478f-bf3a-e14ec95979f5",
+      "vehicleId": "e71e4750-25cc-48dd-aa5b-5eb07c199410",
+      "pairingId": "c3bdde47-ae4e-48dd-86bb-9c5887ca1919",
+      "fleetVehicleId": "e3aae3d0-b824-4c37-a36c-f699784cb0da",
+      "independentProfileId": "c88d42b9-0b66-49a1-9c90-3b7b90b7a24a",
+      "initialCredits": 100,
+      "dispatchId": "e4732cd8-61ef-4a38-94a6-bc5593111e80",
+      "assignmentId": null,
+      "requestPublicId": "MDR-000007",
+      "quotePublicId": "MQ-000007",
+      "trackingMode": null,
+      "trackingModeAfterTake": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "expiresAt": "2026-10-08T22:59:37.651Z",
+      "status": "OPEN",
+      "assignmentStatus": null,
+      "phase": null,
+      "creditCost": 14,
+      "ready": "OFFER_ONLY_TAKE_RESERVED_FOR_APP",
+      "competitorAlias": null
+    },
+    {
+      "alias": "release-custody",
+      "driverAlias": "driverH",
+      "driverId": "1384a319-ee6e-4ad4-8f5e-6feae9cf760c",
+      "userId": "a7c95051-04dd-4ebb-a717-9085850277c1",
+      "vehicleId": "83dc800d-0392-448f-bc26-03ea79dd96c0",
+      "pairingId": "498a9c0b-025d-4a6f-8ea0-bc3d061f3c7f",
+      "fleetVehicleId": "7fc71291-fb14-4426-a51e-96eba2d5a890",
+      "independentProfileId": "12e53f95-2d7d-453b-ac1d-511bf76c7131",
+      "initialCredits": 100,
+      "dispatchId": "33d244a1-fea7-4323-879a-d0edee4e58c3",
+      "assignmentId": null,
+      "requestPublicId": "MDR-000008",
+      "quotePublicId": "MQ-000008",
+      "trackingMode": null,
+      "trackingModeAfterTake": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "expiresAt": "2026-10-08T22:59:41.437Z",
+      "status": "OPEN",
+      "assignmentStatus": null,
+      "phase": null,
+      "creditCost": 14,
+      "ready": "OFFER_ONLY_TAKE_RESERVED_FOR_APP",
+      "competitorAlias": null
+    },
+    {
+      "alias": "release-incident",
+      "driverAlias": "driverI",
+      "driverId": "d082873f-6f6b-4f4b-a268-f79a4fc87151",
+      "userId": "4774a9ca-202c-4d33-9225-6ef5b4bff90e",
+      "vehicleId": "adb6c8fc-a9c3-4a5b-af6c-996631b97e20",
+      "pairingId": "442c9ed6-7992-41ea-8d59-a2103e9b59d7",
+      "fleetVehicleId": "3de7129e-a83b-49f4-a484-5790e018f42e",
+      "independentProfileId": "db5c1c11-8db9-4ad8-a91a-33b12689bde6",
+      "initialCredits": 100,
+      "dispatchId": "6ea87d7d-c855-439d-8e86-8da453e06564",
+      "assignmentId": null,
+      "requestPublicId": "MDR-000009",
+      "quotePublicId": "MQ-000009",
+      "trackingMode": null,
+      "trackingModeAfterTake": "DETAILED",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "expiresAt": "2026-10-08T22:59:45.230Z",
+      "status": "OPEN",
+      "assignmentStatus": null,
+      "phase": null,
+      "creditCost": 14,
+      "ready": "OFFER_ONLY_TAKE_RESERVED_FOR_APP",
+      "competitorAlias": null
+    },
+    {
+      "alias": "release-cash",
+      "driverAlias": "driverJ",
+      "driverId": "646a6247-66db-4abe-985a-fb7919314264",
+      "userId": "e6484e82-3b4a-4b51-b212-8fd19f882c1c",
+      "vehicleId": "5f0c6dde-e7ef-48cf-8986-c7de270391d9",
+      "pairingId": "43a36edb-6650-453f-9b51-62e0db23b7f1",
+      "fleetVehicleId": "2bd56322-197f-4b05-b682-47a16a0348d0",
+      "independentProfileId": "12e21a8c-6711-4a72-a7a7-955df95ced88",
+      "initialCredits": 100,
+      "dispatchId": "9c09b217-eaa9-405a-b191-cf31b42ebed2",
+      "assignmentId": null,
+      "requestPublicId": "MDR-000010",
+      "quotePublicId": "MQ-000010",
+      "trackingMode": null,
+      "trackingModeAfterTake": "DETAILED",
+      "payer": "REQUESTER",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "8a13f463573014e4fe7fecb89011f0eb885f960b79b0274b881103f3ef6afd54",
+      "expiresAt": "2026-10-08T22:59:53.623Z",
+      "status": "OPEN",
+      "assignmentStatus": null,
+      "phase": null,
+      "creditCost": 14,
+      "ready": "OFFER_ONLY_TAKE_RESERVED_FOR_APP",
+      "competitorAlias": null
+    }
+  ],
+  "baseline": {
+    "tables": [
+      {
+        "table": "Dispatch",
+        "count": 10,
+        "md5": "156e84c517201b4bb15006fe79c41567"
+      },
+      {
+        "table": "DeliveryAssignment",
+        "count": 1,
+        "md5": "135aa2be053d5cd479db3b4150a7c6d3"
+      },
+      {
+        "table": "DeliveryExecution",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryExecutionEvent",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryExecutionCommand",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryCustodyIncident",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryCustodyResolution",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "CreditLedgerEntry",
+        "count": 14,
+        "md5": "11453251d6877c3936f0ef2c127a4507"
+      },
+      {
+        "table": "DeliveryLocationHead",
+        "count": 10,
+        "md5": "98e1ae4d0bf90d393150144da68e946e"
+      },
+      {
+        "table": "DeliveryShippingTerms",
+        "count": 10,
+        "md5": "c52c5418827182a1b2da1c11874f2df5"
+      },
+      {
+        "table": "ShippingCollectionDeclaration",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    ],
+    "independentAttempts": {
+      "table": "IndependentDispatchAttempt",
+      "count": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "migrations": [
+      {
+        "migration_name": "20260915000100_core",
+        "checksum": "15ef5c7720ed4204902f28dadc8a92e6930c1676637737247f7a2fa8de0cfdbd",
+        "finished_at": "2026-10-07T22:54:22.551Z"
+      },
+      {
+        "migration_name": "20260915000200_b2b_credentials",
+        "checksum": "6ac55bf00ab6bb806a5456cef2598fc90c5fced447e7c58175cb8cc1c10fc211",
+        "finished_at": "2026-10-07T22:54:22.555Z"
+      },
+      {
+        "migration_name": "20260915000300_delivery_providers",
+        "checksum": "b3a2b59f937417f644fcfaae2b9d335b58d24e83315fd945a294f760c13fc8e8",
+        "finished_at": "2026-10-07T22:54:22.591Z"
+      },
+      {
+        "migration_name": "20260915000400_drivers_vehicles",
+        "checksum": "14e72f3f8f145383d76e927f7ecb3ce90b14ec0854f33de782dfa78ac2dd24a7",
+        "finished_at": "2026-10-07T22:54:22.668Z"
+      },
+      {
+        "migration_name": "20260915000500_delivery_requests",
+        "checksum": "428a563f06c95ed9218bafccc7702735db4a2881f97ff398b156a62e4987a248",
+        "finished_at": "2026-10-07T22:54:22.739Z"
+      },
+      {
+        "migration_name": "20260915000600_routing_pricing_quotes",
+        "checksum": "3cc9cde497bd95e95f3ec2731525a5a7babbc14f662bc3f155395451b9e9251d",
+        "finished_at": "2026-10-07T22:54:22.816Z"
+      },
+      {
+        "migration_name": "20260916000700_user_invitations",
+        "checksum": "d74492faba74c658bcee7c149318f44381374666f4703a18f194b6506634b03c",
+        "finished_at": "2026-10-07T22:54:22.849Z"
+      },
+      {
+        "migration_name": "20260917000800_dispatch_engine",
+        "checksum": "99962151d4781cd6f1cca9eafcff01ed8920b664af0baf976d22e026650e2195",
+        "finished_at": "2026-10-07T22:54:22.910Z"
+      },
+      {
+        "migration_name": "20260917000900_delivery_assignments",
+        "checksum": "420a438c39dea2638909385b01c2c073fe06e75937dd26e1400bd7e50c478091",
+        "finished_at": "2026-10-07T22:54:22.953Z"
+      },
+      {
+        "migration_name": "20260918001000_independent_drivers",
+        "checksum": "591491d294f35351b41bc0c251c03abdb53a40d0dc3ca1e7db8eb513bf7d6711",
+        "finished_at": "2026-10-07T22:54:23.004Z"
+      },
+      {
+        "migration_name": "20260921001100_credit_accounts_ledger",
+        "checksum": "92eff77704adde75fbcf56090fcb211dca41deebef866303d389ead6716d0455",
+        "finished_at": "2026-10-07T22:54:23.049Z"
+      },
+      {
+        "migration_name": "20260921001200_credit_ledger_purge_test_only",
+        "checksum": "b2986fb38d71cfd0ba5729e0a0f8a8d712e931fe6d8bfe01928840b0c11c98b0",
+        "finished_at": "2026-10-07T22:54:23.050Z"
+      },
+      {
+        "migration_name": "20260922001300_credit_policies",
+        "checksum": "78a76c98f1cc51a5ca73ed8bac76da706ab9b1576ad62618e42cecd339791ce6",
+        "finished_at": "2026-10-07T22:54:23.083Z"
+      },
+      {
+        "migration_name": "20260922001400_dispatch_credit_snapshots",
+        "checksum": "c9e6976ed18a1fb63a2ac4834df15fb4af73d3c46359dbcc2512148384e507fa",
+        "finished_at": "2026-10-07T22:54:23.102Z"
+      },
+      {
+        "migration_name": "20260923000100_dispatch_credit_consumption",
+        "checksum": "a16b91b96290eb9666ddd0ca4bc9ebec9d085cbe027e857039e10c4dea2eefe8",
+        "finished_at": "2026-10-07T22:54:23.112Z"
+      },
+      {
+        "migration_name": "20260923000200_award_integrity_boundary",
+        "checksum": "add61f760fb86f7ad96906046d8dad899ac9612b49439a974482c9dedb6ba6a9",
+        "finished_at": "2026-10-07T22:54:23.133Z"
+      },
+      {
+        "migration_name": "20260923000300_service_refunds",
+        "checksum": "26b29c25286c9837223ed7febe9f7cddbb14f3bff21b175192b8b7cfeddbe31a",
+        "finished_at": "2026-10-07T22:54:23.143Z"
+      },
+      {
+        "migration_name": "20260923001500_delivery_completion_states",
+        "checksum": "7b9644eb63c6ccdd0dc8a6d787de98bcac4c51df2a5aa1092e875e5eda48c7b9",
+        "finished_at": "2026-10-07T22:54:23.145Z"
+      },
+      {
+        "migration_name": "20260923001600_delivery_completion_rules",
+        "checksum": "c3d17da54b5cbd612f528e277ffa3585f60547a17c11d2024bf669e05fbc5f8f",
+        "finished_at": "2026-10-07T22:54:23.154Z"
+      },
+      {
+        "migration_name": "20260924000100_b2b_event_outbox",
+        "checksum": "151f30e77275a22e9d9317b38c22d488c2707ab26fe4bb501dd4c56c0b6fb2d1",
+        "finished_at": "2026-10-07T22:54:23.187Z"
+      },
+      {
+        "migration_name": "20260925000100_b2b_webhook_delivery",
+        "checksum": "a34e2e9e44644c3235507cec97c5ffaadc951222693821bcd461defbd597f95f",
+        "finished_at": "2026-10-07T22:54:23.235Z"
+      },
+      {
+        "migration_name": "20260926000100_reliable_webhook_delivery",
+        "checksum": "ee4cdf516357f59d5eafb82f3993948b3fe6102b818d062ba657f1a53b30d863",
+        "finished_at": "2026-10-07T22:54:23.269Z"
+      },
+      {
+        "migration_name": "20260927000100_webhook_operations",
+        "checksum": "0719c84ea5bc09778f31c187611cd6ba03384d882c509a02a2df2b10a7e33b0a",
+        "finished_at": "2026-10-07T22:54:23.276Z"
+      },
+      {
+        "migration_name": "20260928000100_b2b_public_execution_identity",
+        "checksum": "5cfd79f36bf88c53612c70bd86d3105667517cd83f3542d9dc31a0152d5f931a",
+        "finished_at": "2026-10-07T22:54:23.280Z"
+      },
+      {
+        "migration_name": "20260928000100_prequote_persistence",
+        "checksum": "046ac61147b41e8e1cc75c965933d6a2aa44aae871e4630f137cac79860ec8df",
+        "finished_at": "2026-10-07T22:54:23.327Z"
+      },
+      {
+        "migration_name": "20260928000200_prequote_execution_hardening",
+        "checksum": "660b45a2767d1e733c26b917a5e5667a556b8b266c4c5f0f886782052aa6a709",
+        "finished_at": "2026-10-07T22:54:23.330Z"
+      },
+      {
+        "migration_name": "20260928000300_prequote_consumption",
+        "checksum": "114242a0f011cc377af8b38967244fc594ad62b12676b6a70a67534d62793ad3",
+        "finished_at": "2026-10-07T22:54:23.358Z"
+      },
+      {
+        "migration_name": "20260928000400_prequote_conversion",
+        "checksum": "6ec76940d4e22f8001382885b2aa55ba9fd43901549eaeef9f0fcf66ac350c7d",
+        "finished_at": "2026-10-07T22:54:23.410Z"
+      },
+      {
+        "migration_name": "20260929000100_authorized_quote_acceptance",
+        "checksum": "4eb06a432d5b0dae0c4c089b4769c99c06d15b61ba945f975a39a2ab6cad26c2",
+        "finished_at": "2026-10-07T22:54:23.458Z"
+      },
+      {
+        "migration_name": "20261001000100_prequote_restore_search_path",
+        "checksum": "d2f3e2b44255fc1c6c74943d7b5f4212093aef99d4e914c4bf4782085a4e3fc1",
+        "finished_at": "2026-10-07T22:54:23.460Z"
+      },
+      {
+        "migration_name": "20261002000100_execution_states",
+        "checksum": "5cc2680d2124a0196ca40e83d46dc4b96bbc8a165523596c6624b56dd82cd9bf",
+        "finished_at": "2026-10-07T22:54:23.462Z"
+      },
+      {
+        "migration_name": "20261002000200_delivery_execution",
+        "checksum": "371462285a2569e7b84812d999a6f14ebf92951f1b69fe32ad3d19720bedc0de",
+        "finished_at": "2026-10-07T22:54:23.550Z"
+      },
+      {
+        "migration_name": "20261003000100_execution_attempt_closure",
+        "checksum": "f767b176174918d6528212a584531ca0f796efab242b6eddf5031e9558383f55",
+        "finished_at": "2026-10-07T22:54:23.553Z"
+      },
+      {
+        "migration_name": "20261004000100_driver_execution_authority",
+        "checksum": "3e35a325ff2b9552b04512fc4c467b422c2ff2717774ece8e0b0babf1804065c",
+        "finished_at": "2026-10-07T22:54:23.556Z"
+      },
+      {
+        "migration_name": "20261004000100_partner_applications",
+        "checksum": "bd96acebc7ed72e7e2897bca5930dc2b9adbd7f3596307d60a2632901beee35b",
+        "finished_at": "2026-10-07T22:54:23.593Z"
+      },
+      {
+        "migration_name": "20261004000200_provider_historical_attempts",
+        "checksum": "b3665997bcccdb905d3805ec8834833b17080fece8ee8b438c9cf7ce62ff0df2",
+        "finished_at": "2026-10-07T22:54:23.595Z"
+      },
+      {
+        "migration_name": "20261004000300_public_delivery_tracking",
+        "checksum": "e7f97bed8f0f54dbac6eb8e83df6ba3fa986953ba9cacf2d383006dd821e82a6",
+        "finished_at": "2026-10-07T22:54:23.606Z"
+      },
+      {
+        "migration_name": "20261006000100_customer_identity",
+        "checksum": "8451c571e54fe0c8e3945957d5a116277580bfeeea7702e404265704dba91ef7",
+        "finished_at": "2026-10-07T22:54:23.635Z"
+      },
+      {
+        "migration_name": "20261006000200_direct_demand_and_shipping",
+        "checksum": "f6b8cfd38971843b2210bfd8db8c76f78af753c571574bd1577beaccfb0998e7",
+        "finished_at": "2026-10-07T22:54:23.740Z"
+      },
+      {
+        "migration_name": "20261006000300_human_command_reconciliation",
+        "checksum": "d67f2185e09b26cfe38988c40ae3ba0798a09dcebee6b62cb47f28c01be5e9c9",
+        "finished_at": "2026-10-07T22:54:23.757Z"
+      },
+      {
+        "migration_name": "20261007000100_location_tracking",
+        "checksum": "d67a663368b3b36662738e6574c28fe0a1e433dc7acdbb388c7967a4ce3aee42",
+        "finished_at": "2026-10-07T22:54:23.794Z"
+      },
+      {
+        "migration_name": "20261007000200_location_policy_epoch",
+        "checksum": "1f5320d5192ae1a423066280c92ead8ebca094758a6418d4f057b02af6b82e72",
+        "finished_at": "2026-10-07T22:54:23.796Z"
+      },
+      {
+        "migration_name": "20261007000300_independent_dispatch_attempts",
+        "checksum": "9ad5ec1d04ab68d78058ad2597140bf93d9230de21f78dcf70a43b32cf17ab7a",
+        "finished_at": "2026-10-07T22:54:23.805Z"
+      }
+    ],
+    "economic": {
+      "recharges": 13,
+      "serviceAwards": 1,
+      "serviceRefunds": 0,
+      "legacyFleetAward": -7,
+      "independentAwards": 0
+    }
+  },
+  "flags": {
+    "detailed": true,
+    "gps": false,
+    "shared": false,
+    "webhooksPollSeconds": 0,
+    "routing": "local_fake",
+    "mail": "local_outbox",
+    "dispatchTtlMinutes": 1440
+  },
+  "checks": {
+    "driverMe": 200,
+    "vehicles": 200,
+    "credits": 200,
+    "offers": 200,
+    "attemptRead": 200,
+    "legacyRead": 200,
+    "legacyExecution": 404,
+    "adminForbidden": 403,
+    "anonymous": 401
+  },
+  "credentialsFile": "C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\native-v119-independent\\accounts.json",
+  "commands": {
+    "start": "node scripts/prepare-native-v119-independent.mjs start",
+    "snapshot": "node scripts/prepare-native-v119-independent.mjs snapshot",
+    "stop": "node scripts/prepare-native-v119-independent.mjs stop",
+    "prepare": "node scripts/prepare-native-v119-independent.mjs prepare",
+    "verify": "node scripts/prepare-native-v119-independent.mjs verify"
+  },
+  "limitations": [
+    "No reserved TAKE/RELEASE/close/phase/cash/incident executed",
+    "All offers share synthetic market; actor labels are test reservations, not product access restrictions",
+    "ExpiresAt is real; no automatic renewal or reopened states",
+    "Backend validation only, emulator connectivity and Android operations pending"
+  ],
+  "lifecycle": {
+    "start": 0,
+    "stop": 0,
+    "backendStop": 0,
+    "repeatPreparation": "Completed as read-only verification; initial operational fingerprints unchanged",
+    "snapshotBefore": "snapshot-1791414215615.json",
+    "snapshotAfter": "snapshot-1791414379942.json",
+    "sameFingerprints": true,
+    "operationalCommandsReservedExecuted": 0,
+    "environmentLeftRunning": true
+  },
+  "preflight": {
+    "at": "2026-10-07T22:54:14.745Z",
+    "apiPortWasFree": true,
+    "pgPortWasFree": true,
+    "homeWasAbsent": true
+  },
+  "toolCorrections": [
+    {
+      "case": "Activation429",
+      "evidence": "activation-429-recovery.json",
+      "effects": "Inactive user/password absent/no Driver confirmed before resuming",
+      "fix": "Respect existing10/min quota"
+    },
+    {
+      "case": "Independent vehicle400",
+      "evidence": "vehicle-400-recovery.json",
+      "effects": "No own vehicles existed after rejected DTO",
+      "fix": "Remove unsupported status from create DTO; use ACTIVE default"
+    },
+    {
+      "case": "GPS header verifier",
+      "evidence": "verification-gps-assumption-failure.json",
+      "effects": "Read-only verification failed; no product/data changed",
+      "fix": "Assert10 automatically created empty heads, no samples/tracking"
+    }
+  ],
+  "verificationsThisTask": {
+    "build": "npm run build exit0",
+    "contract": "npm run docs:b2b:check exit0",
+    "syntax": "node --check scripts/prepare-native-v119-independent.mjs exit0",
+    "lint": "Oxlint focal exit0",
+    "fixtures": "Authorized HTTP APIs + read-only SQL, complete verification exit0",
+    "suites": "No product suites rerun; previous results are historical",
+    "android": "Not executed"
+  },
+  "localEvidence": [
+    {
+      "path": ".tmp/native-v119-independent/http-audit.jsonl",
+      "sha256": "49c3ca7e5087bda2cdf2405e33a791c4492c7bfc6d53868ad4bee9644fb81013"
+    },
+    {
+      "path": ".tmp/native-v119-independent/api-readbacks-private.json",
+      "sha256": "543b634be3d10d6c90bc5f4121907a51336dbec0dd7810ea8f158fd8d33e20c1"
+    },
+    {
+      "path": ".tmp/native-v119-independent/migrate-result.json",
+      "sha256": "a2e428129c88a607054f442941debe85bde490fd996c510e647463adcba63df2"
+    },
+    {
+      "path": ".tmp/native-v119-independent/snapshot.json",
+      "sha256": "f70f8e073f6cafcb5041789609812507480b8ddd0f3e26578b37761fa4fe9a68"
+    },
+    {
+      "path": ".tmp/native-v119-independent/snapshot-1791414215615.json",
+      "sha256": "6515bfba9368046b5b0faebafb26e511aaf74eab9b0ad0c1a5991fb1e0635075"
+    },
+    {
+      "path": ".tmp/native-v119-independent/snapshot-1791414379942.json",
+      "sha256": "46eea51a6973fa0eacea22ce34a6dab627561b181bfe545d2b01e2aeb7eef00f"
+    },
+    {
+      "path": ".tmp/native-v119-independent/activation-429-recovery.json",
+      "sha256": "b8c29938a23ccf6b92eb90150e02606cbd9bcdcd05bf88d7d2eb05c661368d7c"
+    },
+    {
+      "path": ".tmp/native-v119-independent/vehicle-400-recovery.json",
+      "sha256": "25225bb49371d0eefb3001c911a281c28f77e46fa401d86dcbec006e375789fd"
+    },
+    {
+      "path": ".tmp/native-v119-independent/verification-gps-assumption-failure.json",
+      "sha256": "23244a05875aa413167a1a931c2cdb1c6ceefbc91f65101ec68214ef780608e4"
+    }
+  ]
+}

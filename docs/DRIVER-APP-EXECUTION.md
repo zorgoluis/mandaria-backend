@@ -1,5 +1,15 @@
 # Ejecución por repartidor — contrato APP y transición WEB
 
+## V1.19 — Contrato separado TAKE / RELEASE
+
+Consultar [handoff exacto de independientes](V1.19-INDEPENDENT-ATTEMPTS.md). Implementación local pendiente de sincronización APP/despliegue: claves UUID, recibo mínimo original, GET y cierre explícito bajo `/driver/dispatches/:dispatchId/independent-attempt`. No reutilizar los intentos ADVANCE/DELIVER/COLLECT_SHIPPING. RELEASE recuperable aunque el despacho actual responda404; crédito compensatorio no es devolución de efectivo. APP bloquea RELEASE LEGACY/UNKNOWN y conserva marcador en estado desconocido. [Verificación nueva](checks/v119-independent-attempts.json), [preparación futura de fixtures](V1.19-INDEPENDENT-FIXTURE-REQUEST.md); no consumir ni reconstruir los fixtures Android anteriores.
+
+## Corrección contractual para APP — 2026-10-07
+
+Estado: cambio local sin commit ni despliegue, sobre `b97b9d1be54a2c37601e51990d66ccaf73d0203f`, rama `v1.18-GPS_seguimiento_temporal`. Resincronizar `docs/openapi.json`: `DriverAttemptResponse.operation` enumera `ADVANCE`, `REPORT`, `DELIVER`, `COLLECT_SHIPPING`, igual que `DriverAttemptParamsDto` y el servicio existente. Afecta la descripción de respuesta200 de GET `/api/v1/driver/dispatches/{dispatchId}/assignments/{assignmentId}/attempt` y POST de esa ruta con `/close`; no modifica permisos, lógica ni estados de reconciliación.
+
+SHA-256 histórico de la entrega anterior (el contrato vigente y sus huellas están en checks/v119-independent-attempts.json): `a21972342b0e1ce61899c48ac2d71858b14c5a6a6360460ebc072b6eb6127077`. Fuente: `src/delivery-execution/execution.responses.ts`; regresión: `scripts/export-public-b2b.test.mjs`. Público B2B regenerado/verificado sin cambios semánticos; rutas y DTO Driver siguen excluidos. APP debe consumir el contrato humano completo, no el público B2B. Esta revisión no acredita disponibilidad en un servidor ni autoriza activación. No añade historial Driver ni cola programada.
+
 ## Adición V1.17: envío REQUESTER, sin activación
 
 [Contrato exacto y recuperación de efectivo](V1.17-DEMAND-IMPLEMENTATION.md#app-repartidor-declaración-de-efectivo). La app debe consumir shippingPayment y allowedActions, registrar COLLECT_SHIPPING sólo con el Driver vigente en AT_PICKUP y conservar la misma key ante timeout. PICKED_UP queda bloqueado para nuevos REQUESTER sin declaración. Consulta/cierre técnico de intentos usan operation=COLLECT_SHIPPING; cerrar no devuelve efectivo ni prueba que no se recibió. Transferencia conserva declaración y cargo, sin nuevo cobro. WEB sólo muestra instrucciones/evidencia y no suplanta al Driver. Históricos sin términos y RECIPIENT conservan el contrato previo. No hay implementación de app ni activación en esta tarea.

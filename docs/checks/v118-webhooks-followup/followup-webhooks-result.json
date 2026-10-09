@@ -1,0 +1,18 @@
+{
+  "command": [
+    "C:\\nvm4w\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "vitest.config.e2e.ts",
+    "test/b2b-webhooks.e2e-spec.ts",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=.tmp/v118/followup-webhooks.json"
+  ],
+  "node": "v24.15.0",
+  "exitCode": 1,
+  "signal": null
+}

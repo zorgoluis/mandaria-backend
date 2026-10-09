@@ -23,6 +23,7 @@ enum CredentialStatus {
 /// Account state is derived (V1.6.1): active = ACTIVE; inactive without passwordHash = INVITED
 /// (never activated); inactive with passwordHash = DISABLED. A CHECK forbids active without password.
 model User {
+  independentDispatchAttempts IndependentDispatchAttempt[]
   humanCommandAttempts HumanCommandAttempt[]
   sessionVersion Int @default(0)
   customerAccount CustomerAccount?
@@ -311,6 +312,8 @@ enum GoodsPaymentMode {
 /// Demand received from an IntegrationClient: what must be transported. Immutable except
 /// for cancellation. No provider/driver/vehicle relation until Dispatch.
 model DeliveryRequest {
+  locationHead DeliveryLocationHead?
+  trackingLinkHead DeliveryTrackingLinkHead?
   publicTracking PublicDeliveryTracking?
   authorizedAcceptance AuthorizedQuoteAcceptance?
   prequoteConversion PrequoteConversion?
@@ -346,6 +349,39 @@ model DeliveryRequest {
   @@unique([id,customerAccountId])
  shippingTerms DeliveryShippingTerms?
  directLifecycle DirectRequestLifecycle?
+}
+
+model DeliveryLocationHead {
+ trackingEnabled Boolean @default(false)
+ deliveryRequestId String @id @db.Uuid
+ version BigInt @default(1)
+ generation BigInt @default(1)
+ streamRevision BigInt @default(1)
+ streamId String? @db.Uuid
+ streamStartedAt DateTime? @db.Timestamp(3)
+ lastSequence Int @default(0)
+ sampleHash String?
+ sample Json?
+ eraseAfter DateTime? @db.Timestamp(3)
+ openReceipt Json?
+ deliveryRequest DeliveryRequest @relation(fields:[deliveryRequestId], references:[id], onDelete:Cascade, onUpdate:NoAction)
+}
+model DeliveryTrackingLinkHead {
+ deliveryRequestId String @id @db.Uuid
+ revision BigInt @default(1)
+ selector String? @unique
+ secretHash String?
+ createdAt DateTime? @db.Timestamp(3)
+ expiresAt DateTime? @db.Timestamp(3)
+ revokedAt DateTime? @db.Timestamp(3)
+ receipt Json?
+ deliveryRequest DeliveryRequest @relation(fields:[deliveryRequestId], references:[id], onDelete:Cascade, onUpdate:NoAction)
+}
+model LocationRateBucket {
+ key String @id
+ count Int
+ expiresAt DateTime @db.Timestamp(3)
+ @@index([expiresAt], map:"LocationRateBucket_expiry")
 }
 /// Address/contact snapshot; never linked to external restaurant or customer tables.
 model DeliveryStop {
@@ -1341,6 +1377,20 @@ model AuthorizedQuoteAcceptance {
   dispatch Dispatch @relation(fields: [dispatchId, deliveryRequestId], references: [id, deliveryRequestId], onDelete: Restrict, onUpdate: Restrict)
   record ApiIdempotencyRecord @relation(fields: [idempotencyRecordId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   credential IntegrationCredential? @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+}
+
+/// Durable own receipts; dispatchId is an opaque scope, not an access grant or Dispatch FK.
+model IndependentDispatchAttempt {
+ actorUserId String @db.Uuid
+ dispatchId String @db.Uuid
+ operation String
+ key String @db.Uuid
+ state String
+ hash String
+ response Json
+ recordedAt DateTime @default(now()) @db.Timestamp(3)
+ actor User @relation(fields:[actorUserId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+ @@id([actorUserId,dispatchId,operation,key])
 }
 
 model DeliveryExecution {

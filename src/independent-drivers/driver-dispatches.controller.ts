@@ -1,4 +1,11 @@
 import {
+  IndependentAttemptQueryDto,
+  IndependentAttemptResponse,
+  IndependentCommandResponse,
+} from './independent-attempts.responses.js';
+import {
+  Header,
+  Headers,
   Body,
   Controller,
   Get,
@@ -11,6 +18,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiHeader,
+  ApiExtraModels,
+  getSchemaPath,
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
@@ -50,6 +60,7 @@ const base = {
 const notApproved =
   'INDEPENDENT_NOT_APPROVED: el Driver no está habilitado como independiente, o su perfil está SUSPENDED, REJECTED o PENDING.';
 
+@ApiExtraModels(IndependentCommandResponse, DriverDispatchResponse)
 @ApiTags('Driver Independent Dispatches')
 @ApiBearerAuth()
 @UseGuards(AccessGuard, RolesGuard)
@@ -101,46 +112,124 @@ export class DriverDispatchesController {
     return this.dispatches.get(req.user.id, dispatchId);
   }
 
+  @Get('dispatches/:dispatchId/independent-attempt')
+  @Header('Cache-Control', 'no-store')
+  @ApiHeader({
+    name: 'Idempotency-Key',
+    required: true,
+    description:
+      'UUID original, mismo actor/operación/dispatch. Nunca cuerpo original.',
+  })
+  @ApiOkResponse({ type: IndependentAttemptResponse })
+  @ApiErrorDescriptions(base)
+  @ApiOperation({
+    summary: 'Consultar intento propio TAKE/RELEASE',
+    description:
+      'Lectura sin efectos. APPLIED devuelve resultado original incluso sin permiso para ver el despacho actual. Ausencia es PENDING_OR_UNKNOWN: jamás autoriza reenviar ni descarta un POST tardío. No revela existencia del recurso ni recibos ajenos; no exige APPROVED para recuperar un recibo propio.',
+  })
+  attempt(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Query() q: IndependentAttemptQueryDto,
+    @Headers('idempotency-key') key: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.dispatches.reconcile(req.user.id, id, q.operation, key);
+  }
+  @Post('dispatches/:dispatchId/independent-attempt/close')
+  @HttpCode(200)
+  @Header('Cache-Control', 'no-store')
+  @ApiHeader({
+    name: 'Idempotency-Key',
+    required: true,
+    description: 'La misma clave original que usó el comando.',
+  })
+  @ApiOkResponse({ type: IndependentAttemptResponse })
+  @ApiErrorDescriptions(base)
+  @ApiOperation({
+    summary: 'Cerrar explícitamente un intento TAKE/RELEASE',
+    description:
+      'Sin body. Comparte lock durable con el comando: si éste confirmó devuelve APPLIED; si cierre gana devuelve CLOSED_NO_EFFECTS y un POST tardío con esa clave falla409 INDEPENDENT_ATTEMPT_CLOSED. No libera un servicio, devuelve efectivo ni repite una acción física. Timeout del cierre conserva incertidumbre: consultar la misma clave. Sólo protege escritores con clave; no neutraliza llamadas antiguas sin ella. Puede cerrar UUID opaco aún inexistente sin revelar datos.',
+  })
+  closeAttempt(
+    @Param('dispatchId', new ParseUUIDPipe()) id: string,
+    @Query() q: IndependentAttemptQueryDto,
+    @Headers('idempotency-key') key: string,
+    @Body() _body: CompleteServiceDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.dispatches.reconcile(req.user.id, id, q.operation, key, true);
+  }
+
   @Post('dispatches/:dispatchId/take')
   @HttpCode(200)
   @dispatchParam
-  @ApiOkResponse({ type: DriverDispatchResponse })
+  @Header('Cache-Control', 'no-store')
+  @ApiHeader({
+    name: 'Idempotency-Key',
+    required: false,
+    description:
+      'UUID durable recomendado. Con clave: IndependentCommandResponse y reconciliación. Sin clave: respuesta histórica DriverDispatchResponse, sin protección contra replay/cierre.',
+  })
+  @ApiOkResponse({
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(IndependentCommandResponse) },
+        { $ref: getSchemaPath(DriverDispatchResponse) },
+      ],
+    },
+  })
   @ApiErrorDescriptions({
     ...base,
-    409: `${notApproved} | DISPATCH_ALREADY_CLAIMED (lo tomó un proveedor u otro repartidor) | DISPATCH_EXPIRED | DISPATCH_CANCELLED | DISPATCH_NOT_OPEN_TO_INDEPENDENT (ese ServiceType no admite independientes) | DISPATCH_RETAKE_NOT_ALLOWED (yo lo liberé) | DRIVER_NOT_ELIGIBLE | VEHICLE_NOT_ELIGIBLE | DRIVER_BUSY | VEHICLE_BUSY (ya tengo, o el vehículo tiene, una asignación ACTIVE en cualquiera de los dos modelos) | TAKE_CONFLICT | INSUFFICIENT_CREDITS (mi saldo no cubre el creditCost del servicio; no se toma nada) | CREDIT_ACCOUNT_UNAVAILABLE | CREDIT_SNAPSHOT_UNAVAILABLE (servicio monetizado sin costo congelado) | CREDIT_MOVEMENT_CONFLICT.`,
+    409: `INDEPENDENT_ATTEMPT_CLOSED | IDEMPOTENCY_KEY_REUSED | INDEPENDENT_RELEASE_LEGACY_UNSUPPORTED (RELEASE con clave sin ejecución detallada) | CUSTODY_INCIDENT_OPEN | CUSTODY_OPERATION_FORBIDDEN | SHIPPING_COLLECTION_REQUIRES_RESOLUTION | ${notApproved} | DISPATCH_ALREADY_CLAIMED (lo tomó un proveedor u otro repartidor) | DISPATCH_EXPIRED | DISPATCH_CANCELLED | DISPATCH_NOT_OPEN_TO_INDEPENDENT (ese ServiceType no admite independientes) | DISPATCH_RETAKE_NOT_ALLOWED (yo lo liberé) | DRIVER_NOT_ELIGIBLE | VEHICLE_NOT_ELIGIBLE | DRIVER_BUSY | VEHICLE_BUSY (ya tengo, o el vehículo tiene, una asignación ACTIVE en cualquiera de los dos modelos) | TAKE_CONFLICT | INSUFFICIENT_CREDITS (mi saldo no cubre el creditCost del servicio; no se toma nada) | CREDIT_ACCOUNT_UNAVAILABLE | CREDIT_SNAPSHOT_UNAVAILABLE (servicio monetizado sin costo congelado) | CREDIT_MOVEMENT_CONFLICT.`,
   })
   @ApiOperation({
     summary: 'Tomar un servicio',
     description:
-      'Operación atómica: en una sola transacción el Dispatch pasa a CLAIMED a nombre de este repartidor y se crea su DeliveryAssignment ACTIVE en modo INDEPENDENT. Nunca queda un claim sin asignación ni una asignación sin claim. El repartidor se resuelve desde el JWT y la pertenencia del vehículo se relee en la base de datos, así que un vehicleId de un proveedor o de otro repartidor responde 404. Bloquea la misma fila de Dispatch que el claim de proveedor: si un proveedor reclama y un independiente toma a la vez, gana exactamente uno y el otro recibe 409. Máximo una asignación ACTIVE por Dispatch, por Driver y por Vehicle, contando flotilla e independiente: un repartidor ocupado en un servicio de proveedor no puede tomar uno propio, y al revés. Devuelve el servicio con access OWNER y su paymentContext. Mandaria no verifica si el repartidor dispone del efectivo para adelantar la mercancía. V1.10-D: tomar un servicio monetizado cobra en la misma transacción el creditCost congelado a la cuenta de créditos del repartidor (un SERVICE_AWARD por servicio); sin saldo suficiente no hay claim, ni asignación, ni cargo. Liberar no devuelve créditos todavía.',
+      'Operación atómica: en una sola transacción el Dispatch pasa a CLAIMED a nombre de este repartidor y se crea su DeliveryAssignment ACTIVE en modo INDEPENDENT. Nunca queda un claim sin asignación ni una asignación sin claim. El repartidor se resuelve desde el JWT y la pertenencia del vehículo se relee en la base de datos, así que un vehicleId de un proveedor o de otro repartidor responde 404. Bloquea la misma fila de Dispatch que el claim de proveedor: si un proveedor reclama y un independiente toma a la vez, gana exactamente uno y el otro recibe 409. Máximo una asignación ACTIVE por Dispatch, por Driver y por Vehicle, contando flotilla e independiente: un repartidor ocupado en un servicio de proveedor no puede tomar uno propio, y al revés. Devuelve el servicio con access OWNER y su paymentContext. Mandaria no verifica si el repartidor dispone del efectivo para adelantar la mercancía. V1.10-D: tomar un servicio monetizado cobra en la misma transacción el creditCost congelado a la cuenta de créditos del repartidor (un SERVICE_AWARD por servicio); sin saldo suficiente no hay claim, ni asignación, ni cargo. Liberar devuelve los créditos conforme a SERVICE_REFUND compensatorio; no devuelve efectivo al cliente. Con clave se devuelve un recibo mínimo original, no datos actuales del despacho.',
   })
   take(
     @Param('dispatchId', new ParseUUIDPipe()) dispatchId: string,
     @Body() dto: TakeDispatchDto,
+    @Headers('idempotency-key') key: string | undefined,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.dispatches.take(req.user.id, dispatchId, dto.vehicleId);
+    return this.dispatches.take(req.user.id, dispatchId, dto.vehicleId, key);
   }
 
   @Post('dispatches/:dispatchId/release')
   @HttpCode(200)
   @dispatchParam
-  @ApiOkResponse({ type: DriverDispatchResponse })
+  @Header('Cache-Control', 'no-store')
+  @ApiHeader({
+    name: 'Idempotency-Key',
+    required: false,
+    description:
+      'UUID durable recomendado. Con clave: IndependentCommandResponse y reconciliación. Sin clave: respuesta histórica DriverDispatchResponse, sin protección contra replay/cierre.',
+  })
+  @ApiOkResponse({
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(IndependentCommandResponse) },
+        { $ref: getSchemaPath(DriverDispatchResponse) },
+      ],
+    },
+  })
   @ApiErrorDescriptions({
     ...base,
-    409: `${notApproved} | DISPATCH_NOT_CLAIMED_BY_DRIVER: el Dispatch no está tomado por este repartidor. | CREDIT_REFUND_INTEGRITY_ERROR: el servicio se cobró y su cargo no aparece.`,
+    409: `INDEPENDENT_ATTEMPT_CLOSED | IDEMPOTENCY_KEY_REUSED | INDEPENDENT_RELEASE_LEGACY_UNSUPPORTED (RELEASE con clave sin ejecución detallada) | CUSTODY_INCIDENT_OPEN | CUSTODY_OPERATION_FORBIDDEN | SHIPPING_COLLECTION_REQUIRES_RESOLUTION | ${notApproved} | DISPATCH_NOT_CLAIMED_BY_DRIVER: el Dispatch no está tomado por este repartidor. | CREDIT_REFUND_INTEGRITY_ERROR: el servicio se cobró y su cargo no aparece.`,
   })
   @ApiOperation({
     summary: 'Liberar un servicio que tomé',
     description:
-      'Operación atómica con motivo obligatorio: la asignación ACTIVE pasa a CANCELLED con el motivo, se limpia el claim independiente y el Dispatch vuelve a OPEN para quien pueda tomarlo (un proveedor candidato u otro repartidor); si la ventana ya cerró queda EXPIRED, igual que la liberación de proveedor de V1.7. El repartidor y el vehículo quedan libres. No existe reasignación para el rol DRIVER: un repartidor no puede pasarle el servicio a otro ni asignarse uno ajeno; liberar es la única salida. Quien libera no puede volver a tomar ese mismo Dispatch. V1.10-E: si el servicio se había cobrado, liberarlo devuelve en la misma transacción el 100% de esos créditos a la cuenta del repartidor, con un SERVICE_REFUND que compensa al SERVICE_AWARD original.',
+      'Con clave exige ejecución DETAILED; LEGACY/UNKNOWN permanecen bloqueados en APP hasta definir política de custodia. En cualquier llamada, custodia, incidencia abierta o declaración de efectivo impiden liberar. Respuesta histórica sin clave se captura dentro de la transacción, sin lectura autorizada posterior al commit. Operación atómica con motivo obligatorio: la asignación ACTIVE pasa a CANCELLED con el motivo, se limpia el claim independiente y el Dispatch vuelve a OPEN para quien pueda tomarlo (un proveedor candidato u otro repartidor); si la ventana ya cerró queda EXPIRED, igual que la liberación de proveedor de V1.7. El repartidor y el vehículo quedan libres. No existe reasignación para el rol DRIVER: un repartidor no puede pasarle el servicio a otro ni asignarse uno ajeno; liberar es la única salida. Quien libera no puede volver a tomar ese mismo Dispatch. V1.10-E: si el servicio se había cobrado, liberarlo devuelve en la misma transacción el 100% de esos créditos a la cuenta del repartidor, con un SERVICE_REFUND que compensa al SERVICE_AWARD original.',
   })
   release(
     @Param('dispatchId', new ParseUUIDPipe()) dispatchId: string,
     @Body() dto: ReleaseDispatchDto,
+    @Headers('idempotency-key') key: string | undefined,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.dispatches.release(req.user.id, dispatchId, dto);
+    return this.dispatches.release(req.user.id, dispatchId, dto, key);
   }
 
   @Post('dispatches/:dispatchId/deliver')

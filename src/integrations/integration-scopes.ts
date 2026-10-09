@@ -19,6 +19,8 @@ export const INTEGRATION_SCOPES = [
   'quotes:accept',
   'deliveries:create',
   'deliveries:read',
+  'deliveries:location:read',
+  'deliveries:tracking-links:manage',
   'deliveries:cancel',
 ] as const;
 export type IntegrationScope = (typeof INTEGRATION_SCOPES)[number];

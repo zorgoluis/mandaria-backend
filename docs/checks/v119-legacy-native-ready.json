@@ -1,0 +1,173 @@
+{
+  "status": "READY_FOR_ANDROID_READS",
+  "preparedVia": "normal seed admin; invitation activation; administrative/B2B/provider APIs; no operational SQL writes",
+  "at": "2026-10-07T17:19:47.926Z",
+  "api": "http://127.0.0.1:43131/api/v1",
+  "emulatorApi": "http://10.0.2.2:43131/api/v1",
+  "identity": {
+    "database": "mandaria_v119_legacy_local",
+    "port": "55442",
+    "directory": "C:/Users/zorgl/Documents/mandaria-backend/.tmp/native-v119-legacy/pgdata",
+    "started": "2026-10-07 11:14:17.247866-06"
+  },
+  "revision": {
+    "head": "b97b9d1be54a2c37601e51990d66ccaf73d0203f",
+    "openapiSha256": "a21972342b0e1ce61899c48ac2d71858b14c5a6a6360460ebc072b6eb6127077",
+    "sourceFiles": [
+      {
+        "path": "src/delivery-assignments/delivery-assignments.service.ts",
+        "sha256": "99af9327397db38002111e158044c9a0b368860744dc8345e27c1b4d66237eb8"
+      },
+      {
+        "path": "src/delivery-execution/execution.persistence.ts",
+        "sha256": "30472d4ad54e4df2dff2f0f03b78b364c956e3fabddeaddad97e33e996b2baf4"
+      },
+      {
+        "path": "src/delivery-execution/execution.responses.ts",
+        "sha256": "c29c33a976f0d2f77edaf76bfd8b5d3fafc38de513663edf2b6bb39804bcbfbf"
+      }
+    ],
+    "builtAt": "2026-10-07T17:14:27.726Z"
+  },
+  "references": {
+    "providerId": "f2fae0ee-b3f7-4baa-bef2-8f008d314299",
+    "driverId": "fc49057c-f932-4a90-a07f-103fccabd215",
+    "userId": "c05681b5-a1d5-452b-bbaf-be74b2678d0f",
+    "vehicleId": "12a4edf6-9a6d-4203-bff1-825a43ea1aa3",
+    "dispatchId": "74cb67e3-5301-4909-abd7-2438250a9b86",
+    "assignmentId": "35fb22cf-52a5-4715-90fc-99644848cf2b",
+    "requestPublicId": "MDR-000001",
+    "quotePublicId": "MQ-000001"
+  },
+  "trackingMode": "LEGACY",
+  "assignmentStatus": "ACTIVE",
+  "executionField": "omitted",
+  "checks": {
+    "driverMe": 200,
+    "driverDetail": 200,
+    "driverExecution": 404,
+    "operatorDriverRoute": 403,
+    "foreignDispatch": 409
+  },
+  "baseline": {
+    "algorithm": "md5(concat(md5(to_jsonb(row)::text) ORDER BY JSON id, full JSON text))",
+    "tables": [
+      {
+        "table": "Dispatch",
+        "count": 1,
+        "md5": "a573e3bdc19e064f29463886ec0601c7"
+      },
+      {
+        "table": "DeliveryAssignment",
+        "count": 1,
+        "md5": "0077e7c8b3613ec034e535572fdba34b"
+      },
+      {
+        "table": "DeliveryExecution",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryExecutionEvent",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryExecutionCommand",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryCustodyIncident",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "DeliveryCustodyResolution",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "CreditLedgerEntry",
+        "count": 2,
+        "md5": "7733f63f9b1d0d8b32d52cfbf3df4a7e"
+      },
+      {
+        "table": "DeliveryLocationHead",
+        "count": 1,
+        "md5": "ac67a161cf0fc2ecd5d2a87fa520d575"
+      },
+      {
+        "table": "DeliveryShippingTerms",
+        "count": 1,
+        "md5": "c99f986b528281ce5fff08a841fc0dd7"
+      },
+      {
+        "table": "ShippingCollectionDeclaration",
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    ]
+  },
+  "credentialsFile": "C:\\Users\\zorgl\\Documents\\mandaria-backend\\.tmp\\native-v119-legacy\\accounts.json",
+  "flags": {
+    "detailed": false,
+    "gps": false,
+    "shared": false
+  },
+  "sharedEnvironmentUntouched": true,
+  "processes": [
+    {
+      "port": 55442,
+      "address": "127.0.0.1",
+      "pid": 4372,
+      "name": "postgres",
+      "started": "2026-10-07T17:14:17.0047159Z"
+    },
+    {
+      "port": 55441,
+      "address": "127.0.0.1",
+      "pid": 6448,
+      "name": "postgres",
+      "started": "2026-10-07T16:37:46.6856554Z"
+    },
+    {
+      "port": 43131,
+      "address": "127.0.0.1",
+      "pid": 8188,
+      "name": "node",
+      "started": "2026-10-07T17:15:00.6108491Z"
+    },
+    {
+      "port": 43130,
+      "address": "0.0.0.0",
+      "pid": 44408,
+      "name": "node",
+      "started": "2026-10-07T16:38:55.4310299Z"
+    }
+  ],
+  "verified": {
+    "providerAssignmentState": "ACTIVE",
+    "driverDetailAccess": "OWNER",
+    "driverDetailExecution": "omitted",
+    "detailedEndpointHttp": 404,
+    "anonymousDriverHttp": 401,
+    "operatorDriverHttp": 403,
+    "unknownServiceHttp": 409,
+    "unknownServiceCode": "INDEPENDENT_NOT_APPROVED",
+    "externalWebhookEndpoints": 0,
+    "shippingPayer": "RECIPIENT",
+    "repeatPreparationSameElevenHashes": true
+  },
+  "commands": {
+    "start": "node scripts/prepare-native-v119-legacy.mjs start",
+    "stop": "node scripts/prepare-native-v119-legacy.mjs stop",
+    "verify": "node scripts/prepare-native-v119-legacy.mjs verify"
+  },
+  "preparerSha256": "bfa652fe9b702fa8c1c5821a9aebb1ade9b5569f1d46e28abe713864c859142f",
+  "knownLimits": [
+    "Android emulator not run in this task; 10.0.2.2 is the standard Android Emulator host alias.",
+    "Exclusive stop command prepared with PID/launcher/PG identity guards; not executed, environment intentionally running.",
+    "Credentials and raw logs remain private under .tmp; never publish."
+  ]
+}

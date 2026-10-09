@@ -8,11 +8,7 @@ import * as argon2 from 'argon2';
 import request from 'supertest';
 import { B2bWebhooksService } from '../dist/b2b-webhooks/b2b-webhooks.service.js';
 import { ensureTestCreditPolicies } from './support/credit-policies.js';
-import {
-  fundForAward,
-  purgeFixtureCredits,
-  purgeFixtureDispatches,
-} from './support/credits.js';
+import { fundForAward } from './support/credits.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 if (!databaseUrl || !new URL(databaseUrl).pathname.endsWith('_test'))
@@ -264,9 +260,8 @@ async function deliveredByProvider() {
 }
 
 beforeAll(async () => {
-  // Leftovers of a previous killed run would otherwise collide with these fixtures and with the
-  // global invariant scans of other suites.
-  await removeFixtures();
+  // Fail closed on leftover fixtures; financial history must not be deleted.
+  await requireFreshWebhookFixtures();
   await ensureTestCreditPolicies(prisma);
   const passwordHash = await argon2.hash(password);
   const user = async (
@@ -431,122 +426,28 @@ beforeAll(async () => {
   await app.close();
 }, 180000);
 
-/**
- * Removes every fixture of this suite from the shared *_test database. Everything is resolved by
- * prefix instead of from memory, so a run whose worker Vitest kills mid-flight cannot leave a
- * CLAIMED dispatch, an ACTIVE assignment or an unbalanced account behind for the suites that run
- * afterwards: the next run of this file cleans them up before creating its own.
- */
-async function removeFixtures() {
-  const userIds = (
-    await prisma.user.findMany({
-      where: { email: { endsWith: '@b2b-webhook.test' } },
-      select: { id: true },
-    })
-  ).map((u) => u.id);
-  const driverIds = (
-    await prisma.driver.findMany({
-      where: { userId: { in: userIds } },
-      select: { id: true },
-    })
-  ).map((d) => d.id);
-  const providerIds = (
-    await prisma.deliveryProvider.findMany({
+/** V1.17 financial evidence is immutable. Use a fresh isolated database per run;
+ * never disable constraints or partially erase the ledger to tear fixtures down. */
+async function requireFreshWebhookFixtures() {
+  if (
+    await prisma.integrationClient.count({
       where: { code: { startsWith: PREFIX } },
-      select: { id: true },
     })
-  ).map((p) => p.id);
-  const clientIds = (
-    await prisma.integrationClient.findMany({
-      where: { code: { startsWith: PREFIX } },
-      select: { id: true },
-    })
-  ).map((c) => c.id);
-  const zoneIds = (
-    await prisma.serviceZone.findMany({
-      where: { code: { startsWith: PREFIX } },
-      select: { id: true },
-    })
-  ).map((z) => z.id);
-  // V1.12-C: attempts hold their event and endpoint with RESTRICT and refuse ordinary deletion,
-  // so fixture teardown removes them under the same *_test-only switch the ledger uses.
-  await prisma.$transaction([
-    prisma.$executeRawUnsafe(
-      `SET LOCAL mandaria.ledger_purge = 'test-fixtures'`,
-    ),
-    prisma.b2bWebhookDelivery.deleteMany({
-      where: { integrationClientId: { in: clientIds } },
-    }),
-    prisma.b2bWebhookDeliveryAttempt.deleteMany({
-      where: { integrationClientId: { in: clientIds } },
-    }),
-  ]);
-  await prisma.b2bWebhookEndpoint.deleteMany({
-    where: { integrationClientId: { in: clientIds } },
-  });
-  await purgeFixtureDispatches(prisma, clientIds);
-  await prisma.deliveryAssignment.deleteMany({
-    where: { driverId: { in: driverIds } },
-  });
-  await prisma.deliveryQuote.deleteMany({
-    where: {
-      OR: [
-        { serviceZoneId: { in: zoneIds } },
-        { deliveryRequest: { integrationClientId: { in: clientIds } } },
-      ],
-    },
-  });
-  await prisma.deliveryRequest.deleteMany({
-    where: { integrationClientId: { in: clientIds } },
-  });
-  await prisma.apiIdempotencyRecord.deleteMany({
-    where: { integrationClientId: { in: clientIds } },
-  });
-  await prisma.driverVehicleAssignment.deleteMany({
-    where: { providerId: { in: providerIds } },
-  });
-  await prisma.providerServiceCoverage.deleteMany({
-    where: { providerId: { in: providerIds } },
-  });
-  await prisma.rateBand.deleteMany({
-    where: { ratePlan: { serviceZoneId: { in: zoneIds } } },
-  });
-  await prisma.ratePlan.deleteMany({
-    where: { serviceZoneId: { in: zoneIds } },
-  });
-  await prisma.serviceZone.deleteMany({ where: { id: { in: zoneIds } } });
-  await purgeFixtureCredits(prisma, { providerIds, driverIds });
-  await prisma.vehicle.deleteMany({
-    where: { independentDriverProfile: { driverId: { in: driverIds } } },
-  });
-  await prisma.independentDriverProfile.deleteMany({
-    where: { driverId: { in: driverIds } },
-  });
-  await prisma.driver.deleteMany({ where: { id: { in: driverIds } } });
-  await prisma.vehicle.deleteMany({
-    where: { providerId: { in: providerIds } },
-  });
-  await prisma.providerMembership.deleteMany({
-    where: { providerId: { in: providerIds } },
-  });
-  await prisma.deliveryProvider.deleteMany({
-    where: { id: { in: providerIds } },
-  });
-  await prisma.integrationCredential.deleteMany({
-    where: { clientId: { in: clientIds } },
-  });
-  await prisma.integrationClient.deleteMany({
-    where: { id: { in: clientIds } },
-  });
-  await prisma.refreshToken.deleteMany({ where: { userId: { in: userIds } } });
-  await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+  )
+    throw new Error(
+      'Webhook E2E requires a fresh isolated test database; previous evidence is retained',
+    );
 }
-
 afterAll(async () => {
-  await removeFixtures();
-  await prisma.$disconnect();
+  try {
+    await prisma.serviceZone.updateMany({
+      where: { code: `${PREFIX}ZONE_${run}` },
+      data: { status: 'INACTIVE' },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
 }, 120000);
-
 /**
  * A throwaway HTTP receiver, outside the product, so the suite can watch what Mandaria actually
  * puts on the wire: method, path, headers and body. It is scripted per request — status codes,

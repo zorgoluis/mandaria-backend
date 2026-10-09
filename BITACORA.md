@@ -4,6 +4,80 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación Git de residuales V1.19 autorizada (2026-10-09):** preparación de commit/push en la rama actual `v1.18-GPS_seguimiento_temporal`; siete archivos de herramienta, guía, manifiesto y continuidad revisados. Verificaciones nuevas: sintaxis Node, Oxlint focal, JSON, diff y comparación contra13 valores privados locales sin coincidencias. Evidencia funcional previa conservada como histórica; sin arrancar entornos ni repetir suites. `.tmp`, credenciales y residual `nul` excluidos; sin despliegue ni activación.
+
+- **Cierre documental APP V1.19 revisado (2026-10-09):** revisados informe técnico y plan de publicación APP. Validación funcional local histórica conservada; distribución pendiente por red release, divulgación GPS, atribución, verificación 16KB/API37 y continuidad de firma. Siguiente propuesta APP: corregir aislamiento de red release sin inventar destino y preparar cambios restantes sujetos a datos del propietario. Canal, custodio, HTTPS y política operativa/privacidad no elegidos. Revisión documental únicamente; sin suites, servicios, firma, publicación ni activación.
+
+- **Consolidación V1.19 solicitada (2026-10-09):** leído cierre residual APP y continuidad móvil: independent=null PASS Compose A/D/B,13 huellas iguales y entorno detenido según evidencia APP, no reejecutado aquí. ACTIVE UNKNOWN/VEHICLE_BUSY aislado conservan clasificación no alcanzable actual, no PASS nativo. Siguiente APP prepara informe de cierre y plan de distribución Android con trazabilidad por revisión, límites físicos/API y condiciones operativas/backend, sin repetir suites ni firmar/publicar. Estados anteriores de fixtures listos/Compose pendiente quedan históricos.
+
+- **Residuales independientes V1.19 cerrados en backend (2026-10-09):** [análisis/guía](docs/V1.19-INDEPENDENT-RESIDUAL-FIXTURES.md), [manifiesto](docs/checks/v119-independent-residual-ready.json). Nuevo entorno exclusivo43136/55448, base mandaria_v119_independent_residual_local, build1a72959 congelado/43 migraciones; GPS/enlaces false, locales sin externos. Driver sólo flotilla independent=null comprobado por HTTP, acceso OWNER y rechazo409 de vehículos/mercado/TAKE independiente;13 huellas iguales, saldo86, dos awards7 y cero intentos/refunds. ACTIVE LEGACY y DETAILED preparados sin hitos; Driver libre con activeDeliveryAssignment=null. ACTIVE UNKNOWN y VEHICLE_BUSY aislado en TAKE no alcanzables en flujos válidos actuales según clasificador/propiedad/constraints, sin fabricar fixtures. Nuevos build/syntax/Oxlint, APIs/SQL, snapshot/stop/start y preparación repetida aprobados; APP Compose pendiente, suites y GPS anteriores no repetidos. Entorno encendido Node14828/PG44044 al verificar; datos privados ignorados. Sin producto, Docker, otros entornos, commit/push ni activación.
+
+- **Publicación Git autorizada (2026-10-09):** preparación de commit/push en `v1.18-GPS_seguimiento_temporal` de herramienta, guía y manifiesto GPS físico, más continuidad acumulada. Verificaciones nuevas: seis archivos revisados sin coincidencias con secretos locales conocidos, JSON de evidencia válido y sin coordenadas, syntax/Oxlint focal/diff aprobados. Resultados operativos previos conservados como históricos; no se reiniciaron entornos ni reejecutaron pruebas físicas. Privados/.tmp y residual `nul` excluidos; sin despliegue ni activación.
+
+- **Cierre de cobertura independiente V1.19 (2026-10-09):** propietario solicita continuar tras reporte físico GPS. Se prepara prompt BACKEND para independent=null real y análisis de alcanzabilidad UNKNOWN/null con ACTIVE y VEHICLE_BUSY aislado; no fabricar estados, reordenar guards ni relajar constraints. Revisión coordinadora sólo documental/búsqueda de fuentes, sin pruebas nuevas. Validación física reportada por APP no equivale a publicación/autonomía diaria; pendientes operativos conservados.
+
+- **Fixtures GPS físicos nuevos preparados (2026-10-08 23:53 local):** autorización humana en APP verificada; entorno exclusivo API43135/PG55447 `mandaria_v119_gps_physical_local`, revisión505e7a3/build congelado/43 migraciones, Node24924/PG38512 encendidos. [Guía](docs/V1.19-GPS-PHYSICAL-FIXTURES.md), [manifiesto](docs/checks/v119-gps-physical-ready.json). physical-main A y physical-incident B PICKED_UP, physical-terminal C AT_DROPOFF/DELIVER permitido; todos FLEET ACTIVE RECIPIENT,11 avances por Driver API, saldo79. Cero streams/muestras/incidencias/cierres consumidos. GPS/shared/detailed sólo aquí; sin externos. Revisión estática logging y configuración PG exclusiva sin SQL/parámetros; snapshot excluye coordenadas/sampleHash, observe sólo metadatos. Nuevas comprobaciones build/docs/syntax/Oxlint/API/SQL, start/stop/snapshot/observe y prepare repetido exit0;13 tablas estables salvo cuotas. Credenciales/enlaces privados (vencen9oct23:50 local), APP conectará con adb reverse y comprobará físico30min; no acreditado aquí. Sin tocar anteriores/producto/Docker/commit/push ni envío entre chats.
+
+- **Publicación Git autorizada (2026-10-08):** preparado commit de herramientas nativas independientes/GPS, guías, manifiestos y evidencia de transferencia en rama actual `v1.18-GPS_seguimiento_temporal`. Revisados11 archivos previstos: JSON válidos, sin coincidencias con secretos privados locales; syntax de ambos preparadores, Oxlint focal y diff aprobados en esta tarea. Verificaciones operativas anteriores conservadas como históricas; no se repitieron ni tocaron entornos reservados por APP. `.tmp`, credenciales y residual `nul` excluidos. Commit/push solicitados por el propietario; sin despliegue ni activación.
+
+- **Transferencia GPS sintética coordinada (2026-10-08):** autorización humana de integración/coordinar SUPER_ADMIN comprobada en APP. Preflight/apply sólo sobre43134/55446 identificados, Node19608/PG41652; incidencia d5bf4472-169f-4e7a-9af4-98c652bb8eff abierta, revisión5/PICKED_UP y E elegible. Único resolve200 y recibo APPLIED: resolución9cdc2dd0-ceac-4f50-9cc4-87bc4e2b32ef, assignment E5f7177cd-f324-47b9-b3f9-64d3e18900c1 ACTIVE, revisión6/misma fase/cadena, anterior TRANSFERRED. Ledger/saldo65/términos/declaraciones/outbox conservados; GPS sin stream/muestra y generación incrementada. Otras incidencias/ejecuciones sin cambios. [Evidencia](docs/checks/v119-gps-transfer.json). Sin publicar GPS ni cerrar entorno; APP continuará receptor y verificará rechazo del emisor anterior. Nueva prueba API y SQL read-only antes/después, syntax/diff; suites/Android no reejecutados aquí. Sin producto/flags/Docker/commit/push.
+
+- **Handoff integración GPS Android (2026-10-07):** leídos informe APP y guía nativa43134/55446. APP reporta50 unitarias/15 regresiones Compose y emulador con transporte sintético; no reejecutado aquí. Prompt APP para start/verify/snapshot antes de consumir fixtures, stream/ACK/reinicio e invalidaciones reales y proyecciones B2B/shared. Enlaces TTL absoluto, no init ni restaurar fixtures consumidos. Credenciales B2B sólo verificador anfitrión, no APK. Separar Compose, HTTP complementario, resolución SUPER_ADMIN y prueba física pendiente.
+
+- **Parada GPS solicitada por APP, estado ya detenido (2026-10-08 05:48 UTC):** sin listeners43134/55446 ni PID19608/41652; pg_ctl status del datadir exclusivo confirmó no server running. No fue necesario ejecutar stop ni reiniciar; no atribuir causa/forma de terminación. Archivos de datos/referencias/credenciales conservados, sin lectura SQL nueva. APP reporta cero consumo/streams, no reejecutado aquí. Guía GPS actualizada con start→verify→snapshot y enlaces que vencen9oct05:38 UTC sin pausar TTL. Verificación nueva de procesos/puertos/archivos y diff; preparación anterior histórica. No otros entornos, producto, Docker, commit/push.
+
+- **Nuevo handoff GPS Android V1.19 preparado (2026-10-07 local / 2026-10-08 05:44 UTC):** pedido APP distinto del entorno independiente ya consumido. API43134/PG55446 `mandaria_v119_gps_local`, Node19608/PG41652 encendidos;43 migraciones normales, build03dd2aa congelado. [Guía](docs/V1.19-GPS-NATIVE-FIXTURES.md), [manifiesto/huellas](docs/checks/v119-gps-native-ready.json). Cinco FLEET ACTIVE DETAILED: A TO_PICKUP, B/C PICKED_UP, D AT_DROPOFF, F phase=null; E receptor libre. Todos RECIPIENT, cinco awards7/saldo65,12 avances iniciales por APIs Driver. GPS/enlaces true sólo aquí; cero streams/muestras/incidencias/resoluciones/declaraciones/entregas. Credenciales y cinco enlaces privados. Nueva verificación: build/docs/syntax/Oxlint, HTTP Driver/B2B/destinatario y permisos,43 migraciones; snapshot/stop/start/repetición prepare exit0,13 tablas idénticas salvo cuotas separadas. Primer verificador falló por me.driver.id frente a me.id; corregida sólo herramienta y corrida completa posterior aprobada. Entornos anteriores intactos; sin producto/Docker/producción/commit/push. Pendientes APP GPS simulado/físico y transferencia coordinada posterior, no acreditados por preparación.
+
+- **Reconciliación de entrega independiente V1.19 (2026-10-07):** preparación ya ejecutada; contrastados guía, manifiesto y reporte posterior `androidApp/V1.19-INDEPENDIENTE-NATIVO.md`. APP reporta consumo y parada; comprobación nueva de listeners43133/55445 sin resultados. No reiniciar ni duplicar los estados iniciales consumidos. Actualizada guía distinguiendo entrega histórica de estado actual detenido. Verificación nueva: lectura documental y `git diff --check`; sin pruebas de producto nuevas ni escrituras operativas. Historial previo conservado; sin commit/push.
+
+- **V1.19 independientes acreditado en APP e inicio GPS (2026-10-07):** leído informe móvil V1.19-INDEPENDIENTE-NATIVO;13 etapas Compose y13 invariantes snapshot reportadas, sin duplicados; no reejecutadas aquí. Pendientes concretos UNKNOWN activo (alcanzabilidad no demostrada), independent=null, VEHICLE_BUSY aislado y físico; no fabricar estados ni cerrar esa cobertura. Siguiente APP integra protocolo GPS V1.18 en Android preservando diseño, sin reabrir fixtures consumidos; backend preparará datos nuevos cuando APP entregue pedido exacto.
+
+- **Fixtures independientes V1.19 listos para APP (2026-10-07 23:06 UTC):** nuevo entorno exclusivo API43133/PG55445 `mandaria_v119_independent_local`, Node15064/PG40864 encendidos; revisión03dd2aa, build congelado y43 migraciones. [Guía](docs/V1.19-INDEPENDENT-NATIVE-FIXTURES.md), [manifiesto/huellas](docs/checks/v119-independent-native-ready.json). Doce Drivers APPROVED, nueve ofertas OPEN sin asignación (trackingMode=null, futuro TAKE DETAILED), un FLEET ACTIVE LEGACY de sólo lectura. Costo independiente14/saldo13 para driverC,100 para los demás. Ningún TAKE/RELEASE/cierre/hito/cobro/incidencia reservado ejecutado. API real Driver, baseline once tablas+intentos0, snapshot/stop/start y repetición sin cambios acreditados. Ventana real vence2026-10-08 22:59 UTC; no renovar ni reabrir automáticamente. GPS/enlaces false, correo/routing locales, sin destinos webhooks. Entornos reservados intactos. Credenciales sólo privadas. Pendiente Android y deltas; sin producto/commit/push/activación.
+
+- **Publicación Git autorizada (2026-10-07):** preparación de commit y push en la rama actual `v1.18-GPS_seguimiento_temporal` del contrato/recuperación independientes V1.19, corrección Swagger y herramientas/evidencia de fixtures acumuladas. Verificación de esta tarea: revisión del alcance y `git diff --check`; resultados de suites anteriores conservados como históricos, no reejecutados. Archivo local residual `nul` excluido; configuración privada y `.tmp` fuera del commit. No despliegue ni activación.
+
+- **Handoff independientes APP/fixtures (2026-10-07):** leídos contrato final y pedido backend. TAKE/RELEASE con UUID key retornan IndependentCommandResponse; consulta/cierre propios con canPrepareNewAttempt e INDEPENDENT_ATTEMPT_CLOSED, no protocolo ejecución. APPLIED histórico permanece válido tras404 actual. Preparación nativa nueva migración43 pendiente, no usar entornos reservados; APP integración contractual y backend fixtures pueden avanzar por separado. LEGACY/UNKNOWN RELEASE bloqueado; suspensión independiente con ACTIVE es estado prohibido, no fixture a fabricar.
+
+- **Independientes V1.19 — corrección y reconciliación local (2026-10-07):** reproducidos TAKE tardío después de consulta vacía y RELEASE404 después de commit/refund al vencer ventana. Respuesta transaccional, recibos TAKE/RELEASE propios, GET sin efectos y cierre durable coordinado; migración43 incremental. RELEASE bloqueado por custodia/incidencia/efectivo; keyed LEGACY bloqueado, compatibilidad antigua sin clave explícitamente sin fencing. [Contrato APP](docs/V1.19-INDEPENDENT-ATTEMPTS.md), [evidencia](docs/checks/v119-independent-attempts.json), [fixtures pendientes](docs/V1.19-INDEPENDENT-FIXTURE-REQUEST.md). Nuevos resultados:90 E2E únicos/4 archivos,32 unitarios/2 archivos y40 contrato público; tipos/build/linters/docs y migraciones limpia/42→43 aprobados. Repetición abortada10/16 excluida; reproducción instrumentada16/16 aprobada sin causa del aborto acreditada. Entorno exclusivo PG55444 detenido al terminar, datos/logs conservados, sin tocar los tres entornos reservados ni consumir Android. APP aún debe integrar contrato y usar claves; no desplegado/activado. Entradas siguientes se conservan como historia.
+
+- **Independientes V1.19 — revisión coordinadora (2026-10-07):** leído pedido APP V1.19-INDEPENDIENTE-BACKEND. APP reporta33 unitarias/10 Compose sintéticas, sin integración real. Brechas reportadas: TAKE/RELEASE sin recibo/cierre, RELEASE podría devolver404 tras commit/refund (inspección, sin reproducción), descripción refund desactualizada. Siguiente prompt BACKEND pide reproducción y reconciliación explícita/resultado durable antes de fixtures finales; no reutilizar recibos de ejecución por inferencia. No aprobar liberación LEGACY/UNKNOWN ni política monetaria por esta coordinación.
+
+- **Cierre operativo reportado por APP V1.19 — 2026-10-07:** tarea APP 01a116d1-0789-7603-ac6f-a4a81547f4d5 informa C/D DELIVERED, recuperación REPORT de A después de transferencia y continuación B hasta DELIVERED sin nueva recogida/cobro. Reporta SQL final:3 Dispatch DELIVERED,4 assignments (3COMPLETED/A TRANSFERRED),16 eventos,18 recibos,2 declaraciones55.00,ledger4/awards3/saldo79,3 outbox DELIVERY_COMPLETED y GPS0. **Reporte externo, no reejecutado aquí.** APP termina evidencia visual de sólo lectura y anuncia parada exclusiva43132/55443; parada aún no confirmada. No reconstruir ni reiniciar fixtures consumidos. Evidencia propia de transferencia permanece separada; esta actualización sólo documental/diff, sin API/DB ni mensajes operativos.
+
+- **Transferencia sintética coordinada Android V1.19 — 2026-10-07 21:31 UTC:** autorización del propietario en APP verificada; tras REPORT real, revalidados entorno43132/55443, revisión5/PICKED_UP/HELD e incidencia abierta, B elegible por API. Único resolve SUPER_ADMIN200 y recibo APPLIED; resolución ef9990cb-c81c-4f80-a708-c9b5414df700, assignment B ad5727ff-641f-4823-a078-128aac77c225 ACTIVE, A TRANSFERRED, revisión6/misma fase y chain. Declaración55.00 MXN/ledger/saldo79 conservados, sin nuevo outbox. [Evidencia/deltas](docs/checks/v119-operative-transfer.json) y [handoff](docs/V1.19-ANDROID-OPERATIVE-FIXTURES.md). APP notificada para continuar aTransferred/bComplete; entorno sigue encendido Node35792/PG9808. Sin avanzar/cobrar/entregar desde backend ni tocar otros fixtures. Verificaciones nuevas API/SQL read-only/syntax/diff; suites y Android no repetidos aquí. Baseline inicial siguiente es histórica, no restaurar estados consumidos. Sin producto/flags/Docker/producción/commit/push.
+
+- **Fixtures operativos Android V1.19 preparados — 2026-10-07:** [entrega real](docs/V1.19-ANDROID-OPERATIVE-FIXTURES.md) y [manifiesto](docs/checks/v119-operative-native-ready.json). Entorno nuevo API43132/PG55443 mandaria_v119_operative_local;42 migraciones normales, bootstrap admin y preparación restante por APIs. Cuatro pares exclusivos: A custodia REQUESTER, B receptor libre, C entrega REQUESTER, D LEGACY; tres ACTIVE, detallados phase=null/revision1. LEGACY creado con false y conservado tras activar detailed/authorized-accept sólo en proceso nuevo. GPS/enlaces false, routing/correo locales, webhooks0. Comprobados API Driver/permisos, stop/start exclusivo, repetición sin duplicados y once huellas finales19:12:19.081Z; ledger100-21=79, sin comandos/declaraciones/incidencias/transferencias/entregas. Primer verificador falló por ID interno omitido en B2B; corregida sólo herramienta, verificaciones posteriores completas exit0. Build/syntax/Oxlint/diff; sin suites ajenas ni Android. Compartidos intactos; nuevo entorno queda encendido PID Node45456/PG17700. Credenciales privadas por alias; APP debe consumir sólo manifiesto nuevo. Sin producto/Docker/producción/commit/push.
+
+- **Coordinación fixtures operativos V1.19 (2026-10-07):** APP reporta implementación de comandos/recuperación con23 unitarias/15 Compose sintéticas; integración real pendiente. Leído pedido backend de entorno nuevo y cuatro pares exclusivos. Siguiente prompt autoriza preparación nativa aislada, LEGACY antes de activar admisión detallada sólo en proceso nuevo; no consumir hitos/cobros/incidencias/transferencia durante preparación. Verificar deltas operativos después de Android, no igualdad de huellas propia de lecturas.
+
+- **Coordinación fixtures operativos Android V1.19 — 2026-10-07:** APP solicita nuevos REQUESTER/CASH/PICKUP, transferencia, entrega separada y LEGACY consumible; entregado [pedido concreto](docs/V1.19-ANDROID-OPERATIVE-FIXTURE-REQUEST.md), sin preparar ni consumir datos en esta coordinación. Preparador nativo actual fija LEGACY/RECIPIENT y no cubre el alcance; Docker descartado. Recomendados cuatro pares Driver/Vehicle para tres servicios ACTIVE y un receptor libre. Evidencia APP leída reporta lectura LEGACY anterior PASS/once huellas iguales y parada del entorno43131; no se reejecutó Android ni se consultó disponibilidad actual. Nuevo entorno/IDs/comandos aún no reservados; sólo revisión estática y diff, cambios existentes conservados.
+
+- **V1.19 fixture LEGACY nativo independiente listo — 2026-10-07:** API43131/PG55442 `mandaria_v119_legacy_local`, directorio exclusivo .tmp/native-v119-legacy, migración normal42/seed SUPER_ADMIN y resto por APIs. Driver fc49057c-f932-4a90-a07f-103fccabd215, Dispatch74cb67e3-5301-4909-abd7-2438250a9b86, Assignment35fb22cf-52a5-4715-90fc-99644848cf2b ACTIVE/LEGACY; sin hitos ni consumo. Credenciales privadas accounts.json entrada driver; manifiesto y once huellas nuevas en [entrega](docs/V1.19-LEGACY-FIXTURE.md)/[evidencia](docs/checks/v119-legacy-native-ready.json). DRIVER me/detalle200, ejecución detallada404 legítimo, permisos401/403/409 comprobados. Repetición sin duplicados/huellas idénticas; comandos exclusivos documentados. Compartido43130/55441 intacto, flags false sólo en nuevo proceso. Listo para lecturas Android, no prueba de emulador realizada. Conservado antecedente bloqueado y cambios anteriores; sin Docker/externos/producción/commit/push.
+
+- **V1.19 LEGACY activo — impedimento confirmado, 2026-10-07:** entorno nativo43130/PG55441 mandaria_native_local disponible e identificado (Node44408/PG6448),42 migraciones. Inventario read-only: cero FLEET ACTIVE LEGACY; sólo una LEGACY COMPLETED. API create/reassign inicializa DETAILED con flag compartido true; DTO sin override, preparador existente exige Docker/cambio de flag. No se forzó preparación. [Informe y propuesta independiente](docs/V1.19-LEGACY-FIXTURE.md), [manifiesto con once huellas diagnósticas](docs/checks/v119-legacy-fixture.json). Sin fixture/credenciales nuevos; huellas NO son baseline posterior a preparación. Sin writes operativos ni cambios compartidos; escenarios Android ya acreditados no repetidos.
+
+- **V1.19 lectura Android y fixture LEGACY pendiente (2026-10-07):** leído pedido actualizado androidApp/V1.19-PEDIDO-BACKEND.md. Escenarios flotilla detallada, independiente y tokens ya reportados aprobados por APP; no repetir preparación inicial. Siguiente BACKEND prepara sólo FLEET ACTIVE LEGACY legítimo con herramientas existentes en entorno nativo identificado; no cambiar flag compartido, borrar ejecución ni reabrir cerradas. Si incompatible, documentar causa/propuesta aislada sin simular aprobación. Dispositivo físico sigue pendiente separado, no bloqueo de emulador.
+
+- **Backend nativo local (2026-10-07):** autorizado detener Docker y ejecutar Node/PostgreSQL nativos. Mandaria Docker detenido con volúmenes conservados; copia pg_dump/restore de su base sintética a clúster PG18 dedicado en 127.0.0.1:55441, base mandaria_native_local. Node en puerto43130, health200 y contrato Driver actual comprobados; 42 migraciones al día, build aprobado. Configuración privada en .tmp/native-local/runtime.json, launcher server.mjs, logs y PID ignorados; cuentas existentes conservadas y flags previos sin ampliación. No cambia .env habitual ni producción.
+
+- **Docker local actualizado y arrancado (2026-10-07):** autorización explícita del propietario. Reconstruido código actual con compose.desktop-local.yml y secretos locales existentes; PostgreSQL/backend/gateway healthy, HTTP health200, 42 migraciones al día y Swagger DriverAttemptResponse incluye COLLECT_SHIPPING. Datos conservados. Reparado arranque Docker Desktop apartando con respaldo directorios de sockets run y docker-secrets-engine tras detener Docker/WSL; sin factory reset ni borrado de volúmenes. Configuración de flags local existente conservada; no activación global de funciones ni producción.
+
+- **Corrección contractual APP DRIVER — 2026-10-07:** DriverAttemptResponse.operation ya describe COLLECT_SHIPPING admitido por DTO y servicio. Sólo Swagger, sin permisos/comportamiento nuevos. Regenerado OpenAPI completo; público B2B y API_ACCESS sin cambios semánticos. Regresión nueva verifica concordancia en consulta/cierre y exclusión humana/Driver. Nuevas verificaciones:39/39 públicas, build, tipos raíz/build, docs:b2b:check, Oxlint focalizado y diff --check aprobados. Primer tsc raíz chocó con reconstrucción dist; ejecución posterior aislada aprobada. [Handoff APP con revisión/hash](docs/DRIVER-APP-EXECUTION.md). Base b97b9d1, cambios locales no publicados/desplegados; sin historial Driver ni cola programada. Nota coordinadora previa y nul conservados.
+
+- **Revisión coordinadora análisis APP V1.19 (2026-10-07):** leído informe móvil aportado por propietario: Android Kotlin/Compose reutilizable, lógica mock no contractual; iOS sólo ejemplo. Verificación propia backend: rama v1.18-GPS_seguimiento_temporal HEAD b97b9d1, sin cambios rastreados antes de esta nota, nul preservado. Confirmada discrepancia Swagger DriverAttemptResponse.operation omite COLLECT_SHIPPING admitido por DTO consulta. Se entregan prompts separados BACKEND de corrección contractual y APP de separación demo/sesión/lecturas Android; historial completo/cola programada no se autorizan como endpoints nuevos, no sustituir por simulación. Alcance iOS pendiente; protocolos durables desde arquitectura sin activar escrituras operativas aún.
+
+- **Publicación autorizada V1.18 — 2026-10-06:** propietario solicita commit y push a la rama actual `v1.18-GPS_seguimiento_temporal`. Se incluyen backend GPS/enlaces, migraciones incrementales, contratos, handoffs y evidencia local existente. Verificación de esta tarea: revisión Git, contenido preparado y diff --check; no se repiten suites. Reportes crudos de diagnóstico `.tmp`, secretos y `nul` quedan fuera. GPS/enlaces siguen deshabilitados, sin despliegue ni activación. El resultado Git se confirma al finalizar.
+
+- **Coordinación WEB V1.18 (2026-10-06):** revisados handoffs WEB/B2B e implementación; webhooks54/54 acreditados por evidencia del agente, no repetidos aquí; abortos anteriores siguen sin causa. Prompt FRONTEND para GPS de cliente, gestión enlace y pantalla /track, respetando ISSUE/REVOKE con CAS y estados reales (no CLOSED_NO_EFFECTS genérico), secreto efímero, watermarks/versiones y cuotas agregadas. APP DRIVER conserva publicación GPS. Flags deshabilitados fuera de pruebas aisladas, sin activación.
+
+- **V1.18 — webhooks acreditado, diagnóstico2026-10-06:** única reproducción instrumentada completa54/54 exit0 (forks/1 worker, PG18.6 aislado). Capturado cierre normal del worker40124 por SIGTERM solicitado por padre36428; padre exit0, stderr vacío. No se reprodujo el aborto; causa anterior sigue no acreditada, sin corrección de producto basada en supuestos. [Evidencia](docs/checks/v118-webhooks-diagnostic.json).26 huellas previas iguales;475 unitarias/38 públicas/73 E2E son históricas no repetidas;127 E2E únicos consolidados en5 archivos. Pendiente webhooks cerrado localmente, no V1.18 completa: interfaces/integración real y pendientes operativos permanecen. GPS/enlaces false. Instrumentación/reportes locales ignorados, sin instalación ni configuración global; clúster detenido y datos sintéticos retenidos. Sin Docker/producción/commit/push/despliegue/activación.
+
+- **V1.18 — seguimiento de verificación de webhooks (2026-10-06): PARTIAL.** Un único intento nuevo del archivo completo, forks/1 worker y PostgreSQL18.6 aislado (copia nueva de plantilla42), abortó tras35/54 en22.91s; exit1, Worker exited unexpectedly. Último caso completado: cambio de destino; siguiente sin completar: vista administrativa sin secretos. No aserción fallida registrada; causa no acreditada. JSON success=true inconsistente con19 casos pendientes y exit1: no acredita suite. PostgreSQL seguía disponible. Sin cambios de producto/pruebas/configuración, sin repetir suites aprobadas.26 huellas anteriores iguales; evidencia histórica preservada. GPS/enlaces false. Clúster detenido, base sintética conservada. [Evidencia nueva](docs/checks/v118-webhooks-followup/evidence.json). Sigue pendiente archivo completo exitoso; interfaces/integración real pendientes, no V1.18 completa.
+
+- **V1.18 GPS/enlaces — implementación local, verificación PARTIAL (2026-10-06):** [contrato](docs/V1.18-LOCATION-IMPLEMENTATION.md), [WEB](docs/V1.18-WEB.md), [APP](docs/V1.18-DRIVER-APP.md), [B2B](docs/V1.18-B2B.md). Reglas aprobadas implementadas: última muestra, autoridad DRIVER vigente, fases/precisión/frescura, invalidación transaccional, locationVersion independiente, token hash-only con TTL/revocación/CAS y recibo acotado. Migraciones41/42 limpias y desde40 en copias locales; historia de ocho tablas y checksums anteriores preservados. Flags nuevos false; .env real intacto. Nuevas verificaciones:475 unitarias,73 E2E únicos en cuatro archivos completos,38 públicas; build/tipos/linters/contratos pasan. **Webhooks NO acreditado:** aborto nativo; otro intento54/54 casos pero teardown falló por evidencia financiera inmutable V1.17; fixture corregido para exigir base nueva y conservar historia, última corrida abortó40/54. No se suma ningún resultado parcial. Drift Prisma exit2 idéntico al baseline por FKs SQL históricas; no nuevo drift. Evidencia en [consolidado](docs/checks/v118-location.json) y VERIFICATION. Interfaces/integración real, volumen observado y retención backups pendientes; no declarar V1.18 completa. Sin Docker/Coita/producción/commit/push/despliegue/activación. `nul` y documentación previa conservados.
+
+- **V1.18 ubicación y seguimiento compartido — diseño, 2026-10-06:** revisión estática de b0f908c; propuesta en [V1.18-LOCATION-DESIGN](docs/V1.18-LOCATION-DESIGN.md) y [handoff por aplicación](docs/V1.18-LOCATION-HANDOFF.md). Última muestra por asignación, stream/CAS/secuencia acotados, locationVersion separada de publicVersion y frescura derivada; invalidación atómica en transferencia/incidencia/terminal. Enlace hash-only de lectura con secreto de una entrega, CAS de emisión/revocación y respuesta perdida sin reemisión automática. Visibilidad por fase, precisión/frecuencia/TTL/retención son propuestas pendientes, no activadas. Scopes/rutas/modelos/migración sólo diseñados. Comprobado contrato status existente y ausencia de ruta location en OpenAPI público; cuota actual100/min IP+handler, sin garantía distribuida. Sólo revisión estática/referencias/diff, sin pruebas de producto o carga. No cambios producto/OpenAPI/frontend/DB/.env/versión; sin Docker/Coita/commit/push/despliegue. V1.17 sin activar; entradas previas conservadas.
+
 - **Inicio análisis V1.18 autorizado (2026-10-06):** propietario aprueba preparar análisis GPS y enlaces temporales tras reporte WEB de nueve escenarios navegador/backend/PG40. Ese reporte no fue reejecutado aquí. Revisión estática actual: sin telemetría GPS encontrada en src/schema; coordenadas routing no son ubicación DRIVER. Titularidad V1.17 XOR y permisos de asignación son base. Prompt BACKEND de diseño, sin implementación: última posición por asignación, consumo directo/B2B y token temporal destinatario, versiones/frescura independientes, privacidad, revocación y carreras. Ventana de visibilidad, TTL, precisión/frecuencia/retención siguen como propuestas a justificar, no decisiones aprobadas.
 
 - **Publicación autorizada del cierre contractual V1.17 — 2026-10-06:** solicitado commit y push a la rama actual `v1.17-Clientes_directos_Mandaria`. Se incluyen reconciliación humana, migración40, contratos, pruebas, evidencia y handoffs existentes. Verificación de esta tarea: revisión de rama, contenido preparado y diff --check; suites de la implementación anterior no repetidas. Resultado Git se confirma al terminar. Admisión sin activar, sin despliegue; nul conservado fuera del commit.
@@ -515,6 +589,41 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-07 — Preparación nativa de independientes para Android
+
+Solicitud: ejecutar pedido de fixtures independientes sin consumir operaciones ni usar entornos anteriores. Creado `scripts/prepare-native-v119-independent.mjs`, reutilizando infraestructura del preparador nativo con destinos fijos nuevos, ACL privada, identidad SQL/procesos, migraciones normales y bootstrap administrador. Proveedores/recursos/cobertura/tarifa/políticas/recargas/solicitudes/quotes/accept y LEGACY por APIs; ninguna escritura SQL operacional. LEGACY creado con admisión detallada false sólo en el proceso nuevo, después true para futuras asignaciones. Preparación termina en ofertas, no inventa hitos ni custodia.
+
+Verificaciones nuevas: build, docs:b2b:check, sintaxis Node, Oxlint focal, diff; lecturas autorizadas de12 Drivers, vehículos, saldos, diez servicios y nueve ofertas listadas. Migración43 finalizada; once huellas y IndependentDispatchAttempt separado. Snapshot/stop/start/repetición prepare comprobados: doce huellas iguales, no duplicados. Se conservaron y corrigieron sólo en herramienta:429 activación (cuota10/min), DTO400 vehículo (status no admitido) y aserción GPS (10 cabeceras automáticas vacías, cero muestras). Los dos rechazos de preparación fueron acreditados sin efectos antes de reanudar; no se borraron datos ni restricciones. Suites de producto anteriores no repetidas.
+
+Resultado: entorno encendido listo para APP, documentación y manifiesto sin secretos. Android debe ejecutar TAKE/RELEASE, cierres tardíos, avances, incidencias y declaración de efectivo sobre escenarios separados; luego comprobar deltas legítimos y referencias económicas, no igualdad total. LEGACY sólo lectura. Credenciales privadas por alias; ningún acceso a producción/Coita/Docker, sin cambios móviles, commit/push/despliegue/activación remota.
+
+### 2026-10-07 — Commit y push solicitados por el propietario
+
+Se prepara publicación de los cambios acumulados V1.19 en la rama actual, conservando continuidad y evidencia. Revisión de archivos y diff, sin repetir pruebas ya acreditadas ni tocar entornos. Exclusión del archivo residual `nul` y recursos privados ignorados. El resultado de commit/push se informa con el hash confirmado en la entrega; no implica despliegue, activación ni integración Android verificada.
+
+### 2026-10-07 — Brechas independientes V1.19
+
+Solicitud: reproducir respuestas inciertas y RELEASE404, implementar reconciliación durable autorizada y entregar contrato APP sin tocar fixtures reservados. Se agregó IndependentDispatchAttempt, locks compartidos comando/cierre, respuesta mínima original y captura transaccional de la respuesta antigua. Sin cuerpos privados en recibos, sin permiso nuevo sobre estado actual ajeno; restricciones de custodia/incidencia/declaración aplicadas también a RELEASE sin clave. OpenAPI humano y API_ACCESS regenerados, B2B excluye Driver; se corrigió descripción de créditos/refund y se añadió prueba contractual.
+
+Verificación nueva: cuatro archivos E2E completos suman90 casos únicos,32 unitarios,40 contrato público, tipos raíz/build, build, Oxlint (advertencia anterior conservada), ESLint focal y docscheck. Prisma validate/generate/status y migración limpia43; actualización42→43 preserva hashes de57 tablas previas con5 filas sintéticas. Intentos fallidos de fixture/configuración y aborto10/16 conservados y excluidos. Un intento instrumentado posterior pasó16/16; no demuestra la causa del aborto. Evidencia y límites en el informe enlazado. No se reejecutó toda la suite del repositorio.
+
+Resultado: backend verificado localmente, handoff disponible; integración Android y fixtures independientes finales pendientes. Escritores sin clave/instancias antiguas quedan fuera del protocolo y requieren despliegue coordinado; no autorizar RELEASE LEGACY/UNKNOWN en APP ni devolución de efectivo por inferencia. Preservados todos los cambios anteriores. Sin Docker, producción, móviles, commit/push/despliegue/activación.
+
+### 2026-10-07 — Recepción de resultados operativos APP V1.19
+
+- Solicitud/coordinación recibida: conservar fixtures consumidos y no ejecutar más operaciones; APP informa cierre de los tres servicios y asume parada del entorno exclusivo al terminar evidencia visual.
+- Cambios: continuidad, VERIFICATION y guía local distinguen reporte APP de verificación backend propia.
+- Verificación nueva: sólo lectura documental y git diff --check. No consultas de base/API, pruebas Android ni nuevas escrituras operativas.
+- Resultado/pendientes: datos y evidencia inicial/transferencia conservados; resultados finales atribuidos a APP. Falta confirmación de parada43132/55443 y cierre visual por APP. Sin producto/Docker/producción/commit/push.
+
+### 2026-10-07 — Resolución sintética A→B coordinada con APP
+
+- Solicitud: ejecutar únicamente transferencia SUPER_ADMIN después de incidencia registrada desde Android, con autorización humana comprobada en la tarea APP.
+- Cambios: herramienta puntual privada con identidad estricta de procesos/base, UUID durable y reconciliación; único POST autorizado. Documentación/handoff y evidencia sanitizada antes/después. Sin código de producto ni flags.
+- Verificaciones ejecutadas: preflight y apply exit0; GET de incidencia/ejecución/candidatos200, resolve200, recibo APPLIED200; once huellas READ ONLY, una sola asignación/custodio, fase y chain preservadas, ledger/saldo/declaración/términos intactos y ningún outbox adicional. Syntax y git diff --check.
+- Resultado: A TRANSFERRED; B ACTIVE en assignment ad5727ff-641f-4823-a078-128aac77c225, PICKED_UP/revisión6. Entorno43132/55443 permanece encendido para APP.
+- Pendientes: APP comprueba autoridad de A, continuación y entrega B desde Compose; no acreditados por estas lecturas backend. Evidencia inicial y pruebas históricas conservadas. Sin Docker/producción/commit/push/despliegue.
 
 ### 2026-10-06 — V1.17 implementación parcial, identidad A
 
@@ -2345,3 +2454,196 @@ Solicitud: publicar A–E y documentación en la rama actual. Cambios: continuid
 - Verificación actual: lectura de continuidad, contrato B2B versionado, demanda V1.17 y controlador DRIVER; búsqueda estática de GPS/location; git diff --check. Sin pruebas funcionales.
 - Resultado: alcance por canal/propiedad/asignación; no confundir GPS con hitos, pagos, historial de recorrido o garantía física.
 - Pendientes: documento/handoff backend con decisiones operativas, autorización de enlace y límites, después implementación y WEB/APP. V1.17 sigue sin activar; sin Docker, producto, commit/push ni despliegue.
+
+### 2026-10-06 — propuesta V1.18 ubicación DRIVER y seguimiento compartido
+
+- Solicitud: analizar y diseñar última posición por asignación, consulta CUSTOMER/B2B propia y enlace temporal de destinatario, sin implementar.
+- Entrega: V1.18-LOCATION-DESIGN.md y V1.18-LOCATION-HANDOFF.md; matriz de fase/audiencia, streams/secuencias/versiones, coordinación con custodia/cierres, token hash-only y CAS acotado, respuesta perdida, privacidad/retención/cuotas, modelo incremental y plan de pruebas. README y verificación actualizados.
+- Verificaciones actuales: lectura estática de código/contratos/OpenAPI público y Throttler instalado, revisión de referencias y diff --check. No tests/build/carga/bases; no presentar resultados V1.17 históricos como comprobación GPS.
+- Resultado: propuesta lista para revisión; rutas/scopes/modelos no implementados. Pendientes aprobaciones de visibilidad, acceso/retención de enlaces y calidad/capacidad inicial. GPS no mueve hitos, custodia, dinero ni publicVersion por muestra.
+- Restricciones: V1.17 sigue sin activar; producto, frontend, OpenAPI generado, .env, versión y bases intactos. Sin Docker, Coita, commit, push, despliegue o activación. nul y continuidad anterior conservados.
+
+## 2026-10-06 — Implementación V1.18 GPS y enlaces temporales
+
+- Solicitud: implementar diseño y handoff con ventanas/TTL/frescura aprobados, PostgreSQL aislado y flags false, conservando V1.17.
+- Cambios: módulo location (recepción, lecturas, enlaces, reconciliación, cuotas/limpieza), dos migraciones incrementales, materializador de status reutilizable dentro de la transacción, nuevos scopes explícitos, Retry-After y OpenAPI humano/público. Handoffs WEB/APP/B2B separados. .env.example documenta defaults técnicos; no se leyó ni cambió .env real ni versión.
+- Hallazgos corregidos: comparación UTC de expiración de muestra frente a timezone PG; mock HTTP ampliado para inicialización GPS; teardown webhooks antiguo incompatible con términos financieros inmutables, reemplazado por precondición de base nueva y retención de historia sintética sin desactivar triggers.
+- Verificación nueva: build, tipos ambas configuraciones, linters, contratos; 475 unitarias, 38 públicas, 73 E2E únicos en archivos completos. Migración limpia/incremental42, ocho tablas históricas comparadas y 40 hashes de migración preservados. Drift exit2 preexistente comprobado contra HEAD/schema40, no maquillado como cero.
+- Resultado: backend implementado localmente, validación integral PARTIAL por webhooks. Aborto threads3221226505; forks54 casos con fallo de teardown; tras corregir fixture, worker abortó40/54. Intentos y logs conservados, excluidos del total aprobado. GPS/demanda completó29/29 con contrato final y aserciones de orden. Causa nativa no demostrada; no seguir repitiendo webhooks en esta tarea.
+- Pendientes: corrida completa webhooks con fixture corregido; interfaces, privacidad del navegador/dispositivo e integración real; volumen simultáneo y retención backups/WAL. No activar funciones. Bases sintéticas/evidencia retenidas; cierre del clúster local registrado en consolidado. Sin recursos reales, Docker, Coita, commit, push ni despliegue.
+
+
+## 2026-10-06 — ejecución focalizada pendiente V1.18
+
+Solicitud: completar webhooks sin repetir suites aprobadas.
+
+**V1.18 — seguimiento de verificación de webhooks (2026-10-06): PARTIAL.** Un único intento nuevo del archivo completo, forks/1 worker y PostgreSQL18.6 aislado (copia nueva de plantilla42), abortó tras35/54 en22.91s; exit1, Worker exited unexpectedly. Último caso completado: cambio de destino; siguiente sin completar: vista administrativa sin secretos. No aserción fallida registrada; causa no acreditada. JSON success=true inconsistente con19 casos pendientes y exit1: no acredita suite. PostgreSQL seguía disponible. Sin cambios de producto/pruebas/configuración, sin repetir suites aprobadas.26 huellas anteriores iguales; evidencia histórica preservada. GPS/enlaces false. Clúster detenido, base sintética conservada. [Evidencia nueva](docs/checks/v118-webhooks-followup/evidence.json). Sigue pendiente archivo completo exitoso; interfaces/integración real pendientes, no V1.18 completa.
+
+Verificaciones: lectura de continuidad/evidencia, comparación de26 hashes, identidad PG/42 migraciones, clon nuevo, ejecución completa solicitada pero abortada, lectura de salud posterior y parada del clúster. Consulta inicial de identidad falló por quoting SQL y se corrigió antes de crear la base. Lectura de eventos Application no permitida; no se usa como diagnóstico negativo. Sin commit/push/despliegue/activación.
+
+
+## 2026-10-06 — diagnóstico del worker V1.18
+
+Solicitud: capturar terminación antes de otro intento ordinario.
+
+**V1.18 — webhooks acreditado, diagnóstico2026-10-06:** única reproducción instrumentada completa54/54 exit0 (forks/1 worker, PG18.6 aislado). Capturado cierre normal del worker40124 por SIGTERM solicitado por padre36428; padre exit0, stderr vacío. No se reprodujo el aborto; causa anterior sigue no acreditada, sin corrección de producto basada en supuestos. [Evidencia](docs/checks/v118-webhooks-diagnostic.json).26 huellas previas iguales;475 unitarias/38 públicas/73 E2E son históricas no repetidas;127 E2E únicos consolidados en5 archivos. Pendiente webhooks cerrado localmente, no V1.18 completa: interfaces/integración real y pendientes operativos permanecen. GPS/enlaces false. Instrumentación/reportes locales ignorados, sin instalación ni configuración global; clúster detenido y datos sintéticos retenidos. Sin Docker/producción/commit/push/despliegue/activación.
+
+Cambios: sólo instrumentación .tmp y documentación/evidencia; implementación existente preservada. Verificaciones: logs/código del runner, reproducción completa instrumentada, lectura acotada Application (sin coincidencias), comparación de huellas, parada PG y diff --check. La captura modifica observabilidad/timing, no acredita causa ni reparación de la intermitencia.
+
+
+## 2026-10-06 — Prompt FRONTEND V1.18 tras webhooks completo
+
+- Contexto: propietario reporta54/54 webhooks exit0, sin acreditar causa histórica.
+- Cambios: continuidad y prompt de implementación WEB según contrato real.
+- Verificación actual: lectura de continuidad y handoffs V1.18 WEB/B2B/implementación; git diff --check, sin suites nuevas.
+- Resultado: siguiente interfaz definida; revocación usa POST revoke/revisión, no ruta close inventada; token no persistente.
+- Pendientes: WEB e integración real, APP DRIVER, volumen y backups. Sin código/frontend editado, Docker, commit/push ni despliegue.
+
+## 2026-10-06 — commit y push V1.18 autorizados
+
+Solicitud: publicar los cambios existentes en la rama actual. Alcance: implementación, documentación y evidencia V1.18, preservando historial. Verificaciones actuales: estado de rama, revisión del contenido preparado y git diff --check; pruebas funcionales anteriores son históricas. Reportes locales de diagnóstico y nul excluidos. Resultado de commit/push confirmado en la entrega. Sin despliegue ni activación; interfaces e integración real pendientes.
+
+
+## 2026-10-07 — Recepción análisis móvil V1.19
+
+- Solicitud/contexto: informe móvil adjunto con inventario, brechas y etapas.
+- Cambios: continuidad y prompts de siguiente etapa en conversación; sin producto modificado.
+- Verificación actual: lectura adjunto y continuidad, Git rama/HEAD/status y contraste DTO consulta/respuesta; git diff --check. No compilación móvil ni pruebas.
+- Resultado: discrepancia COLLECT_SHIPPING confirmada; base backend local identificada, no disponibilidad remota. Adaptar semántica de interfaz a backend preservando componentes.
+- Pendientes: corrección contractual por agente backend; arquitectura/sesión/lecturas APP; decisiones de alcance iOS e historial/cola separadas. Sin Docker, servicios, commit/push ni activación.
+
+## 2026-10-07 — concordancia de operaciones de reconciliación DRIVER
+
+Solicitud: corregir omisión Swagger COLLECT_SHIPPING señalada por APP. Servicio y DTO admitían la operación; corregida únicamente ApiProperty de respuesta. Añadida comprobación contractual de cuatro operaciones, GET/POST cierre, autenticación y exclusión B2B; regenerados contratos por comandos existentes. Verificaciones nuevas:39 pruebas públicas, build, tipos raíz/build, comprobación documental, Oxlint focalizado y diff --check. Primera prueba contra JSON anterior detectó defecto; primer tsc raíz falló por build concurrente y después pasó sin cambios adicionales. Estado exacto y hash entregados en handoff APP. Sin cambios de comportamiento, DB, permisos, Docker, producción, commit/push/despliegue/activación. No se repiten ni atribuyen pruebas históricas a esta tarea.
+
+
+### 2026-10-07 — Arranque Docker local con backend actual
+
+- Solicitud: levantar el backend actual en Docker; diagnóstico del error de socket dockerInference aportado durante el arranque.
+- Trabajo: inicio Docker Desktop, recuperación de sockets temporales inaccesibles con respaldo de sus directorios (Secrets Engine contenía sólo engine.sock); reconstrucción y up del Compose local aislado existente, sin reset ni seed. Migraciones automáticas únicamente sobre mandaria_desktop_local.
+- Verificación nueva: build Docker y compose up --wait exit0; postgres/backend/gateway healthy; HTTP /health200; Swagger con ADVANCE/REPORT/DELIVER/COLLECT_SHIPPING; Prisma migrate status:42 migraciones, esquema actualizado. Sin suites repetidas.
+- Resultado: API http://127.0.0.1:43130/api/v1 y Swagger /docs disponibles. Datos/cuentas locales preservados; secretos no publicados.
+- Límites: flags del Compose conservados (precotizaciones false, ejecución detallada true; nuevas funciones con sus defaults). No acredita todos los flujos end-to-end. Sin .env operativo, cambios de producto, commit, push ni despliegue remoto.
+
+
+### 2026-10-07 — Cambio de Docker a ejecución nativa
+
+- Solicitud: levantar backend y PostgreSQL nativos y bajar Mandaria Docker.
+- Trabajo: detener backend/gateway, dump local sintético, copia al workspace ignorado, detener PostgreSQL Docker; crear clúster nativo aislado con SCRAM en puerto55441 y restaurar sin modificar origen. Compilar código actual e iniciar launcher Node oculto en puerto43130 con configuración dedicada. Docker Desktop permanece disponible; contenedores Mandaria detenidos.
+- Verificaciones nuevas: build exit0; Prisma status42 migraciones al día; health200; Swagger incluye COLLECT_SHIPPING; puertos nativos/PIDs comprobados y tres contenedores exited. Primer status bajo sandbox no pudo conectarse; comprobación autorizada posterior aprobada. No suites repetidas.
+- Datos: cuentas e historial copiados desde Docker local; futuras escrituras nativas no se sincronizan de regreso. Contraseñas locales existentes en .tmp/docker-desktop-local/accounts.json; nuevo secreto PG sólo archivos privados ignorados.
+- Límites: Node escucha 0.0.0.0 según main existente; PostgreSQL sólo loopback. Correo local/routing simulado y polling webhook0; flags sin activaciones nuevas. No frontend, producción, commit ni push.
+
+
+## 2026-10-07 — Coordinación fixture LEGACY activo para APP
+
+- Contexto: propietario entrega pruebas Android y pedido BACKEND actualizado.
+- Cambios: continuidad y prompt específico para único fixture pendiente.
+- Verificación actual: lectura de continuidad y pedido móvil, git diff --check; sin pruebas Android nuevas ni servicios.
+- Resultado: no repetir casos ya acreditados ni confundir fixture con permiso de cierre desde app.
+- Pendientes: preparación LEGACY legítima, lectura Android real y dispositivo físico. Sin producto, Docker, commit/push ni publicación.
+
+## 2026-10-07 — fixture LEGACY activo Android
+
+Solicitud: preparar exclusivamente FLEET ACTIVE LEGACY sin cambiar flag compartido ni forzar estados. Leído pedido Android actualizado; identificados API43130 y PG55441/base mandaria_native_local. Cero ACTIVE LEGACY; única LEGACY COMPLETED. Servicio crea ejecución con flag true y herramienta existente requiere Docker/reinicio con false: incompatible con restricciones. Resultado BLOCKED, documentada alternativa con API/base independientes; no ejecutada. Once huellas en snapshot read-only diagnóstico, no baseline posterior a preparación. Ninguna credencial/fixture nuevo ni escritura operativa. Health e identidad comprobados; sin pruebas repetidas, activación ni consumo. Cambios existentes preservados. Ver docs/V1.19-LEGACY-FIXTURE.md y manifiesto; sin commit/push/despliegue.
+
+## 2026-10-07 — entrega LEGACY independiente para Android
+
+Solicitud: preparar entorno nativo exclusivo tras impedimento compartido. Creado scripts/prepare-native-v119-legacy.mjs, PG55442/base mandaria_v119_legacy_local y API43131 con configuración sintética privada y snapshot dist. Migraciones normales42 y seed administrador; demás actores/configuración/servicio por APIs autorizadas. Assignment ACTIVE/LEGACY comprobado con Driver real; sin hitos ni consumo. Handoff incluye URL emulador10.0.2.2, credenciales sólo archivo privado, referencias, once huellas posteriores y comandos exclusivos. Preparador repetido sin duplicados ni cambios en once huellas. Dos expectativas iniciales del verificador (execution200 y UUID ajeno404) corregidas al contrato real404/409, sin producto. Syntax/Oxlint/diff aprobados; no E2E ajenas ni Android. Entorno nuevo queda encendido, compartido conserva procesos y configuración; sin Docker/servicios externos/producción/commit/push. Antecedente y huellas diagnósticas previas conservados.
+
+## 2026-10-07 — pedido de fixtures operativos Android nuevos
+
+Solicitud de coordinación APP: identificar preparador compatible o dejar pedido concreto para REQUESTER/CASH/PICKUP, custodia/transferencia, entrega separada y LEGACY consumible, sin usar fixtures anteriores. Revisados preparadores y contratos reales; el nativo actual no admite REQUESTER ni otro destino, el de escritorio requiere Docker. Entregado docs/V1.19-ANDROID-OPERATIVE-FIXTURE-REQUEST.md con propuesta de entorno nuevo, flujo API/atestación v2, cuatro pares recomendados para disponibilidad simultánea, comandos reservados a APP y transferencia exclusivamente SUPER_ADMIN, baseline posterior y entrega privada. No se crearon actores/servicios ni se ejecutaron comandos operativos. Leída evidencia APP de lecturas LEGACY PASS/once huellas iguales y reporte de parada exclusiva; documentada como evidencia aportada, sin reejecutar Android ni probar procesos. Actualizados informe LEGACY, estado actual y VERIFICATION; revisión de referencias y git diff --check. Pendiente ejecutar la preparación nueva y entregar su propio manifiesto; no hay nuevos IDs reservados ni URL disponible acreditada. Sin producto, bases, configuración, Docker, commit/push/despliegue.
+
+## 2026-10-07 — preparación operativa Android V1.19 ejecutada
+
+Solicitud: ejecutar el pedido previo con entorno nuevo, cuatro pares y escenarios reservados para Android. Creado scripts/prepare-native-v119-operative.mjs y clúster/base/API exclusivos43132/55443. Preflight confirmó puertos libres/directorio inexistente; identidad SQL y procesos acotados antes de preparación.42 migraciones/seed admin normales; todo recurso/configuración/servicio restante mediante APIs autorizadas. Primero LEGACY RECIPIENT con false, después reinicio sólo del Node nuevo con detailed y authorized-accept true para dos REQUESTER v2 exactos. Driver B queda libre. Ningún hito, declaración, incidencia, transferencia o entrega consumido; saldo sintético79 tras100-3x7.
+
+Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/términos, checks SQL read-only, parada/arranque exclusivos, preparación repetida sin duplicados, snapshot final once huellas iguales y privacidad de18 logs/metadata/manifiesto. Syntax/Oxlint/diff/referencias. Primer prepare exit1 por error de herramienta: request.id no existe en respuesta pública; corregido acceso mediante Dispatch, sin alterar producto ni repetir escrituras; verify y prepare posteriores exit0. Credenciales sólo en archivo privado ignorado/ACL. Handoff y manifiesto nuevos, petición anterior marcada como antecedente cumplido, VERIFICATION y estado actual actualizados. Datos/procesos de entornos previos preservados. Nuevo entorno encendido; quedan Android/operaciones reservadas y resolución SUPER_ADMIN coordinada, con deltas esperados en vez de igualdad total. Sin Docker, frontend, Coita, producción, commit/push/despliegue.
+
+
+## 2026-10-07 — Handoff preparación operativa Android
+
+- Solicitud/contexto: APP necesita nuevos fixtures para comandos ya implementados localmente.
+- Cambios: continuidad y prompt BACKEND específico en conversación.
+- Verificaciones actuales: lectura de continuidad y V1.19-ANDROID-OPERATIVE-FIXTURE-REQUEST; git diff --check. Sin ejecución de servicios/pruebas.
+- Resultado: alcance cuatro recursos y entorno exclusivo definido; pruebas móviles reportadas no reejecutadas.
+- Pendientes: preparar manifiesto, luego recorrido Compose real y recuperación; dispositivo físico separado. Sin producto, Docker, commit/push ni activación.
+
+
+## 2026-10-07 — Coordinación independientes y recuperación
+
+- Contexto: APP entrega implementación local y pedido fixtures/brechas.
+- Cambios: continuidad y prompt BACKEND; sin producto.
+- Verificación: lectura del pedido y continuidad, git diff --check. Hallazgos funcionales del pedido no reproducidos aquí.
+- Resultado: priorizar contrato durable TAKE/RELEASE y respuesta postliberación, separar créditos de efectivo.
+- Pendientes: backend corrección/pruebas/handoff, fixtures exclusivos, APP integración real, físico. Sin Docker, commit/push ni despliegue.
+
+
+## 2026-10-07 — Coordinación contrato independiente corregido
+
+- Contexto: propietario entrega corrección verificada backend y fixtures pendientes.
+- Cambios: continuidad y dos prompts separados para APP/BACKEND.
+- Verificación actual: lectura contratos/continuidad y git diff --check, sin pruebas reejecutadas.
+- Resultado: distinguir recibos/estado actual, compatibilidad sin key sin protección, ledger créditos distinto de efectivo.
+- Pendientes: sincronización móvil, preparación y recorrido real; físico/GPS separados. Sin producto, servicios, Docker, commit/push ni activación.
+
+
+## 2026-10-07 — Coordinación GPS Android tras independientes
+
+- Contexto: entrega integración independiente real, entornos detenidos.
+- Cambios: continuidad y prompt APP GPS basado en handoff real.
+- Verificación: lecturas de continuidad, V1.18-DRIVER-APP e informe APP; git diff --check. Sin pruebas/servicios nuevos.
+- Resultado: fase principal independientes acreditada por APP con límites conservados; GPS siguiente, evidencia física separada.
+- Pendientes: casos independientes residuales, GPS implementación/fixtures/integración y físico. Sin Docker, producto, commit/push ni activación.
+
+
+## 2026-10-07 — Continuación integración GPS nativa
+
+- Contexto: APP entrega GPS implementado y fixtures preparados detenidos.
+- Cambios: continuidad y prompt APP; sin producto.
+- Verificaciones actuales: lectura continuidad, informe móvil GPS y guía fixture; git diff --check. Sin servicios ni pruebas nuevas.
+- Resultado: recorrido real definido con límites/cuotas vigentes y conservación de datos.
+- Pendientes: integración GPS Android/backend/proyecciones, físico y casos residuales independientes. Sin Docker, commit/push ni publicación.
+
+
+## 2026-10-09 — Continuación cobertura residual independientes
+
+- Solicitud: continuar cierre de pendientes antes de consolidar V1.19.
+- Cambios: continuidad y prompt BACKEND de revisión/fixtures limitados.
+- Verificaciones actuales: lectura continuidad, límites del informe APP y búsqueda guards; git diff --check. No servicios/DB ni suites.
+- Resultado: clasificar escenarios alcanzables y defensas de cliente, no exigir fixtures imposibles ni declarar aprobado lo no probado.
+- Pendientes: revisión backend, fixture de flotilla sin perfil, prueba APP acotada y consolidación. Sin Docker, producto, commit/push ni despliegue.
+
+## 2026-10-09 — análisis y preparación de residuales independientes
+
+- Solicitud: cerrar independent=null, ACTIVE UNKNOWN/null y VEHICLE_BUSY aislado, sin repetir protocolos acreditados ni cambiar producto.
+- Cambios: preparador nativo exclusivo reutilizando mecanismos de APIs/seed bootstrap; guía con matriz y pruebas APP, manifiesto sanitizado, README/VERIFICATION y enlace al contrato de intentos. Historial conservado.
+- Verificación nueva: build/syntax/Oxlint, migraciones normales43/43, salud, me/detalle/ejecución Driver, rechazos409 del perfil ausente,13 huellas antes/después, saldo86 y ledger; snapshot/stop/start/preparación repetida sin duplicados. Lectura auxiliar final sin elevación no alcanzó PG; contexto autorizado completó sin cambios. Inspección de constraints y código separada de pruebas; suites históricas no reejecutadas.
+- Resultado: independent=null preparado; ACTIVE UNKNOWN y VEHICLE_BUSY aislado independiente no alcanzables por los flujos legales actuales, con demostración documentada. Ningún hito, incidencia, cobro de efectivo, transferencia o cierre consumido. Entorno43136/55448 encendido, sin externos/GPS/enlaces.
+- Pendientes: Compose breve de APP con driverA/B, mantener defensas sintéticas ante contrato desconocido. Sin cambios de producto, entornos anteriores, Docker, producción, commit/push ni activación. Residual nul conservado.
+
+
+## 2026-10-09 — Preparación de cierre y plan publicación V1.19
+
+- Solicitud: continuar consolidación tras validación residual móvil.
+- Cambios: continuidad y prompt APP documental de cierre/release.
+- Verificación actual: lectura continuidad backend/móvil y evidencia residual; inventario archivos de build; git diff --check. No pruebas ni build nuevos.
+- Resultado: distinguir validación local por alcance de autorización para publicar; revisar firma/configuración/canales y compatibilidad sin inferirlos aprobados.
+- Pendientes: informe APP y matriz bloqueo de activación; no crear keystore ni usar producción. Sin Docker, commit/push ni despliegue.
+
+### 2026-10-09 — Revisión de cierre y distribución Android
+
+- Solicitud: revisar entrega de cierre técnico y plan de publicación APP.
+- Cambios: continuidad coordinadora; separación de validación local y candidato distribuible.
+- Verificaciones actuales: lectura de continuidad y hallazgos D1-D5; git diff --check. Evidencia funcional anterior no reejecutada.
+- Resultado: siguientes correcciones y decisiones identificadas, sin aprobar canal ni destino.
+- Pendientes: red release, privacidad, mapas, binario y firma; decisiones del propietario y comprobación posterior del candidato.
+
+### 2026-10-09 — Publicación Git de residuales independientes
+
+- Solicitud: commit y push a la rama actual.
+- Cambios: incluir herramienta nativa exclusiva, guía, manifiesto y documentación/continuidad acumulada, conservando las entradas previas.
+- Verificaciones ejecutadas ahora: node --check, Oxlint focal, JSON válido, git diff --check, exclusión Git de privados y revisión de siete archivos contra13 valores privados locales sin coincidencias.
+- Resultado: conjunto revisado para publicar; pruebas operativas anteriores históricas, no reejecutadas. Sin tocar datos, procesos, Docker ni producción.
+- Pendientes: condiciones de distribución/activación documentadas siguen vigentes. Archivo residual nul conservado fuera del commit.

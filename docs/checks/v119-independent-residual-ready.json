@@ -1,0 +1,264 @@
+{
+  "at": "2026-10-09T07:54:30.117Z",
+  "result": "PASS",
+  "identity": {
+    "database": "mandaria_v119_independent_residual_local",
+    "port": "55448",
+    "directory": "C:/Users/zorgl/Documents/mandaria-backend/.tmp/native-v119-independent-residual/pgdata",
+    "started": "2026-10-09 01:54:03.301905-06"
+  },
+  "processes": [
+    {
+      "port": 43136,
+      "address": "127.0.0.1",
+      "pid": 14828,
+      "name": "node.exe",
+      "path": "C:\\nvm4w\\nodejs\\node.exe",
+      "started": "2026-10-09T07:54:03.5671690Z"
+    },
+    {
+      "port": 55448,
+      "address": "127.0.0.1",
+      "pid": 44044,
+      "name": "postgres.exe",
+      "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+      "started": "2026-10-09T07:54:03.1689640Z"
+    }
+  ],
+  "urls": {
+    "host": "http://127.0.0.1:43136/api/v1",
+    "emulator": "http://10.0.2.2:43136/api/v1"
+  },
+  "revision": {
+    "head": "1a729594728a7fff195956351c6ab425c6544d4a",
+    "openapiSha256": "cda3164bc0c32e7ef00de2017f8675974ea050b55dc623f6b4b1c40b3c340228",
+    "sourceFiles": [
+      {
+        "path": "src/delivery-assignments/delivery-assignments.service.ts",
+        "sha256": "99af9327397db38002111e158044c9a0b368860744dc8345e27c1b4d66237eb8"
+      },
+      {
+        "path": "src/delivery-execution/execution.persistence.ts",
+        "sha256": "30472d4ad54e4df2dff2f0f03b78b364c956e3fabddeaddad97e33e996b2baf4"
+      },
+      {
+        "path": "src/delivery-execution/execution.responses.ts",
+        "sha256": "c29c33a976f0d2f77edaf76bfd8b5d3fafc38de513663edf2b6bb39804bcbfbf"
+      }
+    ],
+    "copiedAt": "2026-10-09T07:51:49.743Z",
+    "build": {
+      "files": 666,
+      "sha256": "054bd3325a7b154811ecd3c5983ff66d6f2d1c439a78edb5e430949c693c7c6a",
+      "algorithm": "SHA256(JSON array of ordered relative path + file SHA256)"
+    },
+    "preparerSha256": "b0735765047c9e76304be9587de163bc40e09ec98706462e763a7e944248a9ed",
+    "nodeVersion": "v24.15.0"
+  },
+  "verifiedWithPreparerSha256": "ac8f579002a9e5c9ca520c3ec67e74ca6c5c358ade393651658c053fe878b34f",
+  "migrations": {
+    "total": 43,
+    "finished": 43
+  },
+  "scenarios": [
+    {
+      "alias": "custody-requester",
+      "driverAlias": "driverA",
+      "driverId": "d7ec3b94-32ba-4e18-9998-a3d1ab0c2d02",
+      "userId": "6fbdec70-a686-490b-9772-3272d26aa61e",
+      "vehicleId": "da67e466-2c96-4e1d-928e-a02f4259a63d",
+      "pairingId": "113fa6f1-180d-48c4-9621-f0ad9da01127",
+      "providerId": "69766ce9-6895-42c7-a7e2-d58539e3723c",
+      "dispatchId": "53ab2ff6-4a8a-4ab1-ab51-0b98c721f184",
+      "assignmentId": "bd18f4f5-0c32-4697-8ee1-3ed3dcabeb4b",
+      "requestPublicId": "MDR-000002",
+      "quotePublicId": "MQ-000002",
+      "trackingMode": "DETAILED",
+      "payer": "REQUESTER",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "5d0afc43133c886cbc0ad7ff3d261a84d8896dc2883c43a6817836dae2c425c2",
+      "independent": null,
+      "assignmentStatus": "ACTIVE",
+      "phase": null
+    },
+    {
+      "alias": "custody-recipient",
+      "driverAlias": "driverB",
+      "driverId": "15de632e-e374-4664-a220-145ca53e526b",
+      "userId": "899d3302-6047-4cfc-8e0f-583f86f8dcf4",
+      "vehicleId": "fbdf8df5-b10a-4a7d-8fda-839a603f0e40",
+      "pairingId": "00e583bd-e56d-4998-ad33-ab0b76776649",
+      "providerId": "69766ce9-6895-42c7-a7e2-d58539e3723c",
+      "assignmentId": null,
+      "dispatchId": null,
+      "independent": null,
+      "activeDeliveryAssignment": null
+    },
+    {
+      "alias": "legacy-consumable",
+      "driverAlias": "driverD",
+      "driverId": "2a5b6152-61ac-41b6-9821-1c239549ded0",
+      "userId": "8f41b3ec-a0db-4a3a-b716-db99187d2bf7",
+      "vehicleId": "7fe525f2-baf8-4b6f-ab97-138b6fbf9a7d",
+      "pairingId": "9b6b0afd-e6b2-4c14-aed8-fbcb795ceab1",
+      "providerId": "69766ce9-6895-42c7-a7e2-d58539e3723c",
+      "dispatchId": "c8903337-e3d8-4805-8887-5baab4a9b68d",
+      "assignmentId": "636c5585-9af9-447f-b692-87eb51c4f675",
+      "requestPublicId": "MDR-000001",
+      "quotePublicId": "MQ-000001",
+      "trackingMode": "LEGACY",
+      "payer": "RECIPIENT",
+      "amount": "55.00",
+      "currency": "MXN",
+      "termsHash": "7dfb51d09c1c8150ef82874fa32a2cab860b299574ed8834f3b5d0d83289556c",
+      "independent": null,
+      "assignmentStatus": "ACTIVE",
+      "phase": null
+    }
+  ],
+  "rejected": [
+    {
+      "method": "GET",
+      "path": "/driver/vehicles",
+      "status": 409,
+      "code": "INDEPENDENT_NOT_APPROVED"
+    },
+    {
+      "method": "GET",
+      "path": "/driver/dispatches/available",
+      "status": 409,
+      "code": "INDEPENDENT_NOT_APPROVED"
+    },
+    {
+      "method": "POST",
+      "operation": "TAKE",
+      "status": 409,
+      "code": "INDEPENDENT_NOT_APPROVED"
+    }
+  ],
+  "unchangedAfterRejections": true,
+  "baseline": [
+    {
+      "table": "Dispatch",
+      "count": 2,
+      "md5": "6f9237847eef477fb04efda9905e56b5"
+    },
+    {
+      "table": "DeliveryAssignment",
+      "count": 2,
+      "md5": "480f68056a05b7a6664c714619547d37"
+    },
+    {
+      "table": "DeliveryExecution",
+      "count": 1,
+      "md5": "21eb6399cd033b02ee32e3452ab35133"
+    },
+    {
+      "table": "DeliveryExecutionEvent",
+      "count": 1,
+      "md5": "64dcc72a23c5df1954683f7b616a6636"
+    },
+    {
+      "table": "DeliveryExecutionCommand",
+      "count": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table": "DeliveryCustodyIncident",
+      "count": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table": "DeliveryCustodyResolution",
+      "count": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table": "CreditLedgerEntry",
+      "count": 3,
+      "md5": "45389bb308ab2d80f85b92f40cd4abd8"
+    },
+    {
+      "table": "DeliveryLocationHead",
+      "count": 2,
+      "md5": "76c3cd930461e9c493b253b709936a87"
+    },
+    {
+      "table": "DeliveryShippingTerms",
+      "count": 2,
+      "md5": "c0163e4e388b8fcc1ffe705a8643f926"
+    },
+    {
+      "table": "ShippingCollectionDeclaration",
+      "count": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "table": "CreditAccount",
+      "count": 1,
+      "md5": "ce485a3d5eedd2b3cefa9e672e68ba1d"
+    },
+    {
+      "table": "IndependentDispatchAttempt",
+      "count": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  ],
+  "independentProfiles": 0,
+  "externalWebhookEndpoints": 0,
+  "gpsEnabled": false,
+  "linksEnabled": false,
+  "android": "PENDING; no Compose test executed by backend",
+  "finance": {
+    "balance": 86,
+    "awards": 2,
+    "awardAmount": -7,
+    "refunds": 0,
+    "ledgerEntries": 3,
+    "independentAttempts": 0
+  },
+  "initialBaselinePreservedAcrossRestartAndRepeatedPrepare": true,
+  "commands": [
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/prepare-native-v119-independent-residual.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node node_modules/oxlint/bin/oxlint scripts/prepare-native-v119-independent-residual.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-independent-residual.mjs init",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-independent-residual.mjs start",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-independent-residual.mjs prepare",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-independent-residual.mjs snapshot",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-independent-residual.mjs stop",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-independent-residual.mjs start",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/prepare-native-v119-independent-residual.mjs prepare",
+      "exitCode": 0
+    }
+  ]
+}

@@ -1,0 +1,420 @@
+{
+  "status": "PASS",
+  "scope": "Single synthetic SUPER_ADMIN TRANSFER; Android operations excluded",
+  "at": "2026-10-08T06:14:49.369Z",
+  "identity": {
+    "database": "mandaria_v119_gps_local",
+    "port": "55446",
+    "directory": "C:/Users/zorgl/Documents/mandaria-backend/.tmp/native-v119-gps/pgdata"
+  },
+  "processes": [
+    {
+      "port": 43134,
+      "pid": 19608,
+      "path": "C:\\nvm4w\\nodejs\\node.exe",
+      "started": "2026-10-08T05:42:22.8182270Z"
+    },
+    {
+      "port": 55446,
+      "pid": 41652,
+      "path": "C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe",
+      "started": "2026-10-08T05:42:22.4384330Z"
+    }
+  ],
+  "dispatchId": "ff7668f8-d899-4be8-ac02-261da641549c",
+  "incidentId": "d5bf4472-169f-4e7a-9af4-98c652bb8eff",
+  "resolution": {
+    "id": "9cdc2dd0-ceac-4f50-9cc4-87bc4e2b32ef",
+    "type": "TRANSFER",
+    "incidentId": "d5bf4472-169f-4e7a-9af4-98c652bb8eff",
+    "fromAssignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+    "toAssignmentId": "5f7177cd-f324-47b9-b3f9-64d3e18900c1"
+  },
+  "attempt": {
+    "state": "APPLIED",
+    "resolutionId": "9cdc2dd0-ceac-4f50-9cc4-87bc4e2b32ef",
+    "canStartNewAttempt": false
+  },
+  "before": {
+    "at": "2026-10-08T06:14:49.140Z",
+    "hashes": {
+      "Dispatch": {
+        "count": 5,
+        "md5": "ae0fb58588fddb4dd8eb554448281173"
+      },
+      "DeliveryAssignment": {
+        "count": 5,
+        "md5": "8dbcb3d9ecbb17ea9128b88b3a84b77f"
+      },
+      "DeliveryExecution": {
+        "count": 5,
+        "md5": "b4e5a3c59c0ae7dceaa91a257a94ac16"
+      },
+      "DeliveryExecutionEvent": {
+        "count": 19,
+        "md5": "c276e6f415f6fc923d4ceefe6e86a425"
+      },
+      "DeliveryExecutionCommand": {
+        "count": 14,
+        "md5": "a6306eaecaa8c3380fe972c94148525d"
+      },
+      "DeliveryCustodyIncident": {
+        "count": 2,
+        "md5": "35a4a318f7eba7e6d886c00501ad0bae"
+      },
+      "DeliveryCustodyResolution": {
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "CreditLedgerEntry": {
+        "count": 6,
+        "md5": "a237bfc640add6af7c66b49d1bb6d928"
+      },
+      "DeliveryLocationHead": {
+        "count": 5,
+        "md5": "04a99cb2a668a7e4968c4fefb186bd05"
+      },
+      "DeliveryShippingTerms": {
+        "count": 5,
+        "md5": "3f1e50dbe01efbc29ab730f07f2cca79"
+      },
+      "ShippingCollectionDeclaration": {
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    },
+    "head": {
+      "dispatchId": "ff7668f8-d899-4be8-ac02-261da641549c",
+      "chainId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+      "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+      "revision": 5,
+      "phase": 3,
+      "recordedAt": "2026-10-08T06:12:07.498Z"
+    },
+    "assignments": [
+      {
+        "id": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "status": "ACTIVE",
+        "driverId": "07082915-36af-4e03-b8f0-6e0a30859a82",
+        "vehicleId": "4715c7b8-9030-494f-b29b-7b00976f4e99",
+        "custodyResolutionId": null
+      }
+    ],
+    "issues": [
+      {
+        "id": "d5bf4472-169f-4e7a-9af4-98c652bb8eff",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "resolvedAt": null
+      }
+    ],
+    "declaration": null,
+    "balances": [
+      {
+        "id": "9cb3368e-6abe-43f4-8621-71759098af6a",
+        "balance": 65
+      }
+    ],
+    "events": [
+      {
+        "id": "e7aeaa1f-9a84-4199-92f8-56df0aac52d2",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 1,
+        "phase": 0,
+        "kind": "ASSIGNED"
+      },
+      {
+        "id": "cc11daa3-88da-47fe-97a3-ff36b6b80b89",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 2,
+        "phase": 1,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "2ca2a4f0-4bd0-47ae-a334-8857c4fdf921",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 3,
+        "phase": 2,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "17a7090f-2727-4385-b173-bbde78b2dfa0",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 4,
+        "phase": 3,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "9b08cc8f-a0f4-4d97-a689-7bff1e7a21ee",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 5,
+        "phase": 3,
+        "kind": "INCIDENT"
+      }
+    ],
+    "resolutions": [],
+    "outbox": 0,
+    "gps": {
+      "version": "13",
+      "generation": "5",
+      "streamRevision": "7",
+      "streamId": null,
+      "lastSequence": 0,
+      "hasSample": false
+    },
+    "protectedState": [
+      {
+        "hash": "83db7d42c0786cec6df4fbfbdfa40d8b"
+      }
+    ],
+    "otherExecutions": [
+      {
+        "hash": "73fc217e3c555d54e4814681e6a8be55"
+      }
+    ]
+  },
+  "after": {
+    "at": "2026-10-08T06:14:49.350Z",
+    "hashes": {
+      "Dispatch": {
+        "count": 5,
+        "md5": "ae0fb58588fddb4dd8eb554448281173"
+      },
+      "DeliveryAssignment": {
+        "count": 6,
+        "md5": "08537456d07c119eb13fcf8627c23ed8"
+      },
+      "DeliveryExecution": {
+        "count": 5,
+        "md5": "c23b99c10faca20c87c87a87197309b9"
+      },
+      "DeliveryExecutionEvent": {
+        "count": 20,
+        "md5": "6bba692d585fe978b3a567470b044ba2"
+      },
+      "DeliveryExecutionCommand": {
+        "count": 15,
+        "md5": "48d2fc8e73bb8b64403a19550b19bd58"
+      },
+      "DeliveryCustodyIncident": {
+        "count": 2,
+        "md5": "168ac3e0a3129407385b07d4b8cfb3cd"
+      },
+      "DeliveryCustodyResolution": {
+        "count": 1,
+        "md5": "40c05ff4bdf944134f91c9646717e84f"
+      },
+      "CreditLedgerEntry": {
+        "count": 6,
+        "md5": "a237bfc640add6af7c66b49d1bb6d928"
+      },
+      "DeliveryLocationHead": {
+        "count": 5,
+        "md5": "bccd3dacb2659cdfabb11d23e08661c3"
+      },
+      "DeliveryShippingTerms": {
+        "count": 5,
+        "md5": "3f1e50dbe01efbc29ab730f07f2cca79"
+      },
+      "ShippingCollectionDeclaration": {
+        "count": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    },
+    "head": {
+      "dispatchId": "ff7668f8-d899-4be8-ac02-261da641549c",
+      "chainId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+      "assignmentId": "5f7177cd-f324-47b9-b3f9-64d3e18900c1",
+      "revision": 6,
+      "phase": 3,
+      "recordedAt": "2026-10-08T06:14:49.280Z"
+    },
+    "assignments": [
+      {
+        "id": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "status": "TRANSFERRED",
+        "driverId": "07082915-36af-4e03-b8f0-6e0a30859a82",
+        "vehicleId": "4715c7b8-9030-494f-b29b-7b00976f4e99",
+        "custodyResolutionId": null
+      },
+      {
+        "id": "5f7177cd-f324-47b9-b3f9-64d3e18900c1",
+        "status": "ACTIVE",
+        "driverId": "5e231159-047d-43ee-98a9-53d37b097afa",
+        "vehicleId": "2354eda2-df95-4414-922a-a9f0c3d2f51d",
+        "custodyResolutionId": "9cdc2dd0-ceac-4f50-9cc4-87bc4e2b32ef"
+      }
+    ],
+    "issues": [
+      {
+        "id": "d5bf4472-169f-4e7a-9af4-98c652bb8eff",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "resolvedAt": "2026-10-08T06:14:49.237Z"
+      }
+    ],
+    "declaration": null,
+    "balances": [
+      {
+        "id": "9cb3368e-6abe-43f4-8621-71759098af6a",
+        "balance": 65
+      }
+    ],
+    "events": [
+      {
+        "id": "e7aeaa1f-9a84-4199-92f8-56df0aac52d2",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 1,
+        "phase": 0,
+        "kind": "ASSIGNED"
+      },
+      {
+        "id": "cc11daa3-88da-47fe-97a3-ff36b6b80b89",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 2,
+        "phase": 1,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "2ca2a4f0-4bd0-47ae-a334-8857c4fdf921",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 3,
+        "phase": 2,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "17a7090f-2727-4385-b173-bbde78b2dfa0",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 4,
+        "phase": 3,
+        "kind": "ADVANCED"
+      },
+      {
+        "id": "9b08cc8f-a0f4-4d97-a689-7bff1e7a21ee",
+        "assignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "revision": 5,
+        "phase": 3,
+        "kind": "INCIDENT"
+      },
+      {
+        "id": "48b313b1-27ca-4f5a-8329-8b242f3f2e0b",
+        "assignmentId": "5f7177cd-f324-47b9-b3f9-64d3e18900c1",
+        "revision": 6,
+        "phase": 3,
+        "kind": "TRANSFER"
+      }
+    ],
+    "resolutions": [
+      {
+        "id": "9cdc2dd0-ceac-4f50-9cc4-87bc4e2b32ef",
+        "type": "TRANSFER",
+        "incidentId": "d5bf4472-169f-4e7a-9af4-98c652bb8eff",
+        "fromAssignmentId": "218e634f-3d15-4cc1-af81-00dda6c057e6",
+        "toAssignmentId": "5f7177cd-f324-47b9-b3f9-64d3e18900c1"
+      }
+    ],
+    "outbox": 0,
+    "gps": {
+      "version": "17",
+      "generation": "9",
+      "streamRevision": "11",
+      "streamId": null,
+      "lastSequence": 0,
+      "hasSample": false
+    },
+    "protectedState": [
+      {
+        "hash": "83db7d42c0786cec6df4fbfbdfa40d8b"
+      }
+    ],
+    "otherExecutions": [
+      {
+        "hash": "73fc217e3c555d54e4814681e6a8be55"
+      }
+    ]
+  },
+  "progress": {
+    "trackingMode": "DETAILED",
+    "revision": 6,
+    "phase": "PICKED_UP",
+    "activeAssignmentId": "5f7177cd-f324-47b9-b3f9-64d3e18900c1",
+    "custodyStatus": "HELD",
+    "openIncidentId": null,
+    "allowedActions": [
+      "REPORT_INCIDENT"
+    ],
+    "lastRecordedAt": "2026-10-08T06:14:49.280Z"
+  },
+  "delta": {
+    "Dispatch": 0,
+    "DeliveryAssignment": 1,
+    "DeliveryExecution": 0,
+    "DeliveryExecutionEvent": 1,
+    "DeliveryExecutionCommand": 1,
+    "DeliveryCustodyIncident": 0,
+    "DeliveryCustodyResolution": 1,
+    "CreditLedgerEntry": 0,
+    "DeliveryLocationHead": 0,
+    "DeliveryShippingTerms": 0,
+    "ShippingCollectionDeclaration": 0
+  },
+  "assertions": {
+    "singleActiveCustodian": true,
+    "phaseAndChainPreserved": true,
+    "ledgerUnchanged": true,
+    "declarationAbsentAndUnchanged": true,
+    "noNewOutbox": true,
+    "otherIncidentAndExecutionsUnchanged": true,
+    "noGpsPublished": true,
+    "oldStreamInvalidated": true
+  },
+  "audit": [
+    {
+      "at": "2026-10-08T06:14:49.087Z",
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200,
+      "requestId": "4f066780-59fc-4e80-b5d7-94c414b857c5"
+    },
+    {
+      "at": "2026-10-08T06:14:49.153Z",
+      "method": "GET",
+      "path": "/admin/dispatches/ff7668f8-d899-4be8-ac02-261da641549c/execution",
+      "status": 200,
+      "requestId": "6099d83f-b9aa-4ed4-8b8c-14d8441c5ab3"
+    },
+    {
+      "at": "2026-10-08T06:14:49.173Z",
+      "method": "GET",
+      "path": "/admin/dispatches/ff7668f8-d899-4be8-ac02-261da641549c/custody-incidents/d5bf4472-169f-4e7a-9af4-98c652bb8eff",
+      "status": 200,
+      "requestId": "e897b567-7b6f-4731-9836-e3f9693ffb21"
+    },
+    {
+      "at": "2026-10-08T06:14:49.197Z",
+      "method": "GET",
+      "path": "/admin/dispatches/ff7668f8-d899-4be8-ac02-261da641549c/custody-transfer-candidates?mode=FLEET&page=1&pageSize=100",
+      "status": 200,
+      "requestId": "2edece50-d0a8-4fc3-b9f1-83fd2e846726"
+    },
+    {
+      "at": "2026-10-08T06:14:49.313Z",
+      "method": "POST",
+      "path": "/admin/dispatches/ff7668f8-d899-4be8-ac02-261da641549c/custody-incidents/d5bf4472-169f-4e7a-9af4-98c652bb8eff/resolve",
+      "status": 200,
+      "requestId": "d0f6d35e-b133-459a-b997-e66b50cc222c"
+    },
+    {
+      "at": "2026-10-08T06:14:49.332Z",
+      "method": "GET",
+      "path": "/admin/dispatches/ff7668f8-d899-4be8-ac02-261da641549c/custody-incidents/d5bf4472-169f-4e7a-9af4-98c652bb8eff/resolution-attempt",
+      "status": 200,
+      "requestId": "a476d93f-2dca-4d79-88fe-7b3e7238fab0"
+    },
+    {
+      "at": "2026-10-08T06:14:49.362Z",
+      "method": "GET",
+      "path": "/admin/dispatches/ff7668f8-d899-4be8-ac02-261da641549c/execution",
+      "status": 200,
+      "requestId": "fef64763-e755-4ddd-a743-ee692191104d"
+    }
+  ]
+}

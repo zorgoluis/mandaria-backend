@@ -1,0 +1,15 @@
+{
+  "exitCode": 0,
+  "databasesRetained": true,
+  "signal": null,
+  "identityVerified": true,
+  "command": [
+    "pg_ctl",
+    "stop",
+    "-D",
+    "C:/Users/zorgl/AppData/Local/Temp/mandaria-v117-z5t2IE/pg",
+    "-m",
+    "fast",
+    "-w"
+  ]
+}

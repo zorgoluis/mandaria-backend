@@ -1,5 +1,9 @@
 # Mandaria — guía pública B2B
 
+## V1.18 — GPS y enlaces temporales (backend local, sin activar)
+
+[Contrato B2B y ejemplo completo](V1.18-B2B.md). Nuevos scopes explícitos `deliveries:location:read` y `deliveries:tracking-links:manage`, además de `deliveries:read`. GET de ubicación propia y gestión/reconciliación de un enlace destinatario. La posición usa `locationVersion` independiente de `publicVersion`; no es evidencia de custodia, entrega ni pago. Sin historial de recorridos ni nuevos webhooks. Flags false por defecto; resincronizar OpenAPI público, sin inferir disponibilidad remota. Límites técnicos no acreditan capacidad simultánea.
+
 ## V1.17 — pagador del envío (implementación local, no activada)
 
 La integración conserva RECIPIENT por defecto. Sólo SUPER_ADMIN puede configurar REQUESTER; no hay override B2B por solicitud. shippingTerms se congela al emitir/crear y al convertir: REQUESTER requiere payerContact (name, phone, capacity REQUESTER o AUTHORIZED_REPRESENTATIVE) en la creación o en el envelope de conversión. El hash final proviene de la MDR convertida, no de MPQ si se añadió contacto. Modificación de política antes de convertir produce409 SHIPPING_POLICY_CHANGED; replays comprometidos mantienen términos originales.
