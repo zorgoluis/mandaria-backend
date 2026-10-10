@@ -1,3 +1,4 @@
+import { searchFields, searchSelect } from '../dispatch/dispatch-search.js';
 import type { Prisma } from '@prisma/client';
 import { effectiveDispatchStatus } from '../dispatch/dispatch-policy.js';
 
@@ -51,6 +52,7 @@ export const deliveryStatusSelect = {
     select: {
       status: true,
       expiresAt: true,
+      ...searchSelect,
       claimedByProviderId: true,
       claimedByIndependentDriverId: true,
       deliveredAt: true,
@@ -101,6 +103,7 @@ function historicalIdentity(
 }
 
 export type DeliveryStatusView = {
+  search?: import('../dispatch/dispatch-search.js').DispatchSearchResponse;
   publicId: string;
   externalReference: string | null;
   status: B2bDeliveryStatus;
@@ -149,6 +152,7 @@ export function deliveryStatusView(
       ? 'CANCELLED'
       : 'REQUESTED';
   return {
+    ...(dispatch ? searchFields(dispatch, now) : {}),
     publicId: request.publicId,
     externalReference: request.externalReference,
     status,

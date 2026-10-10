@@ -2,6 +2,7 @@ export const integrationSelect = {
   id: true,
   name: true,
   code: true,
+  automaticDispatchSearch: true,
   status: true,
   createdAt: true,
   updatedAt: true,

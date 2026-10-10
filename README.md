@@ -4,6 +4,10 @@
 
 Plataforma independiente de logística y entregas. Mandaria y Coita Eats no comparten código, entidades Prisma ni PostgreSQL; su comunicación será exclusivamente API/eventos.
 
+## Búsqueda automática de ejecutor
+
+Capacidad opcional en patches: hasta cinco ventanas sobre la misma solicitud B2B PREPAID convertida, sin cambiar precio ni consentimiento. Deshabilitada por defecto y por integración; legacy intacto. [Implementación, contrato y handoff](docs/AUTOMATIC-DISPATCH-SEARCH-HANDOFF.md). Verificación focalizada en VERIFICATION.md; no activada.
+
 ## Reinicio controlado de la base QA en VM
 
 Corrección posterior: `20261001000100_prequote_restore_search_path` permite restaurar precotizaciones con el search_path vacío de pg_restore, conservando la restricción CHECK. Aplicar por el flujo habitual de migraciones, sin reset. Regresión aislada: `node scripts/test-prequote-restore.mjs "C:/Program Files/PostgreSQL/18/bin"`; requiere binarios PostgreSQL locales y no usa `.env` ni la base principal. Detalle de evidencia en VERIFICATION.md.

@@ -1,3 +1,4 @@
+import { searchFields, searchSelect } from '../dispatch/dispatch-search.js';
 import {
   creditEnforcementMode,
   preEnforcementSelect,
@@ -30,6 +31,7 @@ export const driverDispatchSelect = {
   status: true,
   openedAt: true,
   expiresAt: true,
+  ...searchSelect,
   claimedByIndependentDriverId: true,
   claimedAt: true,
   cancelledAt: true,
@@ -146,6 +148,7 @@ export function driverDispatchView(
     serviceZone: quote.serviceZone,
     openedAt: dispatch.openedAt,
     expiresAt: dispatch.expiresAt,
+    ...searchFields(dispatch, now),
     takenByMe: owner,
     claimedAt: owner ? dispatch.claimedAt : null,
     cancelledAt: dispatch.cancelledAt,

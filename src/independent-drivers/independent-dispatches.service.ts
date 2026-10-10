@@ -1,3 +1,7 @@
+import {
+  dispatchClaimTime,
+  searchWindowRejection,
+} from '../dispatch/dispatch-search.js';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
@@ -52,6 +56,9 @@ type LockedDispatch = {
   id: string;
   status: DispatchStatus;
   expiresAt: Date;
+  searchMaxAttempts?: number;
+  searchAttempt?: number;
+  searchStoppedReason?: string | null;
   claimedByProviderId: string | null;
   claimedByIndependentDriverId: string | null;
   creditMode: DispatchCreditMode;
@@ -192,7 +199,7 @@ export class IndependentDispatchesService {
       { dispatchId, driverId: actor.driverId, actorUserId: userId },
       this.transaction(async (tx) => {
         const dispatch = await this.lock(tx, dispatchId);
-        const now = new Date();
+        const now = await dispatchClaimTime(tx, dispatch);
         const released = await tx.deliveryAssignment.findFirst({
           where: { dispatchId, driverId: actor.driverId, status: 'CANCELLED' },
           select: { id: true },
@@ -617,6 +624,9 @@ export class IndependentDispatchesService {
     try {
       return await work;
     } catch (error) {
+      const windowCode = searchWindowRejection(error);
+      if (windowCode)
+        throw independentError(windowCode, REJECTION_MESSAGES[windowCode]);
       const code = awardRejectionCode(error);
       if (code)
         this.logger.warn({
@@ -652,7 +662,7 @@ export class IndependentDispatchesService {
   private async lock(tx: Prisma.TransactionClient, dispatchId: string) {
     const [row] = await tx.$queryRaw<
       LockedDispatch[]
-    >`SELECT d.id, d.status, d."expiresAt", d."claimedByProviderId", d."claimedByIndependentDriverId", d."creditMode", d."claimedAt", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
+    >`SELECT d.id, d.status, d."expiresAt", d."searchMaxAttempts", d."searchAttempt", d."searchStoppedReason", d."claimedByProviderId", d."claimedByIndependentDriverId", d."creditMode", d."claimedAt", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
     if (!row) throw new NotFoundException('Dispatch not found');
     return row;
   }
@@ -660,6 +670,7 @@ export class IndependentDispatchesService {
 
 const REJECTION_MESSAGES: Record<TakeRejectionCode, string> = {
   DISPATCH_EXPIRED: 'Dispatch window has closed',
+  DISPATCH_RETRY_PENDING: 'Waiting for next search window',
   DISPATCH_CANCELLED: 'Dispatch was cancelled',
   DISPATCH_ALREADY_CLAIMED:
     'Dispatch was already taken by a provider or another driver',

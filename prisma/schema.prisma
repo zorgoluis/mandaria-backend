@@ -61,6 +61,7 @@ model RefreshToken {
   @@index([userId, revokedAt])
 }
 model IntegrationClient {
+  automaticDispatchSearch Boolean @default(false)
   id String @id @default(uuid()) @db.Uuid
   name String
   code String @unique
@@ -602,6 +603,11 @@ enum DispatchCandidateStatus {
 /// V1.7: offer of an ACCEPTED quote to eligible providers. Created in the same transaction that
 /// accepts the quote (one per quote). The winner is claimedByProviderId; no Driver/Vehicle yet.
 model Dispatch {
+  searchMaxAttempts Int @default(1)
+  searchAttempt Int @default(1)
+  searchWindowSeconds Int?
+  searchStoppedReason String?
+  searchRounds DispatchSearchRound[]
   authorizedAcceptance AuthorizedQuoteAcceptance?
   /// V1.12-G: frozen by PostgreSQL at completion. NULL for historical deliveries; no backfill.
   publicExecutionSnapshot Json?
@@ -1332,4 +1338,15 @@ model PartnerApplication {
   @@index([phone])
   @@index([email])
   @@index([createdAt, id])
+}
+
+/// Immutable search windows; no separate request, quote or financial snapshot.
+model DispatchSearchRound {
+  dispatchId String @db.Uuid
+  attempt Int
+  openedAt DateTime @db.Timestamp(3)
+  expiresAt DateTime @db.Timestamp(3)
+  providerIds String[] @db.Uuid
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Restrict)
+  @@id([dispatchId, attempt])
 }

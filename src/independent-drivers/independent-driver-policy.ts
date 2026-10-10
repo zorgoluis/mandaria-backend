@@ -1,3 +1,7 @@
+import {
+  retryPending,
+  type SearchRecord,
+} from '../dispatch/dispatch-search.js';
 import type { ServiceType } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
 
@@ -7,6 +11,7 @@ export const INDEPENDENT_ERRORS = {
   INDEPENDENT_NOT_APPROVED: 409,
   INDEPENDENT_DRIVER_HAS_ACTIVE_ASSIGNMENT: 409,
   DISPATCH_EXPIRED: 409,
+  DISPATCH_RETRY_PENDING: 409,
   DISPATCH_CANCELLED: 409,
   DISPATCH_ALREADY_CLAIMED: 409,
   DISPATCH_DELIVERED: 409,
@@ -96,6 +101,7 @@ export const RELEASE_END_REASON = {
  * reasons with the same codes.
  */
 export type TakeRejectionCode =
+  | 'DISPATCH_RETRY_PENDING'
   | 'DISPATCH_CANCELLED'
   | 'DISPATCH_EXPIRED'
   | 'DISPATCH_ALREADY_CLAIMED'
@@ -107,10 +113,11 @@ export function takeRejection(
     status: string;
     expiresAt: Date;
     serviceType: ServiceType;
-  },
+  } & SearchRecord,
   alreadyReleased: boolean,
   now = new Date(),
 ): TakeRejectionCode | null {
+  if (retryPending(dispatch, now)) return 'DISPATCH_RETRY_PENDING';
   if (dispatch.status === 'CANCELLED') return 'DISPATCH_CANCELLED';
   if (dispatch.status === 'EXPIRED') return 'DISPATCH_EXPIRED';
   if (dispatch.status === 'OPEN' && now >= dispatch.expiresAt)

@@ -1,3 +1,4 @@
+import { DispatchSearchResponse } from '../dispatch/dispatch-search.js';
 import {
   CollectionInstructionsResponse,
   collectionInstructionsDoc,
@@ -115,6 +116,8 @@ class ServiceDetailResponse {
   externalReference?: string | null;
 }
 export class ProviderDispatchResponse {
+  @ApiPropertyOptional({ type: DispatchSearchResponse })
+  search?: DispatchSearchResponse;
   @ApiPropertyOptional({
     type: CollectionInstructionsResponse,
     description: collectionInstructionsDoc,
@@ -213,6 +216,8 @@ export class AdminDispatchResponse {
   @ApiProperty({ enum: DispatchStatus, description: statusDoc })
   status!: DispatchStatus;
   @ApiProperty({ format: 'date-time' }) openedAt!: Date;
+  @ApiPropertyOptional({ type: DispatchSearchResponse })
+  search?: DispatchSearchResponse;
   @ApiProperty({ format: 'date-time' }) expiresAt!: Date;
   @ApiPropertyOptional({
     type: String,

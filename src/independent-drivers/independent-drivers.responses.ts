@@ -1,3 +1,4 @@
+import { DispatchSearchResponse } from '../dispatch/dispatch-search.js';
 import {
   CollectionInstructionsResponse,
   collectionInstructionsDoc,
@@ -182,6 +183,8 @@ class DriverDispatchZoneResponse {
   @ApiProperty({ example: 'Ocozocoautla de Espinosa' }) name!: string;
 }
 export class DriverDispatchResponse {
+  @ApiPropertyOptional({ type: DispatchSearchResponse })
+  search?: DispatchSearchResponse;
   @ApiPropertyOptional({
     type: CollectionInstructionsResponse,
     description: collectionInstructionsDoc,

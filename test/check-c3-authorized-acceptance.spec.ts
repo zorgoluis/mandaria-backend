@@ -33,13 +33,11 @@ describe('C3 exact clock boundaries (simulated DB clock, not physical synchroniz
           .mockResolvedValueOnce([{ status: 'ACTIVE' }])
           .mockResolvedValueOnce([{ now }]),
         deliveryQuote: {
-          findUniqueOrThrow: vi
-            .fn()
-            .mockResolvedValue({
-              id: 'quote',
-              status: 'OFFERED',
-              expiresAt: boundary === 'quote' ? now : future,
-            }),
+          findUniqueOrThrow: vi.fn().mockResolvedValue({
+            id: 'quote',
+            status: 'OFFERED',
+            expiresAt: boundary === 'quote' ? now : future,
+          }),
         },
         authorizedQuoteAcceptance: {
           findUnique: vi.fn().mockResolvedValue(null),
@@ -50,6 +48,7 @@ describe('C3 exact clock boundaries (simulated DB clock, not physical synchroniz
         id: 'owner',
         name: 'fixture',
         code: 'C3',
+        automaticDispatchSearch: false,
         status: 'ACTIVE',
         createdAt: now,
         updatedAt: now,

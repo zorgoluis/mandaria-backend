@@ -1,3 +1,32 @@
+## Búsqueda automática de ejecutor — patches, 2026-10-10
+
+Implementada en una sola tarea, deshabilitada por defecto. [Contrato y handoff](docs/AUTOMATIC-DISPATCH-SEARCH-HANDOFF.md). Máximo 5 rondas sobre el mismo Dispatch/MDR/MQ autorizado; no renueva la MQ ni cobra créditos al buscar. PostgreSQL persiste política, contador y rondas; concurrencia, cancelación y adjudicación conservan locks y garantías existentes. Migración nueva solamente; no se modificaron migraciones anteriores.
+
+**Ejecuciones de esta tarea (no resultados heredados):**
+
+| Verificación focalizada | Resultado |
+|---|---|
+| `dispatch-search.e2e-spec.ts` completo | **16/16**, exit 0: cinco rondas, estado público, candidatos nuevos, demora, reconstrucción de worker, dos instancias, carreras claim/retry y cancel/retry, toma en rondas 1..5, release sin reintento, rollback técnico, autorización administrativa, opt-out, inmutabilidad de política/SQL/consentimiento/precio, cero débitos por buscar y un débito por adjudicar |
+| `dispatch.e2e-spec.ts` completo | **13/13**, exit 0, legacy y expiración |
+| `independent-drivers.e2e-spec.ts` completo | **23/23**, exit 0 en base temporal separada, toma/liberación/concurrencia legacy |
+| Unitarias seleccionadas | **52 únicas**: dispatch 13, independent-drivers 22, delivery-status 14, check-c3-authorized-acceptance 3. Archivos completos; último archivo afectado repetido sin sumar casos |
+| Exportador público + ejemplo HMAC | **33/33**, exit 0 |
+| `npm run build`, `tsc -p tsconfig.build.json --noEmit` | PASS |
+| `tsc -p tsconfig.json --noEmit` | **FAIL: 5 diagnósticos preexistentes**, todos en archivos sin cambios: falta sendPartnerApplicationNotice en `invitations.spec.ts:150`; cuatro errores de tuplas/undefined en `partner-applications.spec.ts:513,521`. No se afirma gate global verde |
+| Oxlint / ESLint | Exit 0 / exit 0; Oxlint conserva advertencia preexistente de import no usado en runner C3 |
+| Prisma generate/validate, migraciones limpias | PASS; cadena de **32** migraciones en PostgreSQL 18 temporal, no base principal |
+| Prisma migrate diff contra esquema final | Exit 0, sin drift representable por Prisma (no equivale a validar todos los triggers) |
+| OpenAPI completo/público, API_ACCESS, docs:b2b:check | Generados y verificados, exit 0 |
+| git diff --check | Exit 0 |
+
+Consolidado E2E: **52 casos únicos en 3 archivos**, no suite completa. Reloj controlado sólo en PostgreSQL aislado y Date de la fixture, restaurados al terminar; no se esperaron 50 minutos. Dos aplicaciones Nest con pools propios; pruebas seriales en bases exclusivas. Reinstanciar el worker acredita recuperación desde persistencia, no una caída real del sistema operativo.
+
+**Intentos incompletos/fallidos, no sumados:** configuración inicial de URL de tests, delimitadores SQL de fixtures y orden de comparación UUID/enum fueron corregidos. Un unitario requirió conservar la forma legacy de apertura (defaults SQL, sin nuevas propiedades innecesarias en esa llamada). El sandbox bloqueó archivos temporales de Vitest (EPERM); ejecución local autorizada permitió probar. Dos preparaciones coincidieron con reconstrucción de dist por generación/verificación de docs; sus imports fallaron: se serializaron después. El primer ensayo de independientes dio 22/23 al compartir ofertas de otras fixtures que desplazaron el servicio fuera de su primera página; en base vacía separada completó 23/23. El delimitador SQL de la prueba de rollback se corrigió; versión final 16/16. **No hubo aborto nativo del worker en esta tarea** y no se atribuyen fallos a Windows sin evidencia.
+
+Logs y reportes locales ignorados: `.tmp/search-implementation/`; [índice sanitizado](docs/checks/automatic-dispatch-search-evidence.json). No se suman repeticiones. No se afirma upgrade con historia productiva, carga ni ensayo en VM. Base de regresión y base de búsqueda fueron temporales; fixtures conservaron historia, reloj real restituido y trigger artificial de fallo eliminado. Clusters temporales detenidos al cierre, sin borrar su evidencia.
+
+Pendientes: adaptación Web/B2B, habilitación operativa acordada y deuda de tipos anterior. No se abrió otra etapa CHECK ni se retomaron pendientes históricos C4. Sin Docker, routing externo real, `.env` operativo, base principal, frontend/Coita, versión, commit, push, despliegue ni activación.
+
 ## Solicitudes de socio — filtro de varios estados, 2026-10-04
 
 Cambio: `GET /api/v1/admin/partner-applications?status=RECEIVED,CONTACTED`. Lista separada por comas, normalizada (recorte, mayúsculas, sin duplicados), sin vacíos y con máximo 5; el servicio filtra con `status IN (...)`. Compatible con un solo estado y sin `status`. Sin cambios de orden, paginación, forma de respuesta, estados ni transiciones. Sin commit. Base: el commit `ea64f05` ya publicado en la rama.

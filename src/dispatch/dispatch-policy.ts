@@ -1,3 +1,4 @@
+import { retryPending, type SearchRecord } from './dispatch-search.js';
 import { rejectConvertedRequest } from '../delivery-prequotes/prequote-origin.js';
 import type { DispatchStatus, Prisma, ServiceType } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
@@ -9,6 +10,7 @@ import type { RefundOutcome } from '../credits/service-refund.js';
 
 export const DISPATCH_ERRORS = {
   DISPATCH_EXPIRED: 409,
+  DISPATCH_RETRY_PENDING: 409,
   DISPATCH_CANCELLED: 409,
   DISPATCH_ALREADY_CLAIMED: 409,
   DISPATCH_DELIVERED: 409,
@@ -68,14 +70,16 @@ export const dispatchExpiry = (openedAt: Date, ttlMinutes: number) =>
 
 /**
  * Lazy expiration: an OPEN dispatch whose window has closed (now >= expiresAt) is EXPIRED even
- * before a write persists it. A CLAIMED dispatch keeps its claim after the window: expiresAt only
+ * before a write persists it, except an automatic search awaiting its next round stays OPEN. A CLAIMED dispatch keeps its claim after the window: expiresAt only
  * limits claiming.
  */
 export function effectiveDispatchStatus(
-  dispatch: { status: DispatchStatus; expiresAt: Date },
+  dispatch: SearchRecord & { status: DispatchStatus },
   now = new Date(),
 ): DispatchStatus {
-  return dispatch.status === 'OPEN' && now >= dispatch.expiresAt
+  return dispatch.status === 'OPEN' &&
+    now >= dispatch.expiresAt &&
+    !retryPending(dispatch, now)
     ? 'EXPIRED'
     : dispatch.status;
 }
@@ -86,11 +90,12 @@ export function claimRejection(
     status: DispatchStatus;
     expiresAt: Date;
     claimedByProviderId: string | null;
-  },
+  } & SearchRecord,
   candidate: { status: 'OFFERED' | 'CLAIMED' | 'RELEASED' },
   providerId: string,
   now = new Date(),
 ): DispatchErrorCode | 'ALREADY_OWNER' | null {
+  if (retryPending(dispatch, now)) return 'DISPATCH_RETRY_PENDING';
   const status = effectiveDispatchStatus(dispatch, now);
   if (status === 'CANCELLED') return 'DISPATCH_CANCELLED';
   if (status === 'EXPIRED') return 'DISPATCH_EXPIRED';
@@ -143,10 +148,11 @@ export async function openDispatch(
   },
   ttlMinutes: number,
   now: Date,
+  automaticSearchEnabled = false,
 ) {
   const conversion = await tx.prequoteConversion.findUnique({
     where: { deliveryRequestId: quote.deliveryRequestId },
-    select: { id: true },
+    select: { id: true, integrationClientId: true },
   });
   let authorizedDispatchId: string | undefined;
   if (conversion) {
@@ -166,9 +172,21 @@ export async function openDispatch(
     quote.serviceZoneId,
     quote.serviceType,
   );
+  const searchOwner =
+    automaticSearchEnabled && conversion
+      ? await tx.integrationClient.findUnique({
+          where: { id: conversion.integrationClientId },
+          select: { automaticDispatchSearch: true, status: true },
+        })
+      : null;
+  const searchEnabled =
+    searchOwner?.automaticDispatchSearch && searchOwner.status === 'ACTIVE';
   const dispatch = await tx.dispatch.create({
     data: {
       id: authorizedDispatchId,
+      ...(searchEnabled
+        ? { searchMaxAttempts: 5, searchWindowSeconds: ttlMinutes * 60 }
+        : {}),
       deliveryRequestId: quote.deliveryRequestId,
       deliveryQuoteId: quote.id,
       openedAt: now,

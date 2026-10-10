@@ -2,6 +2,10 @@
 
 Contrato descargable: [openapi-b2b.json](openapi-b2b.json). Ejemplos ficticios; no representan una cuenta, precio garantizado o servicio disponible. Integración exclusivamente servidor a servidor: nunca guardar clientSecret ni el secreto de webhook en la app móvil o JavaScript público.
 
+## Búsqueda automática opcional después de aceptar
+
+Las integraciones habilitadas explícitamente pueden recibir hasta cinco rondas logísticas sobre la misma solicitud/cotización aceptada. Consultar `GET /api/v1/delivery-requests/{publicId}/status`: `search.state=SEARCHING` o `RETRY_PENDING` mantiene `status=OPEN`; no crear reemplazos por el contador local. La quinta ventana vencida sin toma informa EXPIRED/EXHAUSTED. Precio, consentimiento y vencimiento de MQ no se renuevan. Sin `search`, conserva el comportamiento legacy. [Contrato, ejemplos y operación](AUTOMATIC-DISPATCH-SEARCH-HANDOFF.md).
+
 ## Direcciones confirmadas
 
 El propietario confirmó la web https://mandaria.com.mx y la API https://mandaria.com.mx/api/v1. En OpenAPI, `servers.url` es **https://mandaria.com.mx**: todas las rutas ya comienzan con `/api/v1`. Ejemplo: `POST https://mandaria.com.mx/api/v1/integrations/token`. No concatenar la base terminada en `/api/v1` con otra ruta que ya contenga ese prefijo.
@@ -73,7 +77,7 @@ El JSON descargable contiene cuerpos y restricciones de emisión/conversión y e
 
 ## Vencimiento y nueva secuencia
 
-Si vence después de convertir, no recotizar esa MDR ni modificar precio/expiry. Cancelar la MDR anterior y confirmar **MDR CANCELLED con cancelledAt**, después **status CANCELLED/EXPIRED con deliveredAt null**. El 200 de cancelación no basta: una entrega física previa puede conservar estado público DELIVERED. Ante carrera cancelación/aceptación, consultar el resultado definitivo; no iniciar sucesor si el resultado es incierto o DELIVERED.
+Si la MQ OFFERED vence después de convertir y antes de aceptar, no recotizar esa MDR ni modificar precio/expiry. Cancelar la MDR anterior y confirmar **MDR CANCELLED con cancelledAt**, después **status CANCELLED/EXPIRED con deliveredAt null**. El 200 de cancelación no basta: una entrega física previa puede conservar estado público DELIVERED. Ante carrera cancelación/aceptación, consultar el resultado definitivo; no iniciar sucesor si el resultado es incierto o DELIVERED.
 
 Sólo entonces iniciar nueva MPQ → conversión → consentimiento sobre nueva MQ → aceptación. El integrador serializa por pedido y comprueba que siga vigente con el restaurante. `externalReference` NO es única y no impide por sí sola dos envíos. Reiniciar envío no exige otra transferencia de comida ni implica reembolso; la confirmación del restaurante y las devoluciones comerciales se gestionan fuera de Mandaria. No hay sustitución enlazada y atómica.
 

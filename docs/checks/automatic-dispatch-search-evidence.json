@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-10",
+  "branch": "patches",
+  "activation": false,
+  "e2eUnique": 52,
+  "unitUnique": 52,
+  "contractTests": 33,
+  "globalTestTypes": "5 pre-existing diagnostics in unchanged invitations/partner-applications tests",
+  "attempts": [
+    {
+      "report": ".tmp/search-implementation/dispatch-search.e2e-spec.ts.forks.1791614458840.result.json",
+      "file": "test/dispatch-search.e2e-spec.ts",
+      "pool": "forks",
+      "exit": 1,
+      "signal": null,
+      "total": 12,
+      "passed": 11,
+      "failed": 1
+    },
+    {
+      "report": ".tmp/search-implementation/dispatch-search.e2e-spec.ts.forks.1791614780418.result.json",
+      "file": "test/dispatch-search.e2e-spec.ts",
+      "pool": "forks",
+      "exit": 0,
+      "signal": null,
+      "total": 15,
+      "passed": 15,
+      "failed": 0
+    },
+    {
+      "report": ".tmp/search-implementation/dispatch-search.e2e-spec.ts.forks.1791614905027.result.json",
+      "file": "test/dispatch-search.e2e-spec.ts",
+      "pool": "forks",
+      "exit": 1,
+      "signal": null,
+      "total": 16,
+      "passed": 0,
+      "failed": 0
+    },
+    {
+      "report": ".tmp/search-implementation/dispatch-search.e2e-spec.ts.forks.1791614937090.result.json",
+      "file": "test/dispatch-search.e2e-spec.ts",
+      "pool": "forks",
+      "exit": 1,
+      "signal": null,
+      "total": 16,
+      "passed": 15,
+      "failed": 1
+    },
+    {
+      "report": ".tmp/search-implementation/dispatch-search.e2e-spec.ts.forks.1791614967863.result.json",
+      "file": "test/dispatch-search.e2e-spec.ts",
+      "pool": "forks",
+      "exit": 0,
+      "signal": null,
+      "total": 16,
+      "passed": 16,
+      "failed": 0
+    },
+    {
+      "report": ".tmp/search-implementation/dispatch-search.e2e-spec.ts.forks.result.json",
+      "file": "test/dispatch-search.e2e-spec.ts",
+      "pool": "forks",
+      "exit": 1,
+      "signal": null,
+      "total": 12,
+      "passed": 0,
+      "failed": 12
+    },
+    {
+      "report": ".tmp/search-implementation/dispatch.e2e-spec.ts.forks.1791614986675.result.json",
+      "file": "test/dispatch.e2e-spec.ts",
+      "pool": "forks",
+      "exit": 0,
+      "signal": null,
+      "total": 13,
+      "passed": 13,
+      "failed": 0
+    },
+    {
+      "report": ".tmp/search-implementation/independent-drivers.e2e-spec.ts.forks.1791615015206.result.json",
+      "file": "test/independent-drivers.e2e-spec.ts",
+      "pool": "forks",
+      "exit": 1,
+      "signal": null,
+      "total": 23,
+      "passed": 22,
+      "failed": 1
+    },
+    {
+      "report": ".tmp/search-implementation/independent-drivers.e2e-spec.ts.forks.1791615097825.result.json",
+      "file": "test/independent-drivers.e2e-spec.ts",
+      "pool": "forks",
+      "exit": 0,
+      "signal": null,
+      "total": 23,
+      "passed": 23,
+      "failed": 0
+    }
+  ],
+  "unitReports": [
+    ".tmp/search-implementation/unit-complete.json",
+    ".tmp/search-implementation/unit-dispatch.json"
+  ],
+  "files": [
+    {
+      "path": "test/dispatch-search.e2e-spec.ts",
+      "sha256": "e16195b3940d58bdf681ed792d6cdfc2103ce7668bc092245d4dd79220e585c6"
+    },
+    {
+      "path": "test/dispatch.e2e-spec.ts",
+      "sha256": "34c85e76cd0af344e62ea6ccc81af5a353dff18b47d5bfd3267537190336f2fd"
+    },
+    {
+      "path": "test/independent-drivers.e2e-spec.ts",
+      "sha256": "5d567f57bcb439f39ea039cab4bc71268797e6a65bfcc2a57d560f7832a436f2"
+    },
+    {
+      "path": "prisma/migrations/20261010000100_automatic_dispatch_search/migration.sql",
+      "sha256": "3335154506f6d10c40017a22460ee4d9a5b609b980a06aa61dea0e95bd22769c"
+    }
+  ],
+  "notes": [
+    "Only complete files counted. Reports are ignored local artifacts, not committed logs.",
+    "No native aborts. Failed setup/import and fixture attempts are not passes.",
+    "No production upgrade/load/VM verification."
+  ]
+}
