@@ -141,6 +141,7 @@ const schemas = new Set([
   'DeliveryRequestPageResponse',
   'DeliveryRequestSummaryResponse',
   'DeliveryStatusResponse',
+  'DispatchSearchResponse',
   'DeliveryExecutionResponse',
   'PublicExecutionNameResponse',
   'CancelDeliveryRequestDto',

@@ -4,6 +4,13 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Búsqueda automática de ejecutor (2026-10-10): IMPLEMENTADA, validación focalizada local.** Hasta 5 rondas inicial+4 sólo B2B PREPAID convertido con flag y opt-in; misma MDR/MQ/Dispatch/precio, rondas transaccionales y estado search. Deshabilitada por defecto. 52 E2E, 52 unitarias y 33 pruebas de contrato únicas aprobadas; build/tipos de producto/linters/OpenAPI/migración limpia/drift PASS. Tipos globales siguen con 5 diagnósticos preexistentes en tests ajenos. Web/B2B y activación pendientes. [Handoff](docs/AUTOMATIC-DISPATCH-SEARCH-HANDOFF.md). Sin Docker, base principal, .env, versión, commit, push ni despliegue.
+
+
+- **Consulta de vencimiento de oferta (2026-10-10):** inspección en patches confirma OPEN vencido como EXPIRED efectivo, fuera de disponibles y claim rechazado; TTL default10min limita toma, no ejecución ya reclamada. Sin republicación automática; consulta B2B expone EXPIRED. Sólo revisión estática, sin ejecución funcional.
+
+- **Sincronización de contexto patches (2026-10-10):** rama activa patches, HEAD71eb11a, coincide con origin/patches y origin/main tras fetch. Sin cambios de producto; nul preexistente conservado. Base actual:31 migraciones y solicitudes de socio con filtro multiestado; avances V1.17/V1.18 de otra rama no se presumen integrados. No se reinició ni migró el entorno nativo anterior de42 migraciones.
+
 - **Solicitudes de socio, Fase 1 (2026-10-04): IMPLEMENTADA, VERIFICADA LOCALMENTE Y PROBADA EN DOCKER LOCAL, sin commit ni despliegue.** Rama `feat/solicitud-repartidor`. Endpoint público `POST /api/v1/public/partner-applications` (202 `SOC-NNNNNN`, honeypot, 5/10 min por IP, deduplicación 30 días con advisory locks) y bandeja SUPER_ADMIN `/api/v1/admin/partner-applications` (lista, detalle, estado, vínculos). La solicitud es un lead y no crea cuentas, Drivers ni proveedores. Migración incremental `20261004000100_partner_applications`. Variables nuevas opcionales `TRUST_PROXY_HOPS` (default 0) y `PARTNER_APPLICATIONS_NOTIFY_EMAIL`. Topología indicada por el propietario: landing `mandaria.com.mx`, admin `app.mandaria.com.mx`, API `api.mandaria.com.mx`; en la VM hace falta `CORS_ORIGINS` con los dos primeros orígenes, `TRUST_PROXY_HOPS=1` y `MANDARIA_WEB_URL=https://app.mandaria.com.mx`. Pendientes del propietario: proveedor que recibe a los independientes aprobados (§9.3), propuestas al contrato compartido (paginación `page`/`pageSize`) y la decisión de mover la API B2B a `api.`. [Handoff](docs/PARTNER-APPLICATIONS-HANDOFF.md).
 
 - **Publicación documental autorizada 2026-10-02:** se prepara commit y push de propuesta de ejecución detallada y continuidad pendiente en la rama actual `main`; resultado confirmado por Git en esta sesión. Sin implementación ni despliegue.
@@ -2015,3 +2022,34 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Cambios: estado e historial de continuidad; consolidación en conversación por capacidades, conservando numeración histórica y separando producto, configuración tras reset y evolución futura.
 - Verificación: lectura README, VERIFICATION, bitácora, plan piloto y documentación frontend; evidencia de despliegue/reset/corrección procede de resultados aportados por el operador. No nuevas suites ni VM/Coita.
 - Resultado: webhooks web, portal e integración no se reabren como desarrollo pendiente; configuración definitiva y comprobaciones operativas pendientes quedan separadas. Sin commit/push/despliegue.
+
+
+### 2026-10-10 — Sincronización con patches procedente de main
+
+- Solicitud: actualizar contexto del proyecto a patches derivada de main.
+- Trabajo: lectura de BITACORA, README y VERIFICATION; fetch limitado a main/patches y revisión de referencias, log y diferencias.
+- Verificación nueva: HEAD/origin patches sin diferencias (0 ahead/0 behind), main y patches en71eb11a;31 directorios de migraciones. Sin pruebas de producto.
+- Resultado: contexto sincronizado; sólo esta documentación modificada. nul conservado. Sin merge, reset, cambios de base/configuración, reinicio, commit, push ni despliegue.
+- Pendiente: cualquier ejecución con esta rama debe considerar que el entorno nativo previo tenía42 migraciones de otra rama; no se modificó ni se acredita compatibilidad.
+
+
+### 2026-10-10 — Explicación de contador de despacho
+- Solicitud: explicar qué sucede si nadie toma el servicio antes de vencer.
+- Revisión: dispatch-policy/service, delivery-status, quotes y configuración; sin cambios de producto ni pruebas.
+- Resultado: expiración efectiva, sin toma tardía ni reapertura automática; distinguir de vencimiento de cotización y de solicitud cancelada. Historial y pagos no se revierten automáticamente.
+
+### 2026-10-10 — búsqueda automática, 5 intentos totales
+
+- Solicitud: implementar en patches inicial+4, manteniendo contrato financiero y legacy, con verificación proporcional y entrega en una tarea.
+- Cambios: política global/per integración, migración incremental, worker transaccional, historia mínima de rondas, revalidación de tiempo bajo locks, proyecciones search y 409 de espera, contrato público/OpenAPI y guía Web/B2B. No duplicados de solicitudes/cotizaciones ni nuevos motores de precio.
+- Verificaciones nuevas: 16 E2E nuevos + 36 regresión; 52 unitarias seleccionadas y 33 pruebas públicas únicas. Build, tipos producto, linters, Prisma/migraciones limpias/drift, OpenAPI/docs y diff aprobados. Tipos globales: 5 errores anteriores en dos tests no modificados. Fallos de preparación y repeticiones completos en VERIFICATION; sin abortos nativos.
+- Resultado: implementación deshabilitada por defecto; una sola búsqueda durable y cinco ventanas máximas, recuperación sin ventanas ficticias. Historia previa conservada.
+- Pendientes: consumidores Web/B2B, operación/activación futura y deuda previa de tipos. Sin cambios en otros proyectos, base principal, .env, versión, commit, push ni despliegue.
+
+### 2026-10-10 — commit y push solicitados en patches
+
+- Solicitud: guardar y subir la implementación de búsqueda automática a origin/patches.
+- Cambios: actualización de continuidad y preparación del commit de producto, migración, pruebas y documentación ya validados. Se excluye el archivo nul preexistente y los artefactos temporales ignorados.
+- Verificaciones: rama patches y remoto revisados; git diff --check sin errores. Las pruebas funcionales son las registradas en la tarea anterior; no se repitieron.
+- Resultado: publicación autorizada; el resultado del commit/push se confirma mediante Git y en la respuesta de esta tarea.
+- Pendientes: adaptación Web/B2B, activación futura y cinco diagnósticos preexistentes de tipos en pruebas. Sin despliegue, migración de base principal ni activación.

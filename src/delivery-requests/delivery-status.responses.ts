@@ -1,3 +1,4 @@
+import { DispatchSearchResponse } from '../dispatch/dispatch-search.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   B2B_DELIVERY_STATUSES,
@@ -47,6 +48,8 @@ export class DeliveryExecutionResponse {
  * Prisma row — so nothing new leaks into the B2B surface by accident.
  */
 export class DeliveryStatusResponse {
+  @ApiPropertyOptional({ type: DispatchSearchResponse })
+  search?: DispatchSearchResponse;
   @ApiProperty({
     example: 'MDR-000123',
     description:

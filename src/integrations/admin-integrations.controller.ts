@@ -1,3 +1,4 @@
+import { DispatchSearchPolicyDto } from './integrations.dto.js';
 import {
   Body,
   Controller,
@@ -73,6 +74,19 @@ export class AdminIntegrationsController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.integrations.setStatus(id, dto.status, req.user.id);
+  }
+  @Patch(':id/dispatch-search-policy')
+  @ApiOkResponse({ type: IntegrationResponse })
+  searchPolicy(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() dto: DispatchSearchPolicyDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.integrations.setSearchPolicy(
+      id,
+      dto.automaticDispatchSearch,
+      req.user.id,
+    );
   }
   @Post(':id/credentials')
   @ApiCreatedResponse({ type: CredentialCreatedResponse })

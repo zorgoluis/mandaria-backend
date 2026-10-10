@@ -5231,6 +5231,10 @@
       "IntegrationMeResponse": {
         "type": "object",
         "properties": {
+          "automaticDispatchSearch": {
+            "type": "boolean",
+            "default": false
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -5276,6 +5280,7 @@
           }
         },
         "required": [
+          "automaticDispatchSearch",
           "id",
           "name",
           "code",
@@ -5804,6 +5809,48 @@
           "items"
         ]
       },
+      "DispatchSearchResponse": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "SEARCHING",
+              "RETRY_PENDING",
+              "EXECUTOR_FOUND",
+              "CANCELLED",
+              "EXHAUSTED",
+              "STOPPED"
+            ]
+          },
+          "attempt": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "maxAttempts": {
+            "type": "number",
+            "enum": [
+              5
+            ]
+          },
+          "windowExpiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "stoppedReason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "state",
+          "attempt",
+          "maxAttempts",
+          "windowExpiresAt",
+          "stoppedReason"
+        ]
+      },
       "PublicExecutionNameResponse": {
         "type": "object",
         "properties": {
@@ -5858,6 +5905,9 @@
       "DeliveryStatusResponse": {
         "type": "object",
         "properties": {
+          "search": {
+            "$ref": "#/components/schemas/DispatchSearchResponse"
+          },
           "publicId": {
             "type": "string",
             "example": "MDR-000123",

@@ -599,6 +599,114 @@
         ]
       }
     },
+    "/api/v1/admin/integrations/{id}/dispatch-search-policy": {
+      "patch": {
+        "operationId": "AdminIntegrationsController_searchPolicy[0]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DispatchSearchPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin IntegrationClients"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/integrations/{id}/dispatch-search-policy": {
+      "patch": {
+        "operationId": "AdminIntegrationsController_searchPolicy[1]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DispatchSearchPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires a human access token"
+          },
+          "403": {
+            "description": "Requires SUPER_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Admin IntegrationClients"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
     "/api/v1/admin/integrations/{id}/credentials": {
       "post": {
         "operationId": "AdminIntegrationsController_credential[0]",
@@ -58170,6 +58278,10 @@
       "IntegrationMeResponse": {
         "type": "object",
         "properties": {
+          "automaticDispatchSearch": {
+            "type": "boolean",
+            "default": false
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -58215,6 +58327,7 @@
           }
         },
         "required": [
+          "automaticDispatchSearch",
           "id",
           "name",
           "code",
@@ -58300,6 +58413,10 @@
       "IntegrationListResponse": {
         "type": "object",
         "properties": {
+          "automaticDispatchSearch": {
+            "type": "boolean",
+            "default": false
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -58335,6 +58452,7 @@
           }
         },
         "required": [
+          "automaticDispatchSearch",
           "id",
           "name",
           "code",
@@ -58347,6 +58465,10 @@
       "IntegrationResponse": {
         "type": "object",
         "properties": {
+          "automaticDispatchSearch": {
+            "type": "boolean",
+            "default": false
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -58375,6 +58497,7 @@
           }
         },
         "required": [
+          "automaticDispatchSearch",
           "id",
           "name",
           "code",
@@ -58413,6 +58536,18 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "DispatchSearchPolicyDto": {
+        "type": "object",
+        "properties": {
+          "automaticDispatchSearch": {
+            "type": "boolean",
+            "description": "Opt-in for future converted prepaid dispatches only; five windows. Existing searches retain their policy."
+          }
+        },
+        "required": [
+          "automaticDispatchSearch"
         ]
       },
       "CreateCredentialDto": {
@@ -60708,6 +60843,48 @@
           "items"
         ]
       },
+      "DispatchSearchResponse": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "SEARCHING",
+              "RETRY_PENDING",
+              "EXECUTOR_FOUND",
+              "CANCELLED",
+              "EXHAUSTED",
+              "STOPPED"
+            ]
+          },
+          "attempt": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "maxAttempts": {
+            "type": "number",
+            "enum": [
+              5
+            ]
+          },
+          "windowExpiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "stoppedReason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "state",
+          "attempt",
+          "maxAttempts",
+          "windowExpiresAt",
+          "stoppedReason"
+        ]
+      },
       "PublicExecutionNameResponse": {
         "type": "object",
         "properties": {
@@ -60762,6 +60939,9 @@
       "DeliveryStatusResponse": {
         "type": "object",
         "properties": {
+          "search": {
+            "$ref": "#/components/schemas/DispatchSearchResponse"
+          },
           "publicId": {
             "type": "string",
             "example": "MDR-000123",
@@ -62794,6 +62974,9 @@
       "ProviderDispatchResponse": {
         "type": "object",
         "properties": {
+          "search": {
+            "$ref": "#/components/schemas/DispatchSearchResponse"
+          },
           "collectionInstructions": {
             "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
             "allOf": [
@@ -63318,6 +63501,9 @@
           "openedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "search": {
+            "$ref": "#/components/schemas/DispatchSearchResponse"
           },
           "expiresAt": {
             "format": "date-time",
@@ -65359,6 +65545,9 @@
       "DriverDispatchResponse": {
         "type": "object",
         "properties": {
+          "search": {
+            "$ref": "#/components/schemas/DispatchSearchResponse"
+          },
           "collectionInstructions": {
             "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
             "allOf": [

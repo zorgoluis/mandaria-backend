@@ -1,3 +1,4 @@
+import { searchFields, searchSelect } from '../dispatch/dispatch-search.js';
 import {
   creditEnforcementMode,
   preEnforcementSelect,
@@ -25,6 +26,7 @@ export const dispatchSelect = {
   status: true,
   openedAt: true,
   expiresAt: true,
+  ...searchSelect,
   claimedByProviderId: true,
   claimedByIndependentDriverId: true,
   claimedAt: true,
@@ -162,6 +164,7 @@ export function providerDispatchView(
     serviceZone: { code: quote.serviceZone.code, name: quote.serviceZone.name },
     openedAt: dispatch.openedAt,
     expiresAt: dispatch.expiresAt,
+    ...searchFields(dispatch, now),
     claimedByMe: owner,
     claimedAt: owner ? dispatch.claimedAt : null,
     cancelledAt: dispatch.cancelledAt,
@@ -276,6 +279,7 @@ export function adminDispatchView(dispatch: DispatchRecord, now = new Date()) {
     status,
     openedAt: dispatch.openedAt,
     expiresAt: dispatch.expiresAt,
+    ...searchFields(dispatch, now),
     claimedByProviderId: dispatch.claimedByProviderId,
     // V1.9: the other execution model. Exactly one of the two is set while CLAIMED.
     claimedByIndependentDriverId: dispatch.claimedByIndependentDriverId,

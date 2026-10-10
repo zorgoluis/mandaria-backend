@@ -186,6 +186,7 @@ export class AuthorizedAcceptanceService {
             accepted,
             this.config.getOrThrow<number>('DISPATCH_TTL_MINUTES'),
             evidence.acceptedAt,
+            this.config.get<boolean>('AUTOMATIC_DISPATCH_SEARCH_ENABLED') === true,
           );
           this.assertEnabled();
         },
