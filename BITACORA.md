@@ -4,6 +4,20 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación Git de configuración autorizada (2026-10-09):** revisados los cambios pendientes de plantilla, Compose, README y continuidad para commit/push a QA. Comprobaciones nuevas: diff, sintaxis YAML con claves únicas y exclusión Git de .env; sólo referencias a variables y placeholders en los cambios de configuración. Pruebas previas conservadas como históricas. Sin Docker, arranque de servicios, despliegue ni activación; residual nul excluido.
+
+- **Comparación de URLs QA/producción (2026-10-09):** según nginx.conf aportado, qa.coitaeats.com apunta al frontend con Basic Auth; api-qa.coitaeats.com apunta al backend QA. La URL QA reportada no es equivalente al dominio API de producción. Una página visible podría ser fallback del frontend, hipótesis sin comprobar; pendiente distinguir apertura GET de recepción POST firmada real.
+
+- **Revisión de Nginx aportado (2026-10-09):** bloque api.coitaeats.com reenvía location / a coita_eats_backend:3000 sin reescribir URI ni método; no se observa necesidad de location especial para webhook. Análisis del texto aportado y documentación oficial, no comprobación de configuración cargada en VM. Pendiente evidencia de intento POST real y receptor desplegado.
+
+- **Diagnóstico GET de webhook externo (2026-10-09):** usuario reporta Cannot GET /api/v1/webhooks/mandaria en dominio de Coita Eats. Inspección local de README, VERIFICATION, guía B2B y transporte confirma que Mandaria emite POST firmado; abrir una URL con GET no acredita existencia ni fallo del receptor POST. Sin ruta receptora webhooks/mandaria en src de Mandaria. No se inspeccionó Coita, VM, proxy ni base externa; despliegue receptor pendiente de comprobar en su proyecto. Sólo diagnóstico documental, sin pruebas HTTP ni suites nuevas.
+
+- **Corrección de configuración Resend local (2026-10-09):** Compose ya transmitía MAIL_PROVIDER/MAIL_FROM/RESEND_API_KEY. Se detectaron entradas duplicadas de MAIL_FROM y RESEND_API_KEY en .env; la última clave vacía ocultaba el valor previo. Consolidadas conservando último valor no vacío. Compose resuelto confirma presencia de las tres variables y validateEnvironment pasa sin imprimir valores. Sin reiniciar contenedores por preferencia de operación manual.
+
+- **Variables completas para pruebas manuales (2026-10-09):** 57/57 variables del validador presentes en plantilla, .env local y mapeo de Compose. Agregadas 34 entradas a Compose (31 de aplicación y tres de bootstrap), cinco de webhooks y RUN_DB_SEED a plantilla; 39 entradas ausentes añadidas a .env sin sustituir valores existentes ni generar secretos. Flags opcionales conservados; configuración resuelta por Compose pasa el validador real. No se arrancaron contenedores; el propietario ejecutará manualmente.
+
+- **Integración de ramas en QA revisada (2026-10-09):** QA y origin/QA coinciden en94bd564 tras fetch --all --prune. Todas las ramas remotas y todas las locales salvo backup/v1.6.1-before-secret-cleanup son ancestros de QA; cero commits remotos pendientes de integrar. QA tiene el mismo árbol que v1.18-GPS_seguimiento_temporal/8941625 (merge PR31). Respaldo local: cuatro commits fuera del historial, último parche equivalente; comparación con v1.6.1-creation_users integrada difiere únicamente en .env, sin leer su contenido. No se recomienda integrar ese respaldo de configuración antigua. Sólo comprobación Git, sin suites, servicios, merge, commit ni push; residual nul conservado.
+
 - **Publicación Git de residuales V1.19 autorizada (2026-10-09):** preparación de commit/push en la rama actual `v1.18-GPS_seguimiento_temporal`; siete archivos de herramienta, guía, manifiesto y continuidad revisados. Verificaciones nuevas: sintaxis Node, Oxlint focal, JSON, diff y comparación contra13 valores privados locales sin coincidencias. Evidencia funcional previa conservada como histórica; sin arrancar entornos ni repetir suites. `.tmp`, credenciales y residual `nul` excluidos; sin despliegue ni activación.
 
 - **Cierre documental APP V1.19 revisado (2026-10-09):** revisados informe técnico y plan de publicación APP. Validación funcional local histórica conservada; distribución pendiente por red release, divulgación GPS, atribución, verificación 16KB/API37 y continuidad de firma. Siguiente propuesta APP: corregir aislamiento de red release sin inventar destino y preparar cambios restantes sujetos a datos del propietario. Canal, custodio, HTTPS y política operativa/privacidad no elegidos. Revisión documental únicamente; sin suites, servicios, firma, publicación ni activación.
@@ -2647,3 +2661,58 @@ Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/t
 - Verificaciones ejecutadas ahora: node --check, Oxlint focal, JSON válido, git diff --check, exclusión Git de privados y revisión de siete archivos contra13 valores privados locales sin coincidencias.
 - Resultado: conjunto revisado para publicar; pruebas operativas anteriores históricas, no reejecutadas. Sin tocar datos, procesos, Docker ni producción.
 - Pendientes: condiciones de distribución/activación documentadas siguen vigentes. Archivo residual nul conservado fuera del commit.
+
+### 2026-10-09 — Comprobación de cobertura de ramas en QA
+
+- Solicitud: verificar si QA contiene los cambios de las demás ramas.
+- Verificaciones nuevas: fetch --all --prune, inventario local/remoto, merge-base --is-ancestor y rev-list por rama; comparación QA/origin QA y árbol v1.18; git cherry y diff --name-status del respaldo local, sin leer contenido de .env.
+- Resultado: todas las ramas remotas integradas; QA94bd564 sincronizada y árbol igual a8941625. Única divergencia local histórica: backup/v1.6.1-before-secret-cleanup; su árbol frente a la V1.6.1 integrada sólo difiere en .env. No hay código pendiente identificado desde ese respaldo.
+- Cambios: continuidad documental únicamente. Sin ejecutar pruebas de producto ni modificar ramas/código/datos; sin commit/push. El diagnóstico de integración histórica no acredita despliegue ni vuelve a ejecutar validaciones funcionales.
+
+### 2026-10-09 — Completar variables de entorno y transmisión a Docker
+
+- **Solicitud:** ajustar variables faltantes antes de levantar manualmente backend, frontend y Android de Mandaria.
+- **Cambios:** plantilla con cinco variables webhooks y RUN_DB_SEED; Compose incorpora 31 variables de aplicación antes omitidas y tres de bootstrap. .env local recibe sólo 39 claves ausentes con defaults de plantilla y secretos externos vacíos; comprobación en memoria de todos los valores previos idénticos. README aclara puertos internos/publicados, flags, dependencias, bootstrap y prioridad PowerShell. No se documentaron valores privados.
+- **Verificaciones ejecutadas:** inventario por nombres contra esquema (57 claves), plantilla/local/Compose sin faltantes; docker compose config --format json capturado sin imprimir sus valores, entorno backend resultante validado con validateEnvironment actual: PASS. git diff --check PASS. Sin suites de producto porque no cambió lógica, sin levantar servicios, migrar bases ni enviar correo.
+- **Resultado:** configuración declarada y transmitida completa; claves de servicios externos siguen requiriendo provisión si se habilitan. Activar features no fue parte de este ajuste. Valores previos locales conservados.
+- **Pendientes:** propietario ejecuta arranque manual, confirma puertos libres y proveedores/flags deseados; después conexión de frontend y Android, y registro de hallazgos funcionales. Sin commit/push.
+
+### 2026-10-09 — Resend: entradas duplicadas en entorno local
+
+- **Solicitud:** añadir variables Resend al Compose por fallo de arranque.
+- **Hallazgo:** las tres variables ya existían en backend.environment. Consulta por presencia, sin valores, detectó duplicados locales; RESEND_API_KEY resolvía vacía por última entrada vacía.
+- **Cambios:** consolidación de MAIL_FROM/RESEND_API_KEY sólo en .env privado, manteniendo último valor no vacío por clave. Sin cambios innecesarios en Compose, sin exponer secretos.
+- **Verificaciones actuales:** configuración Compose resuelta capturada en memoria; las tres variables presentes/no vacías y validateEnvironment del backend PASS. Sin prueba de autenticación externa o envío real.
+- **Resultado:** causa de configuración corregida; pendiente recrear contenedor manualmente y comprobar health/correo. Sin arranque, commit ni push.
+
+
+## 2026-10-09 — Consulta GET del receptor externo de webhooks
+
+- Solicitud: explicar Cannot GET /api/v1/webhooks/mandaria reportado en producción.
+- Cambios: sólo continuidad; no se modificó código ni configuración.
+- Verificaciones actuales: lectura documental e inspección estática del transporte (method POST, firma y cabeceras) y controladores; búsqueda de la ruta receptora en src sin coincidencias.
+- Resultado: GET no valida un webhook POST; se debe comprobar método, ruta y despliegue del receptor en el proyecto correspondiente.
+- Pendientes: confirmar receptor POST y enrutamiento de producción. Sin acceso a Coita Eats ni pruebas remotas, Docker, suites, commit o push.
+
+## 2026-10-09 — Revisión de proxy para webhook
+
+- Solicitud: evaluar nginx.conf compartido frente al Cannot GET del webhook configurado en Mandaria.
+- Cambios: sólo bitácora; sin cambios de proxy o producto.
+- Verificaciones: inspección estática del texto y documentación oficial de proxy_pass; sin HTTP remoto, VM, Docker ni suites. Diff documental comprobado.
+- Resultado: la configuración aportada conserva ruta y método hacia el backend receptor. Configurar el destino en Mandaria no implementa la ruta externa.
+- Pendientes: confirmar configuración realmente cargada y respuesta de intentos POST firmados; no se accedió al proyecto ni base de Coita Eats.
+
+## 2026-10-09 — Diferencia de host en comparación QA/producción
+
+- Solicitud: explicar por qué URL qa.coitaeats.com funciona y api.coitaeats.com no.
+- Cambios: continuidad documental únicamente.
+- Verificación actual: comparación estática de URLs con server_name/upstream del Nginx aportado; sin consultar hosts externos, VM, código o base de Coita Eats ni ejecutar suites.
+- Resultado: QA reportado apunta al frontend, producción al backend. El host equivalente de API QA es api-qa.coitaeats.com. No se acredita recepción webhook por visualizar página.
+- Pendientes: confirmar qué significa funciona, estado HTTP y Content-Type del intento; configuración realmente cargada y ruta POST del receptor siguen sin comprobar.
+
+### 2026-10-09 — Commit/push de configuración y continuidad en QA
+
+- Solicitud: commitear y subir los cambios pendientes a la rama actual.
+- Alcance revisado: .env.example, docker-compose.yml, README.md y BITACORA.md; conservar continuidad acumulada.
+- Verificaciones actuales: git diff --check, revisión de diff y sintaxis YAML con claves únicas; .env privado ignorado. No se reejecutaron las verificaciones funcionales históricas ni Docker.
+- Resultado: conjunto preparado para publicar en QA; secretos privados y residual nul excluidos. No despliegue ni activación; pendientes operativos anteriores conservados.

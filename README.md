@@ -1,5 +1,40 @@
 # Mandaria — V1.12-E Webhook Operations & Observability
 
+## Configuración completa para Docker y pruebas manuales (2026-10-09)
+
+`.env.example` y `docker-compose.yml` cubren las 57 variables del validador actual.
+Compose pasa explícitamente las opciones: agregar una variable a `.env` no bastaba
+cuando no estaba declarada en `backend.environment`. `DATABASE_URL` dentro del
+contenedor se construye con `POSTGRES_*` y host `postgres`; `PORT` interno es 3000.
+`PORT` y `POSTGRES_PORT` del anfitrión controlan los puertos publicados.
+
+Además del esquema de aplicación, Compose pasa `RUN_DB_SEED` (default false),
+`BOOTSTRAP_ADMIN_EMAIL` y `BOOTSTRAP_ADMIN_PASSWORD`. Para crear el administrador
+inicial, configurar las credenciales y activar explícitamente `RUN_DB_SEED=true`.
+El bootstrap conserva al administrador activo existente y no cambia su contraseña.
+El complemento manual anterior ya no es necesario para pasar estas tres variables;
+puede conservarse si también monta el volumen de correos locales.
+
+Para pruebas locales: `NODE_ENV=development`, `MAIL_PROVIDER=local_outbox`,
+`ROUTING_PROVIDER=local_fake`, `MANDARIA_WEB_URL=http://localhost:5173` y CORS con
+los orígenes exactos del frontend. Puertos sugeridos: API 43000, PostgreSQL 55460.
+Las variables `$env:...` de PowerShell prevalecen sobre `.env`; revisar la sesión
+si una edición del archivo parece no aplicarse. Recrear el backend tras cambios
+de configuración. No ejecutar `down -v` para aplicar variables.
+
+Los flags de precotización/conversión/aceptación, admisión de clientes, ejecución
+detallada, GPS y seguimiento compartido permanecen en false por defecto. Declarar
+las variables no activa esos módulos. Para probarlos hay que habilitar los flags
+correspondientes y preparar sus datos y permisos. `PREQUOTE_ENABLED=true` exige
+`PREQUOTE_GLOBAL_DAILY_ROUTING_UNITS` explícito, al menos retries de Google + 1;
+el lease debe cubrir timeout/reintentos/backoff más 15000 ms.
+
+Resend real requiere `RESEND_API_KEY` y `MAIL_FROM`; Google real requiere su API key.
+Las claves externas vacías son pendientes de configuración, no credenciales listas.
+`B2B_WEBHOOK_SECRET_KEY` requiere 32 bytes en hex/base64; no reemplazar una clave
+que ya cifra secretos de endpoints. Producción exige Resend, Google configurado,
+URL web HTTPS y clave de webhooks. El buzón local y rutas simuladas son sólo local/test.
+
 ## Independientes: recuperación TAKE/RELEASE V1.19
 
 [Residuales independientes y fixture flotilla sin perfil](docs/V1.19-INDEPENDENT-RESIDUAL-FIXTURES.md): entorno exclusivo43136/55448, API real independent=null, ACTIVE LEGACY/DETAILED y Driver libre; análisis de UNKNOWN/VEHICLE_BUSY sin fabricar estados. Credenciales privadas, comandos y baseline en la guía; Compose pendiente APP.
