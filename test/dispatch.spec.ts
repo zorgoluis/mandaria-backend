@@ -26,6 +26,7 @@ const D = (n: string) => new Prisma.Decimal(n);
 
 function record(overrides: Record<string, unknown> = {}) {
   return {
+    _count: { deliveryAssignments: 0 },
     id: 'd1',
     creditMode: 'MONETIZED',
     preEnforcementAwards: [],
@@ -451,5 +452,33 @@ describe('DispatchService authorization inside the transaction', () => {
       '409 DISPATCH_NOT_CLAIMED_BY_PROVIDER',
     );
     expect(tx.dispatch.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('operational tracking uses persisted assignment history', () => {
+  it('does not mistake a claim or an expired window for assignment evidence', () => {
+    for (const status of ['OPEN', 'CLAIMED', 'EXPIRED', 'CANCELLED']) {
+      const r = record({ status, claimedByProviderId: 'A' });
+      expect(providerDispatchView(r, 'A', at(-1)).trackingMode).toBeNull();
+      expect(adminDispatchView(r, at(-1)).trackingMode).toBeNull();
+    }
+  });
+  it('preserves legacy after assignments end without exposing their history', () => {
+    for (const status of ['OPEN', 'CLAIMED', 'DELIVERED', 'CANCELLED']) {
+      const r = record({
+        status,
+        _count: { deliveryAssignments: 2 },
+        claimedByProviderId: 'A',
+      });
+      const before = JSON.stringify(r);
+      for (const actor of ['A', 'B']) {
+        const view = providerDispatchView(r, actor, at(-1));
+        expect(view.trackingMode).toBe('LEGACY');
+        expect(view.assignment).toBeNull();
+        expect(view).not.toHaveProperty('_count');
+      }
+      expect(adminDispatchView(r, at(-1)).trackingMode).toBe('LEGACY');
+      expect(JSON.stringify(r)).toBe(before);
+    }
   });
 });

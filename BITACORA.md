@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación autorizada del contrato Web (2026-10-11):** revisión y preparación de commit/push exclusivamente en patches sobre33cd34e, remoto sincronizado. Incluye proyecciones, regresiones, OpenAPI y documentación de esta corrección. Checkout QA y cambios ajenos preservados; sin merge, configuración, migraciones ni despliegue. Resultados funcionales de la tarea anterior conservados como históricos; esta tarea verifica alcance y diff.
+
+- **Compatibilidad operativa Web en patches (2026-10-11):** trackingMode explícito null/LEGACY por historial persistido en proveedor/admin/independiente y asignación propia driver/me; no DETAILED ni integración QA. Worktree separado sobre33cd34e preserva checkout QA sucio. Nuevas84 unitarias,94 E2E en5 archivos/bases aisladas,33 públicas, build/tipos producto/linters/OpenAPI PASS; cinco errores globales de tipos preexistentes conservados. B2B y búsqueda automática sin cambios semánticos; lecturas no modifican cinco rondas. Sin configuración, migraciones, versión, commit/push/despliegue ni acceso VM/Coita. [Detalle y ejemplos](docs/OPERATIONAL-WEB-COMPATIBILITY.md).
+
 - **Búsqueda automática de ejecutor (2026-10-10): IMPLEMENTADA, validación focalizada local.** Hasta 5 rondas inicial+4 sólo B2B PREPAID convertido con flag y opt-in; misma MDR/MQ/Dispatch/precio, rondas transaccionales y estado search. Deshabilitada por defecto. 52 E2E, 52 unitarias y 33 pruebas de contrato únicas aprobadas; build/tipos de producto/linters/OpenAPI/migración limpia/drift PASS. Tipos globales siguen con 5 diagnósticos preexistentes en tests ajenos. Web/B2B y activación pendientes. [Handoff](docs/AUTOMATIC-DISPATCH-SEARCH-HANDOFF.md). Sin Docker, base principal, .env, versión, commit, push ni despliegue.
 
 
@@ -2053,3 +2057,21 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Verificaciones: rama patches y remoto revisados; git diff --check sin errores. Las pruebas funcionales son las registradas en la tarea anterior; no se repitieron.
 - Resultado: publicación autorizada; el resultado del commit/push se confirma mediante Git y en la respuesta de esta tarea.
 - Pendientes: adaptación Web/B2B, activación futura y cinco diagnósticos preexistentes de tipos en pruebas. Sin despliegue, migración de base principal ni activación.
+
+
+### 2026-10-11 — Contrato operativo Web sobre patches
+
+- Solicitud: eliminar bloqueo por trackingMode undefined sin mezclar QA ni alterar cinco intentos automáticos.
+- Cambios: proyección compartida por conteo histórico, campo en driver/me y DTOs/OpenAPI; regresiones y documentación. Checkout QA con cambios previos preservado, patches en worktree separado.
+- Verificaciones nuevas: 84 unitarias, 94 E2E completos (13+13+23+29+16) en bases temporales separadas, 33 públicas; build/tipos producto y linters focalizados exit0; docs:b2b:check y comparación JSON B2B sin cambios. Tipos globales siguen con cinco errores ajenos históricos. Cluster temporal detenido; preparación inicial fallida antes de tests documentada, sin aborto Vitest.
+- Resultado: null sin asignación; LEGACY activo/finalizado sin ampliar permisos; mutaciones y consultas coherentes, rondas sin mutación al consultar.
+- Pendientes: prueba visual Web/despliegue fuera de esta tarea; no se acredita VM ni Coita. Sin cambios de negocio/configuración/migraciones/versiones, commit/push ni operaciones reales.
+
+
+### 2026-10-11 — Commit y push del parche operativo autorizados
+
+- Solicitud: publicar únicamente los cambios de compatibilidad Web en patches, sin integrar QA ni cambios ajenos.
+- Cambios: continuidad de publicación y selección explícita de los archivos del parche en el worktree aislado.
+- Verificaciones actuales: rama patches sobre33cd34e; fetch origin patches y divergencia0/0 antes del commit; revisión de proyecciones, alcance y git diff --check. Pruebas de la implementación anterior no reejecutadas.
+- Resultado: conjunto revisado y preparado para commit/push autorizado; confirmación del resultado Git en esta sesión. QA conserva su BITACORA modificada y residual nul.
+- Pendientes: prueba visual Web y despliegue siguen fuera de alcance; sin integración QA ni operaciones de base.

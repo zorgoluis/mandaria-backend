@@ -59831,6 +59831,13 @@
       "DriverSelfActiveDeliveryAssignmentResponse": {
         "type": "object",
         "properties": {
+          "trackingMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY"
+            ],
+            "description": "Asignación activa persistida con el modelo legacy de esta rama."
+          },
           "collectionInstructions": {
             "description": "Sólo presente en conversiones PREPAID autorizadas. Instrucción persistida, no recibo ni confirmación de cobro. OFFER: condiciones para decidir, no ejecutar un cobro. CURRENT: ejecutor vigente, cobrar sólo al entregar. HISTORICAL: referencia sin acción de cobro (cancelación, entrega o asignación terminada). Tras entrega no inferir que se cobró. Ausente en legacy: conservar su contrato, no inferir estas reglas. Reconsultar estado antes de actuar; ninguna respuesta garantiza vigencia futura.",
             "allOf": [
@@ -59856,6 +59863,7 @@
           }
         },
         "required": [
+          "trackingMode",
           "id",
           "mode",
           "dispatchId"
@@ -62974,6 +62982,14 @@
       "ProviderDispatchResponse": {
         "type": "object",
         "properties": {
+          "trackingMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY"
+            ],
+            "nullable": true,
+            "description": "Clasificación histórica de esta rama: null si nunca tuvo asignación; LEGACY si existe alguna asignación persistida, incluso finalizada. No implica permisos ni asignación activa. Esta rama no implementa DETAILED."
+          },
           "search": {
             "$ref": "#/components/schemas/DispatchSearchResponse"
           },
@@ -63082,6 +63098,7 @@
           }
         },
         "required": [
+          "trackingMode",
           "creditEnforcementMode",
           "id",
           "status",
@@ -63474,6 +63491,14 @@
       "AdminDispatchResponse": {
         "type": "object",
         "properties": {
+          "trackingMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY"
+            ],
+            "nullable": true,
+            "description": "Clasificación histórica de esta rama: null si nunca tuvo asignación; LEGACY si existe alguna asignación persistida, incluso finalizada. No implica permisos ni asignación activa. Esta rama no implementa DETAILED."
+          },
           "creditEnforcementMode": {
             "type": "string",
             "enum": [
@@ -63593,6 +63618,7 @@
           }
         },
         "required": [
+          "trackingMode",
           "creditEnforcementMode",
           "id",
           "status",
@@ -65545,6 +65571,14 @@
       "DriverDispatchResponse": {
         "type": "object",
         "properties": {
+          "trackingMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY"
+            ],
+            "nullable": true,
+            "description": "Clasificación histórica de esta rama: null si nunca tuvo asignación; LEGACY si existe alguna asignación persistida, incluso finalizada. No implica permisos ni asignación activa. Esta rama no implementa DETAILED."
+          },
           "search": {
             "$ref": "#/components/schemas/DispatchSearchResponse"
           },
@@ -65648,6 +65682,7 @@
           }
         },
         "required": [
+          "trackingMode",
           "creditEnforcementMode",
           "id",
           "status",

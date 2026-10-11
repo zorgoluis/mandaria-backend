@@ -1,3 +1,4 @@
+import { operationalTrackingDoc } from '../dispatch/operational-tracking.js';
 import { DispatchSearchResponse } from '../dispatch/dispatch-search.js';
 import {
   CollectionInstructionsResponse,
@@ -183,6 +184,13 @@ class DriverDispatchZoneResponse {
   @ApiProperty({ example: 'Ocozocoautla de Espinosa' }) name!: string;
 }
 export class DriverDispatchResponse {
+  @ApiProperty({
+    type: String,
+    enum: ['LEGACY'],
+    nullable: true,
+    description: operationalTrackingDoc,
+  })
+  trackingMode!: 'LEGACY' | null;
   @ApiPropertyOptional({ type: DispatchSearchResponse })
   search?: DispatchSearchResponse;
   @ApiPropertyOptional({

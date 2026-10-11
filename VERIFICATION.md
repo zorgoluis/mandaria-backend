@@ -1,3 +1,25 @@
+## Compatibilidad operativa Web — patches, 2026-10-11
+
+Evidencia NUEVA, separada del historial siguiente. [Contrato, endpoints, ejemplos y límites](docs/OPERATIONAL-WEB-COMPATIBILITY.md).
+
+| Verificación ejecutada | Resultado |
+|---|---|
+| Unitarios completos dispatch, independent-drivers, delivery-assignments, delivery-completion, delivery-status | 84/84, cinco archivos, exit0 |
+| E2E dispatch / delivery-assignments / independent-drivers / delivery-completion / dispatch-search | 13/13 + 13/13 + 23/23 + 29/29 + 16/16 = 94; archivos completos, exit0 |
+| PostgreSQL local aislado | Cluster nuevo loopback y una base vacía por archivo; 32 migraciones por base; detenido al terminar |
+| Historial y permisos | null antes de asignar (incluye claim proveedor); LEGACY activo, entregado/liberado; consulta/mutación iguales; driver/me flotilla e independiente; SUMMARY sin datos operativos y OFFER sin contactos |
+| Cinco intentos automáticos | Archivo completo; nuevas lecturas repetidas en cada ventana conservan Dispatch y filas de rondas exactamente; implementación sin cambios |
+| Build / tsc producto | PASS |
+| tsc global | FAIL por cinco diagnósticos preexistentes: invitations.spec.ts:150 y partner-applications.spec.ts:513,521; sin errores nuevos del parche |
+| Oxlint / ESLint de todos los archivos TS modificados | exit0 / exit0 |
+| OpenAPI completo / docs:b2b:check | Regenerado / PASS; cuatro esquemas humanos con trackingMode requerido |
+| Exportador público y firma HMAC completos | 33/33, exit0; JSON B2B semánticamente idéntico a HEAD |
+| git diff --check | PASS |
+
+Comandos: `npm run build`, `npx tsc -p tsconfig.build.json --noEmit`, `npx tsc -p tsconfig.json --noEmit`, `npx vitest run test/dispatch.spec.ts test/independent-drivers.spec.ts test/delivery-assignments.spec.ts test/delivery-completion.spec.ts test/delivery-status.spec.ts`; cada E2E con `node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/<archivo>`. Runner privado y logs: `.tmp/operational-contract/`; no usa .env ni base principal. `npm run docs:openapi`, `npm run docs:b2b:check`, `npm run test:public-b2b`; linters focalizados, no suite completa ni nueva etapa CHECK.
+
+Intento inicial de preparación: Prisma P1012 por DATABASE_URL ausente al validar esquema; sin tests ejecutados. Runner privado corregido con URL de validación aislada y TEST_DATABASE_URL exclusiva, luego ejecuciones completas en cluster nuevo. No aborto Vitest. No ejecución visual frontend, VM o Coita; sin cambios de frontend, configuración, versión, migraciones, operaciones reales, commit/push ni despliegue. Checkout QA ajeno conservado; implementación en worktree patches.
+
 ## Búsqueda automática de ejecutor — patches, 2026-10-10
 
 Implementada en una sola tarea, deshabilitada por defecto. [Contrato y handoff](docs/AUTOMATIC-DISPATCH-SEARCH-HANDOFF.md). Máximo 5 rondas sobre el mismo Dispatch/MDR/MQ autorizado; no renueva la MQ ni cobra créditos al buscar. PostgreSQL persiste política, contador y rondas; concurrencia, cancelación y adjudicación conservan locks y garantías existentes. Migración nueva solamente; no se modificaron migraciones anteriores.

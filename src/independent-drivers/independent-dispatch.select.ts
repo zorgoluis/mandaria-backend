@@ -1,3 +1,7 @@
+import {
+  operationalTrackingMode,
+  operationalTrackingSelect,
+} from '../dispatch/operational-tracking.js';
 import { searchFields, searchSelect } from '../dispatch/dispatch-search.js';
 import {
   creditEnforcementMode,
@@ -22,6 +26,7 @@ const coordinate = (value: Prisma.Decimal) => value.toNumber();
  * commercial relationships cannot leak into a driver response by accident (§18).
  */
 export const driverDispatchSelect = {
+  ...operationalTrackingSelect,
   id: true,
   creditMode: true,
   preEnforcementAwards: {
@@ -141,6 +146,7 @@ export function driverDispatchView(
   };
   return {
     id: dispatch.id,
+    trackingMode: operationalTrackingMode(dispatch),
     ...collectionInstructionFields(dispatch, owner ? 'EXECUTOR' : 'OFFER', now),
     status,
     access,

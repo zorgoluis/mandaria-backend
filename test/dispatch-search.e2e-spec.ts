@@ -477,6 +477,24 @@ describe('Automatic dispatch search, real database and two applications', () => 
       const d = await current(x.d.id);
       expect(d.searchAttempt).toBe(attempt);
       await expire(d);
+      const { DispatchService } =
+        await import('../dist/dispatch/dispatch.service.js');
+      const snapshot = await current(d.id);
+      const rounds = await p.dispatchSearchRound.findMany({
+        where: { dispatchId: d.id },
+        orderBy: { attempt: 'asc' },
+      });
+      for (let read = 0; read < 2; read++) {
+        const projected = await app.get(DispatchService).getForAdmin(d.id);
+        expect(projected.trackingMode).toBeNull();
+      }
+      expect(await current(d.id)).toEqual(snapshot);
+      expect(
+        await p.dispatchSearchRound.findMany({
+          where: { dispatchId: d.id },
+          orderBy: { attempt: 'asc' },
+        }),
+      ).toEqual(rounds);
       const before = await status(x.c.deliveryRequest.publicId).expect(200);
       expect(before.body.status).toBe(attempt < 5 ? 'OPEN' : 'EXPIRED');
       expect(before.body.search.state).toBe(
