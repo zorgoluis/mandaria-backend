@@ -1,3 +1,4 @@
+import { operationalTrackingDoc } from '../dispatch/operational-tracking.js';
 import { DispatchSearchResponse } from '../dispatch/dispatch-search.js';
 import {
   CollectionInstructionsResponse,
@@ -116,6 +117,13 @@ class ServiceDetailResponse {
   externalReference?: string | null;
 }
 export class ProviderDispatchResponse {
+  @ApiProperty({
+    type: String,
+    enum: ['LEGACY'],
+    nullable: true,
+    description: operationalTrackingDoc,
+  })
+  trackingMode!: 'LEGACY' | null;
   @ApiPropertyOptional({ type: DispatchSearchResponse })
   search?: DispatchSearchResponse;
   @ApiPropertyOptional({
@@ -207,6 +215,13 @@ class AdminQuoteRefResponse {
   @ApiProperty({ example: 'MXN' }) currency!: string;
 }
 export class AdminDispatchResponse {
+  @ApiProperty({
+    type: String,
+    enum: ['LEGACY'],
+    nullable: true,
+    description: operationalTrackingDoc,
+  })
+  trackingMode!: 'LEGACY' | null;
   @ApiProperty({
     enum: creditEnforcementModes,
     description: creditEnforcementDoc,

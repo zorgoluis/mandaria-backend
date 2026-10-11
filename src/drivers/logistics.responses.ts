@@ -189,8 +189,14 @@ class DriverSelfIndependentResponse {
   })
   canTakeServices!: boolean;
 }
-/** Exactly the three fields drivers.service selects; there is no assignedAt here. */
+/** Own persisted active assignment; there is no assignedAt here. */
 export class DriverSelfActiveDeliveryAssignmentResponse {
+  @ApiProperty({
+    enum: ['LEGACY'],
+    description:
+      'Asignación activa persistida con el modelo legacy de esta rama.',
+  })
+  trackingMode!: 'LEGACY';
   @ApiPropertyOptional({
     type: CollectionInstructionsResponse,
     description: collectionInstructionsDoc,

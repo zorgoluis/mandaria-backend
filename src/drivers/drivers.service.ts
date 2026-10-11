@@ -240,6 +240,8 @@ export class DriversService {
       ...withCurrentAssignment(rest),
       activeDeliveryAssignment: activeAssignment
         ? {
+            // Evidence is this persisted ACTIVE assignment; this branch has no detailed execution.
+            trackingMode: 'LEGACY' as const,
             id: activeAssignment.id,
             mode: activeAssignment.mode,
             dispatchId: activeAssignment.dispatchId,

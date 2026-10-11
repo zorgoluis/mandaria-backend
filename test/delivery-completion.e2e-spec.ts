@@ -323,7 +323,10 @@ beforeAll(async () => {
   app = await bootstrap();
   const login = async (email: string) =>
     (
-      await api().post('/api/v1/auth/login').send({ email, password }).expect(200)
+      await api()
+        .post('/api/v1/auth/login')
+        .send({ email, password })
+        .expect(200)
     ).body.accessToken as string;
   t.sa = await login(mail('sa'));
   t.A = await login(mail('adminA'));
@@ -357,7 +360,9 @@ beforeAll(async () => {
       serviceZoneId: zoneId,
       serviceType: 'LOCAL_DELIVERY',
       quoteValidityMinutes: 60,
-      bands: [{ minDistanceMeters: 0, maxDistanceMeters: 100000, amount: '55' }],
+      bands: [
+        { minDistanceMeters: 0, maxDistanceMeters: 100000, amount: '55' },
+      ],
     })
     .expect(201);
   await api()
@@ -519,13 +524,47 @@ describe('V1.11-A provider completion', () => {
 
   it('closes CLAIM -> ASSIGN -> DELIVERED in one call, and records who and when', async () => {
     const dispatch = await openDispatch();
-    await claim(t.A, dispatch.id).expect(200);
+    const claimed = await claim(t.A, dispatch.id).expect(200);
+    expect(claimed.body.trackingMode).toBeNull();
     await assign(t.A, dispatch.id, {
       driverId: drivers.ana,
       vehicleId: vehicles.fleet1,
     }).expect(201);
+    const activeView = await api()
+      .get(`/api/v1/provider/dispatches/${dispatch.id}`)
+      .auth(t.A, bearer)
+      .expect(200);
+    expect(activeView.body.trackingMode).toBe('LEGACY');
+    expect(activeView.body).not.toHaveProperty('execution');
+    const fleetMe = await api()
+      .get('/api/v1/driver/me')
+      .auth(t.ana, bearer)
+      .expect(200);
+    expect(fleetMe.body.activeDeliveryAssignment.trackingMode).toBe('LEGACY');
     const before = new Date();
     const res = await deliver(t.A, dispatch.id).expect(200);
+    expect(res.body.trackingMode).toBe('LEGACY');
+    expect(res.body.assignment).toBeNull();
+    const reloaded = await api()
+      .get(`/api/v1/provider/dispatches/${dispatch.id}`)
+      .auth(t.A, bearer)
+      .expect(200);
+    expect(reloaded.body).toEqual(res.body);
+    const adminView = await api()
+      .get(`/api/v1/admin/dispatches/${dispatch.id}`)
+      .auth(t.sa, bearer)
+      .expect(200);
+    expect(adminView.body.trackingMode).toBe('LEGACY');
+    const other = await api()
+      .get(`/api/v1/provider/dispatches/${dispatch.id}`)
+      .auth(t.B, bearer)
+      .expect(200);
+    expect(other.body).toMatchObject({
+      trackingMode: 'LEGACY',
+      access: 'SUMMARY',
+      service: null,
+      assignment: null,
+    });
     expect(res.body.status).toBe('DELIVERED');
     // The owner keeps the full detail of the service it just delivered.
     expect(res.body.access).toBe('OWNER');
@@ -557,7 +596,9 @@ describe('V1.11-A provider completion', () => {
     expect(assignment.endReasonDetail).toBeNull();
     expect(assignment.endedByUserId).toBe(users.adminA);
     const row = await dispatchRow(dispatch.id);
-    expect(assignment.endedAt!.toISOString()).toBe(row.deliveredAt!.toISOString());
+    expect(assignment.endedAt!.toISOString()).toBe(
+      row.deliveredAt!.toISOString(),
+    );
     // History is preserved: the row is still there with its driver and vehicle.
     expect(assignment.driverId).toBe(drivers.ana);
     expect(assignment.vehicleId).toBe(vehicles.fleet1);
@@ -761,8 +802,31 @@ describe('V1.11-A independent completion', () => {
 
   it('closes TAKE -> DELIVERED and frees the driver and the vehicle', async () => {
     const dispatch = await openDispatch();
-    await take(t.indy, dispatch.id, vehicles.indy).expect(200);
+    const offer = await api()
+      .get(`/api/v1/driver/dispatches/${dispatch.id}`)
+      .auth(t.indy, bearer)
+      .expect(200);
+    expect(offer.body.trackingMode).toBeNull();
+    const taken = await take(t.indy, dispatch.id, vehicles.indy).expect(200);
+    expect(taken.body.trackingMode).toBe('LEGACY');
+    expect(taken.body).not.toHaveProperty('execution');
+    const activeMe = await api()
+      .get('/api/v1/driver/me')
+      .auth(t.indy, bearer)
+      .expect(200);
+    expect(activeMe.body.activeDeliveryAssignment.trackingMode).toBe('LEGACY');
+    const activeView = await api()
+      .get(`/api/v1/driver/dispatches/${dispatch.id}`)
+      .auth(t.indy, bearer)
+      .expect(200);
+    expect(activeView.body).toEqual(taken.body);
     const res = await driverDeliver(t.indy, dispatch.id).expect(200);
+    expect(res.body.trackingMode).toBe('LEGACY');
+    const ended = await api()
+      .get(`/api/v1/driver/dispatches/${dispatch.id}`)
+      .auth(t.indy, bearer)
+      .expect(200);
+    expect(ended.body).toEqual(res.body);
     expect(res.body.status).toBe('DELIVERED');
     expect(res.body.access).toBe('OWNER');
     expect(res.body.takenByMe).toBe(true);
@@ -800,8 +864,9 @@ describe('V1.11-A independent completion', () => {
     await driverDeliver(t.sa, dispatch.id).expect(403);
     await driverDeliver(t.A, dispatch.id).expect(403);
     await driverDeliver(t.b2b, dispatch.id).expect(401);
-    await driverDeliver(t.indy, dispatch.id, { deliveredAt: '2020-01-01' })
-      .expect(400);
+    await driverDeliver(t.indy, dispatch.id, {
+      deliveredAt: '2020-01-01',
+    }).expect(400);
     expect((await dispatchRow(dispatch.id)).status).toBe('CLAIMED');
   });
 

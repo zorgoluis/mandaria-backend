@@ -1,3 +1,7 @@
+import {
+  operationalTrackingMode,
+  operationalTrackingSelect,
+} from '../dispatch/operational-tracking.js';
 import { searchFields, searchSelect } from '../dispatch/dispatch-search.js';
 import {
   creditEnforcementMode,
@@ -20,6 +24,7 @@ const decimal = (value: Prisma.Decimal | null) =>
 const coordinate = (value: Prisma.Decimal) => value.toNumber();
 
 export const dispatchSelect = {
+  ...operationalTrackingSelect,
   id: true,
   creditMode: true,
   preEnforcementAwards: { select: preEnforcementSelect },
@@ -158,6 +163,7 @@ export function providerDispatchView(
   const request = dispatch.deliveryRequest;
   const base = {
     id: dispatch.id,
+    trackingMode: operationalTrackingMode(dispatch),
     status,
     access,
     serviceType: quote.serviceType,
@@ -276,6 +282,7 @@ export function adminDispatchView(dispatch: DispatchRecord, now = new Date()) {
   const status = effectiveDispatchStatus(dispatch, now);
   return {
     id: dispatch.id,
+    trackingMode: operationalTrackingMode(dispatch),
     status,
     openedAt: dispatch.openedAt,
     expiresAt: dispatch.expiresAt,
