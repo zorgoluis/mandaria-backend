@@ -3,6 +3,8 @@ import {
   lockExecutionDispatch,
   withExecutionInstructions,
 } from '../delivery-execution/execution.persistence.js';
+
+import { dispatchClaimTime, searchWindowRejection } from './dispatch-search.js';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
@@ -54,6 +56,9 @@ type LockedDispatch = {
   id: string;
   status: DispatchStatus;
   expiresAt: Date;
+  searchMaxAttempts?: number;
+  searchAttempt?: number;
+  searchStoppedReason?: string | null;
   claimedByProviderId: string | null;
   creditMode: DispatchCreditMode;
   claimedAt: Date | null;
@@ -62,6 +67,7 @@ type LockedDispatch = {
 };
 const REJECTION_MESSAGES: Record<DispatchErrorCode, string> = {
   DISPATCH_EXPIRED: 'Dispatch window has closed',
+  DISPATCH_RETRY_PENDING: 'Waiting for next search window',
   DISPATCH_CANCELLED: 'Dispatch was cancelled',
   DISPATCH_ALREADY_CLAIMED: 'Dispatch was already claimed by another provider',
   DISPATCH_DELIVERED: 'Dispatch was already delivered and is closed',
@@ -83,10 +89,20 @@ function statusWhere(
   status: DispatchStatus | undefined,
   now: Date,
 ): Prisma.DispatchWhereInput {
-  if (status === 'OPEN') return { status: 'OPEN', expiresAt: { gt: now } };
+  const pending: Prisma.DispatchWhereInput = {
+    status: 'OPEN',
+    searchMaxAttempts: 5,
+    searchAttempt: { lt: 5 },
+    searchStoppedReason: null,
+  };
+  if (status === 'OPEN')
+    return { status: 'OPEN', OR: [{ expiresAt: { gt: now } }, pending] };
   if (status === 'EXPIRED')
     return {
-      OR: [{ status: 'EXPIRED' }, { status: 'OPEN', expiresAt: { lte: now } }],
+      OR: [
+        { status: 'EXPIRED' },
+        { status: 'OPEN', expiresAt: { lte: now }, NOT: pending },
+      ],
     };
   return status ? { status } : {};
 }
@@ -127,6 +143,17 @@ export class DispatchService {
             status: 'OPEN',
             expiresAt: { gt: now },
             candidates: { some: { providerId, status: 'OFFERED' } },
+            OR: [
+              { searchMaxAttempts: 1 },
+              {
+                searchRounds: {
+                  some: {
+                    expiresAt: { gt: now },
+                    providerIds: { has: providerId },
+                  },
+                },
+              },
+            ],
           }
         : query.view === 'CLAIMED'
           ? {
@@ -229,7 +256,7 @@ export class DispatchService {
       this.prisma.$transaction(async (tx) => {
         const dispatch = await this.lock(tx, dispatchId);
         const candidate = await this.candidate(tx, dispatchId, providerId);
-        const now = new Date();
+        const now = await dispatchClaimTime(tx, dispatch);
         const rejection = claimRejection(dispatch, candidate, providerId, now);
         if (rejection === 'ALREADY_OWNER') {
           const historical = await tx.dispatchPreEnforcementAward.findFirst({
@@ -541,6 +568,8 @@ export class DispatchService {
     try {
       return await work;
     } catch (error) {
+      const windowCode = searchWindowRejection(error);
+      if (windowCode) throw reject(windowCode);
       const code = awardRejectionCode(error);
       if (code)
         this.logger.warn({
@@ -597,7 +626,7 @@ export class DispatchService {
     await lockExecutionDispatch(tx, dispatchId);
     const [row] = await tx.$queryRaw<
       LockedDispatch[]
-    >`SELECT d.id, d.status, d."expiresAt", d."claimedByProviderId", d."creditMode", d."claimedAt", q."serviceZoneId", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
+    >`SELECT d.id, d.status, d."expiresAt", d."searchMaxAttempts", d."searchAttempt", d."searchStoppedReason", d."claimedByProviderId", d."creditMode", d."claimedAt", q."serviceZoneId", q."serviceType" FROM "Dispatch" d JOIN "DeliveryQuote" q ON q.id = d."deliveryQuoteId" WHERE d.id = ${dispatchId}::uuid FOR UPDATE OF d`;
     if (!row) throw new NotFoundException('Dispatch not found');
     return row;
   }

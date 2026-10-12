@@ -1,5 +1,6 @@
 import { ShippingPaymentResponse } from '../customers/shipping.responses.js';
 import { ExecutionResponse } from '../delivery-execution/execution.responses.js';
+import { DispatchSearchResponse } from '../dispatch/dispatch-search.js';
 import {
   CollectionInstructionsResponse,
   collectionInstructionsDoc,
@@ -208,6 +209,8 @@ export class DriverDispatchResponse {
       'false después de recogida, incluida transferencia. Los importes de adelanto siguen siendo históricos.',
   })
   advanceToOriginAllowed?: boolean;
+  @ApiPropertyOptional({ type: DispatchSearchResponse })
+  search?: DispatchSearchResponse;
   @ApiPropertyOptional({
     type: CollectionInstructionsResponse,
     description: collectionInstructionsDoc,

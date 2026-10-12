@@ -52,6 +52,17 @@ const schema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
+
+  AUTOMATIC_DISPATCH_SEARCH_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  DISPATCH_SEARCH_POLL_SECONDS: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(300)
+    .default(5),
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),

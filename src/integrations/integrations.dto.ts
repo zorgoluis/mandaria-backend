@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   ArrayMaxSize,
   ArrayUnique,
   IsArray,
@@ -70,6 +71,7 @@ export class IntegrationTokenResponse {
   @ApiProperty({ example: 3600 }) expiresIn!: number;
 }
 export class IntegrationResponse {
+  @ApiProperty({ default: false }) automaticDispatchSearch!: boolean;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() name!: string;
   @ApiProperty() code!: string;
@@ -121,4 +123,13 @@ export class IntegrationListResponse extends IntegrationResponse {
     description: 'Up to 100 credential metadata records; no secrets',
   })
   credentials!: CredentialResponse[];
+}
+
+export class DispatchSearchPolicyDto {
+  @ApiProperty({
+    description:
+      'Opt-in for future converted prepaid dispatches only; five windows. Existing searches retain their policy.',
+  })
+  @IsBoolean()
+  automaticDispatchSearch!: boolean;
 }

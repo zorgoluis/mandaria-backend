@@ -1,4 +1,6 @@
 import { ShippingPaymentResponse } from '../customers/shipping.responses.js';
+
+import { DispatchSearchResponse } from '../dispatch/dispatch-search.js';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   B2B_DELIVERY_STATUSES,
@@ -87,6 +89,8 @@ export class PublicTerminalOutcomeResponse {
 }
 
 export class DeliveryStatusResponse {
+  @ApiPropertyOptional({ type: DispatchSearchResponse })
+  search?: DispatchSearchResponse;
   @ApiProperty({
     type: ShippingPaymentResponse,
     nullable: true,

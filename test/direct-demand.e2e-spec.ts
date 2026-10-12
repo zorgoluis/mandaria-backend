@@ -34,6 +34,9 @@ process.env.LOCAL_DELIVERY_ASSIGNMENT_TTL_MINUTES = '30';
 process.env.INDEPENDENT_DRIVER_MAX_VEHICLES = '2';
 process.env.MAIL_PROVIDER = 'local_outbox';
 process.env.DETAILED_EXECUTION_ENABLED = 'true';
+// Even with the global search gate on, direct customers must not join B2B retries.
+process.env.AUTOMATIC_DISPATCH_SEARCH_ENABLED = 'true';
+process.env.DISPATCH_SEARCH_POLL_SECONDS = '0';
 process.env.CUSTOMER_ADMISSION_ENABLED = 'true';
 process.env.PREQUOTE_ENABLED = 'true';
 process.env.PREQUOTE_CONVERSION_ENABLED = 'true';
@@ -521,6 +524,10 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
       d.id,
       independent ? { driverId: drivers.indy } : { providerId: providers.A },
     );
+    expect(d.searchMaxAttempts).toBe(1);
+    expect(
+      await prisma.dispatchSearchRound.count({ where: { dispatchId: d.id } }),
+    ).toBe(0);
     if (independent) await take(t.indy, d.id, vehicles.indy).expect(200);
     else {
       await claim(t.A, d.id).expect(200);
@@ -1714,6 +1721,13 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
       .auth(t.personal, bearer)
       .set('Idempotency-Key', key)
       .send({ expectedLinkRevision });
+  // The fixture uses the database clock, like streamStartedAt; Windows clocks can differ by milliseconds.
+  async function capturedNow() {
+    const [row] = await prisma.$queryRaw<
+      { now: Date }[]
+    >`SELECT clock_timestamp() AT TIME ZONE 'UTC' AS now`;
+    return row.now.toISOString();
+  }
   async function gps(d: Awaited<ReturnType<typeof start>>) {
     const e = await head(d),
       path = `/api/v1/driver/dispatches/${d.id}/assignments/${e.activeAssignmentId}`;
@@ -1730,7 +1744,7 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
     const sample = {
       streamId: opened.body.streamId,
       sequence: 1,
-      capturedAt: new Date().toISOString(),
+      capturedAt: await capturedNow(),
       latitude: 17.42,
       longitude: -93.38,
       accuracyMeters: 12,
@@ -1785,9 +1799,21 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
         capturedAt: new Date(Date.now() - 121000).toISOString(),
       })
       .expect(422);
-    const newer=await g.send({...g.sample,sequence:3,capturedAt:new Date().toISOString(),accuracyMeters:100}).expect(200);
-    const delayed=await g.send({...g.sample,sequence:2}).expect(200);
-    expect(delayed.body).toMatchObject({outcome:'SUPERSEDED',acknowledgedSequence:null,currentSequence:3,locationVersion:newer.body.locationVersion});
+    const newer = await g
+      .send({
+        ...g.sample,
+        sequence: 3,
+        capturedAt: await capturedNow(),
+        accuracyMeters: 100,
+      })
+      .expect(200);
+    const delayed = await g.send({ ...g.sample, sequence: 2 }).expect(200);
+    expect(delayed.body).toMatchObject({
+      outcome: 'SUPERSEDED',
+      acknowledgedSequence: null,
+      currentSequence: 3,
+      locationVersion: newer.body.locationVersion,
+    });
     const observed = (await ownLocation(id).expect(200)).body;
     expect(observed.location.sample.latitude).toBe(17.42);
     expect((await ownLocation(id).expect(200)).body.location).toEqual(
@@ -1938,7 +1964,7 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
       g.send({
         ...g.sample,
         sequence: 2,
-        capturedAt: new Date().toISOString(),
+        capturedAt: await capturedNow(),
       }),
       cancel(id),
     ]);
@@ -2103,7 +2129,7 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
       g.send({
         ...g.sample,
         sequence: 2,
-        capturedAt: new Date().toISOString(),
+        capturedAt: await capturedNow(),
       }),
     ]);
     expect(race[0].status).toBe(201);

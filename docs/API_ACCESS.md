@@ -53,6 +53,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | DELETE | /api/v1/admin/integrations/{id}/credentials/{credentialId} | bearer | SUPER_ADMIN | — | Compatibility alias for credential revocation |
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/revoke | bearer | SUPER_ADMIN | — | AdminIntegrationsController_revoke[0] |
 | POST | /api/v1/admin/integrations/{id}/credentials/{credentialId}/rotate | bearer | SUPER_ADMIN | — | Create replacement with the same scopes/expiry; revoke old credential explicitly after transition |
+| PATCH | /api/v1/admin/integrations/{id}/dispatch-search-policy | bearer | SUPER_ADMIN | — | AdminIntegrationsController_searchPolicy[0] |
 | GET | /api/v1/admin/integrations/{id}/shipping-policy | bearer | SUPER_ADMIN | — | Consultar pagador predeterminado B2B y revisión; no altera solicitudes históricas |
 | POST | /api/v1/admin/integrations/{id}/shipping-policy | bearer | SUPER_ADMIN | — | Cambiar política para nuevas solicitudes; cambio invalida MPQ todavía no convertidas |
 | GET | /api/v1/admin/integrations/{id}/shipping-policy/attempt | bearer | SUPER_ADMIN | — | Acreditar recibo original de política por actor/clave; no comparar sólo política actual |
@@ -198,6 +199,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | DELETE | /api/v1/integrations/{id}/credentials/{credentialId} | bearer | SUPER_ADMIN | — | Compatibility alias for credential revocation |
 | POST | /api/v1/integrations/{id}/credentials/{credentialId}/revoke | bearer | SUPER_ADMIN | — | AdminIntegrationsController_revoke[1] |
 | POST | /api/v1/integrations/{id}/credentials/{credentialId}/rotate | bearer | SUPER_ADMIN | — | Create replacement with the same scopes/expiry; revoke old credential explicitly after transition |
+| PATCH | /api/v1/integrations/{id}/dispatch-search-policy | bearer | SUPER_ADMIN | — | AdminIntegrationsController_searchPolicy[1] |
 | GET | /api/v1/integrations/me | integration-bearer | — | — | IntegrationsController_me |
 | GET | /api/v1/integrations/scope-check | integration-bearer | — | deliveries:read | Authorization probe for deliveries:read; does not access or implement deliveries |
 | POST | /api/v1/integrations/token | Pública | — | — | Exchange Client Credentials for a short-lived B2B token; no refresh token |

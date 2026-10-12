@@ -1,0 +1,126 @@
+{
+  "date": "2026-10-11",
+  "task": "Integrar main en QA en worktree aislado; sin commit ni push",
+  "baseQA": "95d91ba",
+  "main": "1fa2cb1",
+  "worktree": "qa-main-integration/mandaria-backend",
+  "migrationCount": 45,
+  "migrationPaths": [
+    {
+      "from": "QA",
+      "countBefore": 43,
+      "countAfter": 45,
+      "exitCode": 0
+    },
+    {
+      "from": "main",
+      "countBefore": 32,
+      "countAfter": 45,
+      "exitCode": 0
+    },
+    {
+      "from": "empty",
+      "countAfter": 45,
+      "exitCode": 0
+    }
+  ],
+  "sqlChecks": {
+    "returnedPreserved": true,
+    "independentAuthorityPreserved": true,
+    "oldMigrationFilesUnmodified": true
+  },
+  "tests": {
+    "e2e": [
+      {
+        "file": "dispatch-search.e2e-spec.ts",
+        "passed": 17,
+        "exitCode": 0
+      },
+      {
+        "file": "delivery-execution.e2e-spec.ts",
+        "passed": 29,
+        "exitCode": 0
+      },
+      {
+        "file": "direct-demand.e2e-spec.ts",
+        "passed": 29,
+        "exitCode": 0
+      },
+      {
+        "file": "independent-attempts.e2e-spec.ts",
+        "passed": 16,
+        "exitCode": 0
+      },
+      {
+        "file": "public-delivery-tracking.e2e-spec.ts",
+        "passed": 2,
+        "exitCode": 0
+      },
+      {
+        "file": "dispatch.e2e-spec.ts",
+        "passed": 13,
+        "exitCode": 0
+      },
+      {
+        "file": "delivery-assignments.e2e-spec.ts",
+        "passed": 13,
+        "exitCode": 0
+      },
+      {
+        "file": "independent-drivers.e2e-spec.ts",
+        "passed": 23,
+        "exitCode": 0
+      },
+      {
+        "file": "delivery-completion.e2e-spec.ts",
+        "passed": 29,
+        "exitCode": 0
+      },
+      {
+        "file": "b2b-delivery-status.e2e-spec.ts",
+        "passed": 21,
+        "exitCode": 0
+      },
+      {
+        "file": "dispatch-credit-snapshots.e2e-spec.ts",
+        "passed": 14,
+        "exitCode": 0
+      }
+    ],
+    "e2eTotal": 206,
+    "unit": {
+      "files": 9,
+      "passed": 104,
+      "exitCode": 0
+    },
+    "publicB2B": {
+      "passed": 40,
+      "exitCode": 0
+    },
+    "newCombinedRegression": 1
+  },
+  "checks": {
+    "build": 0,
+    "typescriptNoEmit": 0,
+    "openapiGeneration": 0,
+    "docsB2bCheck": 0,
+    "oxlint": 0,
+    "eslintChangedTypescript": 0
+  },
+  "warnings": [
+    "Oxlint: readFileSync no usado en scripts/verify-authorized-acceptance-c3-regression.mjs, archivo sin cambios."
+  ],
+  "limitations": [
+    "Sin suite completa ni nueva etapa CHECK.",
+    "Migraciones probadas con esquemas y datos sintéticos; no con copia de producción.",
+    "Sin prueba física Android ni ejecución de Mandaria Web, VM o Coita.",
+    "Sin Docker, .env, activación, versión, commit, push o despliegue."
+  ],
+  "intermediateFailures": [
+    "GPS: reloj Node anterior por milisegundos a streamStartedAt; fixture sincronizada al reloj SQL sin relajar reglas.",
+    "Regresión combinada: identificadores de fixture corregidos a UUID y formato Vehicle vigente.",
+    "Snapshots: importación interrumpida por reconstrucción de dist; repetición posterior serializada.",
+    "Snapshots: teardown histórico incompatible con términos inmutables; reutilizado retainShippingFixtures en cierre global. Sólo ejecución completa final acreditada.",
+    "Verificación SQL auxiliar: una búsqueda textual omitió comillas del identificador; cuerpo SQL exacto confirmado después en ambas bases."
+  ]
+}

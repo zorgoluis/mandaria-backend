@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación autorizada main → QA (2026-10-11):** el propietario solicita commit y push del merge validado. Fetch confirma QA95d91ba y main1fa2cb1 sin avances; índice sin conflictos y diff limpio. Se publica desde el worktree separado mediante HEAD:QA, sin force y sin incorporar BITACORA local ni nul del checkout original. Las 206 E2E,104 unitarias y40 públicas corresponden a la tarea anterior; no se repiten suites en esta publicación. Sin despliegue ni activación. El checkout QA original se conserva para no alterar sus cambios locales.
+
+- **Integración main → QA (2026-10-11):** worktree aislado basado en QA95d91ba + main1fa2cb1; conflictos resueltos, GPS/hitos y cinco intentos conservados,45 migraciones.206 E2E +104 unitarias +40 públicas nuevas aprobadas; build/tipos/documentación/linters completos. Merge preparado sin commit/push; QA original y sus cambios ajenos intactos. [Evidencia actual](docs/checks/qa-main-integration-evidence.json). Las entradas siguientes conservan contexto y verificaciones anteriores; no describen todas el estado integrado.
+
 - **Cierre documental QA (2026-10-11):** commit solicitado de las notas pendientes de diagnóstico y comparación de ramas en este checkout QA. La corrección operativa y su bitácora ya están publicadas por separado en patches30f625b; no se integran aquí. Revisión documental y diff solamente, sin pruebas nuevas ni push en esta tarea.
 
 - **Comparación remota main/patches/QA (2026-10-11):** fetch confirmado. origin/main073f2e3 incluye íntegramente origin/patches33cd34e (búsqueda automática cinco intentos); ambos32 migraciones. origin/QA e34bc04 tiene43 migraciones y contiene b4318ce (trackingMode), ausente en main. Divergencia main...QA:2/18 commits; QA no incluye33cd34e. Desfase contractual Web/API explicado por líneas de desarrollo divergentes, no por fallo del merge patches→main. Sin merge ni despliegue ejecutados.
@@ -172,6 +176,18 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 - **Ejecución detallada implementada localmente (2026-10-02):** cinco hitos, historial/actor real, barreras de custodia, incidencias y resoluciones SUPER_ADMIN RETURNED/transferencia atómica. Cargo original preservado; B2B aditivo sin nuevos webhooks; legacy sin hitos inventados. [Handoff](docs/DETAILED-EXECUTION-HANDOFF.md) y [verificación](docs/DETAILED-EXECUTION-VERIFICATION.md). En esta tarea: 403 unitarias, 135 E2E de ocho archivos, 34 contrato público; build, tipos, linters, migración limpia e incremental locales aprobados. Intentos incompletos excluidos y límites documentados. Flag false por defecto; pendientes Frontend y responsable/suplente/plazo SUPER_ADMIN. Sin activación, commit/push ni despliegue. El registro de diseño previo siguiente queda histórico.
 
 - **Diseño de ejecución y excepciones cerrado 2026-10-02:** [propuesta](docs/DETAILED-EXECUTION-PROPOSAL.md) incorpora decisiones aprobadas: cinco hitos consecutivos, bloqueo ordinario postrecogida, incidencia con custodia retenida y resolución SUPER_ADMIN por devolución física o transferencia documentada; B2B consulta, sin nuevos webhooks. Define RETURNED terminal, cambio atómico de ejecutor conservando pagador/progreso, DTOs, garantías SQL, migración futura y handoff. Sólo documentación; falta implementación y designación operativa de cobertura SUPER_ADMIN. Configuración comercial post-reset completada/probada según propietario. Checkout actual QA no contenía propuesta anterior: recuperada como antecedente desde 4f2e846 sin cambiar rama ni importar código.
+
+- **Publicación autorizada del contrato Web (2026-10-11):** revisión y preparación de commit/push exclusivamente en patches sobre33cd34e, remoto sincronizado. Incluye proyecciones, regresiones, OpenAPI y documentación de esta corrección. Checkout QA y cambios ajenos preservados; sin merge, configuración, migraciones ni despliegue. Resultados funcionales de la tarea anterior conservados como históricos; esta tarea verifica alcance y diff.
+
+- **Compatibilidad operativa Web en patches (2026-10-11):** trackingMode explícito null/LEGACY por historial persistido en proveedor/admin/independiente y asignación propia driver/me; no DETAILED ni integración QA. Worktree separado sobre33cd34e preserva checkout QA sucio. Nuevas84 unitarias,94 E2E en5 archivos/bases aisladas,33 públicas, build/tipos producto/linters/OpenAPI PASS; cinco errores globales de tipos preexistentes conservados. B2B y búsqueda automática sin cambios semánticos; lecturas no modifican cinco rondas. Sin configuración, migraciones, versión, commit/push/despliegue ni acceso VM/Coita. [Detalle y ejemplos](docs/OPERATIONAL-WEB-COMPATIBILITY.md).
+
+- **Búsqueda automática de ejecutor (2026-10-10): IMPLEMENTADA, validación focalizada local.** Hasta 5 rondas inicial+4 sólo B2B PREPAID convertido con flag y opt-in; misma MDR/MQ/Dispatch/precio, rondas transaccionales y estado search. Deshabilitada por defecto. 52 E2E, 52 unitarias y 33 pruebas de contrato únicas aprobadas; build/tipos de producto/linters/OpenAPI/migración limpia/drift PASS. Tipos globales siguen con 5 diagnósticos preexistentes en tests ajenos. Web/B2B y activación pendientes. [Handoff](docs/AUTOMATIC-DISPATCH-SEARCH-HANDOFF.md). Sin Docker, base principal, .env, versión, commit, push ni despliegue.
+
+
+- **Consulta de vencimiento de oferta (2026-10-10):** inspección en patches confirma OPEN vencido como EXPIRED efectivo, fuera de disponibles y claim rechazado; TTL default10min limita toma, no ejecución ya reclamada. Sin republicación automática; consulta B2B expone EXPIRED. Sólo revisión estática, sin ejecución funcional.
+
+- **Sincronización de contexto patches (2026-10-10):** rama activa patches, HEAD71eb11a, coincide con origin/patches y origin/main tras fetch. Sin cambios de producto; nul preexistente conservado. Base actual:31 migraciones y solicitudes de socio con filtro multiestado; avances V1.17/V1.18 de otra rama no se presumen integrados. No se reinició ni migró el entorno nativo anterior de42 migraciones.
+
 - **Solicitudes de socio, Fase 1 (2026-10-04): IMPLEMENTADA, VERIFICADA LOCALMENTE Y PROBADA EN DOCKER LOCAL, sin commit ni despliegue.** Rama `feat/solicitud-repartidor`. Endpoint público `POST /api/v1/public/partner-applications` (202 `SOC-NNNNNN`, honeypot, 5/10 min por IP, deduplicación 30 días con advisory locks) y bandeja SUPER_ADMIN `/api/v1/admin/partner-applications` (lista, detalle, estado, vínculos). La solicitud es un lead y no crea cuentas, Drivers ni proveedores. Migración incremental `20261004000100_partner_applications`. Variables nuevas opcionales `TRUST_PROXY_HOPS` (default 0) y `PARTNER_APPLICATIONS_NOTIFY_EMAIL`. Topología indicada por el propietario: landing `mandaria.com.mx`, admin `app.mandaria.com.mx`, API `api.mandaria.com.mx`; en la VM hace falta `CORS_ORIGINS` con los dos primeros orígenes, `TRUST_PROXY_HOPS=1` y `MANDARIA_WEB_URL=https://app.mandaria.com.mx`. Pendientes del propietario: proveedor que recibe a los independientes aprobados (§9.3), propuestas al contrato compartido (paginación `page`/`pageSize`) y la decisión de mover la API B2B a `api.`. [Handoff](docs/PARTNER-APPLICATIONS-HANDOFF.md).
 
 - **Publicación documental autorizada 2026-10-02:** se prepara commit y push de propuesta de ejecución detallada y continuidad pendiente en la rama actual `main`; resultado confirmado por Git en esta sesión. Sin implementación ni despliegue.
@@ -613,6 +629,26 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-11 — Commit y push autorizados de la integración
+
+Solicitud: publicar en QA la integración previamente validada. Cambios: actualización de continuidad y commit de merge con padres QA95d91ba/main1fa2cb1; sin modificaciones funcionales adicionales. Verificaciones de esta tarea: fetch, revisión del índice, ausencia de conflictos y diff --check. Resultado preparado para push normal HEAD:QA; confirmación remota se entrega al propietario al finalizar. Pendientes: sincronizar el checkout original preservando sus cambios locales; VM/Android y despliegue fuera de alcance.
+
+
+
+### 2026-10-11 — Integración main → QA en worktree aislado, pendiente de commit
+
+Solicitud: integrar main conservando GPS, hitos y los cinco intentos automáticos; probar antes de commit/push. Base QA95d91ba y main1fa2cb1. Trabajo en C:/Users/zorgl/.codex/worktrees/qa-main-integration/mandaria-backend, HEAD separado basado en QA y merge --no-commit pendiente. QA original continúa en95d91ba: BITACORA local y residual nul conservados, sin incorporar cambios ajenos.
+
+Cambios: resueltos15 conflictos; prevalece el clasificador persistido LEGACY/DETAILED/null de QA, sus permisos y campos de ejecución/cobro. Se integra búsqueda opcional de main sin cambiar cinco ventanas, elegibilidad, carreras, cancelación, historial ni agotamiento. Las conversiones directas con integrationClientId nulo quedan excluidas aun con gate global habilitado. Nueva migración20261011000100_reconcile_search_execution restaura RETURNED y la regla de autoridad independiente de QA después de la migración de búsqueda de main; Dispatch_search_guard conserva inmutabilidad y renovación de ventanas. No se reescriben migraciones existentes. OpenAPI completo/público y API_ACCESS regenerados.
+
+Verificaciones nuevas:206 E2E en11 archivos completos;104 unitarias en9 archivos;40 pruebas públicas. Regresión nueva de servicio B2B con búsqueda, asignación detallada, cinco hitos, GPS, entrega y worker posterior: sin reiniciar intento/historial/ledger y modo DETAILED conservado al apagar flag en fixture. Clientes directos/GPS repetidos con gate B2B de prueba activo y cero rondas. Build, TypeScript sin emisión, generación/check de documentación, ESLint focal y Oxlint pasan; este último conserva un aviso previo en script no modificado.45 migraciones desde vacío, QA43 y main32; guard SQL comprobado. Sólo bases sintéticas PostgreSQL locales, detenidas al terminar.
+
+Incidencias de validación: reloj de fixture GPS sincronizado a SQL; identificadores de regresión corregidos; limpieza de snapshots reutiliza retainShippingFixtures para respetar términos inmutables; una importación coincidió con reconstrucción de dist y se repitió posteriormente. No se acreditan ejecuciones fallidas, parciales ni resultados históricos. Detalle en VERIFICATION y docs/checks/qa-main-integration-evidence.json.
+
+Resultado: integración resuelta y validada localmente, sin commit/push ni movimiento de QA. Pendientes: revisar/confirmar commit del merge y actualización posterior de QA preservando sus cambios locales; prueba real Web/Android y despliegue quedan fuera. No Docker, VM, Coita, base principal, versión, configuración real ni activación.
+
+
 
 ### 2026-10-07 — Preparación nativa de independientes para Android
 
@@ -2764,3 +2800,51 @@ Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/t
 - Verificaciones actuales: rama QA, revisión completa del diff documental y git diff --check; se selecciona exclusivamente BITACORA.md. Evidencias funcionales anteriores no reejecutadas.
 - Resultado: documentación preparada para commit en QA; el parche Web permanece en patches30f625b, sin merge ni cambios de producto.
 - Pendientes: push de este commit no solicitado en esta tarea; residual nul excluido.
+
+### 2026-10-10 — Sincronización con patches procedente de main
+
+- Solicitud: actualizar contexto del proyecto a patches derivada de main.
+- Trabajo: lectura de BITACORA, README y VERIFICATION; fetch limitado a main/patches y revisión de referencias, log y diferencias.
+- Verificación nueva: HEAD/origin patches sin diferencias (0 ahead/0 behind), main y patches en71eb11a;31 directorios de migraciones. Sin pruebas de producto.
+- Resultado: contexto sincronizado; sólo esta documentación modificada. nul conservado. Sin merge, reset, cambios de base/configuración, reinicio, commit, push ni despliegue.
+- Pendiente: cualquier ejecución con esta rama debe considerar que el entorno nativo previo tenía42 migraciones de otra rama; no se modificó ni se acredita compatibilidad.
+
+
+### 2026-10-10 — Explicación de contador de despacho
+- Solicitud: explicar qué sucede si nadie toma el servicio antes de vencer.
+- Revisión: dispatch-policy/service, delivery-status, quotes y configuración; sin cambios de producto ni pruebas.
+- Resultado: expiración efectiva, sin toma tardía ni reapertura automática; distinguir de vencimiento de cotización y de solicitud cancelada. Historial y pagos no se revierten automáticamente.
+
+### 2026-10-10 — búsqueda automática, 5 intentos totales
+
+- Solicitud: implementar en patches inicial+4, manteniendo contrato financiero y legacy, con verificación proporcional y entrega en una tarea.
+- Cambios: política global/per integración, migración incremental, worker transaccional, historia mínima de rondas, revalidación de tiempo bajo locks, proyecciones search y 409 de espera, contrato público/OpenAPI y guía Web/B2B. No duplicados de solicitudes/cotizaciones ni nuevos motores de precio.
+- Verificaciones nuevas: 16 E2E nuevos + 36 regresión; 52 unitarias seleccionadas y 33 pruebas públicas únicas. Build, tipos producto, linters, Prisma/migraciones limpias/drift, OpenAPI/docs y diff aprobados. Tipos globales: 5 errores anteriores en dos tests no modificados. Fallos de preparación y repeticiones completos en VERIFICATION; sin abortos nativos.
+- Resultado: implementación deshabilitada por defecto; una sola búsqueda durable y cinco ventanas máximas, recuperación sin ventanas ficticias. Historia previa conservada.
+- Pendientes: consumidores Web/B2B, operación/activación futura y deuda previa de tipos. Sin cambios en otros proyectos, base principal, .env, versión, commit, push ni despliegue.
+
+### 2026-10-10 — commit y push solicitados en patches
+
+- Solicitud: guardar y subir la implementación de búsqueda automática a origin/patches.
+- Cambios: actualización de continuidad y preparación del commit de producto, migración, pruebas y documentación ya validados. Se excluye el archivo nul preexistente y los artefactos temporales ignorados.
+- Verificaciones: rama patches y remoto revisados; git diff --check sin errores. Las pruebas funcionales son las registradas en la tarea anterior; no se repitieron.
+- Resultado: publicación autorizada; el resultado del commit/push se confirma mediante Git y en la respuesta de esta tarea.
+- Pendientes: adaptación Web/B2B, activación futura y cinco diagnósticos preexistentes de tipos en pruebas. Sin despliegue, migración de base principal ni activación.
+
+
+### 2026-10-11 — Contrato operativo Web sobre patches
+
+- Solicitud: eliminar bloqueo por trackingMode undefined sin mezclar QA ni alterar cinco intentos automáticos.
+- Cambios: proyección compartida por conteo histórico, campo en driver/me y DTOs/OpenAPI; regresiones y documentación. Checkout QA con cambios previos preservado, patches en worktree separado.
+- Verificaciones nuevas: 84 unitarias, 94 E2E completos (13+13+23+29+16) en bases temporales separadas, 33 públicas; build/tipos producto y linters focalizados exit0; docs:b2b:check y comparación JSON B2B sin cambios. Tipos globales siguen con cinco errores ajenos históricos. Cluster temporal detenido; preparación inicial fallida antes de tests documentada, sin aborto Vitest.
+- Resultado: null sin asignación; LEGACY activo/finalizado sin ampliar permisos; mutaciones y consultas coherentes, rondas sin mutación al consultar.
+- Pendientes: prueba visual Web/despliegue fuera de esta tarea; no se acredita VM ni Coita. Sin cambios de negocio/configuración/migraciones/versiones, commit/push ni operaciones reales.
+
+
+### 2026-10-11 — Commit y push del parche operativo autorizados
+
+- Solicitud: publicar únicamente los cambios de compatibilidad Web en patches, sin integrar QA ni cambios ajenos.
+- Cambios: continuidad de publicación y selección explícita de los archivos del parche en el worktree aislado.
+- Verificaciones actuales: rama patches sobre33cd34e; fetch origin patches y divergencia0/0 antes del commit; revisión de proyecciones, alcance y git diff --check. Pruebas de la implementación anterior no reejecutadas.
+- Resultado: conjunto revisado y preparado para commit/push autorizado; confirmación del resultado Git en esta sesión. QA conserva su BITACORA modificada y residual nul.
+- Pendientes: prueba visual Web y despliegue siguen fuera de alcance; sin integración QA ni operaciones de base.

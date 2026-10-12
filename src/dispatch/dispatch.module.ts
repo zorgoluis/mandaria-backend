@@ -1,3 +1,4 @@
+import { DispatchSearchWorker } from './dispatch-search.worker.js';
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module.js';
 import { ProvidersModule } from '../providers/providers.module.js';
@@ -14,6 +15,6 @@ import { AdminDispatchesController } from './admin-dispatches.controller.js';
 @Module({
   imports: [AuthModule, ProvidersModule, B2bWebhooksModule],
   controllers: [ProviderDispatchesController, AdminDispatchesController],
-  providers: [DispatchService, ProviderCoveragesService],
+  providers: [DispatchService, ProviderCoveragesService, DispatchSearchWorker],
 })
 export class DispatchModule {}

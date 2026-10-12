@@ -48,6 +48,7 @@ describe('C3 exact clock boundaries (simulated DB clock, not physical synchroniz
         id: 'owner',
         name: 'fixture',
         code: 'C3',
+        automaticDispatchSearch: false,
         status: 'ACTIVE',
         createdAt: now,
         updatedAt: now,

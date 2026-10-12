@@ -58,6 +58,21 @@ export class IntegrationsService {
       throw error;
     }
   }
+  async setSearchPolicy(id: string, enabled: boolean, actorId: string) {
+    await this.get(id);
+    const result = await this.prisma.integrationClient.update({
+      where: { id },
+      data: { automaticDispatchSearch: enabled },
+      select: integrationSelect,
+    });
+    this.logger.log({
+      event: 'INTEGRATION_DISPATCH_SEARCH_POLICY_CHANGED',
+      integrationId: id,
+      actorId,
+      enabled,
+    });
+    return result;
+  }
   async setStatus(id: string, status: IntegrationStatus, actorId: string) {
     // REVOKED is terminal. SUSPENDED is reversible.
     const result = await this.prisma.integrationClient.updateMany({

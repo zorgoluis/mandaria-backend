@@ -1,4 +1,36 @@
 
+
+## Integración main → QA — 2026-10-11 (evidencia nueva)
+
+QA95d91ba + main1fa2cb1 en worktree separado, sin commit/push. [Manifiesto](docs/checks/qa-main-integration-evidence.json). Los resultados siguientes se ejecutaron en esta tarea; las secciones anteriores de desarrollo que siguen son evidencia histórica y no se suman.
+
+| Archivo E2E completo | Aprobadas |
+| --- | ---: |
+| dispatch-search.e2e-spec.ts | 17 |
+| delivery-execution.e2e-spec.ts | 29 |
+| direct-demand.e2e-spec.ts | 29 |
+| independent-attempts.e2e-spec.ts | 16 |
+| public-delivery-tracking.e2e-spec.ts | 2 |
+| dispatch.e2e-spec.ts | 13 |
+| delivery-assignments.e2e-spec.ts | 13 |
+| independent-drivers.e2e-spec.ts | 23 |
+| delivery-completion.e2e-spec.ts | 29 |
+| b2b-delivery-status.e2e-spec.ts | 21 |
+| dispatch-credit-snapshots.e2e-spec.ts | 14 |
+| **Total E2E** | **206** |
+
+Unitarias:104/104 en9 archivos completos: dispatch, independent-drivers, delivery-assignments, delivery-completion, delivery-status, dispatch-credit-snapshots, location, public-execution-identity y check-c3-authorized-acceptance. Exportador público y firma webhook:40/40 mediante npm run test:public-b2b. No suite completa ni etapa CHECK adicional.
+
+Nueva regresión combinada en dispatch-search: null antes de asignar; DETAILED con ejecución persistida; cinco hitos y publicación GPS; entrega; clasificación histórica aun deshabilitando el flag de prueba; worker no cambia intento, rondas ni ledger después. Regresiones existentes de cinco ventanas, concurrencia, cancelación, elegibilidad y agotamiento ejecutadas completas. direct-demand ahora activa únicamente en su proceso de prueba el gate B2B y exige searchMaxAttempts=1/cero rondas para clientes directos. Se conserva la retención y autoridad GPS de QA. No se modificaron reglas de producto GPS para hacer pasar pruebas.
+
+Prisma generate y npm run build aprobados. npm run docs:b2b (incluye build), docs:b2b:check y test:public-b2b aprobados. tsc --noEmit --incremental false aprobado; ESLint focal de TypeScript cambiado aprobado. npm run lint aprobado con advertencia preexistente readFileSync no usado en scripts/verify-authorized-acceptance-c3-regression.mjs (sin cambios). Diff sin errores.
+
+Migraciones:45 desde vacío en bases separadas por archivo; upgrade de esquema QA43→45 y main32→45 con migrate deploy, sin reescribir SQL histórico ni checksums. Inspección del cuerpo dispatch_guard confirma RETURNED y condición OLD.status distinta de CLAIMED para autoridad independiente; siguen instalados Dispatch_search_guard y Dispatch_search_record. La migración nueva20261011000100 reconcilia los triggers. No es una validación sobre copia de datos de producción.
+
+Fallos intermedios no acreditados: primer GPS422 por captura anterior11ms a streamStartedAt; posteriores409 eran cupo ocupado al abortar ese escenario. Fixture usa reloj SQL;29/29 finales completos. Nueva fixture combinada corrigió formato y longitud de identificadores, luego17/17. Snapshots tuvo una importación mientras se reconstruía dist y teardown antiguo contra términos inmutables; corrección limitada a retainShippingFixtures en cierre global y14/14 completos finales. Se descartan repeticiones parciales y los conteos repetidos. No hubo aborto nativo del runner. Logs auxiliares quedan ignorados en .tmp/merge-validation.
+
+Bases temporales PostgreSQL18 detenidas; sin Docker, base principal, Coita, VM, Web en navegador, Android físico, cambios de .env, flags reales, versión, commit/push o despliegue. QA original sigue intacta. Pendiente confirmar el merge y validar interfaces/operación real por separado.
+
 ## V1.19 — residuales independientes, 2026-10-09
 
 **PASS de preparación y análisis backend; Compose pendiente APP.** [Guía y matriz](docs/V1.19-INDEPENDENT-RESIDUAL-FIXTURES.md), [evidencia](docs/checks/v119-independent-residual-ready.json). No es un nuevo PASS de GPS/TAKE/RELEASE/recuperación anteriores.
@@ -400,6 +432,58 @@ QA `cfc8773` como base; pruebas **nuevas de esta tarea**, exclusivamente Postgre
 Sólo documentación: [propuesta y handoff](docs/DETAILED-EXECUTION-PROPOSAL.md), BITACORA y este registro. Checkout QA `cfc8773`; propuesta anterior recuperada de `4f2e846` como antecedente, sin cambiar rama ni traer implementación. Decisiones aprobadas incorporadas y contratos propuestos de retorno/transferencia definidos contra restricciones reales de asignaciones, adjudicación, refund, cierre, identidad y outbox.
 
 Verificación actual: lectura estática de código/SQL/documentación y `git diff --check`; ninguna prueba de producto, migración, consulta de datos, build, revisión visual o ejecución remota. La matriz de pruebas y migración del documento es trabajo futuro. Configuración comercial probada por el propietario, no por esta revisión. No se declara capacidad implementada ni autoriza activación; falta implementación y cobertura operativa de incidencias SUPER_ADMIN.
+
+## Compatibilidad operativa Web — patches, 2026-10-11
+
+Evidencia NUEVA, separada del historial siguiente. [Contrato, endpoints, ejemplos y límites](docs/OPERATIONAL-WEB-COMPATIBILITY.md).
+
+| Verificación ejecutada | Resultado |
+|---|---|
+| Unitarios completos dispatch, independent-drivers, delivery-assignments, delivery-completion, delivery-status | 84/84, cinco archivos, exit0 |
+| E2E dispatch / delivery-assignments / independent-drivers / delivery-completion / dispatch-search | 13/13 + 13/13 + 23/23 + 29/29 + 16/16 = 94; archivos completos, exit0 |
+| PostgreSQL local aislado | Cluster nuevo loopback y una base vacía por archivo; 32 migraciones por base; detenido al terminar |
+| Historial y permisos | null antes de asignar (incluye claim proveedor); LEGACY activo, entregado/liberado; consulta/mutación iguales; driver/me flotilla e independiente; SUMMARY sin datos operativos y OFFER sin contactos |
+| Cinco intentos automáticos | Archivo completo; nuevas lecturas repetidas en cada ventana conservan Dispatch y filas de rondas exactamente; implementación sin cambios |
+| Build / tsc producto | PASS |
+| tsc global | FAIL por cinco diagnósticos preexistentes: invitations.spec.ts:150 y partner-applications.spec.ts:513,521; sin errores nuevos del parche |
+| Oxlint / ESLint de todos los archivos TS modificados | exit0 / exit0 |
+| OpenAPI completo / docs:b2b:check | Regenerado / PASS; cuatro esquemas humanos con trackingMode requerido |
+| Exportador público y firma HMAC completos | 33/33, exit0; JSON B2B semánticamente idéntico a HEAD |
+| git diff --check | PASS |
+
+Comandos: `npm run build`, `npx tsc -p tsconfig.build.json --noEmit`, `npx tsc -p tsconfig.json --noEmit`, `npx vitest run test/dispatch.spec.ts test/independent-drivers.spec.ts test/delivery-assignments.spec.ts test/delivery-completion.spec.ts test/delivery-status.spec.ts`; cada E2E con `node node_modules/vitest/vitest.mjs run --config vitest.config.e2e.ts test/<archivo>`. Runner privado y logs: `.tmp/operational-contract/`; no usa .env ni base principal. `npm run docs:openapi`, `npm run docs:b2b:check`, `npm run test:public-b2b`; linters focalizados, no suite completa ni nueva etapa CHECK.
+
+Intento inicial de preparación: Prisma P1012 por DATABASE_URL ausente al validar esquema; sin tests ejecutados. Runner privado corregido con URL de validación aislada y TEST_DATABASE_URL exclusiva, luego ejecuciones completas en cluster nuevo. No aborto Vitest. No ejecución visual frontend, VM o Coita; sin cambios de frontend, configuración, versión, migraciones, operaciones reales, commit/push ni despliegue. Checkout QA ajeno conservado; implementación en worktree patches.
+
+## Búsqueda automática de ejecutor — patches, 2026-10-10
+
+Implementada en una sola tarea, deshabilitada por defecto. [Contrato y handoff](docs/AUTOMATIC-DISPATCH-SEARCH-HANDOFF.md). Máximo 5 rondas sobre el mismo Dispatch/MDR/MQ autorizado; no renueva la MQ ni cobra créditos al buscar. PostgreSQL persiste política, contador y rondas; concurrencia, cancelación y adjudicación conservan locks y garantías existentes. Migración nueva solamente; no se modificaron migraciones anteriores.
+
+**Ejecuciones de esta tarea (no resultados heredados):**
+
+| Verificación focalizada | Resultado |
+|---|---|
+| `dispatch-search.e2e-spec.ts` completo | **16/16**, exit 0: cinco rondas, estado público, candidatos nuevos, demora, reconstrucción de worker, dos instancias, carreras claim/retry y cancel/retry, toma en rondas 1..5, release sin reintento, rollback técnico, autorización administrativa, opt-out, inmutabilidad de política/SQL/consentimiento/precio, cero débitos por buscar y un débito por adjudicar |
+| `dispatch.e2e-spec.ts` completo | **13/13**, exit 0, legacy y expiración |
+| `independent-drivers.e2e-spec.ts` completo | **23/23**, exit 0 en base temporal separada, toma/liberación/concurrencia legacy |
+| Unitarias seleccionadas | **52 únicas**: dispatch 13, independent-drivers 22, delivery-status 14, check-c3-authorized-acceptance 3. Archivos completos; último archivo afectado repetido sin sumar casos |
+| Exportador público + ejemplo HMAC | **33/33**, exit 0 |
+| `npm run build`, `tsc -p tsconfig.build.json --noEmit` | PASS |
+| `tsc -p tsconfig.json --noEmit` | **FAIL: 5 diagnósticos preexistentes**, todos en archivos sin cambios: falta sendPartnerApplicationNotice en `invitations.spec.ts:150`; cuatro errores de tuplas/undefined en `partner-applications.spec.ts:513,521`. No se afirma gate global verde |
+| Oxlint / ESLint | Exit 0 / exit 0; Oxlint conserva advertencia preexistente de import no usado en runner C3 |
+| Prisma generate/validate, migraciones limpias | PASS; cadena de **32** migraciones en PostgreSQL 18 temporal, no base principal |
+| Prisma migrate diff contra esquema final | Exit 0, sin drift representable por Prisma (no equivale a validar todos los triggers) |
+| OpenAPI completo/público, API_ACCESS, docs:b2b:check | Generados y verificados, exit 0 |
+| git diff --check | Exit 0 |
+
+Consolidado E2E: **52 casos únicos en 3 archivos**, no suite completa. Reloj controlado sólo en PostgreSQL aislado y Date de la fixture, restaurados al terminar; no se esperaron 50 minutos. Dos aplicaciones Nest con pools propios; pruebas seriales en bases exclusivas. Reinstanciar el worker acredita recuperación desde persistencia, no una caída real del sistema operativo.
+
+**Intentos incompletos/fallidos, no sumados:** configuración inicial de URL de tests, delimitadores SQL de fixtures y orden de comparación UUID/enum fueron corregidos. Un unitario requirió conservar la forma legacy de apertura (defaults SQL, sin nuevas propiedades innecesarias en esa llamada). El sandbox bloqueó archivos temporales de Vitest (EPERM); ejecución local autorizada permitió probar. Dos preparaciones coincidieron con reconstrucción de dist por generación/verificación de docs; sus imports fallaron: se serializaron después. El primer ensayo de independientes dio 22/23 al compartir ofertas de otras fixtures que desplazaron el servicio fuera de su primera página; en base vacía separada completó 23/23. El delimitador SQL de la prueba de rollback se corrigió; versión final 16/16. **No hubo aborto nativo del worker en esta tarea** y no se atribuyen fallos a Windows sin evidencia.
+
+Logs y reportes locales ignorados: `.tmp/search-implementation/`; [índice sanitizado](docs/checks/automatic-dispatch-search-evidence.json). No se suman repeticiones. No se afirma upgrade con historia productiva, carga ni ensayo en VM. Base de regresión y base de búsqueda fueron temporales; fixtures conservaron historia, reloj real restituido y trigger artificial de fallo eliminado. Clusters temporales detenidos al cierre, sin borrar su evidencia.
+
+Pendientes: adaptación Web/B2B, habilitación operativa acordada y deuda de tipos anterior. No se abrió otra etapa CHECK ni se retomaron pendientes históricos C4. Sin Docker, routing externo real, `.env` operativo, base principal, frontend/Coita, versión, commit, push, despliegue ni activación.
+
 ## Solicitudes de socio — filtro de varios estados, 2026-10-04
 
 Cambio: `GET /api/v1/admin/partner-applications?status=RECEIVED,CONTACTED`. Lista separada por comas, normalizada (recorte, mayúsculas, sin duplicados), sin vacíos y con máximo 5; el servicio filtra con `status IN (...)`. Compatible con un solo estado y sin `status`. Sin cambios de orden, paginación, forma de respuesta, estados ni transiciones. Sin commit. Base: el commit `ea64f05` ya publicado en la rama.

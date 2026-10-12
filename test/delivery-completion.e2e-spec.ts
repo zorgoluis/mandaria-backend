@@ -531,13 +531,47 @@ describe('V1.11-A provider completion', () => {
 
   it('closes CLAIM -> ASSIGN -> DELIVERED in one call, and records who and when', async () => {
     const dispatch = await openDispatch();
-    await claim(t.A, dispatch.id).expect(200);
+    const claimed = await claim(t.A, dispatch.id).expect(200);
+    expect(claimed.body.trackingMode).toBeNull();
     await assign(t.A, dispatch.id, {
       driverId: drivers.ana,
       vehicleId: vehicles.fleet1,
     }).expect(201);
+    const activeView = await api()
+      .get(`/api/v1/provider/dispatches/${dispatch.id}`)
+      .auth(t.A, bearer)
+      .expect(200);
+    expect(activeView.body.trackingMode).toBe('LEGACY');
+    expect(activeView.body).not.toHaveProperty('execution');
+    const fleetMe = await api()
+      .get('/api/v1/driver/me')
+      .auth(t.ana, bearer)
+      .expect(200);
+    expect(fleetMe.body.activeDeliveryAssignment.trackingMode).toBe('LEGACY');
     const before = new Date();
     const res = await deliver(t.A, dispatch.id).expect(200);
+    expect(res.body.trackingMode).toBe('LEGACY');
+    expect(res.body.assignment).toBeNull();
+    const reloaded = await api()
+      .get(`/api/v1/provider/dispatches/${dispatch.id}`)
+      .auth(t.A, bearer)
+      .expect(200);
+    expect(reloaded.body).toEqual(res.body);
+    const adminView = await api()
+      .get(`/api/v1/admin/dispatches/${dispatch.id}`)
+      .auth(t.sa, bearer)
+      .expect(200);
+    expect(adminView.body.trackingMode).toBe('LEGACY');
+    const other = await api()
+      .get(`/api/v1/provider/dispatches/${dispatch.id}`)
+      .auth(t.B, bearer)
+      .expect(200);
+    expect(other.body).toMatchObject({
+      trackingMode: 'LEGACY',
+      access: 'SUMMARY',
+      service: null,
+      assignment: null,
+    });
     expect(res.body.status).toBe('DELIVERED');
     // The owner keeps the full detail of the service it just delivered.
     expect(res.body.access).toBe('OWNER');
@@ -775,8 +809,31 @@ describe('V1.11-A independent completion', () => {
 
   it('closes TAKE -> DELIVERED and frees the driver and the vehicle', async () => {
     const dispatch = await openDispatch();
-    await take(t.indy, dispatch.id, vehicles.indy).expect(200);
+    const offer = await api()
+      .get(`/api/v1/driver/dispatches/${dispatch.id}`)
+      .auth(t.indy, bearer)
+      .expect(200);
+    expect(offer.body.trackingMode).toBeNull();
+    const taken = await take(t.indy, dispatch.id, vehicles.indy).expect(200);
+    expect(taken.body.trackingMode).toBe('LEGACY');
+    expect(taken.body).not.toHaveProperty('execution');
+    const activeMe = await api()
+      .get('/api/v1/driver/me')
+      .auth(t.indy, bearer)
+      .expect(200);
+    expect(activeMe.body.activeDeliveryAssignment.trackingMode).toBe('LEGACY');
+    const activeView = await api()
+      .get(`/api/v1/driver/dispatches/${dispatch.id}`)
+      .auth(t.indy, bearer)
+      .expect(200);
+    expect(activeView.body).toEqual(taken.body);
     const res = await driverDeliver(t.indy, dispatch.id).expect(200);
+    expect(res.body.trackingMode).toBe('LEGACY');
+    const ended = await api()
+      .get(`/api/v1/driver/dispatches/${dispatch.id}`)
+      .auth(t.indy, bearer)
+      .expect(200);
+    expect(ended.body).toEqual(res.body);
     expect(res.body.status).toBe('DELIVERED');
     expect(res.body.access).toBe('OWNER');
     expect(res.body.takenByMe).toBe(true);

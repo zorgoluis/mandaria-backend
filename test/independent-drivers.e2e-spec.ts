@@ -752,7 +752,18 @@ describe('V1.9 releasing a service', () => {
       reason: 'VEHICLE_ISSUE',
       reasonDetail: 'Llanta ponchada',
     }).expect(200);
-    expect(released.body).toMatchObject({ status: 'OPEN', takenByMe: false });
+    expect(released.body).toMatchObject({
+      status: 'OPEN',
+      takenByMe: false,
+      trackingMode: 'LEGACY',
+      assignment: null,
+    });
+    expect(released.body.service.pickup).not.toHaveProperty('contactPhone');
+    const historicalOffer = await api()
+      .get(`/api/v1/driver/dispatches/${id}`)
+      .auth(t.carlos, bearer)
+      .expect(200);
+    expect(historicalOffer.body).toEqual(released.body);
     const dispatch = await dispatchRow(id);
     expect(dispatch.status).toBe('OPEN');
     expect(dispatch.claimedByIndependentDriverId).toBeNull();

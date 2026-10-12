@@ -1,5 +1,6 @@
 import { ShippingPaymentResponse } from '../customers/shipping.responses.js';
 import { ExecutionResponse } from '../delivery-execution/execution.responses.js';
+import { DispatchSearchResponse } from '../dispatch/dispatch-search.js';
 import {
   CollectionInstructionsResponse,
   collectionInstructionsDoc,
@@ -141,6 +142,8 @@ export class ProviderDispatchResponse {
       'false después de recogida, incluida transferencia. Los importes de adelanto siguen siendo históricos.',
   })
   advanceToOriginAllowed?: boolean;
+  @ApiPropertyOptional({ type: DispatchSearchResponse })
+  search?: DispatchSearchResponse;
   @ApiPropertyOptional({
     type: CollectionInstructionsResponse,
     description: collectionInstructionsDoc,
@@ -253,6 +256,8 @@ export class AdminDispatchResponse {
   @ApiProperty({ enum: DispatchStatus, description: statusDoc })
   status!: DispatchStatus;
   @ApiProperty({ format: 'date-time' }) openedAt!: Date;
+  @ApiPropertyOptional({ type: DispatchSearchResponse })
+  search?: DispatchSearchResponse;
   @ApiProperty({ format: 'date-time' }) expiresAt!: Date;
   @ApiPropertyOptional({
     type: String,

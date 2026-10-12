@@ -1,8 +1,13 @@
 # Mandaria — V1.12-E Webhook Operations & Observability
 
+## Integración local main → QA (2026-10-11)
+
+Se reconcilian GPS/hitos y trackingMode persistido de QA con la búsqueda de cinco intentos de main. La cadena integrada tiene45 migraciones: incluye una migración adicional que conserva devoluciones y autoridad de QA junto con las ventanas de búsqueda. Clientes directos permanecen fuera del opt-in B2B. [Verificación actual](VERIFICATION.md#integración-main--qa--2026-10-11-evidencia-nueva) y [evidencia](docs/checks/qa-main-integration-evidence.json). Integración preparada en worktree; sin activación, commit ni despliegue.
+
+
 ## Configuración completa para Docker y pruebas manuales (2026-10-09)
 
-`.env.example` y `docker-compose.yml` cubren las 57 variables del validador actual.
+La configuración del 2026-10-09 cubría las 57 variables de ese validador en `.env.example` y `docker-compose.yml`. Las dos opciones nuevas de búsqueda de main se describen en su handoff; esta integración conserva la configuración real y las plantillas, sin activarlas.
 Compose pasa explícitamente las opciones: agregar una variable a `.env` no bastaba
 cuando no estaba declarada en `backend.environment`. `DATABASE_URL` dentro del
 contenedor se construye con `POSTGRES_*` y host `postgres`; `PORT` interno es 3000.
@@ -77,6 +82,11 @@ Fixtures operativos disponibles: MDR-000001 normal, MDR-000002 devolución, MDR-
 ## Seguimiento público B2B versionado
 
 [Contrato y ejemplos](docs/PUBLIC-B2B-TRACKING.md): GET status añade clasificación explícita, asignación vigente, versión durable y resultado terminal, conservando identidad pública y campos anteriores. Migración incremental 20261004000300; disponible en checkout QA, sin despliegue/activación. Polling centralizado con objetivo15s sujeto a carga; sin timeline ni webhooks nuevos. [Verificación](docs/PUBLIC-B2B-TRACKING-VERIFICATION.md).
+
+## Búsqueda automática de ejecutor
+
+Capacidad opcional procedente de main/patches, integrada con QA: hasta cinco ventanas sobre la misma solicitud B2B PREPAID convertida, sin cambiar precio ni consentimiento. Deshabilitada por defecto y por integración; legacy intacto. [Implementación, contrato y handoff](docs/AUTOMATIC-DISPATCH-SEARCH-HANDOFF.md). Verificación focalizada en VERIFICATION.md; no activada.
+
 ## Reinicio controlado de la base QA en VM
 
 Corrección posterior: `20261001000100_prequote_restore_search_path` permite restaurar precotizaciones con el search_path vacío de pg_restore, conservando la restricción CHECK. Aplicar por el flujo habitual de migraciones, sin reset. Regresión aislada: `node scripts/test-prequote-restore.mjs "C:/Program Files/PostgreSQL/18/bin"`; requiere binarios PostgreSQL locales y no usa `.env` ni la base principal. Detalle de evidencia en VERIFICATION.md.
