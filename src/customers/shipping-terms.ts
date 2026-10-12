@@ -1,3 +1,4 @@
+import { assertBusinessAdmission } from '../business-approval/business-policy.js';
 import { Prisma } from '@prisma/client';
 import { DomainException } from '../common/domain-error.js';
 import { fingerprint } from '../idempotency/idempotency.service.js';
@@ -49,6 +50,7 @@ export async function shippingSnapshot(
     const customer = await tx.customerAccount.findUniqueOrThrow({
       where: { id: owner.id },
     });
+    await assertBusinessAdmission(tx, owner.id);
     payer = choice ?? 'REQUESTER';
     if (customer.type === 'PERSONAL' && payer !== 'REQUESTER')
       throw new DomainException(

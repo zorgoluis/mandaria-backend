@@ -115,15 +115,32 @@ describe('Customer identity on PostgreSQL', () => {
       .expect(200);
     expect(Object.keys(profile.body).sort()).toEqual([
       'active',
+      'businessAccess',
+      'businessApplication',
       'businessName',
+      'customerAccountId',
       'displayName',
       'revision',
       'type',
     ]);
   });
-  it('supports BUSINESS registration; rejects role injection', async () => {
-    await signup(email('business'), 'BUSINESS').expect(202);
-    await confirm(tokenFor(email('business'))).expect(201);
+  it('rejects BUSINESS registration and confirms legacy BUSINESS tokens as Personal; rejects role injection', async () => {
+    await signup(email('business'), 'BUSINESS').expect(409);
+    const token = randomBytes(32).toString('hex');
+    await db.customerChallenge.create({
+      data: {
+        email: email('business'),
+        purpose: 'REGISTER',
+        tokenHash: createHash('sha256').update(token).digest('hex'),
+        expiresAt: new Date(Date.now() + 600000),
+        profile: { type: 'BUSINESS', displayName: 'Legacy request' },
+      },
+    });
+    const confirmed = await confirm(token).expect(201);
+    expect(confirmed.body).toMatchObject({
+      profileType: 'PERSONAL',
+      businessApplicationRequired: true,
+    });
     expect(
       (
         await db.user.findUniqueOrThrow({
@@ -131,7 +148,7 @@ describe('Customer identity on PostgreSQL', () => {
           include: { customerAccount: true },
         })
       ).customerAccount?.type,
-    ).toBe('BUSINESS');
+    ).toBe('PERSONAL');
     await api()
       .post('/api/v1/customer-registration')
       .send({

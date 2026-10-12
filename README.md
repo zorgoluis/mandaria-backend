@@ -1,5 +1,9 @@
 # Mandaria — V1.12-E Webhook Operations & Observability
 
+## Aprobación manual Negocio — implementación local 2026-10-12
+
+[Informe y handoff](docs/BUSINESS-APPROVAL-IMPLEMENTATION.md): aprobación SUPER_ADMIN, readmisión tras revocación, recibos/cierre y migración46 de revisión obligatoria. APIs locales y OpenAPI actualizados; Web aún debe integrarse. Build/tipos/linters, migración aislada y contrato B2B aprobados; regresión E2E final completada:69/69 en cuatro archivos con bases aisladas independientes; causa nativa del aborto anterior no concluyente. Sin despliegue ni configuración activada. Las secciones históricas siguientes conservan sus fechas.
+
 ## Integración local main → QA (2026-10-11)
 
 Se reconcilian GPS/hitos y trackingMode persistido de QA con la búsqueda de cinco intentos de main. La cadena integrada tiene45 migraciones: incluye una migración adicional que conserva devoluciones y autoridad de QA junto con las ventanas de búsqueda. Clientes directos permanecen fuera del opt-in B2B. [Verificación actual](VERIFICATION.md#integración-main--qa--2026-10-11-evidencia-nueva) y [evidencia](docs/checks/qa-main-integration-evidence.json). Integración preparada en worktree; sin activación, commit ni despliegue.
@@ -2422,3 +2426,11 @@ En la VM configurar MAIL_PROVIDER=resend, RESEND_API_KEY con una clave propia ha
 Después de llevar este código al servidor, reconstruir y recrear sólo el backend. Configurar las variables antes del arranque: MAIL_PROVIDER=smtp ahora se rechaza. No hay migración de base de datos. El .env local del propietario no se modifica automáticamente.
 
 La aceptación requiere una respuesta HTTP exitosa con id de Resend. emailDelivery=SENT significa aceptación del proveedor, no entrega a la bandeja. Un fallo mantiene la invitación para reenvío manual, sin cambiar su contrato. Sólo se registran códigos RESEND_HTTP_<status>, RESEND_TIMEOUT, RESEND_NETWORK o RESEND_INVALID_RESPONSE; nunca el cuerpo de error, API key o enlace de activación. Validar en despliegue con una invitación a una cuenta controlada y revisar recepción/activación.
+
+
+## Propuesta: aprobación manual de cuenta Negocio
+
+Diseño del 2026-10-12, **no implementado**: [propuesta e impactos](docs/BUSINESS-APPROVAL-PROPOSAL.md) y [prompts por proyecto](docs/BUSINESS-APPROVAL-AGENT-PROMPTS.md). Solicitud/revisión manual ahora y autorización comercial separada para futuro cobro. El comportamiento vigente todavía permite elegir BUSINESS; estos documentos no cambian permisos ni activan restricciones.
+
+
+Diseño Backend de Negocio concretado el 2026-10-12: [contrato candidato, corte y recuperación](docs/BUSINESS-APPROVAL-BACKEND-DESIGN.md). No implementado. Formulario y nueva solicitud tras rechazo/retiro aprobados; prompts completos en [índice por proyecto](docs/BUSINESS-APPROVAL-AGENT-PROMPTS.md). Implementación requiere nueva autorización; readmisión tras revocación aprobada con habilitación exclusiva SUPER_ADMIN. Precisiones contractuales cerradas en §13 del diseño; aún sin APIs implementadas.

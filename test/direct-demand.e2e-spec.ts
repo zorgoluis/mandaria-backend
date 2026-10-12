@@ -400,7 +400,7 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
         await prisma.customerAccount.create({
           data: {
             userId: u.id,
-            type,
+            type: 'PERSONAL',
             displayName: name,
             businessName: type === 'BUSINESS' ? 'Synthetic business' : null,
           },
@@ -412,6 +412,34 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
           .send({ email: mail(name), password })
           .expect(200)
       ).body.accessToken;
+      if (type === 'BUSINESS') {
+        const submitted = await api()
+          .post('/api/v1/customer/business-applications')
+          .auth(t[name], bearer)
+          .set('Idempotency-Key', randomUUID())
+          .send({
+            expectedAccountRevision: 1,
+            businessName: 'Synthetic business',
+            activity: 'Food',
+            city: 'Test',
+            estimatedDeliveryVolume: '10 weekly',
+          })
+          .expect(201);
+        await api()
+          .post(
+            '/api/v1/admin/customer-business-applications/' +
+              submitted.body.resourceId +
+              '/decision',
+          )
+          .auth(t.sa, bearer)
+          .set('Idempotency-Key', randomUUID())
+          .send({
+            decision: 'APPROVE',
+            expectedApplicationRevision: 1,
+            expectedAccountRevision: 1,
+          })
+          .expect(200);
+      }
     }
   });
   beforeEach(async () => {
@@ -695,6 +723,106 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
     ).toBe(2);
     await cancel(a.deliveryRequestPublicId, 'business').expect(200);
     await cancel(b.deliveryRequestPublicId, 'business').expect(200);
+  }, 30000);
+  it('commercial revocation blocks new demand but preserves committed acceptance, history and terms', async () => {
+    const committed = await create('business', 'RECIPIENT');
+    const oldMpq = await mpq('business').expect(201);
+    const access = (
+      await api()
+        .get('/api/v1/admin/customer-business-access/' + customerIds.business)
+        .auth(t.sa, bearer)
+        .expect(200)
+    ).body;
+    const grantId = access.businessAccessAdministration.activeGrant.id;
+    const revision = access.customerAccount.revision;
+    await api()
+      .post(
+        '/api/v1/admin/customer-business-access/' +
+          customerIds.business +
+          '/revoke',
+      )
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        grantId,
+        expectedAccountRevision: revision,
+        publicReason: 'Synthetic review',
+      })
+      .expect(200);
+    const caps = (
+      await api()
+        .get('/api/v1/customer/capabilities')
+        .auth(t.business, bearer)
+        .expect(200)
+    ).body;
+    expect(caps.canPrequote).toBe(false);
+    expect(caps.allowedShippingPayers).toEqual([]);
+    expect((await mpq('business')).body.code).toBe(
+      'BUSINESS_ACCESS_RESTRICTED',
+    );
+    expect(
+      (await convert(oldMpq.body.prequote.publicId, 'business')).body.code,
+    ).toBe('BUSINESS_ACCESS_RESTRICTED');
+    await accept(committed, 'business').then((r) => expect(r.status).toBe(200));
+    await status(committed.deliveryRequestPublicId, 'business').expect(200);
+    await api()
+      .post(
+        '/api/v1/admin/customer-business-access/' +
+          customerIds.business +
+          '/allow-reapplication',
+      )
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send({
+        revokedGrantId: grantId,
+        expectedAccountRevision: revision + 1,
+        publicReason: 'Review permitted',
+      })
+      .expect(200);
+    const application = (
+      await api()
+        .post('/api/v1/customer/business-applications')
+        .auth(t.business, bearer)
+        .set('Idempotency-Key', randomUUID())
+        .send({
+          expectedAccountRevision: revision + 2,
+          businessName: 'Synthetic business',
+          activity: 'Food',
+          city: 'Test',
+          estimatedDeliveryVolume: '10 weekly',
+        })
+        .expect(201)
+    ).body;
+    const decision = {
+      decision: 'APPROVE',
+      expectedApplicationRevision: 1,
+      expectedAccountRevision: revision + 2,
+    };
+    const denied = await api()
+      .post(
+        '/api/v1/admin/customer-business-applications/' +
+          application.resourceId +
+          '/decision',
+      )
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send(decision)
+      .expect(409);
+    expect(denied.body.code).toBe('CUSTOMER_ACTIVE_REQUESTS');
+    await cancel(committed.deliveryRequestPublicId, 'business').expect(200);
+    await api()
+      .post(
+        '/api/v1/admin/customer-business-applications/' +
+          application.resourceId +
+          '/decision',
+      )
+      .auth(t.sa, bearer)
+      .set('Idempotency-Key', randomUUID())
+      .send(decision)
+      .expect(200);
+    expect(
+      (await convert(oldMpq.body.prequote.publicId, 'business')).body.code,
+    ).toBe('SHIPPING_POLICY_CHANGED');
   }, 30000);
   it('requires exact consent hash and keeps quota until explicit cancellation', async () => {
     const c = await create();
@@ -1068,7 +1196,7 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
       .expect(409);
     expect(late.body.code).toBe('EXECUTION_CONFLICT');
   }, 30000);
-  it('type change and conversion serialize; database rejects removal, reopening and forged ownership of quota', async () => {
+  it('self promotion is denied while conversion continues; database rejects removal, reopening and forged ownership of quota', async () => {
     const q = await mpq().expect(201);
     const p = (
       await api()
@@ -1079,6 +1207,7 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
     const change = () =>
       api()
         .post('/api/v1/customer/profile/type')
+        .set('Idempotency-Key', randomUUID())
         .auth(t.personal, bearer)
         .send({ type: 'BUSINESS', expectedRevision: p.revision });
     const [converted, changed] = await Promise.all([
@@ -1086,11 +1215,13 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
       change(),
     ]);
     expect([201, 409]).toContain(converted.status);
-    expect([200, 409]).toContain(changed.status);
+    expect(changed.status).toBe(409);
+    expect(changed.body.code).toBe('BUSINESS_APPROVAL_REQUIRED');
     expect(converted.status === 201 || changed.status === 200).toBe(true);
     const c = converted.status === 201 ? converted.body.result : await create();
     await api()
       .post('/api/v1/customer/profile/type')
+      .set('Idempotency-Key', randomUUID())
       .auth(t.personal, bearer)
       .send({
         type: 'PERSONAL',
@@ -1147,6 +1278,7 @@ describe('V1.17 direct demand, quota, shipping declaration and durable recovery'
     ).body;
     await api()
       .post('/api/v1/customer/profile/type')
+      .set('Idempotency-Key', randomUUID())
       .auth(t.personal, bearer)
       .send({ type: 'PERSONAL', expectedRevision: current.revision })
       .expect(200);

@@ -2979,3 +2979,58 @@ Nueva ejecución: npm run docs:b2b exit0 (incluye build y regeneración desde Sw
 ### Limpieza de verificación V1.17 B–E
 
 Cluster temporal exclusivo mandaria-v117-z5t2IE/pg detenido con pg_ctl, exit 0. Se conservan bases sintéticas, historia inmutable y logs; no se borraron recursos ajenos. git diff --check final aprobado. Sin cambios a .env, versión, migraciones históricas ni activación.
+
+
+## 2026-10-12 — Análisis de aprobación manual Negocio
+
+Sólo análisis/documentación: inspección de DTO, registro/challenges/attach/cambio de tipo, capacidades, términos, conversión y guard SQL; lectura focal de Web, Driver y landing. Propuesta y prompts en docs/BUSINESS-APPROVAL-PROPOSAL.md y docs/BUSINESS-APPROVAL-AGENT-PROMPTS.md. No pruebas funcionales ni build necesarios para esta tarea documental; las pruebas de integración anteriores no validan esta funcionalidad propuesta. Sin cambios de producto, OpenAPI, migraciones, DB, .env, otros repositorios, mensajes entre chats, commit/push o despliegue. Pendiente aprobación del diseño y decisiones de transición.
+
+
+### 2026-10-12 — Decisiones de aprobación Negocio
+
+Confirmadas autoridad SUPER_ADMIN y activación sin lifecycle abiertos. Revisada transición propuesta de existentes en §7 y actualizados prompts; no se implementó ni probó REVIEW_REQUIRED. Sin inventario DB, suites ni cambios funcionales.
+
+
+### 2026-10-12 — Revisión de existentes aprobada, sólo documentación
+
+Propuesta y prompts reflejan las tres decisiones aprobadas. Eliminados pendientes vigentes de elegir política para existentes; alternativa de grant histórico automático marcada descartada. Añadida matriz de continuidad de MDR previas y rechazo con abiertas. Revisión documental y diff --check; no ejecución de las pruebas propuestas ni implementación de REVIEW_REQUIRED. Sin cambios funcionales, bases, migraciones, agentes externos, commit/push o despliegue.
+
+
+## 2026-10-12 — Diseño Backend aprobación BUSINESS, sólo documental
+
+Referencia QA ce45dff y45 migraciones confirmadas; git diff de src/prisma/scripts/test contra referencia vacío. Lecturas concretas en docs/BUSINESS-APPROVAL-BACKEND-DESIGN.md §1: alta/resend/confirm/attach/type, capacidades, ownership/locks, términos, conversión/aceptación directa, idempotencia/attempts y lifecycle SQL. Se concretaron estados, recibos comerciales y cierre ante peticiones tardías, captura durable de compromisos y gate por operación. Propuesta canónica y prompts actualizados sin borrar antecedentes.
+
+Verificación ejecutada: existencia de referencias locales del diseño, parseo de tres bloques JSON candidatos y git diff --check. No suites, build, linters de producto, servicios, bases, migraciones ni OpenAPI: no se modificó producto. La evidencia anterior sigue siendo histórica y no acredita la funcionalidad propuesta. Pendientes formulario mínimo/reenvío y autorización nueva de implementación. Sin enviar mensajes a agentes ni cambiar frontend/Driver/Coita, configuración, commit/push o despliegue.
+
+
+## 2026-10-12 — Formulario aprobado y prompts completos (documental)
+
+Nuevas verificaciones: QA ce45dff/estado local; revisión de seis documentos de aprobación, parseo de tres bloques JSON candidatos y existencia de seis enlaces relativos, control de codificación y git diff --check. Prompts autónomos Web/Landing/Driver preparados, no enviados. Actualización comercial no implementada: no suites, build, linters de producto, bases, servicios, OpenAPI ni migraciones. Evidencia histórica no acredita estas funciones. Formulario y nueva solicitud tras rechazo/retiro aprobados; readmisión tras revocación y autorización de implementación pendientes. Cambios previos y nul conservados.
+
+
+## 2026-10-12 — Revisión documental de propuesta Web
+
+Leída BUSINESS-APPROVAL-WEB-PROPOSAL.md en frontend, contrastada §8 con diseño backend y propuesta. Confirmadas ambigüedades de identidad, wire de recovery, admin/grant y paginación. Corregidas tres inconsistencias documentales (snapshot de cinco campos, status, correo excluido). QA ce45dff y estado local comprobados; git diff --check ejecutado. Sin pruebas de producto ni comprobación de endpoints, VM o Coita; frontend sólo lectura. Política REVOKED y cierre técnico siguen pendientes.
+
+
+## 2026-10-12 — Cierre contractual de readmisión (documental)
+
+Verificación nueva: lectura de diseño/propuesta/continuidad y customers.service.ts para estructura de perfil/capabilities y error403 sin perfil. Revisión documental de ALLOW_REAPPLICATION y bloqueo durable, wire de recuperación, envelope, admin/grants y paginación. Parseo de ejemplos JSON, enlaces relativos y git diff --check. Sin suites ni validación transaccional: casos de carreras/readmisión/redacción descritos son futuros. No implementación, migraciones, configuración, DB, OpenAPI generado, frontend modificado ni publicación.
+
+
+## 2026-10-12 — Aprobación Negocio implementada: validación final parcial
+
+[Informe](docs/BUSINESS-APPROVAL-IMPLEMENTATION.md), [evidencia/huellas](docs/checks/business-approval-verification.json), [respuestas HTTP sintéticas](docs/checks/business-approval-examples.json). Ejecución completa intermedia69 E2E (9 comercial,13 identidad,30 directos,17 búsqueda); posterior ejecución incompleta por worker abortado, no contabilizada. Único diagnóstico adicional utilizado, sin más repeticiones diagnósticas. Árbol final no acreditado por aquellas69: evidencia lista cambios posteriores.
+
+Nuevos PASS:27 unitarias en tres archivos,40 públicas/firma; contrato B2B semánticamente idéntico a HEAD; build/tipos/Oxlint (warning preexistente)/ESLint afectado/docs; instalación limpia46 y clon reconstruido a45 actualizado,63 cuentas y once tablas preservadas, aprobación no fabricada, nueva demanda bloqueada409 y compromiso previo aceptado200. Herramienta scripts/verify-business-approval-migration.mjs ejecutada y sintaxis/lint aprobados; fixtures exclusivamente sintéticos, routing/presupuesto falsos en fixture. HTTP smoke final confirma root ID, acceso/grant admin, bloqueo persistido, receipt histórico y key ausente400. Sin validar producción, Google/Resend, VM, Coita ni Android físico. Pendiente E2E final estable e integración Web; no se ejecutó suite completa ni otra etapa CHECK.
+
+Clúster PostgreSQL temporal detenido al finalizar (pg_ctl exit0); no se eliminaron bases/logs. Huellas SHA-256 de archivos finales comprobadas; evidencia JSON parseada.
+
+
+## 2026-10-12 — Validación E2E final de aprobación Negocio
+
+Solicitud: diagnosticar aborto y completar archivos E2E finales con PostgreSQL aislado, sin commit/push. QA ce45dff y cambios locales comprobados; huellas de producto/tests/migración iguales a la revisión anterior, sin modificar implementación ni pruebas. Build ejecutado antes de E2E.
+
+Una ejecución conjunta terminó con 67 aprobadas y dos fallos de política: dispatch-search persiste límites distintos de direct-demand en PrequoteConsumptionPolicy; checkedPolicy rechaza antes de routing. No se acredita como PASS. Otra ejecución aislada reprodujo salida inesperada del worker comercial antes de pruebas. Se hizo un único diagnóstico adicional instrumentado: los cuatro archivos completos en bases nuevas independientes terminaron con exit0, 69/69 aprobadas, cero fallos/omitidas (business-approval9, customers13, direct-demand30, dispatch-search17). Cada base recibió las46 migraciones. Huella dist idéntica antes/después; no build/docs concurrentes.
+
+Causa del aborto nativo no demostrada: no se obtuvo módulo culpable; la reconstrucción concurrente anterior era un riesgo, pero no explica por sí sola la reproducción. Aislamiento por archivo corrige la interferencia comprobada de fixtures sin relajar protecciones. Evidencia y hashes en docs/checks/business-approval-verification.json; logs retenidos en .tmp/business-e2e-review/diagnostic. Pruebas unitarias27/B2B40, upgrade45→46 y linters/tipos son evidencia de la tarea previa, no repetidos aquí. PostgreSQL aislado detenido al finalizar; bases/logs conservados. Sin principal, Docker, VM, Coita, servicios externos, .env, versión, commit, push o despliegue. Pendientes: integración Web, CTA Landing y rollout autorizado; estabilidad del runner nativo no garantizada.

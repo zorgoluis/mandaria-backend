@@ -1,5 +1,15 @@
 import {
+  businessAccessSchema,
+  businessApplicationSummarySchema,
+  businessReceiptSchema,
+} from '../business-approval/business.openapi.js';
+import { BusinessService } from '../business-approval/business.service.js';
+import { businessResult } from '../business-approval/business.controller.js';
+import type { Response } from 'express';
+import {
   Body,
+  Headers,
+  Res,
   Controller,
   Get,
   HttpCode,
@@ -10,6 +20,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiHeader,
   ApiOperation,
   ApiTags,
   ApiResponse,
@@ -124,7 +135,10 @@ export class CustomerRegistrationController {
 })
 @Controller('customer')
 export class CustomerProfileController {
-  constructor(private readonly customers: CustomersService) {}
+  constructor(
+    private readonly customers: CustomersService,
+    private readonly business: BusinessService,
+  ) {}
   @Get('capabilities')
   @ApiOperation({
     summary:
@@ -135,6 +149,9 @@ export class CustomerProfileController {
     schema: {
       type: 'object',
       required: [
+        'customerAccountId',
+        'businessAccess',
+        'businessApplication',
         'type',
         'allowedShippingPayers',
         'defaultShippingPayer',
@@ -144,6 +161,9 @@ export class CustomerProfileController {
         'reason',
       ],
       properties: {
+        customerAccountId: { type: 'string', format: 'uuid' },
+        businessAccess: businessAccessSchema,
+        businessApplication: businessApplicationSummarySchema,
         type: { type: 'string', enum: ['PERSONAL', 'BUSINESS'] },
         allowedShippingPayers: {
           type: 'array',
@@ -168,23 +188,30 @@ export class CustomerProfileController {
   capabilities(@Req() req: AuthenticatedRequest) {
     return this.customers.capabilities(req.user.id);
   }
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
   @Post('profile/type')
   @HttpCode(200)
   @ApiOperation({
     summary:
-      'Cambiar tipo propio sólo sin solicitudes abiertas; expectedRevision detecta concurrencia y respuesta incierta se reconcilia con GET profile',
+      'Descender a PERSONAL sin solicitudes abiertas; requiere Idempotency-Key y expectedRevision, devuelve recibo comercial recuperable',
   })
-  @ApiResponse({ status: 200, type: CustomerProfileViewDto })
+  @ApiResponse({ status: 200, schema: businessReceiptSchema })
   @ApiResponse({
     status: 409,
     description:
       'CUSTOMER_ACTIVE_REQUESTS o PROFILE_REVISION_CONFLICT; no cambia contratos existentes.',
   })
-  changeType(
+  async changeType(
     @Req() req: AuthenticatedRequest,
     @Body() dto: ChangeCustomerTypeDto,
+    @Headers('idempotency-key') key: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.customers.changeType(req.user.id, dto);
+    const id = await this.business.ownAccount(req.user.id);
+    return businessResult(
+      await this.business.command(req, id, 'DOWNGRADE', id, key, dto),
+      res,
+    );
   }
   @Post('contact-verification')
   @HttpCode(202)

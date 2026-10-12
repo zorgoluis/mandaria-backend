@@ -34,7 +34,7 @@ export class HttpErrorFilter implements ExceptionFilter {
       )
         ? Number(exception.status)
         : 500;
-    const status =
+    let status =
       exception instanceof HttpException ? exception.getStatus() : parserStatus;
     const body =
       exception instanceof HttpException ? exception.getResponse() : null;
@@ -52,12 +52,18 @@ export class HttpErrorFilter implements ExceptionFilter {
         ? body.code
         : undefined;
     const req = ctx.getRequest<Request & { integration?: { id: string } }>();
+    const commercial =
+      /^\/api\/v1\/(customer\/business-|admin\/customer-business-|customer\/profile\/type$)/.test(
+        req.path,
+      );
+    if (commercial && status >= 500) status = 503;
     const res = ctx.getResponse<Response>();
     const requestId =
       (res.locals.requestId as string | undefined) ?? randomUUID();
     res.setHeader('X-Request-Id', requestId);
     if (
-      domainCode === 'TRACKING_RATE_LIMITED' &&
+      (domainCode === 'TRACKING_RATE_LIMITED' ||
+        domainCode === 'BUSINESS_RATE_LIMITED') &&
       exception instanceof DomainException
     )
       res.setHeader(
@@ -66,7 +72,9 @@ export class HttpErrorFilter implements ExceptionFilter {
       );
     const code = errors.length
       ? 'VALIDATION_ERROR'
-      : (domainCode ?? `HTTP_${status}`);
+      : commercial && status >= 500
+        ? 'BUSINESS_COMMAND_UNAVAILABLE'
+        : (domainCode ?? `HTTP_${status}`);
     // Only this known route and allowlisted identifiers are audited. No exception message,
     // SQL, headers, URL/query string or body: any of them may contain credentials or PII.
     const accept =
@@ -97,6 +105,17 @@ export class HttpErrorFilter implements ExceptionFilter {
       .getResponse<Response>()
       .status(status)
       .json({
+        ...(/^\/api\/v1\/(customer\/business-|admin\/customer-business-|customer\/profile\/type$)/.test(
+          req.path,
+        )
+          ? {
+              receipt:
+                exception instanceof DomainException &&
+                'businessReceipt' in exception
+                  ? exception.businessReceipt
+                  : null,
+            }
+          : {}),
         statusCode: status,
         code,
         requestId,

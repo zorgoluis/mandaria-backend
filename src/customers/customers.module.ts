@@ -1,3 +1,8 @@
+import { BusinessService } from '../business-approval/business.service.js';
+import {
+  CustomerBusinessController,
+  AdminBusinessController,
+} from '../business-approval/business.controller.js';
 import { ShippingPolicyController } from './shipping-policy.controller.js';
 import { CommandAttemptsService } from './command-attempts.service.js';
 import {
@@ -21,11 +26,14 @@ import {
   imports: [AuthModule, MailModule, PrequotesModule, DeliveryQuotesModule],
   providers: [
     CustomersService,
+    BusinessService,
     DeliveryRequestsService,
     IdempotencyService,
     CommandAttemptsService,
   ],
   controllers: [
+    CustomerBusinessController,
+    AdminBusinessController,
     CustomerCommandAttemptsController,
     ShippingPolicyAttemptController,
     ShippingPolicyController,

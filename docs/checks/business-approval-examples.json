@@ -1,0 +1,66 @@
+{
+  "environment": "isolated synthetic local PostgreSQL; not VM",
+  "profile": {
+    "customerAccountId": "b196821b-5ddb-44ad-9f3a-f05f5ea59c35",
+    "businessAccess": {
+      "state": "ACTIVE",
+      "source": "MANUAL_ADMIN",
+      "restrictionReason": null,
+      "canApply": false,
+      "canDowngrade": true,
+      "reapplicationBlocked": false
+    },
+    "businessApplication": {
+      "id": "9c489269-c681-49f6-9d15-b3b0b4cf7d1c",
+      "status": "APPROVED",
+      "revision": 2
+    },
+    "type": "BUSINESS",
+    "displayName": "Synthetic",
+    "businessName": null,
+    "revision": 2,
+    "active": true
+  },
+  "blockedProfile": {
+    "customerAccountId": "eba428b0-789e-4b68-9737-f30bf3b9c7a3",
+    "businessAccess": {
+      "state": "NONE",
+      "source": "MANUAL_ADMIN",
+      "restrictionReason": null,
+      "canApply": false,
+      "canDowngrade": false,
+      "reapplicationBlocked": true
+    },
+    "businessApplication": {
+      "id": "0737ae9e-a24c-4eaf-b4e2-c4459d1f095d",
+      "status": "APPROVED",
+      "revision": 2
+    },
+    "type": "PERSONAL",
+    "displayName": "Synthetic",
+    "businessName": null,
+    "revision": 3,
+    "active": true
+  },
+  "attempt": {
+    "state": "APPLIED",
+    "receipt": {
+      "key": "6448cbed-d9ae-4801-905f-4fbaaa93e4fb",
+      "operation": "SUBMIT",
+      "outcome": "APPLIED",
+      "code": null,
+      "resourceId": "9c489269-c681-49f6-9d15-b3b0b4cf7d1c",
+      "committedAt": "2026-10-12T08:38:16.876Z",
+      "result": {
+        "grantId": null,
+        "accessState": "NONE",
+        "accountType": "PERSONAL",
+        "accountRevision": 1,
+        "applicationStatus": "PENDING",
+        "applicationRevision": 1,
+        "reapplicationBlocked": false
+      }
+    }
+  },
+  "missingKeyCode": "IDEMPOTENCY_KEY_INVALID"
+}

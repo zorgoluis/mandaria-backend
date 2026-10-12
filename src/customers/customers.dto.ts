@@ -96,9 +96,57 @@ export class ChangeCustomerTypeDto {
   type!: CustomerType;
 }
 export class CustomerConfirmedDto {
+  @ApiPropertyOptional({
+    enum: ['PERSONAL'],
+    description: 'Present only for REGISTER',
+  })
+  profileType?: 'PERSONAL';
+  @ApiPropertyOptional({
+    description:
+      'Present only for REGISTER; historical BUSINESS token requires application',
+  })
+  businessApplicationRequired?: boolean;
   @ApiProperty({ enum: ['CONFIRMED'] }) status!: 'CONFIRMED';
 }
 export class CustomerProfileViewDto {
+  @ApiProperty({ format: 'uuid' }) customerAccountId!: string;
+  @ApiProperty({
+    type: 'object',
+    required: [
+      'state',
+      'source',
+      'restrictionReason',
+      'canApply',
+      'canDowngrade',
+      'reapplicationBlocked',
+    ],
+    properties: {
+      state: {
+        type: 'string',
+        enum: ['NONE', 'REVIEW_REQUIRED', 'ACTIVE', 'RESTRICTED'],
+      },
+      source: { type: 'string', nullable: true },
+      restrictionReason: { type: 'string', nullable: true },
+      canApply: { type: 'boolean' },
+      canDowngrade: { type: 'boolean' },
+      reapplicationBlocked: { type: 'boolean' },
+    },
+  })
+  businessAccess!: object;
+  @ApiProperty({
+    type: 'object',
+    nullable: true,
+    required: ['id', 'status', 'revision'],
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      status: {
+        type: 'string',
+        enum: ['PENDING', 'APPROVED', 'REJECTED', 'WITHDRAWN'],
+      },
+      revision: { type: 'integer' },
+    },
+  })
+  businessApplication!: object | null;
   @ApiProperty({ enum: ['PERSONAL', 'BUSINESS'] }) type!: CustomerType;
   @ApiProperty() displayName!: string;
   @ApiProperty({ type: String, nullable: true }) businessName!: string | null;

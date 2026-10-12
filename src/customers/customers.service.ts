@@ -1,3 +1,4 @@
+import { businessProjection } from '../business-approval/business-policy.js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
@@ -11,9 +12,8 @@ import type {
   CustomerProfileDto,
   RegisterCustomerDto,
   UpdateCustomerDto,
-  ChangeCustomerTypeDto,
 } from './customers.dto.js';
-import { lockCustomer } from './demand-owner.js';
+
 const fail = (code: string, status = 409) =>
   new DomainException(code, status, code);
 const profileSelect = {
@@ -43,7 +43,11 @@ export class CustomersService {
     purpose: 'REGISTER' | 'RESET' | 'VERIFY',
     profile?: CustomerProfileDto,
   ) {
-    if (purpose === 'REGISTER') this.admission();
+    if (purpose === 'REGISTER') {
+      if (profile?.type === 'BUSINESS')
+        throw fail('BUSINESS_APPROVAL_REQUIRED');
+      this.admission();
+    }
     const token = newSecret();
     const expiresAt = new Date(
       Date.now() +
@@ -149,7 +153,7 @@ export class CustomersService {
         await tx.customerAccount.create({
           data: {
             userId: created.id,
-            type: p.type === 'BUSINESS' ? 'BUSINESS' : 'PERSONAL',
+            type: 'PERSONAL',
             displayName: p.displayName,
             businessName:
               typeof p.businessName === 'string' ? p.businessName : null,
@@ -171,7 +175,18 @@ export class CustomersService {
         where: { email: row.email, purpose, consumedAt: null },
         data: { consumedAt: new Date() },
       });
-      return { status: 'CONFIRMED' };
+      return purpose === 'REGISTER'
+        ? {
+            status: 'CONFIRMED',
+            profileType: 'PERSONAL',
+            businessApplicationRequired: !!(
+              row.profile &&
+              typeof row.profile === 'object' &&
+              !Array.isArray(row.profile) &&
+              row.profile.type === 'BUSINESS'
+            ),
+          }
+        : { status: 'CONFIRMED' };
     });
   }
   async verifyContact(userId: string, token?: string) {
@@ -210,6 +225,7 @@ export class CustomersService {
     });
   }
   async attach(userId: string, dto: CustomerProfileDto) {
+    if (dto.type === 'BUSINESS') throw fail('BUSINESS_APPROVAL_REQUIRED');
     this.admission();
     return this.db.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "User" WHERE id=${userId}::uuid FOR UPDATE`;
@@ -218,10 +234,12 @@ export class CustomersService {
         throw fail('CUSTOMER_CONTACT_NOT_VERIFIED', 403);
       if (await tx.customerAccount.findUnique({ where: { userId } }))
         throw fail('PROFILE_ALREADY_EXISTS');
-      return tx.customerAccount.create({
+      const attached = await tx.customerAccount.create({
         data: { userId, ...dto },
-        select: profileSelect,
+        select: { ...profileSelect, id: true },
       });
+      const { id, ...view } = attached;
+      return { ...view, ...(await businessProjection(tx, id)) };
     });
   }
   async account(userId: string) {
@@ -234,14 +252,25 @@ export class CustomersService {
     return user.customerAccount;
   }
   async profile(userId: string) {
-    const p = await this.account(userId);
-    return {
-      type: p.type,
-      displayName: p.displayName,
-      businessName: p.businessName,
-      revision: p.revision,
-      active: p.active,
-    };
+    return this.db.$transaction(
+      async (tx) => {
+        const p = await tx.customerAccount.findUnique({
+          where: { userId },
+          include: { user: true },
+        });
+        if (!p?.active || !p.user.active || !p.user.emailVerifiedAt)
+          throw fail('CUSTOMER_ACCESS_DENIED', 403);
+        return {
+          ...(await businessProjection(tx, p.id)),
+          type: p.type,
+          displayName: p.displayName,
+          businessName: p.businessName,
+          revision: p.revision,
+          active: p.active,
+        };
+      },
+      { isolationLevel: 'RepeatableRead' },
+    );
   }
   async capabilities(userId: string) {
     const account = await this.account(userId);
@@ -255,6 +284,10 @@ export class CustomersService {
           select: { request: { select: { publicId: true } } },
           orderBy: { createdAt: 'asc' },
         });
+        const projection = await businessProjection(tx, current.id);
+        const commercial =
+          current.type === 'PERSONAL' ||
+          current.businessAccessState === 'ACTIVE';
         const admission = !!this.config.get<boolean>(
           'CUSTOMER_ADMISSION_ENABLED',
         );
@@ -263,9 +296,11 @@ export class CustomersService {
           'PREQUOTE_CONVERSION_ENABLED',
         );
         return {
+          ...projection,
           type: current.type,
-          allowedShippingPayers:
-            current.type === 'PERSONAL'
+          allowedShippingPayers: !commercial
+            ? []
+            : current.type === 'PERSONAL'
               ? ['REQUESTER']
               : ['REQUESTER', 'RECIPIENT'],
           defaultShippingPayer: 'REQUESTER',
@@ -278,16 +313,22 @@ export class CustomersService {
                 ? (active[0]?.request.publicId ?? null)
                 : null,
           },
-          canCreateRequest: admission && conversion && !limited,
+          canCreateRequest: commercial && admission && conversion && !limited,
           canPrequote:
-            admission && !!this.config.get<boolean>('PREQUOTE_ENABLED'),
+            commercial &&
+            admission &&
+            !!this.config.get<boolean>('PREQUOTE_ENABLED'),
           reason: !admission
             ? 'CUSTOMER_ADMISSION_DISABLED'
-            : limited
-              ? 'CUSTOMER_ACTIVE_REQUEST_LIMIT'
-              : !conversion
-                ? 'PREQUOTE_CONVERSION_DISABLED'
-                : null,
+            : !commercial
+              ? current.businessAccessState === 'REVIEW_REQUIRED'
+                ? 'BUSINESS_REVIEW_REQUIRED'
+                : 'BUSINESS_ACCESS_RESTRICTED'
+              : limited
+                ? 'CUSTOMER_ACTIVE_REQUEST_LIMIT'
+                : !conversion
+                  ? 'PREQUOTE_CONVERSION_DISABLED'
+                  : null,
         };
       },
       { isolationLevel: 'RepeatableRead' },
@@ -305,34 +346,5 @@ export class CustomersService {
     });
     if (!result.count) throw fail('PROFILE_REVISION_CONFLICT');
     return this.profile(userId);
-  }
-  async changeType(userId: string, dto: ChangeCustomerTypeDto) {
-    const p = await this.account(userId);
-    const result = await this.db.$transaction(async (tx) => {
-      const current = await lockCustomer(tx, { kind: 'CUSTOMER', id: p.id });
-      if (!current || current.revision !== dto.expectedRevision)
-        throw fail('PROFILE_REVISION_CONFLICT');
-      if (
-        await tx.directRequestLifecycle.findFirst({
-          where: { customerAccountId: p.id, closedAt: null },
-          select: { deliveryRequestId: true },
-        })
-      )
-        throw fail('CUSTOMER_ACTIVE_REQUESTS');
-      return tx.customerAccount.update({
-        where: { id: p.id },
-        data: { type: dto.type, revision: { increment: 1 } },
-        select: profileSelect,
-      });
-    });
-    this.logger.log({
-      event: 'CUSTOMER_TYPE_CHANGED',
-      customerAccountId: p.id,
-      actorUserId: userId,
-      previousType: p.type,
-      type: result.type,
-      revision: result.revision,
-    });
-    return result;
   }
 }

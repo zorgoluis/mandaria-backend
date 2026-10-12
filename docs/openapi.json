@@ -61419,6 +61419,4647 @@
         ]
       }
     },
+    "/api/v1/customer/business-applications": {
+      "post": {
+        "operationId": "CustomerBusinessController_submit",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitBusinessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "key",
+                    "operation",
+                    "outcome",
+                    "code",
+                    "resourceId",
+                    "committedAt",
+                    "result"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string",
+                      "enum": [
+                        "SUBMIT",
+                        "WITHDRAW",
+                        "DECIDE",
+                        "REVOKE",
+                        "DOWNGRADE",
+                        "ALLOW_REAPPLICATION"
+                      ]
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "code": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "resourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "committedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "result": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "applicationStatus",
+                        "applicationRevision",
+                        "accountRevision",
+                        "accessState",
+                        "accountType",
+                        "grantId",
+                        "reapplicationBlocked"
+                      ],
+                      "properties": {
+                        "applicationStatus": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "applicationRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accountRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accessState": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "accountType": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "grantId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "reapplicationBlocked": {
+                          "type": "boolean",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "key",
+                    "operation",
+                    "outcome",
+                    "code",
+                    "resourceId",
+                    "committedAt",
+                    "result"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string",
+                      "enum": [
+                        "SUBMIT",
+                        "WITHDRAW",
+                        "DECIDE",
+                        "REVOKE",
+                        "DOWNGRADE",
+                        "ALLOW_REAPPLICATION"
+                      ]
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "code": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "resourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "committedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "result": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "applicationStatus",
+                        "applicationRevision",
+                        "accountRevision",
+                        "accessState",
+                        "accountType",
+                        "grantId",
+                        "reapplicationBlocked"
+                      ],
+                      "properties": {
+                        "applicationStatus": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "applicationRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accountRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accessState": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "accountType": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "grantId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "reapplicationBlocked": {
+                          "type": "boolean",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Business precondition rejected; receipt contains durable outcome. GET attempt recovers the original result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Request manual business approval; does not activate business access",
+        "tags": [
+          "Customer business applications"
+        ]
+      },
+      "get": {
+        "operationId": "CustomerBusinessController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "WITHDRAWN"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "pageSize"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "id",
+                          "status",
+                          "revision",
+                          "submittedAt",
+                          "resolvedAt",
+                          "snapshot",
+                          "publicReason"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "PENDING",
+                              "APPROVED",
+                              "REJECTED",
+                              "WITHDRAWN"
+                            ]
+                          },
+                          "revision": {
+                            "type": "integer"
+                          },
+                          "submittedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "resolvedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "nullable": true
+                          },
+                          "snapshot": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "businessName",
+                              "activity",
+                              "city",
+                              "estimatedDeliveryVolume",
+                              "note"
+                            ],
+                            "properties": {
+                              "businessName": {
+                                "type": "string"
+                              },
+                              "activity": {
+                                "type": "string"
+                              },
+                              "city": {
+                                "type": "string"
+                              },
+                              "estimatedDeliveryVolume": {
+                                "type": "string"
+                              },
+                              "note": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "publicReason": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Business precondition rejected; receipt contains durable outcome. GET attempt recovers the original result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List own immutable business application history",
+        "tags": [
+          "Customer business applications"
+        ]
+      }
+    },
+    "/api/v1/customer/business-applications/{id}": {
+      "get": {
+        "operationId": "CustomerBusinessController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "status",
+                    "revision",
+                    "submittedAt",
+                    "resolvedAt",
+                    "snapshot",
+                    "publicReason"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "PENDING",
+                        "APPROVED",
+                        "REJECTED",
+                        "WITHDRAWN"
+                      ]
+                    },
+                    "revision": {
+                      "type": "integer"
+                    },
+                    "submittedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "resolvedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    },
+                    "snapshot": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "businessName",
+                        "activity",
+                        "city",
+                        "estimatedDeliveryVolume",
+                        "note"
+                      ],
+                      "properties": {
+                        "businessName": {
+                          "type": "string"
+                        },
+                        "activity": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "estimatedDeliveryVolume": {
+                          "type": "string"
+                        },
+                        "note": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "publicReason": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Business precondition rejected; receipt contains durable outcome. GET attempt recovers the original result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read own application; no internal notes",
+        "tags": [
+          "Customer business applications"
+        ]
+      }
+    },
+    "/api/v1/customer/business-applications/{id}/withdraw": {
+      "post": {
+        "operationId": "CustomerBusinessController_withdraw",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawBusinessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "key",
+                    "operation",
+                    "outcome",
+                    "code",
+                    "resourceId",
+                    "committedAt",
+                    "result"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string",
+                      "enum": [
+                        "SUBMIT",
+                        "WITHDRAW",
+                        "DECIDE",
+                        "REVOKE",
+                        "DOWNGRADE",
+                        "ALLOW_REAPPLICATION"
+                      ]
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "code": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "resourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "committedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "result": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "applicationStatus",
+                        "applicationRevision",
+                        "accountRevision",
+                        "accessState",
+                        "accountType",
+                        "grantId",
+                        "reapplicationBlocked"
+                      ],
+                      "properties": {
+                        "applicationStatus": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "applicationRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accountRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accessState": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "accountType": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "grantId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "reapplicationBlocked": {
+                          "type": "boolean",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Business precondition rejected; receipt contains durable outcome. GET attempt recovers the original result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Withdraw pending application without cancelling services",
+        "tags": [
+          "Customer business applications"
+        ]
+      }
+    },
+    "/api/v1/customer/business-application-attempts/{key}": {
+      "get": {
+        "operationId": "CustomerBusinessController_attempt",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SUBMIT",
+                "WITHDRAW",
+                "DOWNGRADE"
+              ]
+            }
+          },
+          {
+            "name": "target",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "state",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "NOT_OBSERVED",
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Business precondition rejected; receipt contains durable outcome. GET attempt recovers the original result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read own commercial receipt; NOT_OBSERVED does not prove failure",
+        "tags": [
+          "Customer business applications"
+        ]
+      }
+    },
+    "/api/v1/customer/business-application-attempts/{key}/close": {
+      "post": {
+        "operationId": "CustomerBusinessController_close",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessAttemptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "state",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "NOT_OBSERVED",
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Business precondition rejected; receipt contains durable outcome. GET attempt recovers the original result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fence own unobserved commercial command; does not undo applied results",
+        "tags": [
+          "Customer business applications"
+        ]
+      }
+    },
+    "/api/v1/admin/customer-business-applications": {
+      "get": {
+        "operationId": "AdminBusinessController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "WITHDRAWN"
+              ]
+            }
+          },
+          {
+            "name": "customerAccountId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "pageSize"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "id",
+                          "status",
+                          "revision",
+                          "submittedAt",
+                          "resolvedAt",
+                          "snapshot",
+                          "publicReason",
+                          "customerAccount",
+                          "businessAccessAdministration",
+                          "decisionActorId",
+                          "internalNote"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "PENDING",
+                              "APPROVED",
+                              "REJECTED",
+                              "WITHDRAWN"
+                            ]
+                          },
+                          "revision": {
+                            "type": "integer"
+                          },
+                          "submittedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "resolvedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "nullable": true
+                          },
+                          "snapshot": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "businessName",
+                              "activity",
+                              "city",
+                              "estimatedDeliveryVolume",
+                              "note"
+                            ],
+                            "properties": {
+                              "businessName": {
+                                "type": "string"
+                              },
+                              "activity": {
+                                "type": "string"
+                              },
+                              "city": {
+                                "type": "string"
+                              },
+                              "estimatedDeliveryVolume": {
+                                "type": "string"
+                              },
+                              "note": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "publicReason": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "customerAccount": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "id",
+                              "type",
+                              "revision",
+                              "active",
+                              "verifiedEmail",
+                              "businessAccess",
+                              "activeRequestCount"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "PERSONAL",
+                                  "BUSINESS"
+                                ]
+                              },
+                              "revision": {
+                                "type": "integer"
+                              },
+                              "active": {
+                                "type": "boolean"
+                              },
+                              "verifiedEmail": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "businessAccess": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "state",
+                                  "source",
+                                  "restrictionReason",
+                                  "canApply",
+                                  "canDowngrade",
+                                  "reapplicationBlocked"
+                                ],
+                                "properties": {
+                                  "state": {
+                                    "type": "string",
+                                    "enum": [
+                                      "NONE",
+                                      "REVIEW_REQUIRED",
+                                      "ACTIVE",
+                                      "RESTRICTED"
+                                    ]
+                                  },
+                                  "source": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "enum": [
+                                      "MANUAL_ADMIN",
+                                      "LEGACY_REVIEW",
+                                      null
+                                    ]
+                                  },
+                                  "restrictionReason": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "enum": [
+                                      "REVIEW_REQUIRED",
+                                      "REJECTED",
+                                      "REVOKED",
+                                      null
+                                    ]
+                                  },
+                                  "canApply": {
+                                    "type": "boolean"
+                                  },
+                                  "canDowngrade": {
+                                    "type": "boolean"
+                                  },
+                                  "reapplicationBlocked": {
+                                    "type": "boolean"
+                                  }
+                                }
+                              },
+                              "activeRequestCount": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "businessAccessAdministration": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "activeGrant",
+                              "lastAdministrativeRevocation",
+                              "canRevoke",
+                              "canAllowReapplication"
+                            ],
+                            "properties": {
+                              "activeGrant": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "id",
+                                  "applicationId",
+                                  "grantedAt"
+                                ],
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                  },
+                                  "applicationId": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                  },
+                                  "grantedAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  }
+                                },
+                                "nullable": true
+                              },
+                              "lastAdministrativeRevocation": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "grantId",
+                                  "revokedAt",
+                                  "publicReason",
+                                  "reapplicationAllowedAt"
+                                ],
+                                "properties": {
+                                  "grantId": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                  },
+                                  "revokedAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "publicReason": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "reapplicationAllowedAt": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "nullable": true
+                                  }
+                                },
+                                "nullable": true
+                              },
+                              "canRevoke": {
+                                "type": "boolean"
+                              },
+                              "canAllowReapplication": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          "decisionActorId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                          },
+                          "internalNote": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision, pending application or open requests conflict; durable receipt when applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Review customer business applications; SUPER_ADMIN only",
+        "tags": [
+          "Admin customer business approval"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/customer-business-applications/{id}": {
+      "get": {
+        "operationId": "AdminBusinessController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "status",
+                    "revision",
+                    "submittedAt",
+                    "resolvedAt",
+                    "snapshot",
+                    "publicReason",
+                    "customerAccount",
+                    "businessAccessAdministration",
+                    "decisionActorId",
+                    "internalNote"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "PENDING",
+                        "APPROVED",
+                        "REJECTED",
+                        "WITHDRAWN"
+                      ]
+                    },
+                    "revision": {
+                      "type": "integer"
+                    },
+                    "submittedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "resolvedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    },
+                    "snapshot": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "businessName",
+                        "activity",
+                        "city",
+                        "estimatedDeliveryVolume",
+                        "note"
+                      ],
+                      "properties": {
+                        "businessName": {
+                          "type": "string"
+                        },
+                        "activity": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "estimatedDeliveryVolume": {
+                          "type": "string"
+                        },
+                        "note": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "publicReason": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "customerAccount": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "id",
+                        "type",
+                        "revision",
+                        "active",
+                        "verifiedEmail",
+                        "businessAccess",
+                        "activeRequestCount"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "PERSONAL",
+                            "BUSINESS"
+                          ]
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "active": {
+                          "type": "boolean"
+                        },
+                        "verifiedEmail": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "businessAccess": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "state",
+                            "source",
+                            "restrictionReason",
+                            "canApply",
+                            "canDowngrade",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "NONE",
+                                "REVIEW_REQUIRED",
+                                "ACTIVE",
+                                "RESTRICTED"
+                              ]
+                            },
+                            "source": {
+                              "type": "string",
+                              "nullable": true,
+                              "enum": [
+                                "MANUAL_ADMIN",
+                                "LEGACY_REVIEW",
+                                null
+                              ]
+                            },
+                            "restrictionReason": {
+                              "type": "string",
+                              "nullable": true,
+                              "enum": [
+                                "REVIEW_REQUIRED",
+                                "REJECTED",
+                                "REVOKED",
+                                null
+                              ]
+                            },
+                            "canApply": {
+                              "type": "boolean"
+                            },
+                            "canDowngrade": {
+                              "type": "boolean"
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        "activeRequestCount": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "businessAccessAdministration": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "activeGrant",
+                        "lastAdministrativeRevocation",
+                        "canRevoke",
+                        "canAllowReapplication"
+                      ],
+                      "properties": {
+                        "activeGrant": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "id",
+                            "applicationId",
+                            "grantedAt"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "applicationId": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "grantedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          },
+                          "nullable": true
+                        },
+                        "lastAdministrativeRevocation": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "grantId",
+                            "revokedAt",
+                            "publicReason",
+                            "reapplicationAllowedAt"
+                          ],
+                          "properties": {
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "revokedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "publicReason": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "reapplicationAllowedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "nullable": true
+                            }
+                          },
+                          "nullable": true
+                        },
+                        "canRevoke": {
+                          "type": "boolean"
+                        },
+                        "canAllowReapplication": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "decisionActorId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "internalNote": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision, pending application or open requests conflict; durable receipt when applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read application and administrative access/grant details",
+        "tags": [
+          "Admin customer business approval"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/customer-business-applications/{id}/decision": {
+      "post": {
+        "operationId": "AdminBusinessController_decision",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionBusinessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "key",
+                    "operation",
+                    "outcome",
+                    "code",
+                    "resourceId",
+                    "committedAt",
+                    "result"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string",
+                      "enum": [
+                        "SUBMIT",
+                        "WITHDRAW",
+                        "DECIDE",
+                        "REVOKE",
+                        "DOWNGRADE",
+                        "ALLOW_REAPPLICATION"
+                      ]
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "code": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "resourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "committedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "result": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "applicationStatus",
+                        "applicationRevision",
+                        "accountRevision",
+                        "accessState",
+                        "accountType",
+                        "grantId",
+                        "reapplicationBlocked"
+                      ],
+                      "properties": {
+                        "applicationStatus": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "applicationRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accountRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accessState": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "accountType": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "grantId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "reapplicationBlocked": {
+                          "type": "boolean",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision, pending application or open requests conflict; durable receipt when applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve atomically only with zero open requests, or reject",
+        "tags": [
+          "Admin customer business approval"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/customer-business-access/{customerAccountId}": {
+      "get": {
+        "operationId": "AdminBusinessController_access",
+        "parameters": [
+          {
+            "name": "customerAccountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "customerAccount",
+                    "businessAccessAdministration"
+                  ],
+                  "properties": {
+                    "customerAccount": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "id",
+                        "type",
+                        "revision",
+                        "active",
+                        "verifiedEmail",
+                        "businessAccess",
+                        "activeRequestCount"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "PERSONAL",
+                            "BUSINESS"
+                          ]
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "active": {
+                          "type": "boolean"
+                        },
+                        "verifiedEmail": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "businessAccess": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "state",
+                            "source",
+                            "restrictionReason",
+                            "canApply",
+                            "canDowngrade",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "NONE",
+                                "REVIEW_REQUIRED",
+                                "ACTIVE",
+                                "RESTRICTED"
+                              ]
+                            },
+                            "source": {
+                              "type": "string",
+                              "nullable": true,
+                              "enum": [
+                                "MANUAL_ADMIN",
+                                "LEGACY_REVIEW",
+                                null
+                              ]
+                            },
+                            "restrictionReason": {
+                              "type": "string",
+                              "nullable": true,
+                              "enum": [
+                                "REVIEW_REQUIRED",
+                                "REJECTED",
+                                "REVOKED",
+                                null
+                              ]
+                            },
+                            "canApply": {
+                              "type": "boolean"
+                            },
+                            "canDowngrade": {
+                              "type": "boolean"
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        "activeRequestCount": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "businessAccessAdministration": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "activeGrant",
+                        "lastAdministrativeRevocation",
+                        "canRevoke",
+                        "canAllowReapplication"
+                      ],
+                      "properties": {
+                        "activeGrant": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "id",
+                            "applicationId",
+                            "grantedAt"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "applicationId": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "grantedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          },
+                          "nullable": true
+                        },
+                        "lastAdministrativeRevocation": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "grantId",
+                            "revokedAt",
+                            "publicReason",
+                            "reapplicationAllowedAt"
+                          ],
+                          "properties": {
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "revokedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "publicReason": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "reapplicationAllowedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "nullable": true
+                            }
+                          },
+                          "nullable": true
+                        },
+                        "canRevoke": {
+                          "type": "boolean"
+                        },
+                        "canAllowReapplication": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision, pending application or open requests conflict; durable receipt when applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read access administration and current grant identifiers",
+        "tags": [
+          "Admin customer business approval"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/customer-business-access/{customerAccountId}/revoke": {
+      "post": {
+        "operationId": "AdminBusinessController_revoke",
+        "parameters": [
+          {
+            "name": "customerAccountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeBusinessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "key",
+                    "operation",
+                    "outcome",
+                    "code",
+                    "resourceId",
+                    "committedAt",
+                    "result"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string",
+                      "enum": [
+                        "SUBMIT",
+                        "WITHDRAW",
+                        "DECIDE",
+                        "REVOKE",
+                        "DOWNGRADE",
+                        "ALLOW_REAPPLICATION"
+                      ]
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "code": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "resourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "committedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "result": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "applicationStatus",
+                        "applicationRevision",
+                        "accountRevision",
+                        "accessState",
+                        "accountType",
+                        "grantId",
+                        "reapplicationBlocked"
+                      ],
+                      "properties": {
+                        "applicationStatus": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "applicationRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accountRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accessState": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "accountType": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "grantId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "reapplicationBlocked": {
+                          "type": "boolean",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision, pending application or open requests conflict; durable receipt when applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke commercial access preserving committed services",
+        "tags": [
+          "Admin customer business approval"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/customer-business-access/{customerAccountId}/allow-reapplication": {
+      "post": {
+        "operationId": "AdminBusinessController_allow",
+        "parameters": [
+          {
+            "name": "customerAccountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllowBusinessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "key",
+                    "operation",
+                    "outcome",
+                    "code",
+                    "resourceId",
+                    "committedAt",
+                    "result"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string",
+                      "enum": [
+                        "SUBMIT",
+                        "WITHDRAW",
+                        "DECIDE",
+                        "REVOKE",
+                        "DOWNGRADE",
+                        "ALLOW_REAPPLICATION"
+                      ]
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "code": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "resourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "committedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "result": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "applicationStatus",
+                        "applicationRevision",
+                        "accountRevision",
+                        "accessState",
+                        "accountType",
+                        "grantId",
+                        "reapplicationBlocked"
+                      ],
+                      "properties": {
+                        "applicationStatus": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "applicationRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accountRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accessState": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "accountType": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "grantId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "reapplicationBlocked": {
+                          "type": "boolean",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision, pending application or open requests conflict; durable receipt when applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Allow a new application after administrative revocation; does not activate business",
+        "tags": [
+          "Admin customer business approval"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/customer-business-application-attempts/{key}": {
+      "get": {
+        "operationId": "AdminBusinessController_attempt",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DECIDE",
+                "REVOKE",
+                "ALLOW_REAPPLICATION"
+              ]
+            }
+          },
+          {
+            "name": "target",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerAccountId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "state",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "NOT_OBSERVED",
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision, pending application or open requests conflict; durable receipt when applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recover own administrator commercial receipt",
+        "tags": [
+          "Admin customer business approval"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/customer-business-application-attempts/{key}/close": {
+      "post": {
+        "operationId": "AdminBusinessController_close",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminBusinessAttemptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "state",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "NOT_OBSERVED",
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision, pending application or open requests conflict; durable receipt when applicable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "statusCode",
+                    "code",
+                    "requestId",
+                    "message",
+                    "errors",
+                    "timestamp",
+                    "path",
+                    "receipt"
+                  ],
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "key",
+                        "operation",
+                        "outcome",
+                        "code",
+                        "resourceId",
+                        "committedAt",
+                        "result"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string",
+                          "enum": [
+                            "SUBMIT",
+                            "WITHDRAW",
+                            "DECIDE",
+                            "REVOKE",
+                            "DOWNGRADE",
+                            "ALLOW_REAPPLICATION"
+                          ]
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "APPLIED",
+                            "REJECTED",
+                            "CLOSED"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "committedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "applicationStatus",
+                            "applicationRevision",
+                            "accountRevision",
+                            "accessState",
+                            "accountType",
+                            "grantId",
+                            "reapplicationBlocked"
+                          ],
+                          "properties": {
+                            "applicationStatus": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "applicationRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accountRevision": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "accessState": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "accountType": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "grantId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "nullable": true
+                            },
+                            "reapplicationBlocked": {
+                              "type": "boolean",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      },
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fence own administrator command; another administrator cannot close it",
+        "tags": [
+          "Admin customer business approval"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
     "/api/v1/customer/command-attempt": {
       "get": {
         "operationId": "CustomerCommandAttemptsController_get",
@@ -62291,6 +66932,9 @@
                 "schema": {
                   "type": "object",
                   "required": [
+                    "customerAccountId",
+                    "businessAccess",
+                    "businessApplication",
                     "type",
                     "allowedShippingPayers",
                     "defaultShippingPayer",
@@ -62300,6 +66944,89 @@
                     "reason"
                   ],
                   "properties": {
+                    "customerAccountId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "businessAccess": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "state",
+                        "source",
+                        "restrictionReason",
+                        "canApply",
+                        "canDowngrade",
+                        "reapplicationBlocked"
+                      ],
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "NONE",
+                            "REVIEW_REQUIRED",
+                            "ACTIVE",
+                            "RESTRICTED"
+                          ]
+                        },
+                        "source": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            "MANUAL_ADMIN",
+                            "LEGACY_REVIEW",
+                            null
+                          ]
+                        },
+                        "restrictionReason": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            "REVIEW_REQUIRED",
+                            "REJECTED",
+                            "REVOKED",
+                            null
+                          ]
+                        },
+                        "canApply": {
+                          "type": "boolean"
+                        },
+                        "canDowngrade": {
+                          "type": "boolean"
+                        },
+                        "reapplicationBlocked": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "businessApplication": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "id",
+                        "status",
+                        "revision"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "PENDING",
+                            "APPROVED",
+                            "REJECTED",
+                            "WITHDRAWN"
+                          ]
+                        },
+                        "revision": {
+                          "type": "integer"
+                        }
+                      },
+                      "nullable": true
+                    },
                     "type": {
                       "type": "string",
                       "enum": [
@@ -62381,7 +67108,24 @@
     "/api/v1/customer/profile/type": {
       "post": {
         "operationId": "CustomerProfileController_changeType",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -62398,7 +67142,98 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerProfileViewDto"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "key",
+                    "operation",
+                    "outcome",
+                    "code",
+                    "resourceId",
+                    "committedAt",
+                    "result"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string",
+                      "enum": [
+                        "SUBMIT",
+                        "WITHDRAW",
+                        "DECIDE",
+                        "REVOKE",
+                        "DOWNGRADE",
+                        "ALLOW_REAPPLICATION"
+                      ]
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "APPLIED",
+                        "REJECTED",
+                        "CLOSED"
+                      ]
+                    },
+                    "code": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "resourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "committedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "result": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "applicationStatus",
+                        "applicationRevision",
+                        "accountRevision",
+                        "accessState",
+                        "accountType",
+                        "grantId",
+                        "reapplicationBlocked"
+                      ],
+                      "properties": {
+                        "applicationStatus": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "applicationRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accountRevision": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "accessState": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "accountType": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "grantId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        },
+                        "reapplicationBlocked": {
+                          "type": "boolean",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -62418,7 +67253,7 @@
             "bearer": []
           }
         ],
-        "summary": "Cambiar tipo propio sólo sin solicitudes abiertas; expectedRevision detecta concurrencia y respuesta incierta se reconcilia con GET profile",
+        "summary": "Descender a PERSONAL sin solicitudes abiertas; requiere Idempotency-Key y expectedRevision, devuelve recibo comercial recuperable",
         "tags": [
           "Customer profile"
         ]
@@ -82034,6 +86869,178 @@
           "canStartNewAttempt"
         ]
       },
+      "SubmitBusinessDto": {
+        "type": "object",
+        "properties": {
+          "expectedAccountRevision": {
+            "type": "number"
+          },
+          "businessName": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "activity": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "estimatedDeliveryVolume": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "expectedAccountRevision",
+          "businessName",
+          "activity",
+          "city",
+          "estimatedDeliveryVolume"
+        ]
+      },
+      "Object": {
+        "type": "object",
+        "properties": {}
+      },
+      "WithdrawBusinessDto": {
+        "type": "object",
+        "properties": {
+          "expectedApplicationRevision": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "expectedApplicationRevision"
+        ]
+      },
+      "BusinessAttemptDto": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "SUBMIT",
+              "WITHDRAW",
+              "DOWNGRADE"
+            ]
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "DecisionBusinessDto": {
+        "type": "object",
+        "properties": {
+          "expectedApplicationRevision": {
+            "type": "number"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "APPROVE",
+              "REJECT"
+            ]
+          },
+          "expectedAccountRevision": {
+            "type": "number"
+          },
+          "publicReason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "internalNote": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "expectedApplicationRevision",
+          "decision",
+          "expectedAccountRevision"
+        ]
+      },
+      "RevokeBusinessDto": {
+        "type": "object",
+        "properties": {
+          "grantId": {
+            "type": "string"
+          },
+          "expectedAccountRevision": {
+            "type": "number"
+          },
+          "publicReason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "internalNote": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "grantId",
+          "expectedAccountRevision",
+          "publicReason"
+        ]
+      },
+      "AllowBusinessDto": {
+        "type": "object",
+        "properties": {
+          "revokedGrantId": {
+            "type": "string"
+          },
+          "expectedAccountRevision": {
+            "type": "number"
+          },
+          "publicReason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "internalNote": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "revokedGrantId",
+          "expectedAccountRevision",
+          "publicReason"
+        ]
+      },
+      "AdminBusinessAttemptDto": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "DECIDE",
+              "REVOKE",
+              "ALLOW_REAPPLICATION"
+            ]
+          },
+          "target": {
+            "type": "string"
+          },
+          "customerAccountId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "target",
+          "customerAccountId"
+        ]
+      },
       "RecoveredShippingTerms": {
         "type": "object",
         "properties": {
@@ -82862,39 +87869,6 @@
           "type"
         ]
       },
-      "CustomerProfileViewDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "PERSONAL",
-              "BUSINESS"
-            ]
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "businessName": {
-            "type": "string",
-            "nullable": true
-          },
-          "revision": {
-            "type": "number",
-            "minimum": 1
-          },
-          "active": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "type",
-          "displayName",
-          "businessName",
-          "revision",
-          "active"
-        ]
-      },
       "CustomerAcceptedDto": {
         "type": "object",
         "properties": {
@@ -82923,6 +87897,17 @@
       "CustomerConfirmedDto": {
         "type": "object",
         "properties": {
+          "profileType": {
+            "type": "string",
+            "enum": [
+              "PERSONAL"
+            ],
+            "description": "Present only for REGISTER"
+          },
+          "businessApplicationRequired": {
+            "type": "boolean",
+            "description": "Present only for REGISTER; historical BUSINESS token requires application"
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -82954,6 +87939,110 @@
         "required": [
           "type",
           "displayName"
+        ]
+      },
+      "CustomerProfileViewDto": {
+        "type": "object",
+        "properties": {
+          "customerAccountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "businessAccess": {
+            "type": "object",
+            "required": [
+              "state",
+              "source",
+              "restrictionReason",
+              "canApply",
+              "canDowngrade",
+              "reapplicationBlocked"
+            ],
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "REVIEW_REQUIRED",
+                  "ACTIVE",
+                  "RESTRICTED"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "nullable": true
+              },
+              "restrictionReason": {
+                "type": "string",
+                "nullable": true
+              },
+              "canApply": {
+                "type": "boolean"
+              },
+              "canDowngrade": {
+                "type": "boolean"
+              },
+              "reapplicationBlocked": {
+                "type": "boolean"
+              }
+            }
+          },
+          "businessApplication": {
+            "type": "object",
+            "nullable": true,
+            "required": [
+              "id",
+              "status",
+              "revision"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "PENDING",
+                  "APPROVED",
+                  "REJECTED",
+                  "WITHDRAWN"
+                ]
+              },
+              "revision": {
+                "type": "integer"
+              }
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERSONAL",
+              "BUSINESS"
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true
+          },
+          "revision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "customerAccountId",
+          "type",
+          "displayName",
+          "businessName",
+          "revision",
+          "active"
         ]
       },
       "UpdateCustomerDto": {

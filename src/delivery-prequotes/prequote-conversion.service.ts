@@ -1,3 +1,4 @@
+import { assertBusinessAdmission } from '../business-approval/business-policy.js';
 import {
   demandOwner,
   ownerFields,
@@ -151,6 +152,7 @@ export class PrequoteConversionService {
           if (!this.config.get<boolean>('PREQUOTE_CONVERSION_ENABLED'))
             throw fail('PREQUOTE_CONVERSION_DISABLED', 503);
           const customer = await lockCustomer(tx, integrationClientId);
+          if (customer) await assertBusinessAdmission(tx, customer.id);
           if (
             customer &&
             !this.config.get<boolean>('CUSTOMER_ADMISSION_ENABLED')

@@ -1,0 +1,215 @@
+{
+  "date": "2026-10-12",
+  "base": "QA ce45dff",
+  "status": "IMPLEMENTED_LOCAL_FINAL_E2E_PASS",
+  "migration": {
+    "cleanMigrations": 46,
+    "upgradeBaseline": "Disposable clone reconstructed to schema45",
+    "upgradeAccounts": 63,
+    "preservedTables": {
+      "DeliveryRequest": {
+        "n": 89,
+        "hash": "9e988a538000dca0555b8f55224f0aa8"
+      },
+      "DeliveryQuote": {
+        "n": 88,
+        "hash": "61f40c3ed4548f31e29e0a557dcff33c"
+      },
+      "DeliveryShippingTerms": {
+        "n": 89,
+        "hash": "4725d0d2e4ae5b04e7060620278fa434"
+      },
+      "PrequoteConversion": {
+        "n": 87,
+        "hash": "4b1845c8ab22c88616b702ca337c1652"
+      },
+      "DirectRequestLifecycle": {
+        "n": 51,
+        "hash": "4d34049d428f17a0c139d1dc15d1b9f5"
+      },
+      "AuthorizedQuoteAcceptance": {
+        "n": 60,
+        "hash": "6a7a3a194c0be042ffe4660adf9b5d32"
+      },
+      "CreditAccount": {
+        "n": 32,
+        "hash": "e930ec06a3158aee5f54e9cbfb161985"
+      },
+      "CreditLedgerEntry": {
+        "n": 85,
+        "hash": "0c1d4d6ff5a75e2795e29a888f627317"
+      },
+      "DispatchCreditSnapshot": {
+        "n": 120,
+        "hash": "f792862d903bfa81c4e2beda0dabd532"
+      },
+      "B2bOutboxEvent": {
+        "n": 2,
+        "hash": "5510e09ad163d701644167393e117c86"
+      },
+      "ApiIdempotencyRecord": {
+        "n": 244,
+        "hash": "eae2f06e7306cbe6f520fffe7f9c9c6c"
+      }
+    },
+    "legacyApplicationCount": 0,
+    "legacyGrantCount": 0,
+    "committedAcceptance": 200,
+    "newDemandBlocked": "BUSINESS_REVIEW_REQUIRED",
+    "migrationSha256": "a02b1209924a7ff8aff14bfea6bfd4ce55075a233a060d93c7547be264a912d2",
+    "tool": "scripts/verify-business-approval-migration.mjs",
+    "log": ".tmp/business-migration-527632fc/migration-verification.log"
+  },
+  "checks": {
+    "build": "PASS",
+    "types": "PASS",
+    "oxlint": "PASS with pre-existing unused import warning",
+    "eslintAffected": "PASS",
+    "openapi": "PASS",
+    "publicB2bUnchanged": "PASS",
+    "publicB2bTests": 40,
+    "unitTests": 27,
+    "httpSmoke": "PASS"
+  },
+  "e2e": {
+    "completedEarlierInTask": {
+      "files": 4,
+      "tests": 69,
+      "log": ".tmp/business-approval/diagnostic.log"
+    },
+    "finalRun": {
+      "status": "PASS",
+      "date": "2026-10-12",
+      "files": [
+        {
+          "file": "business-approval",
+          "database": "mandaria_business_diag_0_test",
+          "success": true,
+          "passed": 9,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "file": "customers",
+          "database": "mandaria_business_diag_1_test",
+          "success": true,
+          "passed": 13,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "file": "direct-demand",
+          "database": "mandaria_business_diag_2_test",
+          "success": true,
+          "passed": 30,
+          "failed": 0,
+          "pending": 0
+        },
+        {
+          "file": "dispatch-search",
+          "database": "mandaria_business_diag_3_test",
+          "success": true,
+          "passed": 17,
+          "failed": 0,
+          "pending": 0
+        }
+      ],
+      "tests": 69,
+      "failed": 0,
+      "skipped": 0,
+      "start": "2026-10-12T21:49:47.070Z",
+      "end": "2026-10-12T21:51:38.650Z",
+      "distBefore": "3b88bc80b995c8db646e13e54f198484ceab0d7939c76dd43de005372aa79466",
+      "distAfter": "3b88bc80b995c8db646e13e54f198484ceab0d7939c76dd43de005372aa79466",
+      "distUnchanged": true,
+      "logDirectory": ".tmp/business-e2e-review/diagnostic/",
+      "pool": "forks",
+      "maxWorkers": 1,
+      "isolation": "One new PostgreSQL database per complete file; 46 migrations each",
+      "reports": [
+        {
+          "file": "business-approval",
+          "sha256": "d7a68991e9bea266e96181b614066412210e7f618f20f6a42708fb6254d9aa58"
+        },
+        {
+          "file": "customers",
+          "sha256": "b604e7aa0897c5b05b5279b44e8ceee4d65c27d7d01d8270d7c934aae42d2537"
+        },
+        {
+          "file": "direct-demand",
+          "sha256": "c7d4bdd61b0db48096a569cd34a0155e6c85eced93f3872a2273ed00e412f46d"
+        },
+        {
+          "file": "dispatch-search",
+          "sha256": "83d8da7e67e566633489cf6cf585edc113e605234f41b93b6374218d673bf6ca"
+        }
+      ]
+    },
+    "limit": "Prior task diagnostic history retained; current explicit authorization: one additional diagnostic after reproduced worker abort, all four complete files passed.",
+    "previousFinalRun": {
+      "status": "INCOMPLETE_WORKER_EXIT",
+      "log": ".tmp/business-approval/final-e2e.log",
+      "creditedTests": 0
+    },
+    "runnerFindings": {
+      "sharedDatabaseRun": "Completed: 67 passed, 2 failed; not credited as final pass",
+      "sharedPolicyCause": "dispatch-search upserts global consumption fingerprint with concurrent100/reserve1000/retries0/timeout1000; direct-demand uses different limits. checkedPolicy rejects before routing.",
+      "workerAbort": "Reproduced before tests in separate business-approval run; no native fault module identified. Instrumented diagnostic passed. Exact cause remains unknown.",
+      "distRace": "Previous build overlapped validation; deleteOutDir=true. Possible interference, not proven cause of native abort. Current dist stayed unchanged.",
+      "logs": [
+        ".tmp/business-e2e-review/e2e.log",
+        ".tmp/business-e2e-review/business-approval-test.log",
+        ".tmp/business-e2e-review/diagnostic/child-exits.jsonl"
+      ]
+    }
+  },
+  "notExecuted": [
+    "VM",
+    "Coita",
+    "real mail/routing",
+    "deployment"
+  ],
+  "changedAfterCompleteE2e": [
+    "administrative readmission SQL invariant",
+    "same-transaction admission evidence check",
+    "target-user share lock and key validation",
+    "explicit committed admission check on acceptance",
+    "profile projection and OpenAPI refinements"
+  ],
+  "pending": [
+    "Web integration, Landing CTA confirmation and coordinated rollout; no production validation"
+  ],
+  "sha256": {
+    "prisma/schema.prisma": "172c931a662cfd9dfc4d2ea03c8b5557cce3e625ff36c0c32118a9bc852f90d5",
+    "src/common/http-exception.filter.ts": "3c67c29dd292a2b7ca725dbcbca007b697031fc80114d3908946a2e24fe5f875",
+    "src/customers/customers.controller.ts": "39a4448d888ab8268242ade2b9cb7163f1f33f6778ddc267cd0b3bc5d3fedc09",
+    "src/customers/customers.dto.ts": "706dd1b511faf7a234a3e14ba006115f7f5d729f8a6d8ba77863190f2390dd1f",
+    "src/customers/customers.module.ts": "90bfdb1996e1cff406baca062610ac490d3ca464bb59b7ca54a471c9f2e2b3cd",
+    "src/customers/customers.service.ts": "dab630cf9b8a25a1f5798041580f06a0c8adbf9bd34f0e92fd5816b9660d1d02",
+    "src/customers/shipping-terms.ts": "fbf177f03e0da25e9fa1815182feac619ae9b93b8212ff90ec838f489ec0a31d",
+    "src/delivery-prequotes/prequote-conversion.service.ts": "f5498186edf3e57cd66cbb740d5593c69342ada7c7757f0b5adc708ba9b97ca8",
+    "src/delivery-prequotes/prequote-persistence.service.ts": "7fae3154e0b292869887ae660929b13371d3f5935bb64c3ac2282d2ba5af9198",
+    "src/delivery-quotes/authorized-acceptance.service.ts": "fad0b6d809449df90da6f86a2c1c9edeb45dfa4c7f2e72b5ce5f995d15336f34",
+    "test/customers.e2e-spec.ts": "0fa7f3db5d26cb7d86069953727bf875bd4531b23ebbc9e386bb561bf460ec02",
+    "test/direct-demand.e2e-spec.ts": "11123150ee9bff16a5cecc72173ebb9f31dccefd78fe591f80acd17efef4e082",
+    "src/business-approval/business-policy.ts": "be4d07d54447d34ac71807a1f04eab8006b6912e2e2d2e965f8671eaa67f2b16",
+    "src/business-approval/business.controller.ts": "5b4d663a716c01a6f48186a4aae6e891d98c7c3e09c338d7d93d3af8b1b5b148",
+    "src/business-approval/business.dto.ts": "e10df478a9b1618611a8f3fb1fb7e032e460c5411a2b4c79836bf3e332c1d4e7",
+    "src/business-approval/business.openapi.ts": "3b895e8cd0886b93dc7cbb19c25b0aeeaf23599129c9edd243c0e56df2abdb99",
+    "src/business-approval/business.service.ts": "e9a51b9787bed3fcc627fbf1aaaaded2078acd929d5e3ea9cbf164236883b5a5",
+    "prisma/migrations/20261012000100_business_approval/migration.sql": "a02b1209924a7ff8aff14bfea6bfd4ce55075a233a060d93c7547be264a912d2",
+    "test/business-approval.e2e-spec.ts": "686bc4ce52b50bd99657d1777f6a1c2a02823deedce5551bb1e24f816c8ee1b9",
+    "scripts/verify-business-approval-migration.mjs": "bd46818f9976549ea47abaa29dd03d64ccdbb1d3079c1c0ba3be25059973a9d4"
+  },
+  "publicB2bSemanticIdentity": true,
+  "isolatedCluster": "Stopped; synthetic databases and logs retained",
+  "currentTaskChecks": {
+    "build": "PASS",
+    "e2e": "69/69 complete files, separate databases",
+    "sourceHashes": "Unchanged from previous final revision",
+    "distHash": "Unchanged during final run",
+    "diffCheck": "PASS",
+    "postgresStop": "exit0"
+  },
+  "priorTaskChecks": "types, oxlint, eslintAffected, openapi, publicB2bUnchanged, publicB2bTests, unitTests, httpSmoke and upgrade evidence were not repeated in this task"
+}

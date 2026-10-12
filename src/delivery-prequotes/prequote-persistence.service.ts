@@ -1,3 +1,4 @@
+import { assertBusinessAdmission } from '../business-approval/business-policy.js';
 import {
   shippingSnapshot,
   type ShippingPayer,
@@ -262,6 +263,9 @@ export class PrequotePersistenceService {
           },
         });
       }
+      const owner = demandOwner(integrationClientId);
+      if (owner.kind === 'CUSTOMER')
+        await assertBusinessAdmission(tx, owner.id);
       return {
         kind: 'acquired' as const,
         lease: {

@@ -16,6 +16,14 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/admin/credit-policies/{id}/versions | bearer | SUPER_ADMIN | — | Crear una nueva versión de una política de créditos |
 | GET | /api/v1/admin/credit-policies/calculation | bearer | SUPER_ADMIN | — | Calcular el costo en créditos de un servicio |
 | GET | /api/v1/admin/custody-incidents | bearer | SUPER_ADMIN | — | Cola persistente de incidencias abiertas; sin envío automático de correo |
+| GET | /api/v1/admin/customer-business-access/{customerAccountId} | bearer | SUPER_ADMIN | — | Read access administration and current grant identifiers |
+| POST | /api/v1/admin/customer-business-access/{customerAccountId}/allow-reapplication | bearer | SUPER_ADMIN | — | Allow a new application after administrative revocation; does not activate business |
+| POST | /api/v1/admin/customer-business-access/{customerAccountId}/revoke | bearer | SUPER_ADMIN | — | Revoke commercial access preserving committed services |
+| GET | /api/v1/admin/customer-business-application-attempts/{key} | bearer | SUPER_ADMIN | — | Recover own administrator commercial receipt |
+| POST | /api/v1/admin/customer-business-application-attempts/{key}/close | bearer | SUPER_ADMIN | — | Fence own administrator command; another administrator cannot close it |
+| GET | /api/v1/admin/customer-business-applications | bearer | SUPER_ADMIN | — | Review customer business applications; SUPER_ADMIN only |
+| GET | /api/v1/admin/customer-business-applications/{id} | bearer | SUPER_ADMIN | — | Read application and administrative access/grant details |
+| POST | /api/v1/admin/customer-business-applications/{id}/decision | bearer | SUPER_ADMIN | — | Approve atomically only with zero open requests, or reject |
 | GET | /api/v1/admin/delivery-quotes | bearer | SUPER_ADMIN | — | Listar Quotes |
 | GET | /api/v1/admin/delivery-quotes/{publicId} | bearer | SUPER_ADMIN | — | Consultar cualquier Quote |
 | GET | /api/v1/admin/delivery-requests | bearer | SUPER_ADMIN | — | Listar todas las DeliveryRequests |
@@ -128,6 +136,12 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/customer-registration | Pública | — | — | Solicitar registro cliente; respuesta genérica, admisión deshabilitada por defecto |
 | POST | /api/v1/customer-registration/confirm | Pública | — | — | Verificar correo y crear usuario CUSTOMER con perfil; no concede permisos operativos |
 | POST | /api/v1/customer-registration/resend | Pública | — | — | Repetir solicitud de registro con perfil completo; invalida el token anterior aún pendiente |
+| GET | /api/v1/customer/business-application-attempts/{key} | bearer | — | — | Read own commercial receipt; NOT_OBSERVED does not prove failure |
+| POST | /api/v1/customer/business-application-attempts/{key}/close | bearer | — | — | Fence own unobserved commercial command; does not undo applied results |
+| GET | /api/v1/customer/business-applications | bearer | — | — | List own immutable business application history |
+| POST | /api/v1/customer/business-applications | bearer | — | — | Request manual business approval; does not activate business access |
+| GET | /api/v1/customer/business-applications/{id} | bearer | — | — | Read own application; no internal notes |
+| POST | /api/v1/customer/business-applications/{id}/withdraw | bearer | — | — | Withdraw pending application without cancelling services |
 | GET | /api/v1/customer/capabilities | bearer | — | — | Consultar cupo durable y pagadores permitidos; GET no libera cupo ni confirma disponibilidad logística |
 | GET | /api/v1/customer/command-attempt | bearer | — | — | Consultar intento propio sin cuerpo original; GET no cierra ni ejecuta comandos |
 | POST | /api/v1/customer/command-attempt/close | bearer | — | — | Cerrar explícitamente el intento; impide commit tardío, conserva routing/presupuesto ya autorizado |
@@ -150,7 +164,7 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/customer/profile | bearer | — | — | Consultar perfil propio activo; un JWT B2B no es válido |
 | POST | /api/v1/customer/profile | bearer | — | — | Crear perfil propio verificado, conservando rol operativo y sesiones |
 | PATCH | /api/v1/customer/profile | bearer | — | — | Actualizar nombres con expectedRevision; no cambia tipo, usuario ni permisos |
-| POST | /api/v1/customer/profile/type | bearer | — | — | Cambiar tipo propio sólo sin solicitudes abiertas; expectedRevision detecta concurrencia y respuesta incierta se reconcilia con GET profile |
+| POST | /api/v1/customer/profile/type | bearer | — | — | Descender a PERSONAL sin solicitudes abiertas; requiere Idempotency-Key y expectedRevision, devuelve recibo comercial recuperable |
 | POST | /api/v1/delivery-prequotes | integration-bearer | — | prequotes:create | Emitir o recuperar mi precotización |
 | GET | /api/v1/delivery-prequotes/{publicId} | integration-bearer | — | prequotes:read | Consultar mi precotización |
 | POST | /api/v1/delivery-prequotes/{publicId}/convert | integration-bearer | — | prequotes:convert, deliveries:create, quotes:create | Convertir una precotización una sola vez |

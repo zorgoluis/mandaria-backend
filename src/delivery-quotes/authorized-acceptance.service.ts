@@ -264,6 +264,13 @@ export class AuthorizedAcceptanceService {
         { publicId, customerAuthorization: authorization },
         async (tx, id) => {
           const account = await lockCustomer(tx, owner);
+          if (
+            account?.type === 'BUSINESS' &&
+            !(await tx.businessAdmissionEvidence.findUnique({
+              where: { deliveryRequestId: owned.deliveryRequestId },
+            }))
+          )
+            throw fail('BUSINESS_ADMISSION_EVIDENCE_REQUIRED');
           await tx.$queryRaw`SELECT id FROM "User" WHERE id=${userId}::uuid FOR SHARE`;
           const user = await tx.user.findUnique({ where: { id: userId } });
           if (

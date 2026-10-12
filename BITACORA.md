@@ -4,6 +4,36 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación de aprobación Negocio autorizada (2026-10-12):** preparación de commit/push sobre QA, remoto verificado sin divergencia y huellas de código coincidentes con69 E2E finales. Inclusión selectiva de implementación, migración, pruebas, OpenAPI y documentación comercial. Notas locales anteriores ajenas al alcance y nul permanecen fuera del índice. Sin nuevas suites ni despliegue; resultado Git se confirma en la sesión.
+
+- **Validación E2E final completada (2026-10-12):** QA ce45dff, 69/69 en cuatro archivos completos con PostgreSQL aislado por archivo y46 migraciones; build aprobado y dist sin cambios. Interferencia de políticas entre fixtures identificada; causa nativa del aborto no concluyente. Sin cambios de producto, commit/push ni despliegue. La entrada parcial anterior se conserva como historial.
+
+- **Negocio implementado localmente, validación final parcial (2026-10-12):** autorización explícita para código/pruebas recibida. QA ce45dff, sin cambiar rama ni integrar ajenos. Nuevos endpoints comerciales, cierre durable, readmisión SUPER_ADMIN y migración46; OpenAPI/handoff en docs/BUSINESS-APPROVAL-IMPLEMENTATION.md. 69 E2E completas en ejecución intermedia,27 unitarias y40 públicas; runner posterior abortó, conteos parciales excluidos y límite de un diagnóstico respetado. Migración limpia/upgrade reconstruido, once tablas intactas, aceptación previa200 y nueva demanda409 comprobadas. Build/tipos/linters/docs aprobados; falta regresión E2E final estable. Sin principal, VM, Coita, Docker, .env, versión, commit/push/despliegue.
+
+- **Preparación de implementación Negocio (2026-10-12):** QA ce45dff y cambios locales documentales confirmados; leídos servicios/controladores cliente, ownership, shipping, precotización/conversión y configuración E2E. Código sin modificar. Solicitada precisión de alcance porque la última autorización explícita limitaba a documentación; pendiente respuesta para implementar/validar en PostgreSQL aislado. Sin servicios ni bases iniciados.
+
+- **Contrato Negocio cerrado documentalmente (2026-10-12):** aprobada habilitación exclusiva SUPER_ADMIN tras revocación. Diseño §13 define bloqueo durable, ALLOW_REAPPLICATION, vistas/identidad, DTO, recuperación/409, paginación y límites; propuesta/prompts sincronizados. Sin implementación. Pendientes anteriores quedan superados por esta entrada; continuidad histórica preservada.
+
+- **Handoff Web Negocio revisado (2026-10-12):** leída propuesta Web, sin modificar frontend. Confirmados vacíos de contrato (identidad de cuenta, wire de recuperación/409, vista admin/grant y paginación) y política REVOKED pendiente. Corregidas inconsistencias documentales snapshot/status/correo; seguimiento en diseño backend §12. Sólo lectura y documentación, sin validación funcional.
+
+- **Decisiones y prompts Negocio aprobados (2026-10-12):** formulario alineado a nombre comercial/giro/ciudad o zona/volumen/nota opcional y correo verificado reutilizado; nueva solicitud inmediata tras rechazo/retiro, con historial y una PENDING. Tres prompts completos Web/Landing/Driver en docs/BUSINESS-APPROVAL-AGENT-PROMPTS.md. Contrato candidato, sin implementación. Readmisión tras revocación no cubierta por aprobación; documentada como pendiente específico. QA ce45dff confirmado, cambios ajenos y nul conservados.
+
+- **Diseño Backend Negocio (2026-10-12):** análisis concretado en docs/BUSINESS-APPROVAL-BACKEND-DESIGN.md sobre QA ce45dff/45 migraciones, sin diferencias de producto. Cierra vías de autoascenso/tokens antiguos, contrato candidato con recibos/cierre durable, corte serializado con conversión y prueba de MDR comprometidas; rechazo no degrada con abiertas. Mantiene identidad comercial separada de pago/logística. Pendientes sólo de negocio: formulario mínimo y reenvío tras rechazo; luego autorización nueva para implementar. Inspección estática y verificación documental, sin suites ni DB.
+
+
+- **Sincronización de contexto (2026-10-12):** checkout QA ce45dff coincide con origin/QA tras fetch (0/0) e incluye origin/main1fa2cb1. Cadena local45 migraciones; cinco intentos, GPS/hitos y clientes directos integrados. Cambios locales previos sólo documentales sobre aprobación Negocio, conservados junto con nul. Decisiones aprobadas: SUPER_ADMIN exclusivo, activación con cero abiertas y revisión obligatoria de BUSINESS existentes preservando servicios comprometidos. Contrato técnico/implementación aún pendientes; no se ejecutaron suites, servicios, DB, merge ni despliegue. Listo para recibir prompts.
+
+
+- **Revisión de existentes aprobada (2026-10-12):** Aprobada por el propietario la revisión obligatoria de BUSINESS existentes sin afectar servicios en curso; se suman a las decisiones confirmadas SUPER_ADMIN exclusivo y activación con cero abiertas. Propuesta §7 y prompts sincronizados; autorización histórica automática descartada. Revisión sólo documental: sin implementar, migrar, consultar DB, enviar mensajes, commit/push o despliegue. Restan contrato/diseño técnico y autorización posterior de implementación. Entradas anteriores se conservan como historial y sus pendientes de aprobación quedan superados.
+
+- **Decisiones Negocio (2026-10-12):** Propietario confirma sólo SUPER_ADMIN y activación Negocio sin solicitudes abiertas. Para BUSINESS existentes se propone revisión obligatoria controlada: sin nuevas MPQ/conversiones, preservando MDR comprometidas, cobros y ejecución; aprobación/descenso sólo con cero abiertas. Alternativa LEGACY_MIGRATION documentada. Política de existentes aún no aprobada; sin implementación ni consulta DB.
+
+- **Diseño de aprobación Negocio (2026-10-12):** Propuesta de cuenta Negocio por solicitud/aprobación manual, cobro futuro separado. Documentos docs/BUSINESS-APPROVAL-PROPOSAL.md y docs/BUSINESS-APPROVAL-AGENT-PROMPTS.md; impacto backend/Web/Driver/landing por lectura. Se identifican registro/resend/challenges anteriores, attach y profile/type como vías de ascenso; restricciones de lifecycle y términos requieren activación atómica sin abiertas. Decisiones pendientes: SUPER_ADMIN, tratamiento de BUSINESS existentes y política de reenvío/activación. No implementación, migraciones, tests funcionales, configuración, mensajes a agentes, commit/push ni despliegue. Cambios previos BITACORA y nul preservados.
+
+
+
+
+
 - **Publicación autorizada main → QA (2026-10-11):** el propietario solicita commit y push del merge validado. Fetch confirma QA95d91ba y main1fa2cb1 sin avances; índice sin conflictos y diff limpio. Se publica desde el worktree separado mediante HEAD:QA, sin force y sin incorporar BITACORA local ni nul del checkout original. Las 206 E2E,104 unitarias y40 públicas corresponden a la tarea anterior; no se repiten suites en esta publicación. Sin despliegue ni activación. El checkout QA original se conserva para no alterar sus cambios locales.
 
 - **Integración main → QA (2026-10-11):** worktree aislado basado en QA95d91ba + main1fa2cb1; conflictos resueltos, GPS/hitos y cinco intentos conservados,45 migraciones.206 E2E +104 unitarias +40 públicas nuevas aprobadas; build/tipos/documentación/linters completos. Merge preparado sin commit/push; QA original y sus cambios ajenos intactos. [Evidencia actual](docs/checks/qa-main-integration-evidence.json). Las entradas siguientes conservan contexto y verificaciones anteriores; no describen todas el estado integrado.
@@ -2848,3 +2878,80 @@ Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/t
 - Verificaciones actuales: rama patches sobre33cd34e; fetch origin patches y divergencia0/0 antes del commit; revisión de proyecciones, alcance y git diff --check. Pruebas de la implementación anterior no reejecutadas.
 - Resultado: conjunto revisado y preparado para commit/push autorizado; confirmación del resultado Git en esta sesión. QA conserva su BITACORA modificada y residual nul.
 - Pendientes: prueba visual Web y despliegue siguen fuera de alcance; sin integración QA ni operaciones de base.
+
+
+### 2026-10-12 — Propuesta y prompts de aprobación manual Negocio
+
+Solicitud: analizar y documentar antes de implementar, con prompts por proyecto. Propuesta de cuenta Negocio por solicitud/aprobación manual, cobro futuro separado. Documentos docs/BUSINESS-APPROVAL-PROPOSAL.md y docs/BUSINESS-APPROVAL-AGENT-PROMPTS.md; impacto backend/Web/Driver/landing por lectura. Se identifican registro/resend/challenges anteriores, attach y profile/type como vías de ascenso; restricciones de lifecycle y términos requieren activación atómica sin abiertas. Decisiones pendientes: SUPER_ADMIN, tratamiento de BUSINESS existentes y política de reenvío/activación. No implementación, migraciones, tests funcionales, configuración, mensajes a agentes, commit/push ni despliegue. Cambios previos BITACORA y nul preservados. Verificación: lectura focal de código y documentos; referencias de archivos comprobadas. Backend QA ce45dff; SHA de proyectos externos no confirmado por permisos Git. Resultado: propuesta revisable y prompts sólo de análisis; sin modificaciones en otros proyectos.
+
+
+### 2026-10-12 — Confirmaciones y propuesta para cuentas existentes
+
+Propietario confirma sólo SUPER_ADMIN y activación Negocio sin solicitudes abiertas. Para BUSINESS existentes se propone revisión obligatoria controlada: sin nuevas MPQ/conversiones, preservando MDR comprometidas, cobros y ejecución; aprobación/descenso sólo con cero abiertas. Alternativa LEGACY_MIGRATION documentada. Política de existentes aún no aprobada; sin implementación ni consulta DB. Propuesta y prompts actualizados. Verificación documental y diff; sin pruebas funcionales, mensajes, commit/push o despliegue.
+
+
+### 2026-10-12 — Aprobación de revisión obligatoria de existentes
+
+Solicitud: actualizar propuesta y prompts sin implementar. Aprobada por el propietario la revisión obligatoria de BUSINESS existentes sin afectar servicios en curso; se suman a las decisiones confirmadas SUPER_ADMIN exclusivo y activación con cero abiertas. Propuesta §7 y prompts sincronizados; autorización histórica automática descartada. Revisión sólo documental: sin implementar, migrar, consultar DB, enviar mensajes, commit/push o despliegue. Restan contrato/diseño técnico y autorización posterior de implementación. Verificaciones: lectura de continuidad y ambos documentos, coherencia de decisiones y diff --check. Sin pruebas funcionales nuevas; cambios ajenos conservados.
+
+### 2026-10-12 — sincronización antes de nuevos prompts
+
+- Solicitud: revisar el estado actual del proyecto para continuar con nuevos prompts.
+- Lecturas: AGENTS, BITACORA, README, VERIFICATION, propuesta/prompts de aprobación Negocio y superficies actuales de Customer.
+- Verificaciones nuevas: fetch origin; QA/origin QA sin divergencia; main ancestro;45 directorios de migración; status/diff documental y diff --check. Sin pruebas funcionales.
+- Cambios: únicamente esta continuidad; conservados todos los cambios documentales previos y nul.
+- Resultado: contexto actualizado a QA ce45dff; las comprobaciones funcionales anteriores siguen siendo evidencia histórica.
+- Pendientes: recibir el siguiente prompt; aprobación Negocio sigue en diseño, no disponible como API. Sin cambio de rama, pull/merge, commit/push, DB, configuración o activación.
+
+### 2026-10-12 — diseño Backend de aprobación BUSINESS
+
+- Solicitud: cerrar diseño sin implementar, preservando servicios comprometidos y decisiones aprobadas.
+- Revisión real: QA ce45dff,45 migraciones; sin cambios locales de src/prisma/scripts/test respecto de referencia. Leídos continuidad, propuesta, customers/DTO/controller/challenges, demand-owner, shipping-terms, precotización/conversión/aceptación, idempotencia/recuperación y guards SQL de lifecycle.
+- Cambios: nuevo diseño técnico con estados, modelo, contrato candidato, permisos/redacciones, atomicidad/recibos, corte durable, rollout y matriz futura. Propuesta/prompts/README sincronizados, historial preservado.
+- Verificación nueva: referencias locales, tres ejemplos JSON parseados y diff --check. Sólo estática; las pruebas propuestas no se ejecutaron.
+- Resultado: diseño técnico para revisión, no rutas disponibles. Pendientes formulario/reenvío y autorización de implementación. Sin producto, SQL ejecutable, OpenAPI, DB, configuración, otros proyectos, mensajes externos, commit/push o despliegue.
+
+
+## 2026-10-12 — Autorización comercial y prompts completos por proyecto
+
+Solicitud: actualizar las decisiones autorizadas y generar prompts completos para los demás proyectos. Cambios: propuesta, diseño y README sincronizados; formulario del borrador backend corregido para coincidir con la propuesta aprobada, sin nuevos contactos obligatorios; política inmediata limitada a rechazo/retiro. Tres documentos autónomos de análisis Web, Landing y Android Driver, enlazados desde índice. No enviados.
+
+Verificaciones nuevas: rama QA/HEAD ce45dff y estado local, seis documentos revisados, tres ejemplos JSON parseados, seis enlaces relativos verificados y codificación sin caracteres de sustitución; git diff --check aprobado. Sin pruebas funcionales/build/linters por tarea documental; evidencia histórica conservada. Resultado: propuestas/prompts preparados, APIs no implementadas. Pendientes: autorización de implementación, contrato real y política específica de readmisión tras revocación antes de incluir esa transición. Sin código, DB, Docker, otros repositorios, configuración, commit/push ni despliegue.
+
+
+## 2026-10-12 — Revisión de respuesta del agente Web
+
+Solicitud: propietario comparte resultado documental frontend. Cambios: revisión de propuesta Web contra diseño backend, registro de precisiones pendientes y corrección de snapshot de cinco campos, status de aplicación y exclusión de correo automático. Recomendación de readmisión revocada sólo con habilitación SUPER_ADMIN documentada como no aprobada. Verificaciones: lectura focal de ambos documentos, rama QA ce45dff/estado Git y diff --check. Resultado: hallazgos aceptados como pendientes documentales, no implementación. Sin suites, DB, otros repositorios escritos, mensajes, commit/push o despliegue. Historial y cambios ajenos conservados.
+
+
+## 2026-10-12 — Readmisión aprobada y cierre del contrato candidato
+
+Solicitud: documentar habilitación SUPER_ADMIN y cerrar precisiones backend sin implementar. Cambios: diseño §13, propuesta, tres prompts, índice y README; bloqueo de readmisión durable distinto del acceso/grant, API candidata y recuperación, vistas admin y fuente de grant, wire/errores/paginación definidos. Inspección puntual de customers.service.ts confirma perfil plano y 403 CUSTOMER_ACCESS_DENIED sin perfil; no se inventa respuesta null. QA y cambios locales comprobados, ajenos/nul conservados. Verificaciones: JSON de ejemplos, enlaces Markdown relativos y diff --check; no pruebas funcionales/build, DB, migraciones, OpenAPI ni otros proyectos escritos. Resultado: contrato documental cerrado, implementación y validación futura pendientes de autorización; sin commit/push/despliegue.
+
+
+## 2026-10-12 — Continuación y preparación de alcance
+
+Solicitud: continuar tras informes Web/Landing/Driver. Revisadas instrucciones, continuidad, estado QA y superficies backend para futura implementación; conservados documentos previos y nul. Se precisó con el propietario si autoriza código y pruebas locales aisladas, frente al límite previo «sin implementar todavía». No se modificó producto ni se ejecutaron suites; sólo lecturas y diff --check. No Docker, DB, agentes, otros proyectos, commit/push ni despliegue. Pendiente respuesta de alcance.
+
+
+## 2026-10-12 — Implementación autorizada de aprobación comercial
+
+Solicitud: implementar y validar backend QA con PostgreSQL aislado. Cambios: src/business-approval, CustomerAccount y seis modelos; migración46 con corte/evidencia/constraints; cierre de autoascenso y tokens anteriores Personal; perfil/capacidades y descenso con recibos; gates exclusivos de nueva demanda, preservación de compromisos. Readmisión sólo SUPER_ADMIN, sin activar automáticamente. OpenAPI completo y documentación sincronizados, herramienta reproducible de migración. Cambios documentales previos y nul preservados.
+
+Verificaciones nuevas:69 E2E en cuatro archivos completos antes de refinamientos finales;27 unitarias completas;40 contrato/firma B2B y JSON público idéntico a HEAD. Limpia46/upgrade clon reconstruido45,63 cuentas y once tablas por huella, continuidad de aceptación HTTP200/bloqueo de nueva demanda409; HTTP final perfil/admin/recibos/key ausente. Build, tipos sin emit, Oxlint con warning ajeno, ESLint afectado, documentación y diff. Intentos fallidos de fixtures/SQL/compilación corregidos; E2E nativo abortó, único diagnóstico forks pasó69; corrida posterior worker abortó y no acredita conteo parcial. Sin más diagnóstico del runner. Resultado y huellas en docs/checks/business-approval-verification.json. Pendiente ejecución E2E completa de revisión final, integración Web y rollout autorizado. No base principal, VM, Coita, correo/routing reales, cambios de configuración, commit/push ni despliegue.
+
+Cierre de entorno: pg_ctl stop -m fast del clúster exclusivo .tmp/business-approval/pgdata completado. Bases sintéticas/clones y logs conservados; huellas de archivos verificadas contra informe final.
+
+
+## 2026-10-12 — Validación E2E final de aprobación Negocio
+
+Solicitud: diagnosticar aborto y completar archivos E2E finales con PostgreSQL aislado, sin commit/push. QA ce45dff y cambios locales comprobados; huellas de producto/tests/migración iguales a la revisión anterior, sin modificar implementación ni pruebas. Build ejecutado antes de E2E.
+
+Una ejecución conjunta terminó con 67 aprobadas y dos fallos de política: dispatch-search persiste límites distintos de direct-demand en PrequoteConsumptionPolicy; checkedPolicy rechaza antes de routing. No se acredita como PASS. Otra ejecución aislada reprodujo salida inesperada del worker comercial antes de pruebas. Se hizo un único diagnóstico adicional instrumentado: los cuatro archivos completos en bases nuevas independientes terminaron con exit0, 69/69 aprobadas, cero fallos/omitidas (business-approval9, customers13, direct-demand30, dispatch-search17). Cada base recibió las46 migraciones. Huella dist idéntica antes/después; no build/docs concurrentes.
+
+Causa del aborto nativo no demostrada: no se obtuvo módulo culpable; la reconstrucción concurrente anterior era un riesgo, pero no explica por sí sola la reproducción. Aislamiento por archivo corrige la interferencia comprobada de fixtures sin relajar protecciones. Evidencia y hashes en docs/checks/business-approval-verification.json; logs retenidos en .tmp/business-e2e-review/diagnostic. Pruebas unitarias27/B2B40, upgrade45→46 y linters/tipos son evidencia de la tarea previa, no repetidos aquí. PostgreSQL aislado detenido al finalizar; bases/logs conservados. Sin principal, Docker, VM, Coita, servicios externos, .env, versión, commit, push o despliegue. Pendientes: integración Web, CTA Landing y rollout autorizado; estabilidad del runner nativo no garantizada.
+
+
+## 2026-10-12 — Commit y push de aprobación Negocio autorizados
+
+Solicitud: publicar los cambios validados en QA incluyendo documentación y excluyendo ajenos. Verificaciones de esta tarea: branch/status, fetch origin QA sin divergencia, huellas de implementación contra evidencia final y diff del índice. Las69 E2E y demás validaciones pertenecen a las tareas previas; no se repiten suites porque no cambia producto. Se prepara inclusión selectiva; se conservan fuera del commit nul y notas previas de comparación de ramas, roadmap y consultas generales de cuentas. Sin merge, cambios de configuración, DB ni despliegue. Resultado de commit/push y SHA se confirma mediante Git en esta sesión; integración Web y rollout siguen pendientes.

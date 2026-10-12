@@ -1553,6 +1553,8 @@ enum CustomerType {
  BUSINESS
 }
 model CustomerAccount {
+ businessAccessState String @default("NONE")
+ businessReapplicationBlockedByGrantId String? @db.Uuid
  id String @id @default(uuid()) @db.Uuid
  userId String @unique @db.Uuid
  user User @relation(fields:[userId], references:[id], onDelete:Restrict)
@@ -1643,4 +1645,77 @@ model DispatchSearchRound {
   providerIds String[] @db.Uuid
   dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Restrict)
   @@id([dispatchId, attempt])
+}
+
+model BusinessApplication {
+ id String @id @default(uuid()) @db.Uuid
+ customerAccountId String @db.Uuid
+ revision Int @default(1)
+ status String @default("PENDING")
+ snapshot Json
+ submittedAt DateTime @default(now())
+ resolvedAt DateTime?
+ publicReason String?
+ internalNote String?
+ decisionActorId String? @db.Uuid
+ @@index([customerAccountId,submittedAt])
+}
+model BusinessAccessGrant {
+ id String @id @default(uuid()) @db.Uuid
+ customerAccountId String @db.Uuid
+ applicationId String @unique @db.Uuid
+ source String @default("MANUAL_ADMIN")
+ grantedByUserId String @db.Uuid
+ grantedAt DateTime @default(now())
+ status String @default("ACTIVE")
+ revokedAt DateTime?
+ revocationCause String?
+ publicReason String?
+}
+model BusinessAccessEvent {
+ id String @id @default(uuid()) @db.Uuid
+ customerAccountId String @db.Uuid
+ actorUserId String? @db.Uuid
+ operation String
+ applicationId String? @db.Uuid
+ grantId String? @db.Uuid
+ previousRevision Int
+ accountRevision Int
+ publicReason String?
+ internalNote String?
+ receiptId String? @unique @db.Uuid
+ createdAt DateTime @default(now())
+ @@index([customerAccountId,createdAt])
+}
+model BusinessCommandReceipt {
+ id String @id @default(uuid()) @db.Uuid
+ namespace String
+ ownerId String @db.Uuid
+ customerAccountId String @db.Uuid
+ actorUserId String @db.Uuid
+ key String @db.VarChar(255)
+ operation String
+ target String? @db.Uuid
+ requestHash String? @db.Char(64)
+ outcome String
+ code String?
+ httpStatus Int
+ resourceId String? @db.Uuid
+ result Json
+ committedAt DateTime @default(now())
+ @@unique([namespace,ownerId,key])
+ @@index([customerAccountId,committedAt])
+}
+model BusinessPolicyCutover {
+ version Int @id
+ createdAt DateTime @default(now())
+}
+model BusinessAdmissionEvidence {
+ deliveryRequestId String @id @db.Uuid
+ customerAccountId String @db.Uuid
+ basis String
+ cutoverId Int?
+ grantId String? @db.Uuid
+ accountRevision Int
+ createdAt DateTime @default(now())
 }
