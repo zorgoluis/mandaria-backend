@@ -4,6 +4,16 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Cierre documental QA (2026-10-11):** commit solicitado de las notas pendientes de diagnóstico y comparación de ramas en este checkout QA. La corrección operativa y su bitácora ya están publicadas por separado en patches30f625b; no se integran aquí. Revisión documental y diff solamente, sin pruebas nuevas ni push en esta tarea.
+
+- **Comparación remota main/patches/QA (2026-10-11):** fetch confirmado. origin/main073f2e3 incluye íntegramente origin/patches33cd34e (búsqueda automática cinco intentos); ambos32 migraciones. origin/QA e34bc04 tiene43 migraciones y contiene b4318ce (trackingMode), ausente en main. Divergencia main...QA:2/18 commits; QA no incluye33cd34e. Desfase contractual Web/API explicado por líneas de desarrollo divergentes, no por fallo del merge patches→main. Sin merge ni despliegue ejecutados.
+
+- **Análisis de aviso trackingMode (2026-10-11):** Web bloquea ServiceRecord cuando trackingMode es undefined; null no dispara ese aviso. Backend QA actual añade LEGACY/DETAILED/null en getForProvider mediante withExecutionInstructions. Falta identificar entorno y respuesta HTTP afectada; posible desfase de despliegue, no confirmado. Sin cambios de producto ni activación.
+
+- **Revisión del intento de precotización (2026-10-10):** POST503 reportado coincide temporalmente con último registro: RETRYABLE_FAILED,1/3 ejecuciones, ROUTING_UNAVAILABLE y sin precotización. Consulta GET no reejecuta routing. Detectadas dos entradas GOOGLE_ROUTES_API_KEY (una configurada y otra vacía); contenedor aún recibía vacío. Eliminada sólo duplicada vacía; Compose resuelve ahora clave presente. Pendiente recreación manual y recuperación del mismo intento; no se reintentó ni cerró.
+
+- **Hallazgo de prueba manual: precotización sin clave Google (2026-10-10):** lectura segura confirma ROUTING_PROVIDER=google y GOOGLE_ROUTES_API_KEY vacía tanto en .env como en backend Docker. Logs muestran ROUTING_UNAVAILABLE; código rechaza clave ausente como NOT_CONFIGURED antes de llamar Google. Pendiente configurar clave y recrear manualmente backend. Estado de reconciliación visible no diagnosticado como defecto frontend; no se cerraron ni repitieron intentos.
+
 - **Publicación Git de configuración autorizada (2026-10-09):** revisados los cambios pendientes de plantilla, Compose, README y continuidad para commit/push a QA. Comprobaciones nuevas: diff, sintaxis YAML con claves únicas y exclusión Git de .env; sólo referencias a variables y placeholders en los cambios de configuración. Pruebas previas conservadas como históricas. Sin Docker, arranque de servicios, despliegue ni activación; residual nul excluido.
 
 - **Comparación de URLs QA/producción (2026-10-09):** según nginx.conf aportado, qa.coitaeats.com apunta al frontend con Basic Auth; api-qa.coitaeats.com apunta al backend QA. La URL QA reportada no es equivalente al dominio API de producción. Una página visible podría ser fallback del frontend, hipótesis sin comprobar; pendiente distinguir apertura GET de recepción POST firmada real.
@@ -2716,3 +2726,41 @@ Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/t
 - Alcance revisado: .env.example, docker-compose.yml, README.md y BITACORA.md; conservar continuidad acumulada.
 - Verificaciones actuales: git diff --check, revisión de diff y sintaxis YAML con claves únicas; .env privado ignorado. No se reejecutaron las verificaciones funcionales históricas ni Docker.
 - Resultado: conjunto preparado para publicar en QA; secretos privados y residual nul excluidos. No despliegue ni activación; pendientes operativos anteriores conservados.
+
+### 2026-10-10 — Diagnóstico de rutas no disponibles en precotización
+
+- **Solicitud:** investigar mensaje del formulario cliente y conservar hallazgos de pruebas.
+- **Verificaciones actuales:** lectura de proveedor y gestión de fallos; presencia de clave (sin imprimir valor) en .env y proceso Docker: ausente en ambos, proveedor google. Logs últimos 30 minutos filtrados a contexto/evento/código confirman ROUTING_UNAVAILABLE y consumo potencial registrado.
+- **Resultado:** causa inmediata de routing identificada: NOT_CONFIGURED por falta de clave. No prueba de fallo externo de Google; no se ejecutó llamada de rutas.
+- **Cambios:** sólo bitácora. Sin restart, cambios de configuración, cierre técnico, reintentos ni lectura de datos personales/coordenadas.
+- **Pendientes:** propietario configura GOOGLE_ROUTES_API_KEY, recrea backend y consulta resultado del intento existente. Revisar por separado experiencia de reconciliación; no atribuirla a un bug sin respuesta/estado del recibo.
+
+
+### 2026-10-10 — Diagnóstico de precotización pendiente tras configurar Google
+
+- Solicitud: revisar intento pendiente y respuesta POST503.
+- Cambios: eliminada entrada vacía duplicada de GOOGLE_ROUTES_API_KEY en configuración privada, conservando valor configurado; sin secretos en documentación.
+- Verificaciones nuevas: lectura del código de consulta y persistencia; lectura de presencia de clave en proceso Docker; cinco registros recientes mediante Prisma con selección limitada a estado técnico, todos RETRYABLE_FAILED,1/3 y sin recurso; Compose resuelto confirma presencia de clave tras ajuste.
+- Resultado: consulta de recuperación devuelve pendiente mientras no hay recurso ni cierre; no ejecuta nuevamente la operación. Coincidencia temporal del POST aportado con registro más reciente, sin correlación directa por requestId.
+- Pendientes: propietario recrea backend y verifica presencia; recuperar mismo intento con protocolo existente. No se ejecutaron solicitudes a Google, reinicios, reintentos, cierres, suites ni cambios en DB.
+
+
+### 2026-10-11 — Aviso de modo de seguimiento no confirmado
+- Solicitud: analizar el bloqueo mostrado en Web.
+- Verificación: inspección estática de dispatch/pages.tsx, service.ts y backend dispatch/execution.persistence. Sin pruebas, llamadas operativas ni acceso VM.
+- Resultado: condición exacta undefined; falta evidencia HTTP para atribuir causa. No sustituir ausencia por LEGACY ni cambiar flag para ocultarla. Sólo continuidad documental modificada.
+
+
+### 2026-10-11 — Confirmación de divergencia de ramas
+- Solicitud: explicar qué tiene QA si patches se integró a main.
+- Verificación nueva: fetch origin main/patches/QA; logs exclusivos, ancestry y búsqueda trackingMode; conteo de migration.sql por referencia.
+- Resultado: patches sí es ancestro de main. QA contiene ejecución detallada, autoridad Driver, trackingMode, clientes directos, pagos y GPS no integrados en main; QA carece del commit de búsqueda automática de patches. Sólo documentación modificada, sin pruebas, merge, cambio de rama, DB, commit/push ni despliegue.
+
+
+### 2026-10-11 — Commit de bitácora en su rama de origen
+
+- Solicitud: guardar BITACORA.md en la rama correspondiente.
+- Cambios: conservar y versionar notas pendientes de diagnóstico de QA; añadir continuidad de este cierre documental.
+- Verificaciones actuales: rama QA, revisión completa del diff documental y git diff --check; se selecciona exclusivamente BITACORA.md. Evidencias funcionales anteriores no reejecutadas.
+- Resultado: documentación preparada para commit en QA; el parche Web permanece en patches30f625b, sin merge ni cambios de producto.
+- Pendientes: push de este commit no solicitado en esta tarea; residual nul excluido.
