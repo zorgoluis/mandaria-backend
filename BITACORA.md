@@ -4,6 +4,18 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación documental QA (2026-10-13):** usuario autoriza commit/push de evidencia comercial local, runbook y diagnóstico MDR-000002. Selección parcial conserva notas ajenas y excluye propuesta/prompts de feature/driver-verification. Fetch confirma QA sin divergencia; revisión documental/JSON/diff, sin nuevas pruebas funcionales ni despliegue.
+
+- **Diagnóstico MDR-000002 (2026-10-13):** lectura Docker local confirma despacho DELIVERED, asignación COMPLETED y evento DELIVERED revisión7. Proyección interna ExecutionService.detail para membership vigente devuelve custodyStatus DELIVERED, sin acciones. Web consultada en sólo lectura muestra el texto final con ese campo y refresca ejecución cada15s. Pendiente capturar respuesta HTTP/sesión del proveedor afectado; no se reprodujo el fallo visual ni se modificó el envío.
+
+- **Etapas1 y3 verificadas localmente (2026-10-13):**13 casos integrados finales PASS en entorno aislado, registro/enlace local y cambio de sesión, continuidad tras revocación y aprobación con abiertas. Migración45→46 ensayada y respaldo/restauración66 tablas PASS. Runbook de transición preparado; inventario/migración VM y recepción real de correo no ejecutados. Propietario confirma etapa2 publicada. Sin cambios de producto, commit/push ni despliegue.
+
+- **Ampliación comercial integrada completada (2026-10-13):**29 comprobaciones finales PASS contra Docker real y navegador, incluida respuesta perdida/recarga/recuperación, rechazo, nueva solicitud, retiro, cierre API y CTA Landing local. Código de producto intacto; límites de cobertura en VERIFICATION. Servicios locales disponibles; sin commit/push/despliegue.
+
+- **Integración real parcial (2026-10-13):** Docker backend local y navegador:15 comprobaciones de primera ejecución completas; solicitud/aprobación UI y revocación/descenso/readmisión API con efecto Web. Landing enlaza producción, no origen local. Ampliación incompleta por harness/login; pendientes detallados en VERIFICATION. Tres cuentas sintéticas conservadas; sin cambios de producto ni commit/push.
+
+- **Preparación de integración local (2026-10-13):** el propietario autoriza probar backend Docker con Web/Landing locales. Inspección de sólo lectura en contexto desktop-linux: mandaria-backend-1 y mandaria-postgres-1 detenidos; HTTP no disponible en puertos3000/43000/5173/5174/4173/4174. Pendientes URL/ubicación del entorno y confirmación de datos/cuentas de prueba. No se iniciaron contenedores ni se ejecutaron mutaciones o pruebas funcionales.
+
 - **Publicación de aprobación Negocio autorizada (2026-10-12):** preparación de commit/push sobre QA, remoto verificado sin divergencia y huellas de código coincidentes con69 E2E finales. Inclusión selectiva de implementación, migración, pruebas, OpenAPI y documentación comercial. Notas locales anteriores ajenas al alcance y nul permanecen fuera del índice. Sin nuevas suites ni despliegue; resultado Git se confirma en la sesión.
 
 - **Validación E2E final completada (2026-10-12):** QA ce45dff, 69/69 en cuatro archivos completos con PostgreSQL aislado por archivo y46 migraciones; build aprobado y dist sin cambios. Interferencia de políticas entre fixtures identificada; causa nativa del aborto no concluyente. Sin cambios de producto, commit/push ni despliegue. La entrada parcial anterior se conserva como historial.
@@ -659,6 +671,72 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 5. Ejecutar las verificaciones adecuadas al cambio y registrar resultados reales. Las instrucciones detalladas están en README.
 
 ## Historial
+
+### 2026-10-13 — Publicación documental de evidencia QA
+
+- Solicitud: commitear y subir únicamente lo correspondiente a QA.
+- Alcance: evidencia integrada comercial, runbook y diagnóstico MDR-000002; no producto/configuración. Propuesta/prompts de validación de repartidores y notas locales ajenas quedan fuera del índice.
+- Verificación actual: refs QA tras fetch, JSON parseable, selección y diff; pruebas reportadas son históricas, no reejecutadas. Respuestas y captura aportadas por el usuario confirman entrega; Web reportó corrección visual con datos sintéticos, no validada de nuevo aquí.
+- Resultado de commit/push se confirma en la sesión; sin despliegue ni integración de ramas.
+
+
+### 2026-10-13 — Diagnóstico de progreso del proveedor en MDR-000002
+
+- Solicitud: investigar entrega finalizada desde app sin texto final en Web proveedor.
+- Verificación nueva: consultas de sólo lectura en Docker local y ejecución interna de ExecutionService.detail con membership vigente. Dispatch DELIVERED desde 2026-10-12T07:35:38.089Z, asignación COMPLETED, evento DELIVERED revisión7; custodyStatus DELIVERED y allowedActions vacío. No se inició sesión como proveedor ni se validó HTTP/browser de ese usuario.
+- Inspección Web: ExecutionProgress muestra «Entrega confirmada · Entregado» cuando custodyStatus es DELIVERED; ExecutionPanel consulta cada15s. AT_DROPOFF sigue siendo el último hito, separado del cierre de custodia.
+- Cambios: sólo esta documentación; ningún dato, configuración o producto modificado. Sin suites, commit, push ni VM.
+- Pendiente: respuesta de Network del endpoint execution en la sesión afectada para distinguir entorno, error HTTP o estado visual desactualizado; causa visual todavía no acreditada.
+
+
+## 2026-10-13 — Localización del entorno para pruebas integradas
+
+Solicitud: probar Landing/Web contra backend Docker levantado por el propietario; esta autorización permite inspeccionar Docker pese a la restricción histórica. Leídos AGENTS y continuidad; estado local conservado. Verificaciones nuevas: docker ps, contexto desktop-linux, estado de contenedores Mandaria y sondeo HTTP loopback en seis puertos habituales. Ningún contenedor activo; backend y postgres detenidos desde hace unas ocho horas. No se acredita integración funcional. Se solicitaron URLs exactas/ubicación y carácter de la base/cuentas de prueba antes de mutaciones; no se solicitaron secretos. Sin iniciar servicios, cambiar configuración, tocar bases, otros repositorios, commit/push ni despliegue.
+
+
+
+## 2026-10-13 — Integración real con Docker y navegador, cobertura parcial
+
+Autorizado por el propietario usar Docker local, crear cuentas sintéticas y leer credenciales admin desde .env sin exponerlas. Backend43000/PostgreSQL55460 saludables; Web5173 y Landing5174 iniciados temporalmente para pruebas. Primera ejecución completa:15 comprobaciones aprobadas, solicitud/aprobación desde UI contra backend real; revocación, descenso y habilitación mediante API real comprobando estado/formulario Web. No mocks de respuesta en esa ejecución. Cuenta Personal tras readmisión, sin activación implícita. Captura customer-active.png inspeccionada.
+
+Landing conserva origen fijo https://app.mandaria.com.mx/customer/business: ruta válida, recorrido local no verificado ni navegación a producción. Intento ampliado de pérdida de respuesta abortó por sincronización del harness (Route is already handled); único diagnóstico adicional terminó en timeout esperando formulario tras login. Rate limit login5/min existe, pero HTTP del fallo no capturado: causa no confirmada. No acreditar esos recorridos incompletos. Recuperación original404 inicial fue target incorrecto del harness; corregido a accountId dio200 antes del aborto ampliado. Inventario inicialmente usó relación Prisma inexistente; lectura corregida, sin mutaciones por ese error.
+
+Tres cuentas sintéticas business-ui-*@example.test creadas, historial conservado; no datos ajenos modificados ni secretos guardados. Evidencia docs/checks/business-approval-local-integration.json y capturas/logs locales .tmp/business-browser. Pendientes: respuesta perdida/rechazo/retiro/cierre completo por UI, servicios comprometidos y conflictos con abiertas, cambio de sesión y CTA local. Evidencia69 E2E aisladas previa no sustituye estos pendientes. Sin cambios de producto, .env, otros repositorios, commit/push o despliegue.
+
+
+
+## 2026-10-13 — Enlaces Landing configurables por entorno
+
+Propietario confirmó alcance Landing y autorizó VITE_WEB_URL/.env. Implementado en landing QA c4ed19a, sin modificar backend: enlaces login/registro/Negocio por origen validado, default producción, .env local apuntando Web local y argumento Docker de compilación. Lint/build y comprobación de enlaces local/producción/orígenes inválidos PASS; Chromium confirmó Landing5174 -> Web5173/login?next=business sin sesión ni operaciones. Documentación Landing actualizada; sin commit/push/despliegue. Pendientes anteriores de recuperación comercial no se dan por resueltos con esta prueba de navegación.
+
+
+
+## 2026-10-13 — Cierre de ampliación comercial integrada
+
+Solicitud: volver a levantar y completar recuperación pendiente y recorrido local. Backend Docker43000/PostgreSQL55460 y Web5173/Landing5174 ya disponibles; no fue necesario reiniciarlos. Ejecución completa final con29 comprobaciones PASS y exit0: login/retorno, solicitud/aprobación UI, revocación/descenso/readmisión API con efectos Web, pérdida de respuesta del POST real (sin fabricar respuesta), recarga/consulta del recibo sin duplicación, rechazo UI, nota interna redactada, nueva solicitud corregida, retiro UI, cierre explícito API y petición tardía409. CTA Landing usa localhost5173 y navega a cuenta Negocio.
+
+Primer recorrido de esta tarea se interrumpió al navegar inmediatamente tras recibir el POST, antes de finalizar settle/consultas de Web; conservó marcador y retiro deshabilitado. Harness corregido para esperar desaparición del marcador y confirmación antes de navegar. Ejecución completa final pasó sin cambios de producto. Se crearon dos cuentas sintéticas adicionales en esta tarea; historia conservada, sin borrar ni alterar cuentas ajenas. Credenciales admin leídas en memoria, sin logs/tokens persistidos.
+
+Evidencia estructurada actualizada en docs/checks/business-approval-local-integration.json conservando el reporte anterior; harness/capturas en .tmp/business-browser/verified. No se acredita prueba de registro/correo (fixtures verificados), servicios comprometidos, conflictos con lifecycle abiertos ni cambio de identidad durante recuperación: mantienen evidencia backend previa o requieren prueba específica. Sin servicios reales externos, VM, despliegue, commit/push ni cambios de configuración. Servicios locales permanecen disponibles.
+
+
+
+## 2026-10-13 — Roadmap de cierre y publicación
+
+Solicitud: identificar lo que falta después de29 comprobaciones integradas comerciales. Revisión de evidencia local, roadmap piloto, handoff y evidencia física Driver; estado Git Web2e59504 limpio y Landingc4ed19a con VITE_WEB_URL/documentación locales pendientes. No suites nuevas. Propuesto orden: cerrar servicios comprometidos/conflictos abiertos/cambio de sesión y registro real; publicar cambios propios pendientes; ensayo de migración/rollout compatible; regresión física GPS/hitos/independientes y distribución; piloto acotado. Cobro comercial, alta independiente sin proveedor y cobertura multiciudad separados como expansión, no implementados por esta revisión. No atribuir mocks o evidencia anterior a VM actual; preservar historial. Sin implementación, commit/push ni despliegue.
+
+
+
+## 2026-10-13 — Etapas1 y3: continuidad comercial y preparación de rollout
+
+Autorización: completar integración pendiente y preparar transición de existentes; propietario confirma etapa2 publicada. Confirmados HEAD locales Web2e59504 y Landing7ba3a36. Sin fetch/push ni atribuir publicación remota nueva. Build backend PASS antes de pruebas. Entorno separado PostgreSQL56967/base sintética clonada, Nest43180 y Web5175 por variable de proceso; .env y Docker del usuario sin cambios.
+
+Ejecución final integrada13/13 PASS: servicio convertido antes de revocar aceptado desde Web, seguimiento disponible y términos intactos; nuevas MPQ bloqueadas; aprobación con abiertas deshabilitada Web y HTTP409 al intentar API; registro por formulario, emisión de enlace local_outbox y consumo real del token; Personal verificado; otro cliente no ve el intento ajeno, logout conserva marcador y titular regresa/cierra por UI. Routing y consumo reemplazados sólo en fixture aislado; no Google/Resend reales. Corrección inicial de consulta del harness (FK sin relación Prisma); corrida siguiente abortó por selector HTML erróneo; único diagnóstico adicional usó botón por nombre y completó13 casos. No cambios de producto ni falsa atribución a Docker/VM de estos casos.
+
+Ensayo de migración PASS: instalación46 y copia reconstruida45→46, tres cuentas, once tablas operativas/económicas conservadas, cero aplicaciones/grants históricos fabricados, compromiso previo aceptado200 y nueva demanda409. Respaldo sintético custom restaurado en base nueva:66 tablas con cantidad/huella idénticas. Inventario agregado read-only Docker local:46 migraciones, seis Personal/NONE, cero lifecycle abiertos; no VM ni BUSINESS heredadas locales. Runbook docs/BUSINESS-APPROVAL-ROLLOUT.md explica inventario previo, respaldo real pendiente, retiro de escritores, comparación, revisión SUPER_ADMIN y rollback sin autoascenso. Evidencia docs/checks/business-approval-stage1-rollout.json, fuentes .tmp/business-stage1-2b469d12/.tmp/business-migration-cb57e42b/.tmp/business-rollout-proof.
+
+Cierre: backend temporal cerró, Web5175 y PostgreSQL aislado detenidos; copias/backup sintéticos conservados. Servicios Docker/Web5173/Landing5174 no detenidos. Persisten pendientes de VM, correo externo, responsables/ventana y rollout autorizado; etapas1 funcional local y3 preparación/ensayo cubiertas, no migración de producción. Sin commit/push/despliegue.
+
 
 ### 2026-10-11 — Commit y push autorizados de la integración
 

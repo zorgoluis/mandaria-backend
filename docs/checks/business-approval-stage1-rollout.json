@@ -1,0 +1,146 @@
+{
+  "date": "2026-10-13",
+  "stage2": "Owner reports completed; local Web2e59504 and Landing7ba3a36 confirmed, no push performed here",
+  "ui": {
+    "checks": [
+      {
+        "name": "Committed request created before revocation",
+        "passed": true
+      },
+      {
+        "name": "Web accepts prior committed request after revocation",
+        "passed": true
+      },
+      {
+        "name": "Web retains committed service tracking",
+        "passed": true
+      },
+      {
+        "name": "Shipping terms unchanged",
+        "passed": true
+      },
+      {
+        "name": "Revoked account cannot create new prequote",
+        "passed": true
+      },
+      {
+        "name": "Web disables approval while a service is open",
+        "passed": true
+      },
+      {
+        "name": "Backend rejects bypass with open service",
+        "passed": true
+      },
+      {
+        "name": "Web registration reaches real backend",
+        "passed": true
+      },
+      {
+        "name": "Real verification token consumed from local mail",
+        "passed": true
+      },
+      {
+        "name": "Verified registration creates Personal only",
+        "passed": true
+      },
+      {
+        "name": "Different customer cannot see other pending intent",
+        "passed": true
+      },
+      {
+        "name": "Marker not lost on logout",
+        "passed": true
+      },
+      {
+        "name": "Owner returns and closes pending intent via UI",
+        "passed": true
+      }
+    ],
+    "limits": [
+      "Routing and prequote consumption substituted only in isolated fixture backend; real HTTP/PostgreSQL/Web and local_outbox. No Resend inbox delivery."
+    ],
+    "result": "PASS"
+  },
+  "migration": {
+    "cleanMigrations": 46,
+    "upgradeBaseline": "Disposable clone reconstructed to schema45",
+    "upgradeAccounts": 3,
+    "preservedTables": {
+      "DeliveryRequest": {
+        "n": 30,
+        "hash": "597194b537408eeb6c962647e0feb2af"
+      },
+      "DeliveryQuote": {
+        "n": 29,
+        "hash": "c7b65e741c162db1cf144f1f014e12cd"
+      },
+      "DeliveryShippingTerms": {
+        "n": 30,
+        "hash": "6428b1082b97a74d70e78fca3b660d3a"
+      },
+      "PrequoteConversion": {
+        "n": 28,
+        "hash": "a322b5e211a21d7c0b6cefe7b98967fa"
+      },
+      "DirectRequestLifecycle": {
+        "n": 28,
+        "hash": "381ff0394e14b98a32510f76c0fe7bea"
+      },
+      "AuthorizedQuoteAcceptance": {
+        "n": 16,
+        "hash": "16c5026ba81a1c3ae0e36ee29f786f7e"
+      },
+      "CreditAccount": {
+        "n": 4,
+        "hash": "17476bcb7ddcb0ded1823d9a68fb8797"
+      },
+      "CreditLedgerEntry": {
+        "n": 31,
+        "hash": "044bc5a936b573276e56aa128e2b744e"
+      },
+      "DispatchCreditSnapshot": {
+        "n": 32,
+        "hash": "5601d7e1677b0398d9fcab5ed5213196"
+      },
+      "B2bOutboxEvent": {
+        "n": 0,
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "ApiIdempotencyRecord": {
+        "n": 80,
+        "hash": "68c617dd0e3c57fb82e9144748c816e2"
+      }
+    },
+    "legacyApplicationCount": 0,
+    "legacyGrantCount": 0,
+    "committedAcceptance": 200,
+    "newDemandBlocked": "BUSINESS_REVIEW_REQUIRED",
+    "migrationSha256": "a02b1209924a7ff8aff14bfea6bfd4ce55075a233a060d93c7547be264a912d2"
+  },
+  "backupRestore": {
+    "status": "PASS",
+    "tables": 66,
+    "scope": "Synthetic isolated PostgreSQL only"
+  },
+  "inventory": {
+    "scope": "Local Docker only; not VM",
+    "groups": [
+      {
+        "_count": {
+          "_all": 6
+        },
+        "type": "PERSONAL",
+        "businessAccessState": "NONE"
+      }
+    ],
+    "openLifecycles": 0,
+    "migrationCount": 46,
+    "businessMigrationApplied": true
+  },
+  "artifacts": [
+    ".tmp/business-stage1-2b469d12",
+    ".tmp/business-migration-cb57e42b",
+    ".tmp/business-rollout-proof"
+  ],
+  "production": "Not inspected, backed up, migrated or deployed"
+}

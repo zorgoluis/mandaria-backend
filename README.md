@@ -2434,3 +2434,8 @@ Diseño del 2026-10-12, **no implementado**: [propuesta e impactos](docs/BUSINES
 
 
 Diseño Backend de Negocio concretado el 2026-10-12: [contrato candidato, corte y recuperación](docs/BUSINESS-APPROVAL-BACKEND-DESIGN.md). No implementado. Formulario y nueva solicitud tras rechazo/retiro aprobados; prompts completos en [índice por proyecto](docs/BUSINESS-APPROVAL-AGENT-PROMPTS.md). Implementación requiere nueva autorización; readmisión tras revocación aprobada con habilitación exclusiva SUPER_ADMIN. Precisiones contractuales cerradas en §13 del diseño; aún sin APIs implementadas.
+
+
+## Preparación de transición Negocio — 2026-10-13
+
+[Runbook de actualización y revisión manual](docs/BUSINESS-APPROVAL-ROLLOUT.md), con evidencia nueva de13 casos integrados aislados y ensayo de respaldo/restauración/migración. No acredita ejecución ni correo real en producción. Las secciones históricas conservan su contexto.

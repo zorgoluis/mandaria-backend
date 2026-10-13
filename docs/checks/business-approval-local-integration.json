@@ -1,0 +1,254 @@
+{
+  "date": "2026-10-13",
+  "status": "REAL_COMMERCIAL_FLOW_PASS",
+  "checks": [
+    {
+      "name": "Admin credentials authenticate",
+      "ok": true
+    },
+    {
+      "name": "Visitor redirects with business return",
+      "ok": true
+    },
+    {
+      "name": "Customer login returns to business",
+      "ok": true
+    },
+    {
+      "name": "UI submission reaches real backend",
+      "ok": true
+    },
+    {
+      "name": "UI admin approval",
+      "ok": true
+    },
+    {
+      "name": "Approval persists and profile becomes BUSINESS",
+      "ok": true
+    },
+    {
+      "name": "Real API revocation",
+      "ok": true
+    },
+    {
+      "name": "Revocation blocks new applications",
+      "ok": true
+    },
+    {
+      "name": "Web hides application while revoked",
+      "ok": true
+    },
+    {
+      "name": "Personal downgrade",
+      "ok": true
+    },
+    {
+      "name": "Readmission block persists after downgrade",
+      "ok": true
+    },
+    {
+      "name": "Admin allows reapplication",
+      "ok": true
+    },
+    {
+      "name": "Readmission is not automatic business activation",
+      "ok": true
+    },
+    {
+      "name": "Web re-enables request after readmission",
+      "ok": true
+    },
+    {
+      "name": "Original revocation receipt recovered",
+      "ok": true
+    },
+    {
+      "name": "Lost response marker survives reload",
+      "ok": true
+    },
+    {
+      "name": "UI recovers real committed request",
+      "ok": true
+    },
+    {
+      "name": "No duplicate application after recovery",
+      "ok": true
+    },
+    {
+      "name": "Customer cannot read admin queue",
+      "ok": true
+    },
+    {
+      "name": "UI rejection is an applied decision",
+      "ok": true
+    },
+    {
+      "name": "Internal note redacted for customer",
+      "ok": true
+    },
+    {
+      "name": "UI allows corrected request after rejection",
+      "ok": true
+    },
+    {
+      "name": "Corrected application has new identity",
+      "ok": true
+    },
+    {
+      "name": "UI withdrawal",
+      "ok": true
+    },
+    {
+      "name": "Explicit close of unknown attempt",
+      "ok": true
+    },
+    {
+      "name": "Closed attempt fences late POST",
+      "ok": true
+    },
+    {
+      "name": "Landing business path exists",
+      "ok": true
+    },
+    {
+      "name": "Landing uses local Web origin",
+      "ok": true
+    },
+    {
+      "name": "Landing to authenticated Web business page",
+      "ok": true
+    }
+  ],
+  "passed": 29,
+  "fixture": {
+    "id": "d1fe954d-9154-4c47-867c-86633ea8083b",
+    "account": "155525a1-bedf-4608-b080-72056ae3c1bd",
+    "email": "business-ui-1791873919274@example.test"
+  },
+  "extraApplicationIds": [
+    "ade9c0e4-767c-4672-9003-172f484697ed",
+    "84b5af79-62b3-4d4b-8bee-b6678205f680"
+  ],
+  "recoveryStatus": 200,
+  "landingBusinessLinks": [
+    "http://localhost:5173/customer/business"
+  ],
+  "landingLocalEndToEnd": true,
+  "harnessSha256": "e47b8d3ac33bf2a31f331cc187880a358fb19582f5258a9db6593cbba6048699",
+  "artifacts": ".tmp/business-browser/verified",
+  "coverage": {
+    "browser": [
+      "login return",
+      "submit",
+      "admin approve",
+      "lost real POST response then reload and receipt recovery",
+      "admin reject",
+      "corrected submit",
+      "withdraw",
+      "Landing local link"
+    ],
+    "apiWithUiChecks": [
+      "revoke",
+      "downgrade",
+      "allow reapplication"
+    ],
+    "api": [
+      "original revoke receipt",
+      "customer admin403",
+      "internal-note redaction",
+      "close unknown attempt",
+      "late POST409"
+    ]
+  },
+  "limitations": [
+    "Synthetic verified users were inserted as fixtures; registration/email verification not exercised.",
+    "Existing committed deliveries, open-lifecycle conflicts and switching identities during pending recovery not exercised in this browser run.",
+    "No production, real mail, Google routing, deployment or Docker image rebuild."
+  ],
+  "previousRun": {
+    "checks": [
+      {
+        "name": "Admin credentials authenticate",
+        "ok": true
+      },
+      {
+        "name": "Visitor redirects with business return",
+        "ok": true
+      },
+      {
+        "name": "Customer login returns to business",
+        "ok": true
+      },
+      {
+        "name": "UI submission reaches real backend",
+        "ok": true
+      },
+      {
+        "name": "UI admin approval",
+        "ok": true
+      },
+      {
+        "name": "Approval persists and profile becomes BUSINESS",
+        "ok": true
+      },
+      {
+        "name": "Real API revocation",
+        "ok": true
+      },
+      {
+        "name": "Revocation blocks new applications",
+        "ok": true
+      },
+      {
+        "name": "Web hides application while revoked",
+        "ok": true
+      },
+      {
+        "name": "Personal downgrade",
+        "ok": true
+      },
+      {
+        "name": "Readmission block persists after downgrade",
+        "ok": true
+      },
+      {
+        "name": "Admin allows reapplication",
+        "ok": true
+      },
+      {
+        "name": "Readmission is not automatic business activation",
+        "ok": true
+      },
+      {
+        "name": "Web re-enables request after readmission",
+        "ok": true
+      },
+      {
+        "name": "Landing business path exists",
+        "ok": true
+      }
+    ],
+    "failures": [],
+    "fixture": {
+      "id": "b4d75ec1-a8f2-4dda-87e9-a658da8edf47",
+      "account": "b968e0f0-1601-4a78-a21e-7790a7b3c174",
+      "email": "business-ui-1791873174144@example.test"
+    },
+    "recoveryStatus": 404,
+    "landingBusinessLinks": [
+      "https://app.mandaria.com.mx/customer/business"
+    ],
+    "landingLocalEndToEnd": false,
+    "date": "2026-10-13",
+    "status": "PARTIAL_REAL_INTEGRATION",
+    "coverage": "15 checks in first completed run; request and approval via UI; revoke/downgrade/readmission via real API with UI verification",
+    "recoveryStatusNote": "404 caused by incorrect target in initial test harness (grant instead of account); extended run recovered original receipt with correct target before later abort. Not a product finding.",
+    "pending": [
+      "Lost-response UI recovery, rejection, withdrawal and late-request closure: expanded run aborted in harness; one diagnostic stopped at customer login/form wait. Not credited.",
+      "Existing committed services, open-service conflicts, session switching not tested in this local run.",
+      "Landing points to production Web origin, so local Landing-to-Web click-through was not performed."
+    ],
+    "safety": "Synthetic users only; admin credentials read in memory; no email, Google calls, production navigation, configuration edits or deployment.",
+    "artifacts": ".tmp/business-browser/"
+  }
+}
