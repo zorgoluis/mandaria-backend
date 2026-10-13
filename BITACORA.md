@@ -4,6 +4,10 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Publicación documental autorizada (2026-10-13):** propuesta/prompts y matriz de dependencias preparados para commit/push de feature/driver-verification, sin integrar QA. Landing inspeccionada en lectura: captación SOC separada del expediente, ajustes futuros de CTA/textos documentados. Verificación Git/diff; sin producto ni pruebas funcionales nuevas.
+
+- **Diseño de validación documental separado (2026-10-13):** feature/driver-verification desde main1fa2cb1, worktree driver-verification. Trasladados sólo propuesta/prompts; dependencias32 vs46 migraciones revisadas en docs/DEPENDENCIES-DRIVER-VERIFICATION.md. Sin implementación, merge QA, versión, commit/push o despliegue.
+
 - **Publicación autorizada del contrato Web (2026-10-11):** revisión y preparación de commit/push exclusivamente en patches sobre33cd34e, remoto sincronizado. Incluye proyecciones, regresiones, OpenAPI y documentación de esta corrección. Checkout QA y cambios ajenos preservados; sin merge, configuración, migraciones ni despliegue. Resultados funcionales de la tarea anterior conservados como históricos; esta tarea verifica alcance y diff.
 
 - **Compatibilidad operativa Web en patches (2026-10-11):** trackingMode explícito null/LEGACY por historial persistido en proveedor/admin/independiente y asignación propia driver/me; no DETAILED ni integración QA. Worktree separado sobre33cd34e preserva checkout QA sucio. Nuevas84 unitarias,94 E2E en5 archivos/bases aisladas,33 públicas, build/tipos producto/linters/OpenAPI PASS; cinco errores globales de tipos preexistentes conservados. B2B y búsqueda automática sin cambios semánticos; lecturas no modifican cinco rondas. Sin configuración, migraciones, versión, commit/push/despliegue ni acceso VM/Coita. [Detalle y ejemplos](docs/OPERATIONAL-WEB-COMPATIBILITY.md).
@@ -2075,3 +2079,13 @@ Operador reporta despliegue, flags true y casos #85/#86/#89/#90; VM/Coita no ver
 - Verificaciones actuales: rama patches sobre33cd34e; fetch origin patches y divergencia0/0 antes del commit; revisión de proyecciones, alcance y git diff --check. Pruebas de la implementación anterior no reejecutadas.
 - Resultado: conjunto revisado y preparado para commit/push autorizado; confirmación del resultado Git en esta sesión. QA conserva su BITACORA modificada y residual nul.
 - Pendientes: prueba visual Web y despliegue siguen fuera de alcance; sin integración QA ni operaciones de base.
+
+
+## 2026-10-13 — Worktree de validación documental desde main
+
+Solicitud: crear feature/driver-verification desde main, trasladar propuesta/prompts y evaluar dependencias QA sin implementar. Copiados tres documentos, añadida matriz de dependencias y continuidad propia de main, preservando historial. Fetch/refs/diff y lectura de código verificados; sin pruebas funcionales. Pendientes contratos nuevos y bases compatibles Web/App. QA y sus cambios locales conservados; sin código/migraciones/configuración/commit/push.
+
+
+## 2026-10-13 — Publicación de diseño y análisis de Landing
+
+Solicitud: commit/push de documentos de feature/driver-verification y aclarar impacto Landing. Revisados archivos y referencias, lectura de Socios/api/Hero/Nav; análisis añadido a matriz. Sólo documentación y continuidad; código/configuración/migraciones intactos respecto main1fa2cb1. No integración QA. Resultado de publicación se confirma en sesión; sin despliegue ni pruebas de producto.

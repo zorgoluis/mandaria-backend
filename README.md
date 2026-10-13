@@ -2331,3 +2331,8 @@ En la VM configurar MAIL_PROVIDER=resend, RESEND_API_KEY con una clave propia ha
 Después de llevar este código al servidor, reconstruir y recrear sólo el backend. Configurar las variables antes del arranque: MAIL_PROVIDER=smtp ahora se rechaza. No hay migración de base de datos. El .env local del propietario no se modifica automáticamente.
 
 La aceptación requiere una respuesta HTTP exitosa con id de Resend. emailDelivery=SENT significa aceptación del proveedor, no entrega a la bandeja. Un fallo mantiene la invitación para reenvío manual, sin cambiar su contrato. Sólo se registran códigos RESEND_HTTP_<status>, RESEND_TIMEOUT, RESEND_NETWORK o RESEND_INVALID_RESPONSE; nunca el cuerpo de error, API key o enlace de activación. Validar en despliegue con una invitación a una cuenta controlada y revisar recepción/activación.
+
+
+## Diseño separado de validación documental — 2026-10-13
+
+Base main1fa2cb1 en feature/driver-verification. [Propuesta](docs/INDEPENDENT-ONBOARDING-PROPOSAL.md), prompts [Web](docs/INDEPENDENT-ONBOARDING-PROMPT-WEB.md) y [Android](docs/INDEPENDENT-ONBOARDING-PROMPT-APP.md), [dependencias respecto a QA](docs/DEPENDENCIES-DRIVER-VERIFICATION.md). Sólo documentación; no habilita nuevas funciones ni integra QA.

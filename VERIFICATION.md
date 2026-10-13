@@ -2532,3 +2532,13 @@ Las siete huellas pendientes del informe MVP quedan reconciliadas: SHA-256 hist�
 - Alcance: PostgreSQL 18.6 local, clúster temporal en loopback y puerto efímero, datos sintéticos, dos funciones históricas y tabla mínima con el CHECK real. No es una suite integral ni prueba de todas las migraciones/tabla productiva. Clúster detenido; base principal, .env y VM intactos. Producción usa PG17 y queda pendiente aplicar la migración allí.
 - Intentos previos no aprobados: EPERM en sandbox; tuberías heredadas de pg_ctl en Windows (corregidas, clúster detenido); un fallo UNKNOWN al iniciar pg_dump. Verificado binario y repetición final completa exit 0.
 - Oxlint del script y git diff --check ejecutados. No build de aplicación: cambio SQL y herramienta de regresión, sin cambios TypeScript.
+
+
+## 2026-10-13 — Traslado documental desde QA a rama nueva de main
+
+Verificados refs después de fetch, base main1fa2cb1, rama feature/driver-verification, conteo32 migraciones main/46 QA9ad39b9 y dependencias por lectura. Sólo tres documentos trasladados, matriz nueva y continuidad local. Diff documental revisado; no suites/build/DB/Docker ni validación de compatibilidad de clientes ejecutados. Resultados previos son históricos; sin implementación, commit/push/despliegue.
+
+
+## 2026-10-13 — Preparación de publicación documental
+
+Refs, diff y alcance de siete archivos documentales comprobados. Landing inspeccionada sólo por código local; sin navegador, suites o integración real. Sin cambios en src/prisma/package ni importación de QA; push normal autorizado por propietario.
