@@ -1,3 +1,4 @@
+import { assertDocumentaryEligibility } from '../verification/verification-policy.js';
 import {
   ConflictException,
   Injectable,
@@ -93,6 +94,7 @@ export class AssignmentsService {
         if (active.some((a) => a.driverId === driverId)) throw busy('Driver');
         if (active.length) throw busy('Vehicle');
         await assertNoDeliveryAssignment(tx, { driverId, vehicleId });
+        await assertDocumentaryEligibility(tx, driverId, vehicleId);
         return tx.driverVehicleAssignment.create({
           data: { providerId, driverId, vehicleId },
           select: assignmentHistorySelect,

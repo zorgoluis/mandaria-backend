@@ -1,3 +1,4 @@
+import { assertDocumentaryEligibility } from '../verification/verification-policy.js';
 import {
   dispatchClaimTime,
   searchWindowRejection,
@@ -235,6 +236,7 @@ export class IndependentDispatchesService {
         if (rejection)
           throw independentError(rejection, REJECTION_MESSAGES[rejection]);
         await this.lockEligibleResources(tx, actor, vehicleId);
+        await assertDocumentaryEligibility(tx, actor.driverId, vehicleId);
         await tx.dispatch.update({
           where: { id: dispatchId },
           data: {

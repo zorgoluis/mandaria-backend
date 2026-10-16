@@ -145,7 +145,12 @@ describe('DeliveryAssignmentsService rules inside the transaction', () => {
       options.vehicle === null ? [] : [options.vehicle ?? { status: 'ACTIVE' }],
     );
     const tx = {
-      $queryRaw: vi.fn(async () => queue.shift() ?? []),
+      $queryRaw: vi.fn(async (sql: TemplateStringsArray) =>
+        sql.join('').includes('verification_eligibility')
+          ? [{ code: null }]
+          : (queue.shift() ?? []),
+      ),
+      $executeRaw: vi.fn().mockResolvedValue(1),
       deliveryAssignment: {
         findFirst: vi
           .fn()
@@ -153,20 +158,16 @@ describe('DeliveryAssignmentsService rules inside the transaction', () => {
             options.active === undefined ? null : options.active,
           ),
         findMany: vi.fn().mockResolvedValue(options.busy ?? []),
-        create: vi
-          .fn()
-          .mockResolvedValue({
-            id: 'new',
-            driver: { id: 'd' },
-            vehicle: { id: 'v' },
-          }),
-        update: vi
-          .fn()
-          .mockResolvedValue({
-            id: 'old',
-            driver: { id: 'd' },
-            vehicle: { id: 'v' },
-          }),
+        create: vi.fn().mockResolvedValue({
+          id: 'new',
+          driver: { id: 'd' },
+          vehicle: { id: 'v' },
+        }),
+        update: vi.fn().mockResolvedValue({
+          id: 'old',
+          driver: { id: 'd' },
+          vehicle: { id: 'v' },
+        }),
       },
       driverVehicleAssignment: {
         findMany: vi.fn().mockResolvedValue(options.pairings ?? []),

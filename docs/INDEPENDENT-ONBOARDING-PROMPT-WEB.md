@@ -33,3 +33,19 @@ Ampliación documental: diseña wizard con borrador y carga privada de rostro/IN
 Entregable: docs/INDEPENDENT-ONBOARDING-WEB-PROPOSAL.md con inventario real, pantallas/textos, rutas candidatas, matriz, dependencias exactas backend, handoff Android y plan de validación. Actualiza continuidad en BITACORA y VERIFICATION preservando historial; enlaza desde README cuando corresponda. Distingue inspección de pruebas ejecutadas.
 
 Sin código de producto, migraciones, OpenAPI publicado, configuración/.env, datos/servicios reales, backend/app, commit, push, despliegue ni mensajes a otros agentes. No correr suites funcionales para acreditar un diseño no implementado. Reporta recomendaciones que requieran decisión y bloqueos contractuales antes de programar.
+
+
+Decisión posterior aprobada: existentes y nuevos sin revisión de identidad/unidad no reciben nuevas asignaciones desde activar revisión, SIN gracia. Mantener servicios activos, sesión y recuperación; no inventar aprobación de existentes. Reasignar requiere recursos destino revisados y TAKE independiente también. Prevalece sobre menciones previas de transición pendiente. Sólo documentar; no activar ni implementar.
+
+
+Decisión aprobada 2026-10-13: licencia vigente obligatoria para conductor de unidad motorizada, independiente o flotilla. Pertenece a identidad, con revisión SUPER_ADMIN de titular/categoría/vigencia y chequeo backend en cada nueva asignación/TAKE. Renovación versionada no concede aprobación automática. Vencida bloquea nuevo servicio motorizado, no cierre del activo; bicicleta no motorizada excluida, OTHER no permite bypass. Consultar sección vigente del diseño para catálogos pendientes y razones de bloqueo. Archivo privado, nunca caché operativa/GPS; sólo análisis documental, sin implementación.
+
+
+Actualización aprobada: admitir unidades propias/rentadas/prestadas y exigir términos y condiciones para todos. Ver sección vigente del diseño: aceptación versionada previa a expediente, sin suplencia automática del proveedor por conductor; autorización del dueño/contrato de renta separados. Mecanismo de firma, texto final y matriz precisa de firmantes pendientes. No inventar validez legal o equivalencia con firma avanzada. Sólo análisis/documentación; no implementar.
+
+
+Decisión vigente aprobada: aceptación electrónica en Web mediante texto completo, casilla sin premarcar y botón explícito; conductor acepta personalmente y representante por flotilla, ámbitos/evidencias separados. No PDF firmado para términos ni suplencia del proveedor. Versionado/actor/fecha servidor e idempotencia, sin aprobación operativa automática. Android sólo consulta estado tras volver de Web. Texto final y retención del recibo pendientes. Prevalece sobre mecanismo/firmantes antes pendientes; sólo documentación.
+
+## Actualización de implementación — 2026-10-13
+
+El backend local autorizado se describe en [DRIVER-VERIFICATION-IMPLEMENTATION.md](DRIVER-VERIFICATION-IMPLEMENTATION.md), con rutas efectivamente implementadas, límites y handoff. Las rutas candidatas/secciones de diseño anteriores quedan como historia; no confundirlas con el contrato final. Web/App no fueron implementados. Baja/purga, textos definitivos e integración real siguen pendientes; producción no habilitada.

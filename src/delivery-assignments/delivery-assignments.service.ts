@@ -1,3 +1,4 @@
+import { assertDocumentaryEligibility } from '../verification/verification-policy.js';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
@@ -65,6 +66,7 @@ export class DeliveryAssignmentsService {
           'Dispatch already has an active assignment; reassign it instead',
         );
       await this.lockEligibleResources(tx, actor.providerId, input);
+      await assertDocumentaryEligibility(tx, input.driverId, input.vehicleId);
       return tx.deliveryAssignment.create({
         data: {
           dispatchId,
@@ -110,6 +112,13 @@ export class DeliveryAssignmentsService {
           'ASSIGNMENT_UNCHANGED',
           'The active assignment already uses this driver and vehicle',
         );
+      await this.lockEligibleResources(
+        tx,
+        actor.providerId,
+        input,
+        previous.id,
+      );
+      await assertDocumentaryEligibility(tx, input.driverId, input.vehicleId);
       const now = new Date();
       await tx.deliveryAssignment.update({
         where: { id: previous.id },
@@ -121,8 +130,7 @@ export class DeliveryAssignmentsService {
           endReasonDetail: input.reasonDetail ?? null,
         },
       });
-      // Eligibility after ending the previous row: keeping the same driver or vehicle is allowed.
-      await this.lockEligibleResources(tx, actor.providerId, input);
+      // Destination was validated before closing the previous row.
       const assignment = await tx.deliveryAssignment.create({
         data: {
           dispatchId,
@@ -397,6 +405,7 @@ export class DeliveryAssignmentsService {
     tx: Prisma.TransactionClient,
     providerId: string,
     { driverId, vehicleId }: Resources,
+    replacingAssignmentId?: string,
   ) {
     const provider = await lockProvider(tx, providerId, 'SHARE');
     const [driver] = await tx.$queryRaw<
@@ -420,7 +429,13 @@ export class DeliveryAssignmentsService {
     if (vehicle.status !== 'ACTIVE')
       throw assignmentError('VEHICLE_NOT_ELIGIBLE', 'Vehicle must be ACTIVE');
     const busy = await tx.deliveryAssignment.findMany({
-      where: { status: 'ACTIVE', OR: [{ driverId }, { vehicleId }] },
+      where: {
+        status: 'ACTIVE',
+        ...(replacingAssignmentId
+          ? { id: { not: replacingAssignmentId } }
+          : {}),
+        OR: [{ driverId }, { vehicleId }],
+      },
       select: { driverId: true, vehicleId: true },
     });
     if (busy.some((a) => a.driverId === driverId))

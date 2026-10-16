@@ -1,3 +1,4 @@
+import { VerificationModule } from './verification/verification.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -24,6 +25,7 @@ import { PrequotesModule } from './delivery-prequotes/prequotes.module.js';
 import { PartnerApplicationsModule } from './partner-applications/partner-applications.module.js';
 @Module({
   imports: [
+    VerificationModule,
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
     PrismaModule,
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),

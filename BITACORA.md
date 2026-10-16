@@ -1,8 +1,57 @@
 # Bitácora de Mandaria
 
+## Estado actual — revalidación integrada local completada, 2026-10-13
+
+35 escenarios únicos PASS:30 reejecutados y5 adicionales, sin sumar resultados históricos. W-01, modal ABSENT, toma independiente y términos V2 acreditados con Web/API/PostgreSQL reales; correo capturado y storage simulado. Sólo arnés/documentación backend, Web/producto intactos. Fallo de sincronización del arnés corregido mediante repetición focalizada; huellas por intento conservadas. Tres clústeres propios detenidos. No aptitud productiva, QA, commit, push ni despliegue. Detalle y límites al final de [DRIVER-VERIFICATION-INTEGRATION.md](docs/DRIVER-VERIFICATION-INTEGRATION.md). Estados anteriores se conservan como historial.
+
+
+## Estado actual — 2026-10-13 — integración documental local Web/API/PostgreSQL
+
+Validación sobre los working trees `feature/driver-verification`: backend HEAD `90b7243` y Web HEAD `06d9766`, con sus cambios previos sin commit conservados y huellas registradas. **31 comprobaciones integradas PASS**: 30 del recorrido principal y 1 de cambio de cuenta con marcador pendiente. Backend y PostgreSQL reales, correo capturado localmente y almacenamiento HTTP simulado. Web no modificado (comparación de hashes antes/después).
+
+Nuevas verificaciones de esta tarea: búsqueda automática **16/16** en archivo completo/base separada; contrato público **33/33** en dos archivos completos; build y tipos backend, sintaxis y Oxlint del arnés correctos. Las cifras anteriores 181/128 backend y 219/9 Web son históricas; no se reejecutaron ni se suman. No hubo aborto nativo del runner; los ensayos iniciales fallidos del arnés constan en el informe.
+
+Sin defecto funcional backend demostrado que requiera cambiar producto. Sólo se añadieron cinco utilidades de integración y documentación. Handoff **W-01** para Web: seleccionar otro archivo durante la carga/refetch puede ser limpiado por la finalización anterior; sin corregir por restricción de esta tarea. No se oculta con mocks: el recorrido estable espera que finalice la carga.
+
+Todos los servicios/clusters propios detenidos y datos sintéticos conservados. Sin QA, Docker, cuentas reales, Spaces/SMTP/Google externos, .env, activación en entornos existentes, commit, push o despliegue. Continúan pendientes privacidad, términos definitivos, purga/retención, infraestructura real y los escenarios explícitamente no ejecutados (cierre ABSENT por modal Web, cambio efectivo de versión de términos y toma independiente positiva, entre otros).
+
+Informe y matriz: [DRIVER-VERIFICATION-INTEGRATION.md](docs/DRIVER-VERIFICATION-INTEGRATION.md), [índice saneado](docs/checks/driver-verification-integrated.json). Las entradas siguientes se conservan como historial y no son resultados nuevos de esta tarea.
+
+
+## Estado actual — 2026-10-13 — verificación documental local implementada
+
+Trabajo en feature/driver-verification, HEAD90b7243, base main1fa2cb1. Sin integrar QA. Registro independiente sin proveedor; correo de cuentas existentes; términos locales personales/representativos; expedientes por recurso/ámbito; revisión SUPER_ADMIN; idempotencia/recuperación; almacenamiento privado por adaptador y notificación durable. Corte durable de nuevas asignaciones, continuidad de servicios existentes y reasignación validada antes del cambio. Desactivado por defecto, sólo prueba local; **no apto para producción**.
+
+Verificación nueva de esta tarea, consolidada por archivos completos: **181/181 unitarias (8 archivos), 128/128 E2E (6 archivos), 33/33 checks públicos**. No se ejecutó toda la suite del repositorio. Un intento de delivery-assignments dejó 3/15 pendientes pese a etiquetar el archivo passed: excluido; su único diagnóstico adicional threads terminó15/15 exit0. Causa no acreditada. No sumar repeticiones. Build, ambos tsconfig, ESLint afectado, Oxlint (una advertencia preexistente), Prisma, OpenAPI/API_ACCESS/B2B y diff check correctos. Migración nueva33 limpia, upgrade desde32 con Driver sintético preservado, reaplicación y drift sin diferencias;32 SQL históricos intactos.
+
+Pendientes: privacidad/consentimientos y textos finales, representación, baja/purga por titular/archivos compartidos/recibos/backups, catálogo definitivo, Spaces real, PDF/antimalware si se requieren, Web/App y rollout. No existe endpoint de baja ni evidencia de borrado real; no usar datos reales. Adaptador y correo probados con dobles. Sin .env, base principal, Docker, otros repositorios, cambio de versión, commit, push o despliegue.
+
+Contrato/handoff: [DRIVER-VERIFICATION-IMPLEMENTATION.md](docs/DRIVER-VERIFICATION-IMPLEMENTATION.md). Evidencia: [resumen sanitizado](docs/checks/driver-verification-evidence.json), [3 respuestas HTTP sintéticas](docs/checks/driver-verification-http-examples.json). Las entradas anteriores conservan su fecha y carácter histórico.
+
+
 Documento de continuidad para el propietario y los agentes que trabajen en este repositorio. Actualizar el estado actual y agregar una entrada al historial al finalizar cada tarea.
 
 ## Estado actual
+
+- **Borradores de términos (2026-10-13):** preparados textos para conductores y representantes de flotilla, pendientes de revisión del propietario y cierre jurídico/privacidad. Sólo documentación en feature/driver-verification; sin integración QA ni implementación.
+
+- **Aceptación Web y firmantes aprobados (2026-10-13):** texto completo/casilla/botón; cada conductor personalmente, representante por flotilla. Evidencias separadas por ámbito y versión, sin sustitución de aprobación documental. Propuesta/diseño/prompts sincronizados; sólo documentación.
+
+- **Terceros y términos obligatorios (2026-10-13):** propietario admite propias/rentadas/prestadas y exige términos para todos. Diseño/propuesta/prompts distinguen tenencia, autorización de uso y aceptación versionada; mecanismo/texto/firmantes precisos pendientes. Sólo documentación.
+
+- **Licencia obligatoria aprobada (2026-10-13):** vigente para motorizados independientes/flotilla. Propuesta/diseño/prompts actualizados: evidencia del conductor, categoría/vigencia revisadas y validación al nuevo uso; servicio activo preservado. Sólo documentación.
+
+- **Transición sin gracia aprobada (2026-10-13):** al activar revisión se bloquean nuevas asignaciones de recursos existentes/nuevos sin identidad y unidad aprobadas; servicios activos conservados. Propuesta/diseño/prompts actualizados, sin activación ni implementación.
+
+- **Spaces elegido (2026-10-13):** bucket privado DigitalOcean, estructura por independiente/proveedor y recurso, IDs opacos, versiones y cuarentena. Propuesta/diseño actualizados; región/entornos/retención backups pendientes. No infraestructura creada.
+
+- **Tres informes de consumidores recibidos (2026-10-13):** Landing confirma SOC contacto compatible; propone base maineb104bd y origen Web por entorno. Web requiere ajustes acotados; Android continúa bloqueo operativo. Matriz actualizada, sin implementar ni integrar QA.
+
+- **Informe Web incorporado (2026-10-13):** Web main06d9766 base recomendada, pero pantallas DETAILED/recuperación incompatibles requieren adaptación acotada. Rutas de onboarding candidatas y creación Driver tras confirmar email pendientes de coordinación. Sólo documentación; sin rama cliente creada ni integración QA.
+
+- **Informe Android incorporado (2026-10-13):** app actual no compatible operativamente con main; bloqueos take/release, entrega LEGACY y recuperación. Diseño/matriz distinguen onboarding de adaptación operativa aún pendiente; recibos documentales no cubren operaciones de entrega. Sólo lectura/documentación, sin autorizar base APP QA ni integrar ramas.
+
+- **Diseño backend de validación documental (2026-10-13):** contrato candidato en docs/DRIVER-VERIFICATION-BACKEND-DESIGN.md, sobre feature/driver-verification90b7243/main1fa2cb1. Separadas identidad/unidad, cargas privadas, decisiones y recuperación; identificados bypass actuales y pendientes de transición/purga. Sólo documentación, sin integrar QA ni implementar.
 
 - **Publicación documental autorizada (2026-10-13):** propuesta/prompts y matriz de dependencias preparados para commit/push de feature/driver-verification, sin integrar QA. Landing inspeccionada en lectura: captación SOC separada del expediente, ajustes futuros de CTA/textos documentados. Verificación Git/diff; sin producto ni pruebas funcionales nuevas.
 
@@ -2089,3 +2138,93 @@ Solicitud: crear feature/driver-verification desde main, trasladar propuesta/pro
 ## 2026-10-13 — Publicación de diseño y análisis de Landing
 
 Solicitud: commit/push de documentos de feature/driver-verification y aclarar impacto Landing. Revisados archivos y referencias, lectura de Socios/api/Hero/Nav; análisis añadido a matriz. Sólo documentación y continuidad; código/configuración/migraciones intactos respecto main1fa2cb1. No integración QA. Resultado de publicación se confirma en sesión; sin despliegue ni pruebas de producto.
+
+
+## 2026-10-13 — Diseño técnico y contrato backend de validación
+
+Solicitud: revisar diseño contra main, sin QA ni implementación. Inspeccionados schema, auth, altas/activación/disponibilidad, asignaciones, guards SQL, correo/idempotencia y envoltorios. Documento candidato define entidades/rutas/DTO/errores, snapshots, recuperación, locks propuestos, notificación y baja/purga. Validación documental: referencias y ejemplo JSON, diff y ausencia de cambios de producto. No PostgreSQL/suites/build/OpenAPI publicado; auditoría exhaustiva de triggers/locks pendiente. Decisiones comerciales enumeradas; sin commit/push/configuración/despliegue.
+
+
+## 2026-10-13 — Recepción del informe de compatibilidad Android
+
+Leído informe Android y contrastadas rutas/respuestas del controlador independiente main. Incorporados bloqueos a diseño backend y matriz. Evidencia estática; sin ejecución de app/HTTP/suites ni implementación. Pendiente contrato operativo y decisión de base cliente; sin commit/push.
+
+
+## 2026-10-13 — Recepción del análisis Web contra main
+
+Leído informe del agente, incorporados hallazgos atribuidos a inspección estática en diseño/matriz backend. Diferenciados bloqueos Web de Android y discrepancia pre/postconfirmación del alta. Sin pruebas de producto, código, configuración, commit/push ni integración de ramas.
+
+
+## 2026-10-13 — Recepción del informe Landing
+
+Leído análisis Landing y sintetizados tres consumidores en DEPENDENCIES. Evidencia atribuida a inspección estática, no HTTP/suites nuevas. SOC preservado y CTA documental pendiente de Web/backend reales; sin cambios externos, commit/push o despliegue.
+
+
+## 2026-10-13 — Organización documental en Spaces
+
+Solicitud: usar bucket DigitalOcean organizado por repartidores. Documentados prefijos por ámbito/Driver/Vehicle/case/attachment, acceso privado y purga acotada. Referencia oficial consultada y diff revisado; sin configuración, archivos reales, implementación, commit/push ni despliegue.
+
+
+## 2026-10-13 — Bloqueo inmediato de nuevas asignaciones al activar revisión
+
+Propietario decide sin periodo de gracia para existentes. Documentados corte durable, asignación/TAKE/reasignación, preservación de servicios activos y ausencia de autoaprobación. Lectura de continuidad y diff documental; sin pruebas funcionales, DB, flags, código, commit/push/despliegue.
+
+
+## 2026-10-13 — Licencia vigente para motorizados
+
+Solicitud: requisito obligatorio en ambos modelos, sin implementar. Documentados adjunto/version/revisión, vigencia al asignar, renovación y límites de categoría/OTHER; prompts sincronizados. Continuidad y diff revisados; sin pruebas funcionales, configuración, código, commit/push ni activación.
+
+
+## 2026-10-13 — Unidades de terceros y términos para todos
+
+Solicitud: admitir renta/préstamo con términos previos incluso para propietarios. Incorporadas decisión y propuestas de secuencia/evidencia/firmantes sin atribuir validación legal. Continuidad/diff documental; sin suites, código, infraestructura, commit/push ni despliegue.
+
+
+## 2026-10-13 — Aceptación electrónica personal y de flotilla
+
+Solicitud: definir texto completo/casilla/botón en Web y firmantes por ámbito. Documentadas UI, controles servidor, recibo versionado/idempotente y ausencia de suplencia. Lectura de continuidad/diff; sin implementación, pruebas funcionales, configuración, commit/push ni despliegue. Texto contractual final/retención de recibo pendientes.
+
+## Borradores de términos para revisión — 2026-10-13
+
+Propuesta documental, sin aprobación final ni implementación: [conductores](docs/DRIVER-TERMS-DRAFT.md), [representantes de flotilla](docs/FLEET-REPRESENTATIVE-TERMS-DRAFT.md) y [pendientes de revisión](docs/DRIVER-VERIFICATION-TERMS-REVIEW.md). Aceptación Web personal y representativa separadas; no sustituye autorización de uso ni revisión SUPER_ADMIN. Aviso/consentimientos de privacidad separados. No modifica operación, cobros ni derechos legales.
+
+Solicitud: preparar textos completos para revisar antes de implementar. Cambios: dos borradores y nota común de criterios/pendientes; referencias en propuesta y README. Verificaciones actuales: fuentes oficiales mexicanas consultadas, coherencia documental, enlaces locales y git diff --check. Resultado: propuesta lista para revisión, no contrato vigente. Pendientes: identidad/contacto del operador, representación, privacidad/retención, atención, documentos admitidos y revisión del régimen jurídico. Se preservó el historial y los cambios documentales previos. No se ejecutaron pruebas funcionales ni servicios; sin implementación, QA, commit o push.
+## Historial — 2026-10-13 — implementación documental autorizada
+
+- Solicitud: implementar y validar conductor/unidad desde main en el worktree existente, sin QA ni operaciones reales.
+- Cambios: módulo verification, migración incremental, integración mínima de elegibilidad, provider nullable y estado propio; Resend/outbox; DTO/OpenAPI; pruebas focalizadas y handoff. Preservados los cambios documentales previos.
+- Verificaciones actuales:181 unitarias,128 E2E y33 checks; migraciones limpia/upgrade/reapply/drift,32 históricos intactos, tipos/build/linters/contratos. Conteos por archivo en evidencia, no acumulados por reintento.
+- Incidencias corregidas: consultas advisory void en Prisma, comparaciones SQL UTC, fixtures/DTO de identificador y mocks de nuevas consultas. Alineadas FKs Prisma/SQL. La ejecución parcial del runner no se atribuye a Windows; diagnóstico único completo.
+- Resultado: implementación local y validación focalizada cerradas; no aprobación de producción.
+- Pendientes: privacidad/baja/purga y recibos/compartidos/backups, textos/representación/catálogos definitivos, infraestructura/antimalware/PDF, integración Web/App.
+- Límites: sin Docker, .env, DB principal, commit/push/despliegue ni cambios en otros repositorios.
+
+Cierre final: añadido guard BEFORE DELETE de adjuntos para impedir borrar directamente la evidencia congelada. Comprobación SQL aislada PASS con fila preservada; upgrade/reaplicación/drift repetidos sobre la migración definitiva PASS. El clúster PostgreSQL temporal quedó detenido, conservando sólo fixtures sintéticas para inspección. No se alteró el conteo de casos de prueba.
+
+
+## Historial — 2026-10-13 — validación integrada documental
+
+- Solicitud: comprobar Web real → backend real → PostgreSQL exclusivo, corregir sólo bugs backend demostrados y entregar handoff para Web, sin QA ni publicación.
+- Cambios: `scripts/driver-verification-integration/{environment,run,scenarios,operational,account-recovery}.mjs`, informe e índice saneado; continuidad actualizada. Implementación previa y Web conservados.
+- Verificación: 31 comprobaciones integradas PASS, búsqueda 16/16, públicos 33/33, build/tipos/sintaxis/lint focalizados; visual escritorio/móvil y smoke teclado con datos sintéticos. Servicios propios detenidos.
+- Resultado: recorrido principal y recuperación acreditados localmente; correo/almacenamiento identificados como auxiliares de prueba. W-01 documentado para Web; sin corrección de producto backend ni activación. Pendientes y límites detallados en el informe, sin convertirlos en PASS.
+
+## 2026-10-13 — Reconciliación de evidencia integrada existente
+
+Al retomar la solicitud adjunta se encontraron el informe y los reportes de integración ya presentes. Esta revisión no volvió a ejecutar navegador, suites ni servicios. Se contrastaron 933 huellas del snapshot backend y 250 Web: Web coincide íntegramente; las diferencias backend corresponden a cuatro utilidades del arnés (environment, operational, run y scenarios) y BITACORA/VERIFICATION, sin diferencias en producto dentro del inventario contrastado. Ambas ramas siguen feature/driver-verification, HEAD backend90b7243 y Web06d9766. Git diff --check terminó con exit0.
+
+El reporte principal conserva30 PASS y un NOT RUN de búsqueda; el reporte separado de recuperación conserva1 PASS, cero errores y stopped=true. Son evidencias existentes, no31 pruebas nuevas de esta revisión. Los cuatro archivos del arnés tampoco coinciden con el snapshot backendAfter: no se acredita una nueva ejecución de su contenido actual. Se conserva la limitación para reproducibilidad sin invalidar ni atribuir al código actual los resultados históricos.
+
+Resultado: validación integrada parcial con evidencia existente; W-01 y los NOT RUN del informe permanecen pendientes. No se modificó producto ni Web ni se arrancaron procesos. Sin QA, migraciones, .env, commit, push o despliegue.
+
+## 2026-10-13 — Revalidación integrada W-01 y pendientes cerrados localmente
+
+Solicitud: reejecutar las cuatro utilidades con sus fuentes actuales y comprobar W-01, toma independiente positiva, términos efectivos V2 y cierre ABSENT desde Web. Resultado: **35 escenarios únicos PASS** (30 reejecutados +5 adicionales), sin sumar31 históricas. Principal34 PASS/1 fallo de sincronización del arnés/1 NOT RUN, V2 focalizado1 PASS y toma focalizada1 PASS repetida para render. Fallo inicial y evidencia preservados; sin aborto nativo ni defecto de producto demostrado.
+
+W-01 conserva B incluso con metadatos idénticos y tras fallo de A; hashes de bytes/objetos/DB correctos. ABSENT cerrado por modal sin efectos de negocio. Toma con revisión activada, licencia/unidad aprobadas, una asignación y débito; pantalla tras reload comprobada. V2 publicada sólo por fixture transaccional en base temporal; staleV1 rechazado y V1 inmutable.
+
+Cambios: run/scenarios conectan casos nuevos, revalidation y runners focalizados; documentación/índice/logs saneados. Correcciones sólo del arnés: esperar limpieza de marcador tras409 y render de Mi servicio. Las cuatro utilidades mantienen al cierre su hash ejecutado; cambios focalizados posteriores se acreditan con huellas y repeticiones específicas. Web y producto backend intactos.
+
+Nuevo build, sintaxis de ocho módulos, Oxlint final y diff check correctos. No suite general, tipos ni OpenAPI nuevos por ausencia de cambios de producto;16 búsqueda/33 públicos permanecen históricos. Tres clústeres nuevos detenidos, temporales conservados. Correo capturado/storage HTTP simulado; no Spaces ni correo reales. Pendientes productivos de privacidad, términos, baja/purga e infraestructura siguen abiertos. Sin QA, .env, base principal, commit, push ni despliegue.
+
+Informe: docs/DRIVER-VERIFICATION-INTEGRATION.md; manifiesto: docs/checks/driver-verification-revalidation.json.

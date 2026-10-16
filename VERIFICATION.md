@@ -1,5 +1,47 @@
 ## Compatibilidad operativa Web — patches, 2026-10-11
 
+## 2026-10-13 — integración documental con Web real y PostgreSQL exclusivo
+
+[Informe reproducible y matriz A–J](docs/DRIVER-VERIFICATION-INTEGRATION.md) · [huellas y resultados saneados](docs/checks/driver-verification-integrated.json).
+
+**Evidencia nueva:** 31 comprobaciones integradas PASS (30 principales + recuperación/cambio de cuenta independiente), backend `90b7243` + cambios sin commit y Web `06d9766` + implementación previa sin commit, ramas `feature/driver-verification`. Clusters PostgreSQL18 nuevos loopback,33 migraciones de esta rama, identidad SQL comprobada antes de migrar. Sin fixtures que sustituyan las APIs funcionales de Mandaria.
+
+| Ejecución de esta tarea | Resultado |
+|---|---|
+| `node scripts/driver-verification-integration/run.mjs` | 30 PASS: registro, términos, identidad/licencia, unidades propias/rentadas/prestadas, rechazo/corrección, flotillas A/B, archivos, roles, recuperación, avisos, habilitación y continuidad LEGACY |
+| `node scripts/driver-verification-integration/account-recovery.mjs` | 1 PASS: respuesta perdida después de commit, cambio de cuenta y recarga mantienen bloqueo; 403 al ajeno, recuperación con iniciador y un solo efecto |
+| `test/dispatch-search.e2e-spec.ts` completo, desde configuración temporal del arnés | 16/16 PASS, exit0, base exclusiva separada; cinco intentos automáticos preservados |
+| `npm run test:public-b2b` | 33/33 PASS, exit0, dos archivos completos |
+| `npm run build` | PASS, exit0, ejecutado antes del arranque |
+| `tsc -p tsconfig.build.json --noEmit` | PASS, exit0 |
+| `node --check` en las cinco utilidades nuevas | PASS |
+| Oxlint de `scripts/driver-verification-integration` | PASS, exit0, sin advertencias |
+| Web sin modificaciones | PASS, hashes de archivos no ignorados iguales antes/después de ambos recorridos |
+
+No se suman repeticiones de preparación. El recorrido final omite explícitamente la regresión de búsqueda ya aprobada, y esa fila figura NOT RUN en ese subreporte; los16 resultados provienen de su ejecución completa anterior **dentro de esta misma tarea**. Los181 unitarios/128 E2E backend y219 pruebas/9 visuales Web anteriores continúan siendo evidencia histórica.
+
+Pérdida de respuesta: proxy espera commit/respuesta upstream real y la retiene hasta el timeout real Web20s. Persistencia y ausencia de duplicados contrastadas en PostgreSQL. Marcadores sólo actor/operación/clave/referencia. Estado histórico no sustituye estado vigente. Cierre/POST tardío verificados por HTTP; no se acredita su modal Web.
+
+Correo local capturado y fallo/reintento controlados; no bandeja real. Almacenamiento HTTP simulado con transferencia JPEG/PNG real y normalización/backend/metadata reales; no Spaces ni persistencia remota. No datos personales reales. Inspección visual efectiva en escritorio y viewport móvil390×844; Tab/foco como smoke, no auditoría integral de accesibilidad.
+
+Sin defectos backend de producto demostrados; cambios de esta tarea sólo arnés/continuidad. **W-01 para responsable Web**: selección del siguiente archivo durante carga/refetch puede borrarse al terminar la limpieza anterior. Se preservó captura/reproducción; Web no modificado.
+
+Bloqueos/NOT RUN y pasos de reproducción en el informe: cambio efectivo de versión de términos, modal ABSENT, activación de invitación enteramente en navegador, toma independiente positiva, infraestructura real y auditoría completa. Todos los servicios creados para esta tarea detenidos, temporales conservados; no reset, QA, Docker, producción, .env, commit, push ni despliegue.
+
+Las secciones siguientes conservan el historial anterior.
+
+
+## Estado actual — 2026-10-13 — verificación documental local implementada
+
+Trabajo en feature/driver-verification, HEAD90b7243, base main1fa2cb1. Sin integrar QA. Registro independiente sin proveedor; correo de cuentas existentes; términos locales personales/representativos; expedientes por recurso/ámbito; revisión SUPER_ADMIN; idempotencia/recuperación; almacenamiento privado por adaptador y notificación durable. Corte durable de nuevas asignaciones, continuidad de servicios existentes y reasignación validada antes del cambio. Desactivado por defecto, sólo prueba local; **no apto para producción**.
+
+Verificación nueva de esta tarea, consolidada por archivos completos: **181/181 unitarias (8 archivos), 128/128 E2E (6 archivos), 33/33 checks públicos**. No se ejecutó toda la suite del repositorio. Un intento de delivery-assignments dejó 3/15 pendientes pese a etiquetar el archivo passed: excluido; su único diagnóstico adicional threads terminó15/15 exit0. Causa no acreditada. No sumar repeticiones. Build, ambos tsconfig, ESLint afectado, Oxlint (una advertencia preexistente), Prisma, OpenAPI/API_ACCESS/B2B y diff check correctos. Migración nueva33 limpia, upgrade desde32 con Driver sintético preservado, reaplicación y drift sin diferencias;32 SQL históricos intactos.
+
+Pendientes: privacidad/consentimientos y textos finales, representación, baja/purga por titular/archivos compartidos/recibos/backups, catálogo definitivo, Spaces real, PDF/antimalware si se requieren, Web/App y rollout. No existe endpoint de baja ni evidencia de borrado real; no usar datos reales. Adaptador y correo probados con dobles. Sin .env, base principal, Docker, otros repositorios, cambio de versión, commit, push o despliegue.
+
+Contrato/handoff: [DRIVER-VERIFICATION-IMPLEMENTATION.md](docs/DRIVER-VERIFICATION-IMPLEMENTATION.md). Evidencia: [resumen sanitizado](docs/checks/driver-verification-evidence.json), [3 respuestas HTTP sintéticas](docs/checks/driver-verification-http-examples.json). Las entradas anteriores conservan su fecha y carácter histórico.
+
+
 Evidencia NUEVA, separada del historial siguiente. [Contrato, endpoints, ejemplos y límites](docs/OPERATIONAL-WEB-COMPATIBILITY.md).
 
 | Verificación ejecutada | Resultado |
@@ -2542,3 +2584,33 @@ Verificados refs después de fetch, base main1fa2cb1, rama feature/driver-verifi
 ## 2026-10-13 — Preparación de publicación documental
 
 Refs, diff y alcance de siete archivos documentales comprobados. Landing inspeccionada sólo por código local; sin navegador, suites o integración real. Sin cambios en src/prisma/package ni importación de QA; push normal autorizado por propietario.
+
+
+## 2026-10-13 — Revisión de diseño backend sobre main
+
+Sólo inspección de archivos listados en DRIVER-VERIFICATION-BACKEND-DESIGN.md, referencias locales, JSON ilustrativo y diff. Sin suites/build/DB/SQL ni pruebas de seguridad/archivos reales. Contrato candidato no publicado ni implementado; no se acredita ausencia de deadlocks o auditoría completa de funciones SQL. Producto sigue idéntico a main1fa2cb1; sin QA, commit/push/despliegue.
+
+## Borradores de términos — 2026-10-13
+
+Evidencia nueva documental: rama feature/driver-verification confirmada y cambios previos inventariados; leídos AGENTS, BITACORA, README y VERIFICATION. Redactados dos textos candidatos y nota de revisión; consultadas fuentes oficiales de Código de Comercio, LFPDPPP y LFT. Revisados enlaces locales de los tres documentos y diff sin errores de whitespace. No acredita validez jurídica final ni aceptación electrónica implementada. Sin tests de producto, runner, build, servicios, DB, Docker, QA, configuración, versión, commit, push o despliegue. Evidencia funcional histórica intacta.
+Cierre final: añadido guard BEFORE DELETE de adjuntos para impedir borrar directamente la evidencia congelada. Comprobación SQL aislada PASS con fila preservada; upgrade/reaplicación/drift repetidos sobre la migración definitiva PASS. El clúster PostgreSQL temporal quedó detenido, conservando sólo fixtures sintéticas para inspección. No se alteró el conteo de casos de prueba.
+
+## 2026-10-13 — Reconciliación de evidencia integrada existente
+
+Al retomar la solicitud adjunta se encontraron el informe y los reportes de integración ya presentes. Esta revisión no volvió a ejecutar navegador, suites ni servicios. Se contrastaron 933 huellas del snapshot backend y 250 Web: Web coincide íntegramente; las diferencias backend corresponden a cuatro utilidades del arnés (environment, operational, run y scenarios) y BITACORA/VERIFICATION, sin diferencias en producto dentro del inventario contrastado. Ambas ramas siguen feature/driver-verification, HEAD backend90b7243 y Web06d9766. Git diff --check terminó con exit0.
+
+El reporte principal conserva30 PASS y un NOT RUN de búsqueda; el reporte separado de recuperación conserva1 PASS, cero errores y stopped=true. Son evidencias existentes, no31 pruebas nuevas de esta revisión. Los cuatro archivos del arnés tampoco coinciden con el snapshot backendAfter: no se acredita una nueva ejecución de su contenido actual. Se conserva la limitación para reproducibilidad sin invalidar ni atribuir al código actual los resultados históricos.
+
+Resultado: validación integrada parcial con evidencia existente; W-01 y los NOT RUN del informe permanecen pendientes. No se modificó producto ni Web ni se arrancaron procesos. Sin QA, migraciones, .env, commit, push o despliegue.
+
+## 2026-10-13 — Revalidación integrada W-01 y pendientes cerrados localmente
+
+Solicitud: reejecutar las cuatro utilidades con sus fuentes actuales y comprobar W-01, toma independiente positiva, términos efectivos V2 y cierre ABSENT desde Web. Resultado: **35 escenarios únicos PASS** (30 reejecutados +5 adicionales), sin sumar31 históricas. Principal34 PASS/1 fallo de sincronización del arnés/1 NOT RUN, V2 focalizado1 PASS y toma focalizada1 PASS repetida para render. Fallo inicial y evidencia preservados; sin aborto nativo ni defecto de producto demostrado.
+
+W-01 conserva B incluso con metadatos idénticos y tras fallo de A; hashes de bytes/objetos/DB correctos. ABSENT cerrado por modal sin efectos de negocio. Toma con revisión activada, licencia/unidad aprobadas, una asignación y débito; pantalla tras reload comprobada. V2 publicada sólo por fixture transaccional en base temporal; staleV1 rechazado y V1 inmutable.
+
+Cambios: run/scenarios conectan casos nuevos, revalidation y runners focalizados; documentación/índice/logs saneados. Correcciones sólo del arnés: esperar limpieza de marcador tras409 y render de Mi servicio. Las cuatro utilidades mantienen al cierre su hash ejecutado; cambios focalizados posteriores se acreditan con huellas y repeticiones específicas. Web y producto backend intactos.
+
+Nuevo build, sintaxis de ocho módulos, Oxlint final y diff check correctos. No suite general, tipos ni OpenAPI nuevos por ausencia de cambios de producto;16 búsqueda/33 públicos permanecen históricos. Tres clústeres nuevos detenidos, temporales conservados. Correo capturado/storage HTTP simulado; no Spaces ni correo reales. Pendientes productivos de privacidad, términos, baja/purga e infraestructura siguen abiertos. Sin QA, .env, base principal, commit, push ni despliegue.
+
+Informe: docs/DRIVER-VERIFICATION-INTEGRATION.md; manifiesto: docs/checks/driver-verification-revalidation.json.

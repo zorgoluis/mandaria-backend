@@ -241,3 +241,91 @@ No implementación ni cambio de reglas reales en esta tarea. Decisión de amplia
 ## Verificación realizada en esta tarea
 
 Sólo lectura de los archivos indicados y revisión documental/diff. Backend QA/HEAD confirmado; Git de repos externos no pudo consultarse por permisos de lectura de Git, por lo que no se acredita su rama/HEAD. No se consultó DB, ejecutó Docker, corrió suites/build, creó migraciones ni modificó producto/configuración/repos externos. Cambios locales previos conservados. Sin commit/push/despliegue.
+
+
+## Diseño backend sobre main — 2026-10-13
+
+[Contrato técnico candidato](DRIVER-VERIFICATION-BACKEND-DESIGN.md): concreta revisiones separadas, registration/onboarding, recursos pendientes, adjuntos, permisos, idempotencia, notificaciones, migración y bloqueos de negocio. Prevalece técnicamente sobre rutas tentativas anteriores; no está implementado. No integra QA.
+
+## Almacenamiento elegido y estructura — decisión 2026-10-13
+
+Propietario elige bucket DigitalOcean Spaces y organización por repartidor/unidad. Esto sustituye la elección de proveedor antes pendiente; NO autoriza crear infraestructura ni implementar. Bucket privado, listado privado y objetos privados; sin CDN público para expedientes. Región, nombre, credenciales por entorno y cuotas siguen pendientes. Recomendar bucket separado por entorno; no compartir documentos reales con desarrollo.
+
+Estructura candidata de claves (carpetas lógicas/prefijos, no permisos):
+
+    verification/v1/independents/{driverId}/identity/{caseId}/{attachmentId}/original.jpg
+    verification/v1/independents/{driverId}/vehicles/{vehicleId}/{caseId}/{attachmentId}/original.pdf
+    verification/v1/providers/{providerId}/drivers/{driverId}/identity/{caseId}/{attachmentId}/original.jpg
+    verification/v1/providers/{providerId}/vehicles/{vehicleId}/{caseId}/{attachmentId}/original.pdf
+    verification/v1/quarantine/{uploadId}/source
+
+Los identificadores son UUID del servidor. Extensión se determina por contenido validado; nunca usar nombres de persona, email, INE, placa o nombre original de archivo como clave. Adjuntos FACE_PHOTO/INE_FRONT/INE_BACK/REGISTRATION_CARD/OWNERSHIP_PROOF se clasifican en DB; UI presenta nombres comprensibles al autorizado. Derivados bajo el mismo attachmentId (preview.jpg, por ejemplo), nunca sobrescribir original de una versión enviada. Cada reemplazo tiene nuevo attachmentId/caseVersion según contrato.
+
+Unidades de flota dependen del proveedor, no de la carpeta de un conductor: pueden ser utilizadas por distintos repartidores sin duplicar documentos. Perfil dual mantiene ámbitos independiente/flotilla separados; no compartir identidad privada automáticamente entre ambos. El prefijo facilita inventario pero NO concede acceso: autorización por ownership/membership/rol y snapshot en DB antes de cada lectura/carga.
+
+El backend genera claves; cliente no puede elegir bucket/prefijo ni aportar path arbitrario. Guardar bucket/key/objectVersion si aplica, hash servidor, bytes y relación al expediente en PostgreSQL, no URL firmada permanente. Cuarentena privada no descargable por solicitantes; sólo publicar referencia CLEAN tras análisis y copia verificada a destino inmutable. Registrar ambas ubicaciones para reintentos y limpieza de huérfanos, sin depender de rename atómico.
+
+Para baja: inventario por filas/objetos/versiones y derivados; no borrar recursivamente un prefijo tomado del cliente ni toda la carpeta de proveedor por baja de un administrador. Verificar alcance exacto, reintentos y resultado; excluir adjuntos de otros titulares. Respaldos/versionado requieren política específica todavía pendiente. Carpetas no reemplazan bitácora ni validación de propiedad.
+
+Referencias oficiales consultadas: https://docs.digitalocean.com/products/spaces/how-to/set-file-permissions/ (privacidad y acceso temporal), https://docs.digitalocean.com/products/spaces/reference/s3-compatibility/ (API S3 parcial), https://docs.digitalocean.com/products/spaces/how-to/ (organización en carpetas). No asumir todas las funciones AWS S3 ni malware scanning automático por usar Spaces. Sin bucket/keys/cargas reales creados.
+## Decisión vigente: existentes sin nuevas asignaciones — 2026-10-13
+
+El propietario aprueba bloquear nuevas asignaciones desde la activación de la revisión, SIN periodo de gracia. Sustituye las menciones previas que dejaban pendiente revisión/gracia de existentes. Aplica a nuevos y existentes, flota e independientes: identidad y unidad deben tener aprobación documental vigente antes de admitir una nueva asignación. No backfill de aprobaciones por estar ACTIVE o tener historial.
+
+Al corte, clasificar existentes no revisados como REVIEW_REQUIRED (etiqueta de transición; mapear explícitamente a verificationStatus del contrato antes de implementar). No confundir esta clasificación con suspensión de User/Driver ni retirar acceso a sesión, expediente, servicio en curso o recuperación. Perfil independiente APPROVED histórico no demuestra validación documental.
+
+Conservar asignaciones ya ACTIVE antes del corte y sus operaciones de cierre/liberación/recuperación autorizadas. No cancelarlas, reasignarlas, iniciar refunds o cambiar precio/créditos por la revisión. Una reasignación crea nueva asignación: sus recursos destino deben estar aprobados, sin terminar la asignación anterior si la nueva operación falla. Un pairing de flota previo no exime de validar al asignar otro servicio. TAKE independiente crea asignación y también queda sujeto a la regla.
+
+Futuro corte durable auditado en backend/DB, no basado únicamente en menú/flag de cliente. Diseñar barrera transaccional que serialice activación y admisión: cada operación queda inequívocamente antes o después del corte. Pruebas de carrera deben demostrar que no se publica una asignación no revisada después de activar. La mecánica exacta de locks/migración sigue siendo trabajo técnico pendiente, no se activó ninguna política ahora.
+
+No modificar claim del proveedor, matching ni cinco intentos por inferencia. Si el proveedor ya tomó un servicio pero aún no lo asignó, no puede asignarlo después del corte sin recursos aprobados; conservar vías de liberación/expiración existentes, sin excepción automática. Advertir esta consecuencia en el rollout y preparar revisores antes de activar. Falta decidir si cambiar claim en otra tarea; la prohibición de nueva asignación queda cerrada.
+
+Validación futura: recurso existente ACTIVE sin documentos rechazado al asignar; sólo identidad aprobada o sólo unidad aprobada insuficiente; ambos aprobados más requisitos actuales habilitan; servicio preexistente termina; reasignación fallida no deja servicio sin responsable; carrera corte/TAKE/assign; proveedor sin pareja revisada no elude; no mutación de rondas, ledger o historial. Sólo diseño, sin implementación ni activación.
+## Decisión vigente: licencia para vehículos motorizados — 2026-10-13
+
+El propietario exige licencia de conducir vigente para vehículos motorizados, tanto independientes como flotilla, nuevos y existentes al activar revisión. Sustituye toda mención anterior de licencia opcional o pendiente de decidir. Es política de Mandaria, no una afirmación de requisitos legales exhaustivos.
+
+La licencia pertenece al expediente del CONDUCTOR, no al de la unidad. Incorporar adjunto LICENSE (caras necesarias según documento) y metadatos mínimos de autoridad emisora, categoría, vigencia y versión de evidencia; no exponer número/imagen en vistas operativas. SUPER_ADMIN comprueba titular, legibilidad, vigencia y categoría compatible con la unidad. PROVIDER_ADMIN captura para su conductor pero no valida. Aprobar una unidad no acredita licencia de quien la conduce.
+
+MOTORCYCLE/CAR/PICKUP/VAN/TRUCK requieren licencia revisada y vigente. BICYCLE no motorizada no requiere licencia por esta regla. OTHER o clasificación incierta debe resolverse explícitamente antes de admitir asignación; no constituye excepción automática. No aceptar una unidad motorizada como bicicleta para eludir control. Catálogo exacto categoría-emisor-unidad, tratamiento de licencias sin fecha de expiración y frontera horaria de vigencia aún deben concretarse; los clientes no inventan equivalencias.
+
+La comprobación efectiva corresponde a la pareja conductor-unidad, bajo autoridad backend al asignar/reasignar o TAKE. Incorporar razones candidatas LICENSE_REQUIRED, LICENSE_UNDER_REVIEW, LICENSE_EXPIRED y LICENSE_CATEGORY_MISMATCH; cerrar su envelope HTTP en contrato definitivo. No basta revisar fecha al aprobar: releer vigencia en cada nueva asignación. Si expira, bloquear nuevos servicios motorizados sin impedir terminar el servicio vigente ni convertir expiración en suspensión global de la cuenta. Una eventual asignación no motorizada sigue su propia elegibilidad; no se concede automáticamente.
+
+Renovación crea nueva evidencia/version y revisión SUPER_ADMIN; no sobreescribe el documento aprobado ni concede vigencia por subir un archivo. Mientras evidencia anterior continúe válida, una renovación pendiente no la invalida por sí sola; al vencer no hay gracia implícita. La licencia comparte almacenamiento privado Spaces, acceso mínimo, auditoría y retención/purga del expediente de identidad.
+
+Web: requisito condicional claro según unidad/modalidad, campos/archivo de licencia, motivo y estado de revisión/vencimiento; checklist SUPER_ADMIN y no bypass desde formularios flota. Android: mostrar estado/bloqueo autorizado sin descargar licencia ni activar comandos con caché antigua; mantener recuperación/servicio activo. Backend: requirements por política, DTO de evidencia, elegibilidad bajo locks, pruebas de vencimiento entre lectura y comando. No agregar datos de licencia a B2B ni GPS.
+
+Pruebas futuras: ambos modelos, licencia ausente/vencida/en revisión, categoría incompatible, motor en OTHER sin clasificar, ambas evidencias vigentes, cambio de unidad y vencimiento concurrente, renovación pendiente, bicicleta no motorizada y finalización de servicio previo. Sólo diseño; sin implementar, activar ni probar sobre documentos reales.
+## Decisión vigente: terceros y términos obligatorios — 2026-10-13
+
+El propietario admite unidades propias, rentadas y prestadas, y exige firmar términos y condiciones para TODOS, incluidos propietarios. Sustituye recomendaciones anteriores de excluir terceros. No se ha definido todavía el mecanismo jurídico/técnico de firma ni el texto legal final: no afirmar que un checkbox equivale a firma avanzada o prueba suficiente en todo caso.
+
+Distinguir modalidad de tenencia OWNED/RENTED/BORROWED, titular de la unidad, presentador y conductor. Documentación candidata adicional: propia→propiedad/circulación; rentada→contrato vigente que identifique unidad, partes y autorización de uso; prestada→autorización del titular que identifique unidad, beneficiario, uso y vigencia cuando aplique. Catálogo y comprobación de representación/firmas a cerrar; no aceptar como suficiente cualquier PDF. Se mantiene licencia vigente para motorizados. Revisión SUPER_ADMIN comprueba también permiso de uso, no sólo nombre de propiedad coincidente. Nunca clasificar al arrendatario como propietario por conveniencia.
+
+Propuesta de firmantes: conductor independiente acepta personalmente; conductor de flota acepta personalmente sus obligaciones, el administrador no firma por él. Representante autorizado del proveedor acepta condiciones empresariales en su ámbito. Consentimiento de operación Mandaria y autorización del dueño de unidad ajena son evidencias distintas; términos del conductor no otorgan por sí solos permiso del dueño. Aprobación de esta matriz específica de firmantes pendiente del propietario.
+
+Secuencia propuesta: mostrar términos y aviso de privacidad antes de recabar documentos sensibles; tras autenticación/email verificado recoger acto afirmativo no premarcado y guardar evidencia, antes de habilitar carga/envío. En flota, permitir invitación mínima para que el conductor acepte antes de que el proveedor cargue su expediente personal; cerrar tratamiento de invitado y acceso sin Driver operativo, sin fingir aceptación del administrador en su nombre. Aceptación no habilita operación: revisión de identidad/unidad/licencia sigue obligatoria.
+
+Evidencia candidata: actor autenticado, rol/capacidad de representación cuando proceda, versión inmutable del texto, hash del contenido presentado, fecha servidor, finalidad y ámbito (conductor/proveedor), método de aceptación y referencia de solicitud; no guardar sólo true. Publicar texto consultable/descargable y recibo mínimo, no una firma reutilizable en imagen. Texto y mecanismo requieren validación antes de lanzamiento; no se redacta contrato legal en esta tarea.
+
+Backend deberá devolver versión requerida y permisos; rechazar carga/envío/aprobación cuando falte aceptación exigible con TERMS_ACCEPTANCE_REQUIRED; si versión mostrada cambió, TERMS_VERSION_CONFLICT y nueva presentación, sin aceptar silenciosamente. Comando de aceptación con Idempotency-Key y respuesta recuperable, no duplicar evidencia por reintento. No modificar consentimientos B2B/precio/cobro ni reutilizarlos como términos del conductor.
+
+Renovación de términos no obliga por defecto a interrumpir servicios vigentes; política de reaceptación para nuevas operaciones pendiente. Baja/purga de archivos personales no determina automáticamente conservación del recibo contractual: plazo y minimización de esa evidencia se deben cerrar explícitamente, sin retención indefinida inferida.
+
+Web/App: mostrar versión/documento y aceptación pendiente separada del estado documental; Web primero sigue recomendación, nada de biometría/firma dibujada/e.firma añadida por inferencia. Landing explica condiciones sin recabar documentos o aceptar términos de operación en nombre de futuros usuarios. Pruebas futuras: propietario también firma, arrendado/prestado requiere autorización, proveedor no suplanta conductor, versión obsoleta/replay perdido/cambio de cuenta y no nuevas asignaciones sin requisitos. Sólo diseño, sin implementación.
+## Decisión vigente: aceptación electrónica Web y firmantes — 2026-10-13
+
+Aprobado por el propietario: texto completo visible en Web, casilla sin premarcar y botón explícito «Aceptar términos y condiciones». Cada conductor acepta personalmente (independiente y de flotilla); representante autorizado acepta por la flotilla. Sustituye menciones anteriores a mecanismo/firmantes pendientes. No se solicita PDF firmado, firma dibujada, biometría ni firma avanzada para esta aceptación. Contratos/autorizaciones de uso de unidades de terceros siguen siendo documentación distinta.
+
+Sesión autenticada e identidad verificada para aceptar; el servidor obtiene actor y ámbito autorizado, nunca acepta un userId del body para suplantar al conductor. Para representación exige membership/capacidad vigente y providerId autorizado; la evidencia vincula usuario y proveedor, no sólo rol. Si una persona actúa en ambos ámbitos, registrar dos aceptaciones independientes. Representante no acepta por conductor y aceptación personal no sustituye la de la flotilla.
+
+UI: mostrar texto completo de versión requerida, acceso posterior al texto y recibo, casilla explícita no premarcada, botón deshabilitado hasta marcar y mientras se envía. No registrar aceptación por abrir página, hacer scroll, iniciar sesión o verificar correo. Accesibilidad teclado/lector; un indicador de scroll no demuestra lectura. Si cambia versión antes de confirmar, conflicto y nueva presentación con casilla limpia. El backend exige accepted=true, versión/hash coincidentes y autoridad actual; el botón no es el control de seguridad.
+
+Persistir texto inmutable/version/hash, actor, ámbito personal/proveedor, capacidad de representación, fecha servidor y método WEB_CHECKBOX_BUTTON. Recibo mínimo con id/version/acceptedAt/scope; idempotencia por intención evita duplicados y permite consulta tras respuesta perdida. No confiar en fecha ni texto aportado por cliente. No sobrescribir aceptación anterior al actualizar términos ni afirmar equivalencia jurídica con firma avanzada; texto contractual final y política de conservación del recibo aún requieren cierre.
+
+Para flotilla: representante acepta antes de presentar expedientes del proveedor; cada conductor invitado acepta antes de que se cargue/envíe su documentación personal. Flujo de invitación mínima sigue permitido, sin aceptar por él. Unidad y conductor deben cumplir además requisitos documentales/licencia y aprobación SUPER_ADMIN. No desbloquear operación por aceptar términos. Renovación de texto/reaceptación no interrumpe automáticamente servicio ya asignado; regla de nuevos cambios de versión pendiente.
+
+Web es la superficie de aceptación; Android abre Web por entorno y consulta estado backend al volver, sin inferir aceptación por retorno ni reutilizar token por URL. Landing sólo informa/enlaza, no recoge estas aceptaciones operativas. Pruebas futuras: casilla vacía, actor ajeno, representante sin membership, ámbitos separados, versión concurrente, replay/timeout, consulta de recibo y rechazo de carga sin aceptación. Sólo documentación; no implementación ni pruebas de producto.
+## Textos candidatos para revisión — 2026-10-13
+
+Se prepararon [términos para conductores](DRIVER-TERMS-DRAFT.md) y [términos para representantes de flotilla](FLEET-REPRESENTATIVE-TERMS-DRAFT.md). El [registro de revisión](DRIVER-VERIFICATION-TERMS-REVIEW.md) distingue decisiones aprobadas de cláusulas propuestas y pendientes jurídicos/privacidad. No son textos vigentes y no autorizan implementación. Conservan aceptación personal/representativa, revisión manual y requisitos aprobados. Los prompts existentes deberán tratar estos textos como candidatos, no como contrato aprobado para publicar.

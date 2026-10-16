@@ -208,6 +208,19 @@ export class DriverSelfActiveDeliveryAssignmentResponse {
   @ApiProperty(uuid) dispatchId!: string;
 }
 export class DriverSelfResponse {
+  @ApiPropertyOptional({
+    type: 'object',
+    additionalProperties: true,
+    description:
+      'Documentary identity status only; LOCAL_TEST receipts never authorize production. Vehicle/license/credit eligibility is rechecked on TAKE.',
+  })
+  verification?: {
+    identityStatus: string;
+    policyVersion: string;
+    environment: string;
+    canAdmitIdentity: boolean;
+    blockingReasons: string[];
+  };
   @ApiProperty({
     type: String,
     nullable: true,
@@ -219,8 +232,8 @@ export class DriverSelfResponse {
   @ApiProperty({ example: 'Carlos' }) name!: string;
   @ApiProperty({ enum: DriverStatus }) status!: DriverStatus;
   @ApiProperty({ enum: DriverAvailability }) availability!: DriverAvailability;
-  @ApiProperty({ type: DriverSelfProviderResponse })
-  provider!: DriverSelfProviderResponse;
+  @ApiProperty({ type: DriverSelfProviderResponse, nullable: true })
+  provider!: DriverSelfProviderResponse | null;
   @ApiProperty({
     type: DriverSelfAssignmentResponse,
     nullable: true,

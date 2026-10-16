@@ -1,3 +1,4 @@
+import { documentaryDriverView } from '../verification/verification-policy.js';
 import {
   collectionInstructionFields,
   collectionSourceSelect,
@@ -227,6 +228,11 @@ export class DriversService {
     });
     if (!driver) throw new NotFoundException('Driver profile not found');
     const { independentProfile, ...rest } = driver;
+    const verification = await documentaryDriverView(
+      this.prisma,
+      driver,
+      independentProfile?.id,
+    );
     const activeAssignment = await this.prisma.deliveryAssignment.findFirst({
       where: { driverId: driver.id, status: 'ACTIVE' },
       select: {
@@ -238,6 +244,7 @@ export class DriversService {
     });
     return {
       ...withCurrentAssignment(rest),
+      ...(verification ? { verification } : {}),
       activeDeliveryAssignment: activeAssignment
         ? {
             // Evidence is this persisted ACTIVE assignment; this branch has no detailed execution.
@@ -255,7 +262,9 @@ export class DriversService {
         ? {
             ...independentProfile,
             canTakeServices:
-              independentProfile.status === 'APPROVED' && !activeAssignment,
+              independentProfile.status === 'APPROVED' &&
+              !activeAssignment &&
+              (!verification || verification.canAdmitIdentity),
           }
         : null,
     };
@@ -269,16 +278,25 @@ export class DriversService {
       });
       if (!found) throw new NotFoundException('Driver profile not found');
       // Same lock order as suspension (provider → driver).
-      const provider = await lockProvider(tx, found.providerId, 'SHARE');
+      const provider = found.providerId
+        ? await lockProvider(tx, found.providerId, 'SHARE')
+        : null;
       const [driver] = await tx.$queryRaw<
         { status: DriverStatus; availability: DriverAvailability }[]
       >`SELECT status, availability FROM "Driver" WHERE id = ${found.id}::uuid FOR UPDATE`;
       if (availability !== 'OFFLINE') {
+        if (
+          !provider &&
+          !(await tx.independentDriverProfile.findFirst({
+            where: { driverId: found.id, status: 'APPROVED' },
+          }))
+        )
+          throw new ConflictException('INDEPENDENT_NOT_APPROVED');
         if (driver.status !== 'ACTIVE')
           throw new ConflictException(
             'Driver must be ACTIVE to offer availability',
           );
-        if (provider.status !== 'ACTIVE')
+        if (provider && provider.status !== 'ACTIVE')
           throw new ConflictException(
             'Provider must be ACTIVE to offer availability',
           );

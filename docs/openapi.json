@@ -1,6 +1,1456 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/v1/verification-email/request": {
+      "post": {
+        "operationId": "VerificationController_requestEmail",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-email/confirm": {
+      "post": {
+        "operationId": "VerificationController_confirmEmail",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationEmailConfirmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-requirements": {
+      "get": {
+        "operationId": "VerificationController_requirements",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-terms": {
+      "get": {
+        "operationId": "VerificationController_terms",
+        "parameters": [
+          {
+            "name": "scope",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRIVER",
+                "FLEET"
+              ]
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationTermsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-terms/accept": {
+      "post": {
+        "operationId": "VerificationController_accept",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptTermsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationAcceptanceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-terms/acceptances/{id}": {
+      "get": {
+        "operationId": "VerificationController_receipt",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/driver/onboarding": {
+      "get": {
+        "operationId": "VerificationController_onboarding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
+    "/api/v1/driver/onboarding/vehicles": {
+      "post": {
+        "operationId": "VerificationController_vehicle",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingVehicleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
+    "/api/v1/driver/verification-cases": {
+      "post": {
+        "operationId": "VerificationController_driverCase",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      },
+      "get": {
+        "operationId": "VerificationController_driverCases",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "SUBMITTED",
+                "APPROVED",
+                "REJECTED",
+                "WITHDRAWN"
+              ]
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
+    "/api/v1/provider/verification-cases": {
+      "post": {
+        "operationId": "VerificationController_providerCase",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      },
+      "get": {
+        "operationId": "VerificationController_providerCases",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "SUBMITTED",
+                "APPROVED",
+                "REJECTED",
+                "WITHDRAWN"
+              ]
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/verification-cases": {
+      "get": {
+        "operationId": "VerificationController_adminCases",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página, empezando en 1.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Elementos por página; máximo 100.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "SUBMITTED",
+                "APPROVED",
+                "REJECTED",
+                "WITHDRAWN"
+              ]
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-cases/{id}": {
+      "get": {
+        "operationId": "VerificationController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationCaseResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      },
+      "patch": {
+        "operationId": "VerificationController_update",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-cases/{id}/uploads": {
+      "post": {
+        "operationId": "VerificationController_upload",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationUploadResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create private upload; PUT bytes to returned URL as application/octet-stream, then complete. Only JPEG/PNG supported.",
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-cases/{id}/uploads/{uploadId}/complete": {
+      "post": {
+        "operationId": "VerificationController_complete",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "uploadId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-cases/{id}/attachments": {
+      "get": {
+        "operationId": "VerificationController_attachments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-cases/{id}/attachments/{attachmentId}/access": {
+      "post": {
+        "operationId": "VerificationController_access",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attachmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-cases/{id}/attachments/{attachmentId}": {
+      "delete": {
+        "operationId": "VerificationController_remove",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attachmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-cases/{id}/submit": {
+      "post": {
+        "operationId": "VerificationController_submit",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-cases/{id}/withdraw": {
+      "post": {
+        "operationId": "VerificationController_withdraw",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/verification-cases/{id}/decision": {
+      "post": {
+        "operationId": "VerificationController_decision",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/driver/verification-notifications": {
+      "get": {
+        "operationId": "VerificationController_notifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER"
+        ]
+      }
+    },
+    "/api/v1/provider/verification-notifications": {
+      "get": {
+        "operationId": "VerificationController_providerNotifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "PROVIDER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-command-attempts/{key}": {
+      "get": {
+        "operationId": "VerificationController_attempt",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "query",
+            "description": "Exact operation returned by the command contract.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "target",
+            "required": true,
+            "in": "query",
+            "description": "Case/resource UUID, or DRIVER/FLEET:providerId for terms, or POLICY/SELF.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationAttemptResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/verification-command-attempts/{key}/close": {
+      "post": {
+        "operationId": "VerificationController_close",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttemptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "DRIVER",
+          "PROVIDER_ADMIN",
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/admin/verification-policy": {
+      "post": {
+        "operationId": "VerificationController_policy",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "UUID for this intent. Reuse exactly after timeout; query/close via verification-command-attempts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "LOCAL TEST ONLY: durable admission cut. Does not cancel active assignments.",
+        "tags": [
+          "Driver verification (LOCAL TEST ONLY)"
+        ],
+        "x-roles": [
+          "SUPER_ADMIN"
+        ]
+      }
+    },
+    "/api/v1/independent-driver-registrations": {
+      "post": {
+        "operationId": "DriverRegistrationController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "summary": "LOCAL TEST ONLY: request an independent registration email",
+        "tags": [
+          "Driver verification registration (LOCAL TEST ONLY)"
+        ]
+      }
+    },
+    "/api/v1/independent-driver-registrations/resend": {
+      "post": {
+        "operationId": "DriverRegistrationController_resend",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Driver verification registration (LOCAL TEST ONLY)"
+        ]
+      }
+    },
+    "/api/v1/independent-driver-registrations/confirm": {
+      "post": {
+        "operationId": "DriverRegistrationController_confirm",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationConfirmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Driver verification registration (LOCAL TEST ONLY)"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "AuthController_login",
@@ -58153,6 +59603,795 @@
       }
     },
     "schemas": {
+      "VerificationEmailConfirmDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "VerificationTermsResponse": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "DRIVER",
+              "FLEET"
+            ]
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "LOCAL_TEST"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "description": "Complete immutable test-only text; no contractual effect."
+          },
+          "hash": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "version",
+          "scope",
+          "environment",
+          "text",
+          "hash",
+          "createdAt"
+        ]
+      },
+      "AcceptTermsDto": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "DRIVER",
+              "FLEET"
+            ]
+          },
+          "providerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "accepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "WEB_CHECKBOX_BUTTON"
+            ]
+          }
+        },
+        "required": [
+          "scope",
+          "version",
+          "hash",
+          "accepted",
+          "method"
+        ]
+      },
+      "VerificationAcceptanceResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACCEPTED"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "DRIVER",
+              "FLEET"
+            ]
+          },
+          "version": {
+            "type": "string"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "LOCAL_TEST"
+            ]
+          },
+          "contractuallyEffective": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "scope",
+          "version",
+          "acceptedAt",
+          "environment",
+          "contractuallyEffective"
+        ]
+      },
+      "OnboardingVehicleDto": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "nullable": true,
+            "example": "Italika",
+            "maxLength": 50
+          },
+          "model": {
+            "type": "string",
+            "nullable": true,
+            "example": "FT150",
+            "maxLength": 50
+          },
+          "year": {
+            "type": "integer",
+            "nullable": true,
+            "example": 2023,
+            "minimum": 1900,
+            "maximum": 2100
+          },
+          "color": {
+            "type": "string",
+            "nullable": true,
+            "example": "Rojo",
+            "maxLength": 30
+          },
+          "plate": {
+            "type": "string",
+            "nullable": true,
+            "description": "Placa opcional, normalizada a mayúsculas; null para bicicletas u otros vehículos sin placa. No se valida unicidad ni formato oficial.",
+            "example": "ABC-123",
+            "pattern": "^[A-Z0-9][A-Z0-9 -]{0,14}$"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "Identificador operativo único dentro del proveedor (no global). Se normaliza a mayúsculas.",
+            "example": "MOTO-01",
+            "pattern": "^[A-Z0-9][A-Z0-9_-]{0,29}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "BICYCLE",
+              "MOTORCYCLE",
+              "CAR",
+              "PICKUP",
+              "VAN",
+              "TRUCK",
+              "OTHER"
+            ],
+            "example": "MOTORCYCLE"
+          }
+        },
+        "required": [
+          "identifier",
+          "type"
+        ]
+      },
+      "ReceiptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ]
+      },
+      "CreateCaseDto": {
+        "type": "object",
+        "properties": {
+          "subjectType": {
+            "type": "string",
+            "enum": [
+              "DRIVER_IDENTITY",
+              "VEHICLE"
+            ]
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "subjectType",
+          "subjectId"
+        ]
+      },
+      "VerificationAttachmentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "VALIDATED",
+              "REMOVED"
+            ]
+          },
+          "bytes": {
+            "type": "number",
+            "nullable": true
+          },
+          "mime": {
+            "type": "string",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "status",
+          "bytes",
+          "mime",
+          "hash",
+          "createdAt"
+        ]
+      },
+      "VerificationCaseResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectType": {
+            "type": "string",
+            "enum": [
+              "DRIVER_IDENTITY",
+              "VEHICLE"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "APPROVED",
+              "REJECTED",
+              "WITHDRAWN"
+            ]
+          },
+          "revision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "LOCAL_TEST"
+            ]
+          },
+          "policyVersion": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Empty draft or strict identity/unit data, as defined by UpdateCaseDto."
+          },
+          "scope": {
+            "type": "object",
+            "properties": {
+              "providerId": {
+                "type": "string",
+                "nullable": true,
+                "format": "uuid"
+              },
+              "independentProfileId": {
+                "type": "string",
+                "nullable": true,
+                "format": "uuid"
+              }
+            }
+          },
+          "verificationStatus": {
+            "type": "string",
+            "enum": [
+              "NOT_SUBMITTED",
+              "UNDER_REVIEW",
+              "APPROVED",
+              "EXPIRED",
+              "REJECTED"
+            ]
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerificationAttachmentResponse"
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "publicReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "internalNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "SUPER_ADMIN only."
+          },
+          "reviewerId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "SUPER_ADMIN only."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "submittedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "decidedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "validUntil": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "licenseValidUntil": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "licenseVehicleTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "subjectId",
+          "resourceId",
+          "subjectType",
+          "status",
+          "revision",
+          "environment",
+          "policyVersion",
+          "data",
+          "scope",
+          "verificationStatus",
+          "attachments",
+          "events",
+          "publicReason",
+          "createdAt",
+          "submittedAt",
+          "decidedAt",
+          "validUntil",
+          "licenseValidUntil",
+          "licenseVehicleTypes"
+        ]
+      },
+      "UpdateCaseDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "fullName",
+                  "contactPhone",
+                  "operatingCity",
+                  "documentType"
+                ],
+                "properties": {
+                  "fullName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 150
+                  },
+                  "contactPhone": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 30
+                  },
+                  "operatingCity": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 150
+                  },
+                  "documentType": {
+                    "type": "string",
+                    "enum": [
+                      "INE"
+                    ]
+                  },
+                  "license": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "issuer",
+                      "category",
+                      "expiresAt",
+                      "vehicleTypes"
+                    ],
+                    "properties": {
+                      "issuer": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 150
+                      },
+                      "category": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 150
+                      },
+                      "expiresAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "vehicleTypes": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 5,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "MOTORCYCLE",
+                            "CAR",
+                            "PICKUP",
+                            "VAN",
+                            "TRUCK"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "declaredOwnerName",
+                  "ownershipEvidenceType",
+                  "serialNumber"
+                ],
+                "properties": {
+                  "declaredOwnerName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 150
+                  },
+                  "serialNumber": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 150
+                  },
+                  "ownershipEvidenceType": {
+                    "type": "string",
+                    "enum": [
+                      "OWNED",
+                      "RENTED",
+                      "BORROWED"
+                    ]
+                  },
+                  "authorizationExpiresAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            ],
+            "description": "Identity: fullName/contactPhone/operatingCity/documentType=INE and optional license. Unit: declaredOwnerName/serialNumber/ownershipEvidenceType OWNED|RENTED|BORROWED, optional authorizationExpiresAt. Strict server validation; see requirements."
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "data"
+        ]
+      },
+      "UploadDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "FACE_PHOTO",
+              "INE_FRONT",
+              "INE_BACK",
+              "LICENSE",
+              "REGISTRATION_CARD",
+              "OWNERSHIP_PROOF",
+              "RENTAL_CONTRACT",
+              "OWNER_AUTHORIZATION"
+            ]
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "category"
+        ]
+      },
+      "VerificationUploadResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uploadUrl": {
+            "type": "string",
+            "description": "Private PUT URL, expires with expiresAt. Never persist in client recovery markers."
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "application/octet-stream"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "revision",
+          "expiresAt"
+        ]
+      },
+      "RevisionDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ]
+      },
+      "DecisionDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "APPROVE",
+              "REJECT"
+            ]
+          },
+          "checklistVersion": {
+            "type": "string",
+            "enum": [
+              "LOCAL-TEST-1"
+            ]
+          },
+          "passedChecks": {
+            "description": "Exact required checklist codes, all manually confirmed PASS. See requirements.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "publicReason": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "internalNote": {
+            "type": "string",
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "decision",
+          "checklistVersion",
+          "passedChecks"
+        ]
+      },
+      "VerificationAttemptResponse": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "ABSENT",
+              "APPLIED",
+              "CLOSED_NO_EFFECTS"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Minimal historical command receipt. ABSENT does not prove failure."
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "AttemptDto": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "description": "Exact operation returned by the command contract."
+          },
+          "target": {
+            "type": "string",
+            "description": "Case/resource UUID, or DRIVER/FLEET:providerId for terms, or POLICY/SELF."
+          }
+        },
+        "required": [
+          "operation",
+          "target"
+        ]
+      },
+      "PolicyDto": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "type": "number",
+            "minimum": 1
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "enabled"
+        ]
+      },
+      "RegistrationDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "RegistrationConfirmDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "password": {
+            "type": "string",
+            "writeOnly": true,
+            "minLength": 16,
+            "maxLength": 128
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "token",
+          "password",
+          "name"
+        ]
+      },
       "LoginDto": {
         "type": "object",
         "properties": {
@@ -59914,6 +62153,11 @@
       "DriverSelfResponse": {
         "type": "object",
         "properties": {
+          "verification": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Documentary identity status only; LOCAL_TEST receipts never authorize production. Vehicle/license/credit eligibility is rechecked on TAKE."
+          },
           "displayName": {
             "type": "string",
             "nullable": true,
@@ -59944,7 +62188,13 @@
             ]
           },
           "provider": {
-            "$ref": "#/components/schemas/DriverSelfProviderResponse"
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DriverSelfProviderResponse"
+              }
+            ]
           },
           "currentAssignment": {
             "nullable": true,
@@ -64994,9 +67244,10 @@
             ]
           },
           "providerId": {
-            "type": "string",
+            "type": "object",
             "format": "uuid",
-            "description": "Proveedor del que el Driver forma parte en V1.4. No otorga ningún permiso en el contexto independiente: ambos contextos están separados."
+            "description": "Proveedor de flotilla, o null para registro independiente sin proveedor. No otorga permisos independientes.",
+            "nullable": true
           }
         },
         "required": [
