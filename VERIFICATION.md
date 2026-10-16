@@ -2,6 +2,14 @@
 
 ## Integración main → QA — 2026-10-11 (evidencia nueva)
 
+> Ampliación documental a flotilla, 2026-10-13: propuesta §11 y prompts revisados mediante lectura/diff. Ninguna prueba funcional, migración o validación de operación/documentos reales ejecutada.
+
+> Revisión documental 2026-10-13: expediente independiente con rostro/INE/unidad/propiedad y notificación agregado a propuesta/prompts. Sólo inspección de texto y diff; sin cargas de archivos, pruebas de seguridad, envío de correos ni validación funcional.
+
+> Ampliación documental 2026-10-13: recomendaciones y prompts Web/Android de alta independiente revisados como documentos; enlaces locales y diff comprobados. No implementación, suites, build o validación funcional nueva.
+
+> Evidencia adicional del 2026-10-13, independiente de las suites históricas de esta sección: [propuesta de alta independiente](docs/INDEPENDENT-ONBOARDING-PROPOSAL.md) elaborada mediante lectura de schema/servicios y consumidores Web/Android. Revisión documental y diff; no pruebas funcionales, build, DB ni Docker. Contratos/rutas propuestos no implementados. Git backend QA 9ad39b9; ramas externas no verificadas por permisos.
+
 QA95d91ba + main1fa2cb1 en worktree separado, sin commit/push. [Manifiesto](docs/checks/qa-main-integration-evidence.json). Los resultados siguientes se ejecutaron en esta tarea; las secciones anteriores de desarrollo que siguen son evidencia histórica y no se suman.
 
 | Archivo E2E completo | Aprobadas |

@@ -1,5 +1,15 @@
 # Mandaria — V1.12-E Webhook Operations & Observability
 
+## Propuesta de registro independiente — 2026-10-13
+
+Alcance ampliado a flotillas (§11): proveedor captura expedientes de conductor/unidad; SUPER_ADMIN valida cada recurso. Prompts sincronizados; sólo diseño.
+
+Revisión vigente: expediente privado con rostro, INE, unidad y prueba de propiedad, revisión SUPER_ADMIN y notificación de resultado (§10). Sustituye propuesta inicial sin documentos; aún no implementado.
+
+Prompts de análisis, sin implementación: [Web](docs/INDEPENDENT-ONBOARDING-PROMPT-WEB.md) y [Android](docs/INDEPENDENT-ONBOARDING-PROMPT-APP.md). Las recomendaciones para cerrar pendientes están en §9 de la propuesta y no sustituyen aprobación del propietario.
+
+[Alta sin proveedor y aprobación SUPER_ADMIN](docs/INDEPENDENT-ONBOARDING-PROPOSAL.md): diseño transversal backend/Web/Android, estados, contrato candidato, impacto y decisiones pendientes. Sólo documentación; no habilita registro ni modifica el modelo actual.
+
 ## Aprobación manual Negocio — implementación local 2026-10-12
 
 [Informe y handoff](docs/BUSINESS-APPROVAL-IMPLEMENTATION.md): aprobación SUPER_ADMIN, readmisión tras revocación, recibos/cierre y migración46 de revisión obligatoria. APIs locales y OpenAPI actualizados; Web aún debe integrarse. Build/tipos/linters, migración aislada y contrato B2B aprobados; regresión E2E final completada:69/69 en cuatro archivos con bases aisladas independientes; causa nativa del aborto anterior no concluyente. Sin despliegue ni configuración activada. Las secciones históricas siguientes conservan sus fechas.

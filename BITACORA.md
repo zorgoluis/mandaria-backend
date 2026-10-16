@@ -4,7 +4,22 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 ## Estado actual
 
+- **Sincronización de contexto (2026-10-13):** QA674e172 coincide con origin/QA tras fetch (0/0);46 migraciones. Negocio ya implementado/publicado en9ad39b9, con evidencia de integración/runbook en674e172; no tratarlo como diseño pendiente. Trabajo local actual: propuesta y prompts de expediente/alta independiente ampliados a flotilla, todavía documentales. Conservadas modificaciones de continuidad/README/VERIFICATION y nul. Sin cambios locales de producto; sin suites, servicios, DB, merge o despliegue. Listo para nuevos prompts.
+
+
 - **Publicación documental QA (2026-10-13):** usuario autoriza commit/push de evidencia comercial local, runbook y diagnóstico MDR-000002. Selección parcial conserva notas ajenas y excluye propuesta/prompts de feature/driver-verification. Fetch confirma QA sin divergencia; revisión documental/JSON/diff, sin nuevas pruebas funcionales ni despliegue.
+
+- **Expedientes también para flotilla (2026-10-13):** propietario amplía requisitos documentales a conductor/unidad de proveedor; PROVIDER_ADMIN captura y SUPER_ADMIN decide separadamente por identidad/unidad. Propuesta §11 y prompts sincronizados. Pendientes transición de existentes, titularidad de unidad empresarial y purga por cuenta/recurso. Sin implementación.
+
+- **Circulación y conservación definidas (2026-10-13):** expediente incluye tarjeta de circulación separada de propiedad; propietario dispone conservación mientras exista cuenta y eliminación de archivos al darse de baja. Propuesta/prompts actualizados con purga durable, derivados y límite técnico pendiente de backups. Referencia oficial consultada para nomenclatura de propiedad. Sólo documentación.
+
+- **Expediente independiente ampliado (2026-10-13):** propietario requiere rostro, INE, datos y prueba de propiedad de unidad, solicitud revisada y notificación de aprobación/rechazo. Propuesta §10 y prompts Web/Android sincronizados; SUPER_ADMIN conserva autoridad exclusiva. Reemplaza recomendación sin adjuntos. Diseñados almacenamiento privado, snapshot revisado, auditoría y notificación durable; formatos, vigencias, retención y contrato definitivo pendientes. Sin implementación.
+
+- **Recomendaciones y prompts independientes (2026-10-13):** §9 de la propuesta concreta formulario sin adjuntos, reenvío tras rechazo/retiro, rehabilitación exclusiva SUPER_ADMIN, Web primero y compatibilidad de identidades existentes. Prompts completos Web/Android preparados para análisis documental; recomendaciones no tratadas como aprobación comercial. Sin implementación ni envío a agentes.
+
+- **Propuesta de alta independiente sin proveedor (2026-10-13):** documentada en `docs/INDEPENDENT-ONBOARDING-PROPOSAL.md`, con aprobación exclusiva SUPER_ADMIN, identidad/solicitud/permiso separados, impacto backend/Web/Android, contrato candidato y plan de pruebas/rollout. Detectada dependencia de proveedor en disponibilidad además del alta. Pendientes comerciales y técnicos explícitos; sin implementación.
+
+- **Consulta sobre independientes (2026-10-13):** modelo actual mantiene Driver.providerId obligatorio; SUPER_ADMIN habilita IndependentDriverProfile sobre Driver existente, sin alta pública autónoma. Ejecución independiente distingue vehículo, perfil y cuenta de créditos propios. Sólo inspección de código; sin cambios funcionales ni pruebas nuevas.
 
 - **Diagnóstico MDR-000002 (2026-10-13):** lectura Docker local confirma despacho DELIVERED, asignación COMPLETED y evento DELIVERED revisión7. Proyección interna ExecutionService.detail para membership vigente devuelve custodyStatus DELIVERED, sin acciones. Web consultada en sólo lectura muestra el texto final con ese campo y refresca ejecución cada15s. Pendiente capturar respuesta HTTP/sesión del proveedor afectado; no se reprodujo el fallo visual ni se modificó el envío.
 
@@ -42,9 +57,13 @@ Documento de continuidad para el propietario y los agentes que trabajen en este 
 
 - **Diseño de aprobación Negocio (2026-10-12):** Propuesta de cuenta Negocio por solicitud/aprobación manual, cobro futuro separado. Documentos docs/BUSINESS-APPROVAL-PROPOSAL.md y docs/BUSINESS-APPROVAL-AGENT-PROMPTS.md; impacto backend/Web/Driver/landing por lectura. Se identifican registro/resend/challenges anteriores, attach y profile/type como vías de ascenso; restricciones de lifecycle y términos requieren activación atómica sin abiertas. Decisiones pendientes: SUPER_ADMIN, tratamiento de BUSINESS existentes y política de reenvío/activación. No implementación, migraciones, tests funcionales, configuración, mensajes a agentes, commit/push ni despliegue. Cambios previos BITACORA y nul preservados.
 
+- **Elección de tipo al registrarse (2026-10-12):** El cliente elige PERSONAL/BUSINESS en RegisterCustomerDto y puede cambiar su propio tipo mediante POST customer/profile/type, autenticado y sin solicitudes abiertas; no exige intervención administrativa. Revisados DTO, controlador y servicio; interfaz Web no comprobada. Sin pruebas nuevas ni cambios de producto.
 
+- **Tipos de cliente (2026-10-12):** Consulta sobre PERSONAL/BUSINESS: código y contrato V1.17 confirman PERSONAL con una solicitud abierta y envío pagado por solicitante; BUSINESS permite varias y elegir solicitante/destinatario. Mismas tarifas; BUSINESS no equivale a IntegrationClient B2B. Cupo se ocupa al convertir y cambio de tipo exige cero solicitudes abiertas. Revisión de lectura, sin pruebas ni cambios funcionales.
 
+- **Revisión de cierre del roadmap (2026-10-11):** Revisión documental del roadmap GPS/clientes/independientes: backend integrado en QA; evidencia APP más reciente cierra independent=null y reporta validación física, por encima de handoffs antiguos de preparación. Pendientes de cierre: distribución Android (red release, firma/canal, divulgación GPS/atribución, evidencia 16KB/API37), integración Web/consumidores y validación conjunta con QA actual, capacidad/retención/soporte y despliegue coordinado. V1.17 B–E ya implementado: no tratar pendientes antiguos de identidad A como trabajo faltante. No se auditó el código actual de Web/APP ni se reejecutaron pruebas/VM; distinguir pendientes de evidencia de funciones ausentes. Alta independiente sin proveedor y cobertura multiciudad son límites de expansión, no cierres implícitos de V1.19.
 
+- **Comparación QA/main tras publicación (2026-10-11):** Comparación posterior al push main→QA: origin/QA ce45dff contiene origin/main1fa2cb1; divergencia main...QA=0/20. Ambas tienen cinco intentos automáticos; QA añade GPS/enlaces temporales, hitos/custodia, clientes directos/pagador, tracking público versionado y recuperación durable. QA45 migraciones frente a main32. Verificación de referencias Git locales actualizadas en el push anterior, log/diff y ancestro; sin suites nuevas ni validación de despliegue. Checkout local QA anterior conservado con cambios ajenos.
 
 - **Publicación autorizada main → QA (2026-10-11):** el propietario solicita commit y push del merge validado. Fetch confirma QA95d91ba y main1fa2cb1 sin avances; índice sin conflictos y diff limpio. Se publica desde el worktree separado mediante HEAD:QA, sin force y sin incorporar BITACORA local ni nul del checkout original. Las 206 E2E,104 unitarias y40 públicas corresponden a la tarea anterior; no se repiten suites en esta publicación. Sin despliegue ni activación. El checkout QA original se conserva para no alterar sus cambios locales.
 
@@ -679,6 +698,47 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - Verificación actual: refs QA tras fetch, JSON parseable, selección y diff; pruebas reportadas son históricas, no reejecutadas. Respuestas y captura aportadas por el usuario confirman entrega; Web reportó corrección visual con datos sintéticos, no validada de nuevo aquí.
 - Resultado de commit/push se confirma en la sesión; sin despliegue ni integración de ramas.
 
+### 2026-10-13 — Ampliación de validación documental a flotillas
+
+- Solicitud: mismos datos/documentos para repartidor y unidad de flota; captura del proveedor y validación SUPER_ADMIN.
+- Cambios: propuesta §11 con revisiones independientes por recurso, ownership/permisos, impacto backend/Web/Android, notificaciones y preservación de servicios. Prompts ampliados; referencias previas de no tocar alta de flota quedan superadas explícitamente.
+- Verificaciones: continuidad/estado Git leídos y diff documental revisado. Sin pruebas funcionales ni cambios en producto, DB, archivos personales o repos externos.
+- Pendientes: revisión de recursos existentes, titularidad admisible, bajas de administrador/conductor/unidad/proveedor y política de purga. Sin commit/push/despliegue.
+
+### 2026-10-13 — Tarjeta de circulación y eliminación documental al darse de baja
+
+- Solicitud: identificar documento de propiedad/placas, incluir tarjeta de circulación y conservar archivos hasta baja voluntaria.
+- Cambios: precisión vigente en propuesta §10 y ambos prompts; distinción registro/propiedad, eliminación de archivos/versiones, estado verificable de purga y separación de historial operativo.
+- Verificaciones: continuidad leída, referencia oficial web de requisitos vehiculares consultada y diff documental revisado. Sin pruebas funcionales ni eliminación/carga de archivos reales.
+- Pendientes: catálogo alternativo de comprobantes, plazo técnico de respaldos y diseño de baja con servicio en curso. Sin implementación, commit/push ni despliegue.
+
+### 2026-10-13 — Expediente documental previo a aprobación independiente
+
+- Solicitud: ampliar propuesta con datos, rostro, INE, unidad/propiedad, revisión administrativa y aviso del resultado.
+- Cambios: propuesta y prompts actualizados; seguridad de adjuntos, revisión versionada, checklist, bitácora, unidad vinculada a evidencia, límites de autenticidad y canales de notificación recomendados. Se conserva SUPER_ADMIN según autorización anterior.
+- Verificaciones: lectura de continuidad/estado Git, revisión documental y diff; sin pruebas de producto, documentos personales reales, DB o cambios funcionales.
+- Resultado: reemplazada recomendación inicial sin adjuntos; pendientes de política documental y contrato técnico explícitos. Sin implementación, configuración, commit/push/despliegue ni envío a agentes.
+
+### 2026-10-13 — Recomendaciones y prompts para alta independiente
+
+- Solicitud: recomendar cierre de pendientes y preparar prompts Web/app sin implementar.
+- Cambios: ampliada propuesta con seis decisiones recomendadas y límites; creados INDEPENDENT-ONBOARDING-PROMPT-WEB.md e INDEPENDENT-ONBOARDING-PROMPT-APP.md con alcance documental, inventario, contratos pendientes y pruebas futuras.
+- Verificaciones: lectura de continuidad/propuesta, estado Git y revisión diff/enlaces locales. Sin suites ni build; no hay código nuevo.
+- Resultado: documentos listos para compartir manualmente. Pendiente aprobación comercial y cierre técnico backend; no configuración, datos, repos externos, commit/push/despliegue ni mensajes a agentes.
+
+### 2026-10-13 — Diseño de registro independiente sin proveedor
+
+- Solicitud: analizar y documentar alta con aprobación SUPER_ADMIN y afectación backend, Web y app, sin implementar.
+- Cambios: propuesta transversal con evidencia por archivo, nullable provider, solicitud auditada, estados y permisos, recuperación/idempotencia, resguardo de operación existente, migración futura y decisiones pendientes. README/VERIFICATION enlazan el documento.
+- Verificaciones nuevas: lectura de schema/servicios backend y consumidores locales Web/Android; QA 9ad39b9 y cambios locales backend inspeccionados; revisión diff. Git externo no accesible, sin afirmar ramas externas. No suites ni build: no se modificó producto.
+- Resultado: diseño listo para revisión; no DTO/OpenAPI definitivo, SQL ejecutable, modificación de repos externos, DB/Docker, configuración, commit, push ni despliegue. Cambios ajenos conservados.
+
+### 2026-10-13 — Dependencia de proveedor en repartidor independiente
+
+- Solicitud: aclarar si el repartidor independiente depende siempre de un proveedor.
+- Inspección: schema Driver/IndependentDriverProfile/Vehicle y servicio de aprobación confirman vínculo obligatorio de origen y habilitación sobre Driver existente, diferenciados de la ejecución independiente.
+- Resultado: autonomía operativa prevista con perfil/vehículo/créditos propios, pero alta/modelo de identidad aún ligados a proveedor. Un alta sin proveedor requiere diseño explícito; no se implementó ni se activaron flags.
+- Verificaciones: lectura de código únicamente; sin suites, consultas DB, VM, commit o push. Historial anterior conservado.
 
 ### 2026-10-13 — Diagnóstico de progreso del proveedor en MDR-000002
 
@@ -687,56 +747,6 @@ Ejecutadas el 2026-09-15; no implican que se hayan repetido tras cada cambio doc
 - Inspección Web: ExecutionProgress muestra «Entrega confirmada · Entregado» cuando custodyStatus es DELIVERED; ExecutionPanel consulta cada15s. AT_DROPOFF sigue siendo el último hito, separado del cierre de custodia.
 - Cambios: sólo esta documentación; ningún dato, configuración o producto modificado. Sin suites, commit, push ni VM.
 - Pendiente: respuesta de Network del endpoint execution en la sesión afectada para distinguir entorno, error HTTP o estado visual desactualizado; causa visual todavía no acreditada.
-
-
-## 2026-10-13 — Localización del entorno para pruebas integradas
-
-Solicitud: probar Landing/Web contra backend Docker levantado por el propietario; esta autorización permite inspeccionar Docker pese a la restricción histórica. Leídos AGENTS y continuidad; estado local conservado. Verificaciones nuevas: docker ps, contexto desktop-linux, estado de contenedores Mandaria y sondeo HTTP loopback en seis puertos habituales. Ningún contenedor activo; backend y postgres detenidos desde hace unas ocho horas. No se acredita integración funcional. Se solicitaron URLs exactas/ubicación y carácter de la base/cuentas de prueba antes de mutaciones; no se solicitaron secretos. Sin iniciar servicios, cambiar configuración, tocar bases, otros repositorios, commit/push ni despliegue.
-
-
-
-## 2026-10-13 — Integración real con Docker y navegador, cobertura parcial
-
-Autorizado por el propietario usar Docker local, crear cuentas sintéticas y leer credenciales admin desde .env sin exponerlas. Backend43000/PostgreSQL55460 saludables; Web5173 y Landing5174 iniciados temporalmente para pruebas. Primera ejecución completa:15 comprobaciones aprobadas, solicitud/aprobación desde UI contra backend real; revocación, descenso y habilitación mediante API real comprobando estado/formulario Web. No mocks de respuesta en esa ejecución. Cuenta Personal tras readmisión, sin activación implícita. Captura customer-active.png inspeccionada.
-
-Landing conserva origen fijo https://app.mandaria.com.mx/customer/business: ruta válida, recorrido local no verificado ni navegación a producción. Intento ampliado de pérdida de respuesta abortó por sincronización del harness (Route is already handled); único diagnóstico adicional terminó en timeout esperando formulario tras login. Rate limit login5/min existe, pero HTTP del fallo no capturado: causa no confirmada. No acreditar esos recorridos incompletos. Recuperación original404 inicial fue target incorrecto del harness; corregido a accountId dio200 antes del aborto ampliado. Inventario inicialmente usó relación Prisma inexistente; lectura corregida, sin mutaciones por ese error.
-
-Tres cuentas sintéticas business-ui-*@example.test creadas, historial conservado; no datos ajenos modificados ni secretos guardados. Evidencia docs/checks/business-approval-local-integration.json y capturas/logs locales .tmp/business-browser. Pendientes: respuesta perdida/rechazo/retiro/cierre completo por UI, servicios comprometidos y conflictos con abiertas, cambio de sesión y CTA local. Evidencia69 E2E aisladas previa no sustituye estos pendientes. Sin cambios de producto, .env, otros repositorios, commit/push o despliegue.
-
-
-
-## 2026-10-13 — Enlaces Landing configurables por entorno
-
-Propietario confirmó alcance Landing y autorizó VITE_WEB_URL/.env. Implementado en landing QA c4ed19a, sin modificar backend: enlaces login/registro/Negocio por origen validado, default producción, .env local apuntando Web local y argumento Docker de compilación. Lint/build y comprobación de enlaces local/producción/orígenes inválidos PASS; Chromium confirmó Landing5174 -> Web5173/login?next=business sin sesión ni operaciones. Documentación Landing actualizada; sin commit/push/despliegue. Pendientes anteriores de recuperación comercial no se dan por resueltos con esta prueba de navegación.
-
-
-
-## 2026-10-13 — Cierre de ampliación comercial integrada
-
-Solicitud: volver a levantar y completar recuperación pendiente y recorrido local. Backend Docker43000/PostgreSQL55460 y Web5173/Landing5174 ya disponibles; no fue necesario reiniciarlos. Ejecución completa final con29 comprobaciones PASS y exit0: login/retorno, solicitud/aprobación UI, revocación/descenso/readmisión API con efectos Web, pérdida de respuesta del POST real (sin fabricar respuesta), recarga/consulta del recibo sin duplicación, rechazo UI, nota interna redactada, nueva solicitud corregida, retiro UI, cierre explícito API y petición tardía409. CTA Landing usa localhost5173 y navega a cuenta Negocio.
-
-Primer recorrido de esta tarea se interrumpió al navegar inmediatamente tras recibir el POST, antes de finalizar settle/consultas de Web; conservó marcador y retiro deshabilitado. Harness corregido para esperar desaparición del marcador y confirmación antes de navegar. Ejecución completa final pasó sin cambios de producto. Se crearon dos cuentas sintéticas adicionales en esta tarea; historia conservada, sin borrar ni alterar cuentas ajenas. Credenciales admin leídas en memoria, sin logs/tokens persistidos.
-
-Evidencia estructurada actualizada en docs/checks/business-approval-local-integration.json conservando el reporte anterior; harness/capturas en .tmp/business-browser/verified. No se acredita prueba de registro/correo (fixtures verificados), servicios comprometidos, conflictos con lifecycle abiertos ni cambio de identidad durante recuperación: mantienen evidencia backend previa o requieren prueba específica. Sin servicios reales externos, VM, despliegue, commit/push ni cambios de configuración. Servicios locales permanecen disponibles.
-
-
-
-## 2026-10-13 — Roadmap de cierre y publicación
-
-Solicitud: identificar lo que falta después de29 comprobaciones integradas comerciales. Revisión de evidencia local, roadmap piloto, handoff y evidencia física Driver; estado Git Web2e59504 limpio y Landingc4ed19a con VITE_WEB_URL/documentación locales pendientes. No suites nuevas. Propuesto orden: cerrar servicios comprometidos/conflictos abiertos/cambio de sesión y registro real; publicar cambios propios pendientes; ensayo de migración/rollout compatible; regresión física GPS/hitos/independientes y distribución; piloto acotado. Cobro comercial, alta independiente sin proveedor y cobertura multiciudad separados como expansión, no implementados por esta revisión. No atribuir mocks o evidencia anterior a VM actual; preservar historial. Sin implementación, commit/push ni despliegue.
-
-
-
-## 2026-10-13 — Etapas1 y3: continuidad comercial y preparación de rollout
-
-Autorización: completar integración pendiente y preparar transición de existentes; propietario confirma etapa2 publicada. Confirmados HEAD locales Web2e59504 y Landing7ba3a36. Sin fetch/push ni atribuir publicación remota nueva. Build backend PASS antes de pruebas. Entorno separado PostgreSQL56967/base sintética clonada, Nest43180 y Web5175 por variable de proceso; .env y Docker del usuario sin cambios.
-
-Ejecución final integrada13/13 PASS: servicio convertido antes de revocar aceptado desde Web, seguimiento disponible y términos intactos; nuevas MPQ bloqueadas; aprobación con abiertas deshabilitada Web y HTTP409 al intentar API; registro por formulario, emisión de enlace local_outbox y consumo real del token; Personal verificado; otro cliente no ve el intento ajeno, logout conserva marcador y titular regresa/cierra por UI. Routing y consumo reemplazados sólo en fixture aislado; no Google/Resend reales. Corrección inicial de consulta del harness (FK sin relación Prisma); corrida siguiente abortó por selector HTML erróneo; único diagnóstico adicional usó botón por nombre y completó13 casos. No cambios de producto ni falsa atribución a Docker/VM de estos casos.
-
-Ensayo de migración PASS: instalación46 y copia reconstruida45→46, tres cuentas, once tablas operativas/económicas conservadas, cero aplicaciones/grants históricos fabricados, compromiso previo aceptado200 y nueva demanda409. Respaldo sintético custom restaurado en base nueva:66 tablas con cantidad/huella idénticas. Inventario agregado read-only Docker local:46 migraciones, seis Personal/NONE, cero lifecycle abiertos; no VM ni BUSINESS heredadas locales. Runbook docs/BUSINESS-APPROVAL-ROLLOUT.md explica inventario previo, respaldo real pendiente, retiro de escritores, comparación, revisión SUPER_ADMIN y rollback sin autoascenso. Evidencia docs/checks/business-approval-stage1-rollout.json, fuentes .tmp/business-stage1-2b469d12/.tmp/business-migration-cb57e42b/.tmp/business-rollout-proof.
-
-Cierre: backend temporal cerró, Web5175 y PostgreSQL aislado detenidos; copias/backup sintéticos conservados. Servicios Docker/Web5173/Landing5174 no detenidos. Persisten pendientes de VM, correo externo, responsables/ventana y rollout autorizado; etapas1 funcional local y3 preparación/ensayo cubiertas, no migración de producción. Sin commit/push/despliegue.
-
 
 ### 2026-10-11 — Commit y push autorizados de la integración
 
@@ -2958,6 +2968,26 @@ Verificación ejecutada: build, API Driver real/ownership/roles/discriminantes/t
 - Pendientes: prueba visual Web y despliegue siguen fuera de alcance; sin integración QA ni operaciones de base.
 
 
+### 2026-10-11 — Diferencias QA/main después de integrar
+
+Solicitud: explicar diferencias actuales. Comparación posterior al push main→QA: origin/QA ce45dff contiene origin/main1fa2cb1; divergencia main...QA=0/20. Ambas tienen cinco intentos automáticos; QA añade GPS/enlaces temporales, hitos/custodia, clientes directos/pagador, tracking público versionado y recuperación durable. QA45 migraciones frente a main32. Verificación de referencias Git locales actualizadas en el push anterior, log/diff y ancestro; sin suites nuevas ni validación de despliegue. Checkout local QA anterior conservado con cambios ajenos. Sólo continuidad local, sin commit/push adicional.
+
+
+### 2026-10-11 — Análisis del cierre GPS, clientes e independientes
+
+Solicitud: identificar trabajo restante. Revisión documental del roadmap GPS/clientes/independientes: backend integrado en QA; evidencia APP más reciente cierra independent=null y reporta validación física, por encima de handoffs antiguos de preparación. Pendientes de cierre: distribución Android (red release, firma/canal, divulgación GPS/atribución, evidencia 16KB/API37), integración Web/consumidores y validación conjunta con QA actual, capacidad/retención/soporte y despliegue coordinado. V1.17 B–E ya implementado: no tratar pendientes antiguos de identidad A como trabajo faltante. No se auditó el código actual de Web/APP ni se reejecutaron pruebas/VM; distinguir pendientes de evidencia de funciones ausentes. Alta independiente sin proveedor y cobertura multiciudad son límites de expansión, no cierres implícitos de V1.19. Actualización documental local; sin commit/push ni cambios de producto.
+
+
+### 2026-10-12 — Explicación de cuentas cliente
+
+Consulta sobre PERSONAL/BUSINESS: código y contrato V1.17 confirman PERSONAL con una solicitud abierta y envío pagado por solicitante; BUSINESS permite varias y elegir solicitante/destinatario. Mismas tarifas; BUSINESS no equivale a IntegrationClient B2B. Cupo se ocupa al convertir y cambio de tipo exige cero solicitudes abiertas. Revisión de lectura, sin pruebas ni cambios funcionales. Sin commit/push.
+
+
+### 2026-10-12 — Elección y cambio de tipo cliente
+
+El cliente elige PERSONAL/BUSINESS en RegisterCustomerDto y puede cambiar su propio tipo mediante POST customer/profile/type, autenticado y sin solicitudes abiertas; no exige intervención administrativa. Revisados DTO, controlador y servicio; interfaz Web no comprobada. Sin pruebas nuevas ni cambios de producto. Sin commit/push.
+
+
 ### 2026-10-12 — Propuesta y prompts de aprobación manual Negocio
 
 Solicitud: analizar y documentar antes de implementar, con prompts por proyecto. Propuesta de cuenta Negocio por solicitud/aprobación manual, cobro futuro separado. Documentos docs/BUSINESS-APPROVAL-PROPOSAL.md y docs/BUSINESS-APPROVAL-AGENT-PROMPTS.md; impacto backend/Web/Driver/landing por lectura. Se identifican registro/resend/challenges anteriores, attach y profile/type como vías de ascenso; restricciones de lifecycle y términos requieren activación atómica sin abiertas. Decisiones pendientes: SUPER_ADMIN, tratamiento de BUSINESS existentes y política de reenvío/activación. No implementación, migraciones, tests funcionales, configuración, mensajes a agentes, commit/push ni despliegue. Cambios previos BITACORA y nul preservados. Verificación: lectura focal de código y documentos; referencias de archivos comprobadas. Backend QA ce45dff; SHA de proyectos externos no confirmado por permisos Git. Resultado: propuesta revisable y prompts sólo de análisis; sin modificaciones en otros proyectos.
@@ -3033,3 +3063,56 @@ Causa del aborto nativo no demostrada: no se obtuvo módulo culpable; la reconst
 ## 2026-10-12 — Commit y push de aprobación Negocio autorizados
 
 Solicitud: publicar los cambios validados en QA incluyendo documentación y excluyendo ajenos. Verificaciones de esta tarea: branch/status, fetch origin QA sin divergencia, huellas de implementación contra evidencia final y diff del índice. Las69 E2E y demás validaciones pertenecen a las tareas previas; no se repiten suites porque no cambia producto. Se prepara inclusión selectiva; se conservan fuera del commit nul y notas previas de comparación de ramas, roadmap y consultas generales de cuentas. Sin merge, cambios de configuración, DB ni despliegue. Resultado de commit/push y SHA se confirma mediante Git en esta sesión; integración Web y rollout siguen pendientes.
+
+
+## 2026-10-13 — Localización del entorno para pruebas integradas
+
+Solicitud: probar Landing/Web contra backend Docker levantado por el propietario; esta autorización permite inspeccionar Docker pese a la restricción histórica. Leídos AGENTS y continuidad; estado local conservado. Verificaciones nuevas: docker ps, contexto desktop-linux, estado de contenedores Mandaria y sondeo HTTP loopback en seis puertos habituales. Ningún contenedor activo; backend y postgres detenidos desde hace unas ocho horas. No se acredita integración funcional. Se solicitaron URLs exactas/ubicación y carácter de la base/cuentas de prueba antes de mutaciones; no se solicitaron secretos. Sin iniciar servicios, cambiar configuración, tocar bases, otros repositorios, commit/push ni despliegue.
+
+
+## 2026-10-13 — Integración real con Docker y navegador, cobertura parcial
+
+Autorizado por el propietario usar Docker local, crear cuentas sintéticas y leer credenciales admin desde .env sin exponerlas. Backend43000/PostgreSQL55460 saludables; Web5173 y Landing5174 iniciados temporalmente para pruebas. Primera ejecución completa:15 comprobaciones aprobadas, solicitud/aprobación desde UI contra backend real; revocación, descenso y habilitación mediante API real comprobando estado/formulario Web. No mocks de respuesta en esa ejecución. Cuenta Personal tras readmisión, sin activación implícita. Captura customer-active.png inspeccionada.
+
+Landing conserva origen fijo https://app.mandaria.com.mx/customer/business: ruta válida, recorrido local no verificado ni navegación a producción. Intento ampliado de pérdida de respuesta abortó por sincronización del harness (Route is already handled); único diagnóstico adicional terminó en timeout esperando formulario tras login. Rate limit login5/min existe, pero HTTP del fallo no capturado: causa no confirmada. No acreditar esos recorridos incompletos. Recuperación original404 inicial fue target incorrecto del harness; corregido a accountId dio200 antes del aborto ampliado. Inventario inicialmente usó relación Prisma inexistente; lectura corregida, sin mutaciones por ese error.
+
+Tres cuentas sintéticas business-ui-*@example.test creadas, historial conservado; no datos ajenos modificados ni secretos guardados. Evidencia docs/checks/business-approval-local-integration.json y capturas/logs locales .tmp/business-browser. Pendientes: respuesta perdida/rechazo/retiro/cierre completo por UI, servicios comprometidos y conflictos con abiertas, cambio de sesión y CTA local. Evidencia69 E2E aisladas previa no sustituye estos pendientes. Sin cambios de producto, .env, otros repositorios, commit/push o despliegue.
+
+
+## 2026-10-13 — Enlaces Landing configurables por entorno
+
+Propietario confirmó alcance Landing y autorizó VITE_WEB_URL/.env. Implementado en landing QA c4ed19a, sin modificar backend: enlaces login/registro/Negocio por origen validado, default producción, .env local apuntando Web local y argumento Docker de compilación. Lint/build y comprobación de enlaces local/producción/orígenes inválidos PASS; Chromium confirmó Landing5174 -> Web5173/login?next=business sin sesión ni operaciones. Documentación Landing actualizada; sin commit/push/despliegue. Pendientes anteriores de recuperación comercial no se dan por resueltos con esta prueba de navegación.
+
+
+## 2026-10-13 — Cierre de ampliación comercial integrada
+
+Solicitud: volver a levantar y completar recuperación pendiente y recorrido local. Backend Docker43000/PostgreSQL55460 y Web5173/Landing5174 ya disponibles; no fue necesario reiniciarlos. Ejecución completa final con29 comprobaciones PASS y exit0: login/retorno, solicitud/aprobación UI, revocación/descenso/readmisión API con efectos Web, pérdida de respuesta del POST real (sin fabricar respuesta), recarga/consulta del recibo sin duplicación, rechazo UI, nota interna redactada, nueva solicitud corregida, retiro UI, cierre explícito API y petición tardía409. CTA Landing usa localhost5173 y navega a cuenta Negocio.
+
+Primer recorrido de esta tarea se interrumpió al navegar inmediatamente tras recibir el POST, antes de finalizar settle/consultas de Web; conservó marcador y retiro deshabilitado. Harness corregido para esperar desaparición del marcador y confirmación antes de navegar. Ejecución completa final pasó sin cambios de producto. Se crearon dos cuentas sintéticas adicionales en esta tarea; historia conservada, sin borrar ni alterar cuentas ajenas. Credenciales admin leídas en memoria, sin logs/tokens persistidos.
+
+Evidencia estructurada actualizada en docs/checks/business-approval-local-integration.json conservando el reporte anterior; harness/capturas en .tmp/business-browser/verified. No se acredita prueba de registro/correo (fixtures verificados), servicios comprometidos, conflictos con lifecycle abiertos ni cambio de identidad durante recuperación: mantienen evidencia backend previa o requieren prueba específica. Sin servicios reales externos, VM, despliegue, commit/push ni cambios de configuración. Servicios locales permanecen disponibles.
+
+
+## 2026-10-13 — Roadmap de cierre y publicación
+
+Solicitud: identificar lo que falta después de29 comprobaciones integradas comerciales. Revisión de evidencia local, roadmap piloto, handoff y evidencia física Driver; estado Git Web2e59504 limpio y Landingc4ed19a con VITE_WEB_URL/documentación locales pendientes. No suites nuevas. Propuesto orden: cerrar servicios comprometidos/conflictos abiertos/cambio de sesión y registro real; publicar cambios propios pendientes; ensayo de migración/rollout compatible; regresión física GPS/hitos/independientes y distribución; piloto acotado. Cobro comercial, alta independiente sin proveedor y cobertura multiciudad separados como expansión, no implementados por esta revisión. No atribuir mocks o evidencia anterior a VM actual; preservar historial. Sin implementación, commit/push ni despliegue.
+
+
+## 2026-10-13 — Etapas1 y3: continuidad comercial y preparación de rollout
+
+Autorización: completar integración pendiente y preparar transición de existentes; propietario confirma etapa2 publicada. Confirmados HEAD locales Web2e59504 y Landing7ba3a36. Sin fetch/push ni atribuir publicación remota nueva. Build backend PASS antes de pruebas. Entorno separado PostgreSQL56967/base sintética clonada, Nest43180 y Web5175 por variable de proceso; .env y Docker del usuario sin cambios.
+
+Ejecución final integrada13/13 PASS: servicio convertido antes de revocar aceptado desde Web, seguimiento disponible y términos intactos; nuevas MPQ bloqueadas; aprobación con abiertas deshabilitada Web y HTTP409 al intentar API; registro por formulario, emisión de enlace local_outbox y consumo real del token; Personal verificado; otro cliente no ve el intento ajeno, logout conserva marcador y titular regresa/cierra por UI. Routing y consumo reemplazados sólo en fixture aislado; no Google/Resend reales. Corrección inicial de consulta del harness (FK sin relación Prisma); corrida siguiente abortó por selector HTML erróneo; único diagnóstico adicional usó botón por nombre y completó13 casos. No cambios de producto ni falsa atribución a Docker/VM de estos casos.
+
+Ensayo de migración PASS: instalación46 y copia reconstruida45→46, tres cuentas, once tablas operativas/económicas conservadas, cero aplicaciones/grants históricos fabricados, compromiso previo aceptado200 y nueva demanda409. Respaldo sintético custom restaurado en base nueva:66 tablas con cantidad/huella idénticas. Inventario agregado read-only Docker local:46 migraciones, seis Personal/NONE, cero lifecycle abiertos; no VM ni BUSINESS heredadas locales. Runbook docs/BUSINESS-APPROVAL-ROLLOUT.md explica inventario previo, respaldo real pendiente, retiro de escritores, comparación, revisión SUPER_ADMIN y rollback sin autoascenso. Evidencia docs/checks/business-approval-stage1-rollout.json, fuentes .tmp/business-stage1-2b469d12/.tmp/business-migration-cb57e42b/.tmp/business-rollout-proof.
+
+Cierre: backend temporal cerró, Web5175 y PostgreSQL aislado detenidos; copias/backup sintéticos conservados. Servicios Docker/Web5173/Landing5174 no detenidos. Persisten pendientes de VM, correo externo, responsables/ventana y rollout autorizado; etapas1 funcional local y3 preparación/ensayo cubiertas, no migración de producción. Sin commit/push/despliegue.
+
+### 2026-10-13 — contexto actualizado antes de nuevos prompts
+
+- Solicitud: sincronizar contexto con el estado actual del proyecto.
+- Lecturas: AGENTS, BITACORA, README, VERIFICATION, informe de implementación Negocio y propuesta/prompts vigentes de onboarding.
+- Verificación nueva: Git QA674e172/origin QA0/0 tras fetch;46 directorios de migración; status/diff sin modificaciones locales de src/prisma/scripts/test y diff --check. Evidencia funcional anterior no reejecutada.
+- Cambios: sólo esta nota de continuidad, preservando documentos pendientes ajenos.
+- Resultado: Negocio implementado; foco documental nuevo en independientes sin proveedor y expedientes de identidad/unidad también para flotilla. Pendientes de transición de existentes, titularidad/purga y contrato final conservados.
+- Sin cambio de rama, pull/merge, producto, DB, configuración, commit/push ni activación.
