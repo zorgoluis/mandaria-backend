@@ -1,3 +1,9 @@
+## Estado actual — configuración Spaces documentada, 2026-10-15
+
+Solicitud: revisar Spaces en feature/driver-verification sin credenciales ni servicios reales. HEAD a5b514472b8227f1020a2931fbe4dba96a7f29da; fetch confirma igualdad con origin/feature/driver-verification (0/0); worktree inicialmente limpio. Adaptador real existente, sin fallback simulado, limitado a flujo LOCAL_TEST fuera de producción. Se añadieron sus cuatro variables exactas y flag local a .env.example y backend.environment de Compose; README explica consumidores, región de firma fija, opciones constantes, runtime/build y límites productivos. No cambios de producto, Dockerfile, .env ni controles de acceso.
+
+Verificación nueva: npm run build PASS; test/driver-verification.spec.ts completo 14/14 exit 0 (SDK simulado); comprobación local de entorno vacío, selección del adaptador real, bloqueo productivo, credencial ausente y mappings Compose/example PASS. YAML parseado con js-yaml sin ejecutar Docker. El primer intento del comprobador no arrancó por dependencia yaml inexistente; corregido usando js-yaml ya instalado, sin instalar paquetes. git diff --check PASS. Pruebas anteriores son históricas. Sin base, Spaces real, subida, secretos, activación, QA, commit, push ni despliegue. Pendientes: validación real autorizada de permisos/CORS/persistencia y los requisitos productivos de privacidad, términos y purga. Detalle en README, sección Configuración de Spaces.
+
 ## Compatibilidad operativa Web — patches, 2026-10-11
 
 ## 2026-10-13 — integración documental con Web real y PostgreSQL exclusivo

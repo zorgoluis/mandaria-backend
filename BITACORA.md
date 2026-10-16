@@ -1,5 +1,17 @@
 # Bitácora de Mandaria
 
+## Estado actual — publicación de configuración Spaces, 2026-10-15
+
+Solicitud: commit y push únicamente en feature/driver-verification. Los cinco archivos revisados se trasladaron desde el worktree detached al checkout activo de la feature, ambos inicialmente en a5b5144; el archivo ajeno nul se conserva. Fetch confirma feature local/remota iguales antes de publicar. Sólo ejemplo, Compose y documentación; validaciones de la tarea anterior conservadas como históricas, sin reejecutar suites. Nueva revisión: diff y selección explícita de archivos. Main local f58bfbb, main remoto bfdcc8d y QA 4f68a20 no se modifican. Push previsto con refspec exclusivo, sin force; confirmación remota posterior en la entrega. Sin despliegue ni activación.
+
+
+## Estado actual — configuración Spaces documentada, 2026-10-15
+
+Solicitud: revisar Spaces en feature/driver-verification sin credenciales ni servicios reales. HEAD a5b514472b8227f1020a2931fbe4dba96a7f29da; fetch confirma igualdad con origin/feature/driver-verification (0/0); worktree inicialmente limpio. Adaptador real existente, sin fallback simulado, limitado a flujo LOCAL_TEST fuera de producción. Se añadieron sus cuatro variables exactas y flag local a .env.example y backend.environment de Compose; README explica consumidores, región de firma fija, opciones constantes, runtime/build y límites productivos. No cambios de producto, Dockerfile, .env ni controles de acceso.
+
+Verificación nueva: npm run build PASS; test/driver-verification.spec.ts completo 14/14 exit 0 (SDK simulado); comprobación local de entorno vacío, selección del adaptador real, bloqueo productivo, credencial ausente y mappings Compose/example PASS. YAML parseado con js-yaml sin ejecutar Docker. El primer intento del comprobador no arrancó por dependencia yaml inexistente; corregido usando js-yaml ya instalado, sin instalar paquetes. git diff --check PASS. Pruebas anteriores son históricas. Sin base, Spaces real, subida, secretos, activación, QA, commit, push ni despliegue. Pendientes: validación real autorizada de permisos/CORS/persistencia y los requisitos productivos de privacidad, términos y purga. Detalle en README, sección Configuración de Spaces.
+
+
 ## Estado actual — publicación exclusiva de feature, 2026-10-15
 
 Solicitud: publicar únicamente feature/driver-verification para merge manual del propietario, sin publicar ni deshacer main local. Verificado: implementación y documentación en a43fddce144d46c77012090910fdb69f5446b43c; main local f58bfbb8f6f8827ba16d63c2b668914f11b73a2c intacto. Fetch: origin/main 1fa2cb1e36887181dc6a55a8c0938bdd8172c772; feature remota 90b72433f8a5476ece5fda4437dc15a0a6a314f2, ancestro sin divergencia. Worktree feature limpio antes de esta entrada. Revisados 64 archivos del cambio, sin rutas temporales ni patrones de secretos detectados; git diff --check correcto. Pruebas de producto anteriores son históricas, no reejecutadas en esta tarea de publicación.
@@ -2238,3 +2250,11 @@ Informe: docs/DRIVER-VERIFICATION-INTEGRATION.md; manifiesto: docs/checks/driver
 ### Historial — 2026-10-15 — preparación de publicación exclusiva
 
 Solicitud, revisión y resultado previo al push descritos en el estado actual. Se conserva el merge local existente y toda la historia; sólo se guarda esta actualización documental. La confirmación remota posterior se entrega al propietario, sin afirmar aquí un push aún no ejecutado.
+
+### Historial — 2026-10-15 — configuración Spaces
+
+Revisión solicitada y cambios de ejemplo/Compose/README; resultados nuevos y límites detallados en el estado actual. Se conserva toda la historia y no se modifica producto ni configuración privada.
+
+### Historial — 2026-10-15 — publicación autorizada de configuración Spaces
+
+Cambios: cinco archivos de configuración/documentación, incluyendo esta continuidad. Verificaciones: revisión de diff, rama, remoto y worktrees. Pruebas anteriores históricas; pendientes productivos sin cambios. Publicación solicitada exclusivamente para la feature, sin tocar main/QA ni desplegar.

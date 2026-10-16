@@ -2347,3 +2347,32 @@ Propuesta documental, sin aprobación final ni implementación: [conductores](do
 ## Verificación documental — sólo prueba local (2026-10-13)
 
 Implementada desde main en feature/driver-verification, desactivada por defecto. Registro sin proveedor, aceptación de borradores sin vigencia contractual, expedientes separados, revisión manual y bloqueo transaccional de nuevas asignaciones. Los términos locales nunca habilitan producción. No habilitar datos reales: baja/purga y decisiones de privacidad siguen pendientes. [Contrato implementado y handoff](docs/DRIVER-VERIFICATION-IMPLEMENTATION.md), [validación focalizada](VERIFICATION.md). No integra QA ni modifica cinco intentos, precios, créditos o B2B.
+
+## Configuración de Spaces para verificación documental
+
+Existe un adaptador real S3 compatible con DigitalOcean Spaces en src/verification/verification-storage.ts; no se ha validado contra Spaces real. Los dobles de almacenamiento sólo se inyectan en pruebas. VerificationModule selecciona Spaces únicamente con DRIVER_VERIFICATION_LOCAL_ENABLED=true, NODE_ENV distinto de production y endpoint presente. Sin endpoint selecciona DisabledVerificationStorage, que falla con STORAGE_UNAVAILABLE; no guarda documentos simulados. Con endpoint y credenciales/bucket ausentes falla la composición. En producción la API documental responde VERIFICATION_LOCAL_DISABLED (503), aunque se configure Spaces: este cambio no autoriza activarla ni eludirlo cambiando NODE_ENV.
+
+| Variable de ejecución | Consumidor / comportamiento |
+|---|---|
+| DRIVER_VERIFICATION_LOCAL_ENABLED | environment.ts valida y convierte booleano; VerificationModule selecciona adaptador y VerificationRuntime restringe acceso; false por defecto |
+| VERIFICATION_SPACES_ENDPOINT | environment.ts valida URL opcional; módulo pasa al adaptador, que exige HTTPS y host regional digitaloceanspaces.com, sin bucket, CDN, ruta ni slash final |
+| VERIFICATION_SPACES_BUCKET | environment.ts: mínimo 3 caracteres; módulo lo pasa como Bucket en las operaciones S3 |
+| VERIFICATION_SPACES_ACCESS_KEY | environment.ts opcional no vacío; módulo lo pasa como accessKeyId explícito |
+| VERIFICATION_SPACES_SECRET_KEY | environment.ts opcional no vacío; módulo lo pasa como secretAccessKey explícito |
+| NODE_ENV | Controles existentes del módulo/runtime; production mantiene el bloqueo |
+
+Ejemplo ficticio, para describir la configuración; no habilita el flujo:
+
+```dotenv
+DRIVER_VERIFICATION_LOCAL_ENABLED=false
+VERIFICATION_SPACES_ENDPOINT=https://nyc3.digitaloceanspaces.com
+VERIFICATION_SPACES_BUCKET=mandaria-documentos-ejemplo
+VERIFICATION_SPACES_ACCESS_KEY=EXAMPLE_NOT_A_REAL_ACCESS_KEY
+VERIFICATION_SPACES_SECRET_KEY=EXAMPLE_NOT_A_REAL_SECRET_KEY
+```
+
+La ubicación del bucket se expresa en el endpoint regional. La región de firma está fijada en us-east-1: no existen VERIFICATION_SPACES_REGION ni otras variables de región. También están fijos forcePathStyle=false, maxAttempts=2, URL PUT firmada de 300 segundos, timeout de operaciones de 15 segundos y máximo de archivo de 10 MiB. No se usa la cadena implícita de credenciales AWS.
+
+.env.example deja los cuatro valores vacíos cuando el flujo no se utiliza y ofrece ejemplos comentados. docker-compose.yml los propaga a backend.environment con valores vacíos opcionales y flag false. Son variables del proceso al ejecutar el contenedor, no build.args ni ARG del Dockerfile; no deben incorporarse a la imagen. El Dockerfile conserva NODE_ENV=production; el Compose local existente usa development como default. El Compose particular de la VM no forma parte de este checkout: debe recibir el mismo bloque de environment si se desea propagar las variables, conservando su NODE_ENV productivo y el bloqueo vigente. No se ejecutó Docker.
+
+El adaptador usa ACL private tanto en cargas firmadas como escrituras normalizadas; no hace público el bucket ni configura sus políticas. Mantener bucket privado y permisos restringidos fuera del código. El acceso documental conserva autorización en API; la normalización produce PNG sin metadatos y no equivale a antivirus. La carga directa de navegador requiere configurar CORS del bucket para los orígenes/método/headers usados por el consumidor; esto no se configura mediante estas variables ni se validó aquí. No se crearon buckets ni se probaron credenciales, permisos, CORS o persistencia real. Producción sigue pendiente de privacidad/términos definitivos, baja/purga/retención, infraestructura y validación real autorizada.
