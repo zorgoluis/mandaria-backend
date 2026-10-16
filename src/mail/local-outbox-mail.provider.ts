@@ -1,3 +1,4 @@
+import type { DriverVerificationMail } from './mail.types.js';
 import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -37,6 +38,9 @@ export class LocalOutboxMailProvider implements MailProvider {
       reference: mail.reference,
       ...renderPartnerApplicationNotice(mail),
     });
+  }
+  sendDriverVerification(mail: DriverVerificationMail) {
+    return this.write({ ...mail, category: 'DRIVER_VERIFICATION' });
   }
   private async write(message: Record<string, unknown>) {
     await mkdir(this.directory, { recursive: true, mode: 0o700 });

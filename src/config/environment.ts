@@ -5,6 +5,14 @@ const optional = <T extends z.ZodTypeAny>(type: T) =>
   z.preprocess((v) => (v === '' ? undefined : v), type.optional());
 
 const schema = z.object({
+  VERIFICATION_SPACES_ENDPOINT: optional(z.string().url()),
+  VERIFICATION_SPACES_BUCKET: optional(z.string().min(3)),
+  VERIFICATION_SPACES_ACCESS_KEY: optional(z.string().min(1)),
+  VERIFICATION_SPACES_SECRET_KEY: optional(z.string().min(1)),
+  DRIVER_VERIFICATION_LOCAL_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
   AUTOMATIC_DISPATCH_SEARCH_ENABLED: z
     .enum(['true', 'false'])
     .default('false')

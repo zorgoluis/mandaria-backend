@@ -1070,3 +1070,92 @@ describe.sequential('Concurrency and database invariants', () => {
       expect(joined.includes(secret), 'sensitive value in logs').toBe(false);
   });
 });
+
+describe('Documentary activation preserves committed fleet deliveries', () => {
+  withApp();
+  it('rejects a replacement before ending the old assignment and still delivers the committed service', async () => {
+    await freeResources();
+    const dispatch = await claimedDispatch();
+    const previous = await assign(t.A, dispatch.id, {
+      driverId: drivers.carlos,
+      vehicleId: vehicles.moto03,
+    }).expect(201);
+    await prisma.verificationPolicy.update({
+      where: { id: 1 },
+      data: { enabled: true },
+    });
+    try {
+      const denied = await reassign(t.A, dispatch.id, {
+        driverId: drivers.pedro,
+        vehicleId: vehicles.moto07,
+        reason: 'VEHICLE_ISSUE',
+      }).expect(409);
+      expect(denied.body.code).toBe('VERIFICATION_REVIEW_REQUIRED');
+      expect((await activeOf(dispatch.id))?.id).toBe(previous.body.id);
+      expect(
+        await prisma.deliveryAssignment.count({
+          where: { dispatchId: dispatch.id },
+        }),
+      ).toBe(1);
+      await api()
+        .post(`/api/v1/provider/dispatches/${dispatch.id}/deliver`)
+        .auth(t.A, bearer)
+        .send({})
+        .expect(200);
+      expect(
+        (
+          await prisma.deliveryAssignment.findUniqueOrThrow({
+            where: { id: previous.body.id },
+          })
+        ).status,
+      ).toBe('COMPLETED');
+    } finally {
+      await prisma.verificationPolicy.update({
+        where: { id: 1 },
+        data: { enabled: false },
+      });
+    }
+  });
+  it('blocks new assignment through HTTP and direct SQL while keeping provider claim unchanged', async () => {
+    await freeResources();
+    const dispatch = await claimedDispatch();
+    await prisma.verificationPolicy.update({
+      where: { id: 1 },
+      data: { enabled: true },
+    });
+    try {
+      const denied = await assign(t.A, dispatch.id, {
+        driverId: drivers.carlos,
+        vehicleId: vehicles.moto03,
+      }).expect(409);
+      expect(denied.body.code).toBe('VERIFICATION_REVIEW_REQUIRED');
+      const actor = await prisma.providerMembership.findFirstOrThrow({
+        where: { providerId: providers.A },
+      });
+      await expect(
+        prisma.deliveryAssignment.create({
+          data: {
+            dispatchId: dispatch.id,
+            providerId: providers.A,
+            driverId: drivers.carlos,
+            vehicleId: vehicles.moto03,
+            assignedAt: new Date(),
+            assignedByUserId: actor.userId,
+          },
+        }),
+      ).rejects.toThrow('VERIFICATION_ADMISSION');
+      expect(
+        (
+          await prisma.dispatch.findUniqueOrThrow({
+            where: { id: dispatch.id },
+          })
+        ).status,
+      ).toBe('CLAIMED');
+    } finally {
+      await prisma.verificationPolicy.update({
+        where: { id: 1 },
+        data: { enabled: false },
+      });
+    }
+  });
+});

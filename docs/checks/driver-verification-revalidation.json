@@ -1,0 +1,1062 @@
+{
+  "scope": "Revalidación integrada local; no autorización productiva",
+  "historicalNotAdded": "31 integrated + backend181/128/33 + Web219/9 and W01 35 reported",
+  "uniquePassCount": 35,
+  "checks": [
+    {
+      "id": "A-registration-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "B-terms-committed-response-lost-reload",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "C-identity-license-browser-JPEG-PNG",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "G-submit-committed-response-lost-reload",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-admin-browser-review-evidence",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "G-decision-committed-response-lost-reload",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "C-unit-OWNED-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "C-unit-RENTED-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "C-unit-BORROWED-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-concurrency-and-decision-permissions-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "H-mail-failure-and-retry-real-outbox",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "D-fleet-representative-terms-and-invitation",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "D-fleet-identity-browser-independent-of-unit",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "D-fleet-unit-owned-by-organization",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-fleet-B-isolation-HTTP-and-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "F-browser-storage-error-and-file-validation",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "F-expired-missing-manipulated-uploads-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "G-absent-close-late-command-and-actor-isolation-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "G-historical-submit-separated-from-current-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "B-terms-version-conflict-historical-receipt-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "F-reject-disallowed-MIME-with-image-bytes-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-driver-B-and-logout-browser-isolation",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-mobile-keyboard-and-private-storage",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "R-W01-success-real-confirmation",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "R-W01-failed-A-preserves-B",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "R-ABSENT-real-modal",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-existing-resources-control-off-and-on-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-committed-service-preparation-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-identity-only-unit-only-and-local-positive",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-failed-reassignment-preserves-legacy-service-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-documentary-read-preserves-search-and-claim",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-license-category-and-expiry-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-legacy-delivery-browser-after-activation",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "R-independent-positive-take-browser",
+      "status": "PASS",
+      "detail": "Real browser take and reloaded service region/vehicle; active policy, approved resources, one debit and assignment."
+    },
+    {
+      "id": "R-terms-effective-V2-browser",
+      "status": "PASS",
+      "detail": "Real browser V1 rejection, V2 explicit acceptance, immutable V1; waited client refresh before reload."
+    }
+  ],
+  "runs": [
+    {
+      "name": "principal",
+      "exitCode": 1,
+      "report": ".tmp/documentary-revalidation/report.json",
+      "result": [
+        {
+          "id": "A-registration-browser",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "B-terms-committed-response-lost-reload",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "C-identity-license-browser-JPEG-PNG",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "G-submit-committed-response-lost-reload",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "E-admin-browser-review-evidence",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "G-decision-committed-response-lost-reload",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "C-unit-OWNED-browser",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "C-unit-RENTED-browser",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "C-unit-BORROWED-browser",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "E-concurrency-and-decision-permissions-HTTP",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "H-mail-failure-and-retry-real-outbox",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "D-fleet-representative-terms-and-invitation",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "D-fleet-identity-browser-independent-of-unit",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "D-fleet-unit-owned-by-organization",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "E-fleet-B-isolation-HTTP-and-browser",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "F-browser-storage-error-and-file-validation",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "F-expired-missing-manipulated-uploads-HTTP",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "G-absent-close-late-command-and-actor-isolation-HTTP",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "G-historical-submit-separated-from-current-HTTP",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "B-terms-version-conflict-historical-receipt-HTTP",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "F-reject-disallowed-MIME-with-image-bytes-browser",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "E-driver-B-and-logout-browser-isolation",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "E-mobile-keyboard-and-private-storage",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "R-W01-success-real-confirmation",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "R-W01-failed-A-preserves-B",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "R-ABSENT-real-modal",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "I-existing-resources-control-off-and-on-HTTP",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "I-committed-service-preparation-HTTP",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "I-identity-only-unit-only-and-local-positive",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "I-failed-reassignment-preserves-legacy-service-HTTP",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "I-documentary-read-preserves-search-and-claim",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "I-license-category-and-expiry-HTTP",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "I-legacy-delivery-browser-after-activation",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "J-five-search-rounds-complete-file",
+          "status": "NOT RUN",
+          "detail": "Explicitly skipped: see previously completed 16/16 file in this task."
+        },
+        {
+          "id": "R-independent-positive-take-browser",
+          "status": "PASS",
+          "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+        },
+        {
+          "id": "R-terms-effective-V2-browser",
+          "status": "FAIL",
+          "detail": "locator.click: Timeout 12000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Aceptar personalmente (prueba)', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <button disabled class=\"button\">Aceptar personalmente (prueba)</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    23 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+        }
+      ],
+      "topology": {
+        "temp": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-G3BMAR",
+        "data": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-G3BMAR\\pgdata",
+        "database": "documentary_integration_test",
+        "pgPort": 54929,
+        "api": "http://127.0.0.1:54930",
+        "apiProxy": "http://127.0.0.1:54931",
+        "web": "http://127.0.0.1:54932",
+        "storage": "http://127.0.0.1:54933",
+        "migrations": 33,
+        "identityVerified": true
+      }
+    },
+    {
+      "name": "terms-focused",
+      "exitCode": 0,
+      "report": ".tmp/documentary-revalidation-terms/report.json",
+      "result": [
+        {
+          "id": "R-terms-effective-V2-browser",
+          "status": "PASS",
+          "detail": "Real browser V1 rejection, V2 explicit acceptance, immutable V1; waited client refresh before reload."
+        }
+      ],
+      "topology": {
+        "temp": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-au0nFx",
+        "data": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-au0nFx\\pgdata",
+        "database": "documentary_integration_test",
+        "pgPort": 62427,
+        "api": "http://127.0.0.1:62428",
+        "apiProxy": "http://127.0.0.1:62429",
+        "web": "http://127.0.0.1:62430",
+        "storage": "http://127.0.0.1:62431",
+        "migrations": 33,
+        "identityVerified": true
+      }
+    },
+    {
+      "name": "take-focused",
+      "exitCode": 0,
+      "report": ".tmp/documentary-revalidation-take/report.json",
+      "result": [
+        {
+          "id": "R-independent-positive-take-browser",
+          "status": "PASS",
+          "detail": "Real browser take and reloaded service region/vehicle; active policy, approved resources, one debit and assignment."
+        }
+      ],
+      "topology": {
+        "temp": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-BIPQjU",
+        "data": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-BIPQjU\\pgdata",
+        "database": "documentary_integration_test",
+        "pgPort": 63679,
+        "api": "http://127.0.0.1:63680",
+        "apiProxy": "http://127.0.0.1:63681",
+        "web": "http://127.0.0.1:63682",
+        "storage": "http://127.0.0.1:63683",
+        "migrations": 33,
+        "identityVerified": true
+      }
+    }
+  ],
+  "final": {
+    "backendHead": "90b72433f8a5476ece5fda4437dc15a0a6a314f2",
+    "webHead": "06d976619322d9811b5325fc73cd16d15e00d829",
+    "backendBranch": "feature/driver-verification",
+    "webBranch": "feature/driver-verification",
+    "backendStatus": " M BITACORA.md\n M README.md\n M VERIFICATION.md\n M docs/API_ACCESS.md\n M docs/DEPENDENCIES-DRIVER-VERIFICATION.md\n M docs/INDEPENDENT-ONBOARDING-PROMPT-APP.md\n M docs/INDEPENDENT-ONBOARDING-PROMPT-WEB.md\n M docs/INDEPENDENT-ONBOARDING-PROPOSAL.md\n M docs/openapi.json\n M package-lock.json\n M package.json\n M prisma/schema.prisma\n M src/app.module.ts\n M src/assignments/assignments.service.ts\n M src/config/environment.ts\n M src/delivery-assignments/delivery-assignments.service.ts\n M src/drivers/drivers.service.ts\n M src/drivers/logistics.responses.ts\n M src/independent-drivers/independent-dispatches.service.ts\n M src/independent-drivers/independent-drivers.responses.ts\n M src/mail/local-outbox-mail.provider.ts\n M src/mail/mail.types.ts\n M src/mail/resend-mail.provider.ts\n M test/delivery-assignments.e2e-spec.ts\n M test/delivery-assignments.spec.ts\n M test/independent-drivers.spec.ts\n M test/invitations.spec.ts\n M test/logistics.spec.ts\n M test/partner-applications.spec.ts\n?? docs/DRIVER-TERMS-DRAFT.md\n?? docs/DRIVER-VERIFICATION-BACKEND-DESIGN.md\n?? docs/DRIVER-VERIFICATION-IMPLEMENTATION.md\n?? docs/DRIVER-VERIFICATION-INTEGRATION.md\n?? docs/DRIVER-VERIFICATION-TERMS-REVIEW.md\n?? docs/FLEET-REPRESENTATIVE-TERMS-DRAFT.md\n?? docs/checks/driver-verification-evidence.json\n?? docs/checks/driver-verification-http-examples.json\n?? docs/checks/driver-verification-integrated.json\n?? docs/checks/driver-verification-revalidation-main.txt\n?? docs/checks/driver-verification-revalidation-take.txt\n?? docs/checks/driver-verification-revalidation-terms.txt\n?? docs/checks/driver-verification-revalidation.json\n?? prisma/migrations/20261013000100_driver_verification/\n?? scripts/driver-verification-integration/\n?? scripts/verify-driver-verification-migrations.mjs\n?? src/verification/\n?? test/driver-verification.e2e-spec.ts\n?? test/driver-verification.spec.ts",
+    "webStatus": " M README.md\n M VERIFICATION.md\n M src/app/App.tsx\n M src/auth/Login.tsx\n M src/driver-portal/pages.tsx\n M src/driver-portal/types.ts\n M src/independent-drivers/types.ts\n M src/layouts/AdminLayout.tsx\n M src/services/api.ts\n M src/services/errors.ts\n M src/test/driver-portal.test.tsx\n M src/test/flows.test.tsx\n?? BITACORA.md\n?? docs/DRIVER-VERIFICATION-MAIN-COMPATIBILITY.md\n?? docs/DRIVER-VERIFICATION-WEB.md\n?? scripts/verify-documentary-upload.mjs\n?? scripts/verify-documentary-web.mjs\n?? src/test/verification-fixtures.ts\n?? src/test/verification-pages.test.tsx\n?? src/test/verification-recovery.test.ts\n?? src/test/verification-service.test.ts\n?? src/test/verification-upload.test.tsx\n?? src/verification/",
+    "backendHashes": {
+      "prisma/migrations/20261013000100_driver_verification/migration.sql": "4f55ca24d4076982a020f285c9c35834104882dc93ec181957e27e75a9f47b80",
+      "scripts/driver-verification-integration/account-recovery.mjs": "4b01107e8f033838d9221e0b742667aeb326c2bf9e438df435b3560c723e9d81",
+      "scripts/driver-verification-integration/environment.mjs": "4417f1359781fadb0ec9182347f1a741db36407dfb2cc71f705694fe0a651eb8",
+      "scripts/driver-verification-integration/operational.mjs": "a600c6a9935572abacda213ebd9ae76ee5c24a77b2a110f9dd54bcb78672602b",
+      "scripts/driver-verification-integration/revalidation.mjs": "b25db5e12210d560cd74e41f7338fe79e10e72fdf0e3d9021ba3942278d740d0",
+      "scripts/driver-verification-integration/run.mjs": "7716759972b33efa5b0296c73b947173cf0b8ee686dd81f05602bcf161e1851c",
+      "scripts/driver-verification-integration/scenarios.mjs": "7a15ee75c1074c57c1e40605372e141b012b44023c5455c733999355714ff863",
+      "scripts/driver-verification-integration/take-revalidation.mjs": "5e2e11ddedbc3f58b42c6ca61d869f538f652246bf9eb1bcdce7e7de5545426d",
+      "scripts/driver-verification-integration/terms-revalidation.mjs": "3a9d578fdbb533201d5ac485bcdb64274774655f26bab6776ac9cd7a787f311d",
+      "src/verification/verification-error.ts": "24f829e1a228d169b1c1311369b6103ee874ee87a4a459b28a512af0248b6328",
+      "src/verification/verification-notifications.ts": "444cbf75a10fa17f4c493896f460b85fdc5952b54cc0036dcc0a71e9b4cdff0e",
+      "src/verification/verification-policy.ts": "7d139baf57bc98caadfd0878db156cc47a9dae9ee16bc688ea80387e2cfc3950",
+      "src/verification/verification-rules.ts": "23bfe55de5fe68c0ce4ec906148f421ffd6a30a38ffacce8df28ce96934291af",
+      "src/verification/verification-storage.ts": "897ac35e8ce66da360a082d8a9cfc279b9f21479bc691cbf5e3badb1cd2b04d5",
+      "src/verification/verification.controller.ts": "dd9d91cddb2e75cbf0d7c4d628c79d0e94b00fdf8aa4679dfc6ae84b3a39b612",
+      "src/verification/verification.dto.ts": "105ee522fe5eca993c25cd0540b7c7a9ca824c061fb77df83513291404ccc1eb",
+      "src/verification/verification.module.ts": "a6a9b4012d40083b3a722a71b857d1f0095b5a960b372e238ee0309376b54a7b",
+      "src/verification/verification.responses.ts": "683622b6bc4a32a910fde5aedad2e66bbacfe1d167c72b36a37bf6ef4ce92f7f",
+      "src/verification/verification.service.ts": "70858d94a2e389a2d8b5ad26f7e4fa730586973add98f7e728f62faf4bed4037",
+      "test/driver-verification.e2e-spec.ts": "3515ee92864bf45ed826cdb7bbbcf0d04feb9a027cf405bf0d748aca4a5c77b8",
+      "test/driver-verification.spec.ts": "a7a5c300aa49faaeb4b549a270d0d16035bb1bb000b9a4af091d3a47d4fccc93",
+      "docs/openapi-b2b.json": "9b57fdc2ab3f987c22bea05b07511a55a0428d804c7e524c58288011c3f85a52",
+      "docs/openapi.json": "0ec2eae0fa7413d2098ce14ad5408b824e16e3aef3ec36a7910988c563536e52",
+      "package-lock.json": "60818e9db7d486e09ae1cff917723b65880cca48ec34525fe6dfab9f24f381e8",
+      "package.json": "fe31de370fec43e5ea6745788b1292e558627f0f48c8844d33cc6b20f55f5c2a",
+      "prisma/migrations/20260915000100_core/migration.sql": "e4c7b72d18cc93316a31036b820d5d728f92a9717f9988bd9cf5db98e6bd39b2",
+      "prisma/migrations/20260915000200_b2b_credentials/migration.sql": "6ac55bf00ab6bb806a5456cef2598fc90c5fced447e7c58175cb8cc1c10fc211",
+      "prisma/migrations/20260915000300_delivery_providers/migration.sql": "b3a2b59f937417f644fcfaae2b9d335b58d24e83315fd945a294f760c13fc8e8",
+      "prisma/migrations/20260915000400_drivers_vehicles/migration.sql": "14e72f3f8f145383d76e927f7ecb3ce90b14ec0854f33de782dfa78ac2dd24a7",
+      "prisma/migrations/20260915000500_delivery_requests/migration.sql": "428a563f06c95ed9218bafccc7702735db4a2881f97ff398b156a62e4987a248",
+      "prisma/migrations/20260915000600_routing_pricing_quotes/migration.sql": "3cc9cde497bd95e95f3ec2731525a5a7babbc14f662bc3f155395451b9e9251d",
+      "prisma/migrations/20260916000700_user_invitations/migration.sql": "d74492faba74c658bcee7c149318f44381374666f4703a18f194b6506634b03c",
+      "prisma/migrations/20260917000800_dispatch_engine/migration.sql": "99962151d4781cd6f1cca9eafcff01ed8920b664af0baf976d22e026650e2195",
+      "prisma/migrations/20260917000900_delivery_assignments/migration.sql": "420a438c39dea2638909385b01c2c073fe06e75937dd26e1400bd7e50c478091",
+      "prisma/migrations/20260918001000_independent_drivers/migration.sql": "591491d294f35351b41bc0c251c03abdb53a40d0dc3ca1e7db8eb513bf7d6711",
+      "prisma/migrations/20260921001100_credit_accounts_ledger/migration.sql": "92eff77704adde75fbcf56090fcb211dca41deebef866303d389ead6716d0455",
+      "prisma/migrations/20260921001200_credit_ledger_purge_test_only/migration.sql": "b2986fb38d71cfd0ba5729e0a0f8a8d712e931fe6d8bfe01928840b0c11c98b0",
+      "prisma/migrations/20260922001300_credit_policies/migration.sql": "78a76c98f1cc51a5ca73ed8bac76da706ab9b1576ad62618e42cecd339791ce6",
+      "prisma/migrations/20260922001400_dispatch_credit_snapshots/migration.sql": "c9e6976ed18a1fb63a2ac4834df15fb4af73d3c46359dbcc2512148384e507fa",
+      "prisma/migrations/20260923000100_dispatch_credit_consumption/migration.sql": "a16b91b96290eb9666ddd0ca4bc9ebec9d085cbe027e857039e10c4dea2eefe8",
+      "prisma/migrations/20260923000200_award_integrity_boundary/migration.sql": "add61f760fb86f7ad96906046d8dad899ac9612b49439a974482c9dedb6ba6a9",
+      "prisma/migrations/20260923000300_service_refunds/migration.sql": "26b29c25286c9837223ed7febe9f7cddbb14f3bff21b175192b8b7cfeddbe31a",
+      "prisma/migrations/20260923001500_delivery_completion_states/migration.sql": "7b9644eb63c6ccdd0dc8a6d787de98bcac4c51df2a5aa1092e875e5eda48c7b9",
+      "prisma/migrations/20260923001600_delivery_completion_rules/migration.sql": "c3d17da54b5cbd612f528e277ffa3585f60547a17c11d2024bf669e05fbc5f8f",
+      "prisma/migrations/20260924000100_b2b_event_outbox/migration.sql": "151f30e77275a22e9d9317b38c22d488c2707ab26fe4bb501dd4c56c0b6fb2d1",
+      "prisma/migrations/20260925000100_b2b_webhook_delivery/migration.sql": "a34e2e9e44644c3235507cec97c5ffaadc951222693821bcd461defbd597f95f",
+      "prisma/migrations/20260926000100_reliable_webhook_delivery/migration.sql": "ee4cdf516357f59d5eafb82f3993948b3fe6102b818d062ba657f1a53b30d863",
+      "prisma/migrations/20260927000100_webhook_operations/migration.sql": "0719c84ea5bc09778f31c187611cd6ba03384d882c509a02a2df2b10a7e33b0a",
+      "prisma/migrations/20260928000100_b2b_public_execution_identity/migration.sql": "5cfd79f36bf88c53612c70bd86d3105667517cd83f3542d9dc31a0152d5f931a",
+      "prisma/migrations/20260928000100_prequote_persistence/migration.sql": "046ac61147b41e8e1cc75c965933d6a2aa44aae871e4630f137cac79860ec8df",
+      "prisma/migrations/20260928000200_prequote_execution_hardening/migration.sql": "660b45a2767d1e733c26b917a5e5667a556b8b266c4c5f0f886782052aa6a709",
+      "prisma/migrations/20260928000300_prequote_consumption/migration.sql": "114242a0f011cc377af8b38967244fc594ad62b12676b6a70a67534d62793ad3",
+      "prisma/migrations/20260928000400_prequote_conversion/migration.sql": "6ec76940d4e22f8001382885b2aa55ba9fd43901549eaeef9f0fcf66ac350c7d",
+      "prisma/migrations/20260929000100_authorized_quote_acceptance/migration.sql": "4eb06a432d5b0dae0c4c089b4769c99c06d15b61ba945f975a39a2ab6cad26c2",
+      "prisma/migrations/20261001000100_prequote_restore_search_path/migration.sql": "d2f3e2b44255fc1c6c74943d7b5f4212093aef99d4e914c4bf4782085a4e3fc1",
+      "prisma/migrations/20261004000100_partner_applications/migration.sql": "bd96acebc7ed72e7e2897bca5930dc2b9adbd7f3596307d60a2632901beee35b",
+      "prisma/migrations/20261010000100_automatic_dispatch_search/migration.sql": "50ad0dafc67b7eb58ab9570de7c9b8e1da6c1a81b7344d02c2570a491d6f9271",
+      "prisma/migrations/migration_lock.toml": "e0f301404b533bea819cafbc56ca2a9d9bcc2cf97d6350473e3a008f0637cc12",
+      "prisma/schema.prisma": "77ac6aa739ed0520c9a648d7099714f82520176e60b174ab4283129c0822173b",
+      "prisma/seed.ts": "3c09a0a129c801aab31faf60f2883820da3be58e0b0bf295b42c8f3163bf22ab",
+      "src/app.module.ts": "325aa68f4083da1c19f186d2c4450a3132259edf3620351495b51a21dba00d9e",
+      "src/assignments/assignment.select.ts": "419d6901c4055e4382ec538e43a1a23004e9ecb0d406e5e9be04c1bb6beb69d7",
+      "src/assignments/assignments.service.ts": "7af202e769b5c1f6ce588be2b589e35694b7ea4134e47ce224dabb9d5768cefd",
+      "src/auth/auth.controller.ts": "28579617671a543344572d1155788929ca8725a6a2bc29c8a345849d9dd5d4de",
+      "src/auth/auth.dto.ts": "9c7f4cc7e83f97b96c118c24a0eed7bc6c7941ffac6977b185ee3522066496f0",
+      "src/auth/auth.guards.ts": "da5438cf7651febef0dd83f102e62cbc790bdf143d7d8413bfe244ddc2309ef8",
+      "src/auth/auth.module.ts": "8dc47bf2ab2e50b1e979a0761e59aaae23fb55567f78f070f8bb12df2d9e4586",
+      "src/auth/auth.service.ts": "3acd536e65fa642646f36dee916da0d998530d72147e8ac6882aeeb82ccd621a",
+      "src/b2b-events/b2b-outbox.ts": "5ec566a94e9c63d69f2548eb6215bb513b9abda93cd35fe07fa1b6954eb0c37b",
+      "src/b2b-webhooks/admin-b2b-webhooks.controller.ts": "2ce477d7575d4ca524b3064486741866e1b5de29bf4d7973728173f931a00dfc",
+      "src/b2b-webhooks/b2b-webhooks.dto.ts": "09372f9fab42ae40f75ec9a6b6ede01b27a010221e463471532002163506d8f8",
+      "src/b2b-webhooks/b2b-webhooks.module.ts": "26477eac2d0e6117727dacc3b2b762fc856f9f0b6611a0c5e7e25cfc98e9b8c9",
+      "src/b2b-webhooks/b2b-webhooks.service.ts": "cec783e8d210f4971134e7d5a742ba11ed23e78438e39eec622247583081e003",
+      "src/b2b-webhooks/webhook-operations.service.ts": "f2bbcc9aedd4749c7970158802ee345d4dd2c61f293eb9e6a81cbce4da48e610",
+      "src/b2b-webhooks/webhook-operations.ts": "d71283e2d34aa13799dd1a6a0234af38188923932db84a2d234c5e008fec7c3e",
+      "src/b2b-webhooks/webhook-retry-policy.ts": "db392ff86da9705fe803bb4f600a47219d2827a1fce87485f24bb004c651d7c1",
+      "src/b2b-webhooks/webhook-secret.ts": "f685c5a24bc6403d10c569989ce9d55a6229ec31341fa94eba04b1f4c33ea8b8",
+      "src/b2b-webhooks/webhook-target.ts": "83c1d0342b24131a060b3b879e4a97657585e5a9ab8c983238db4a6a1708563b",
+      "src/b2b-webhooks/webhook-transport.ts": "fd655f3d8a6470cc8045b69741313616be624ce00e38c4a235e15ea840c4085b",
+      "src/bootstrap-admin.ts": "c4f9104e7ff0713a6d25cb11836f7c2be8a2e7bf862da2c2e660bc3e4ef0fa27",
+      "src/common/api-errors.decorator.ts": "15d4222e93c18be5bfd02d79e3f09d398e60d684411ebac102b951df28c2c562",
+      "src/common/domain-error.ts": "354400ea30b1769cd1b4a36b61d337b8a54562d4d613a2efe314bd742e464cff",
+      "src/common/http-exception.filter.ts": "daa3885379950becd0911712fd7340a64c13d69e432559c48f78377007df9c6f",
+      "src/common/pagination.dto.ts": "0c1ee8a62a23a9d97179b52acfdc1d494ffcfefd62ddc52ccfc6643a0a123f94",
+      "src/common/password-policy.ts": "a7105ea6acd9c5389ad556216aba4f7bedb95ad29b39e44b233830fcdf6ee748",
+      "src/common/public-id.ts": "760369be85c1482832ebb965c3148b02c882495c67f65cbaf3e9cf741185f70b",
+      "src/common/security.ts": "d8ce261b7be33cc0f15b3ba5e4554d52a1c2f12ad7cd4ee625437eab68798a18",
+      "src/config/environment.spec.ts": "8ad342a68cf1c33068430d08bba1092d0787520d8a23a23b2aa15975d92585d3",
+      "src/config/environment.ts": "9bef9398f297444609edd34adf8add065bc29970841cf0f8f86ad0969d392d78",
+      "src/credit-policies/admin-credit-policies.controller.ts": "34961a16b9eebed68c05a1e4082b80f2aaaa3a5ad5862a7caf19232dac0a79fd",
+      "src/credit-policies/credit-policies.dto.ts": "d87e0d4bc2e253627994de0b9853c553dbfb078811d1891275342798592b211b",
+      "src/credit-policies/credit-policies.module.ts": "ff338642a0c1c28d61fc5dd5bb5309a7eea50adc0b64d6b4ddef6da9d14bb2d0",
+      "src/credit-policies/credit-policies.responses.ts": "f8865e9d70baae01b077db2eb6e4f6bf14de8eceebe0a2b29016c2d2f2cc8143",
+      "src/credit-policies/credit-policies.service.ts": "3d94b5ee56a0f702d783a020bfa3f31381312786473256875329e7409189dca4",
+      "src/credit-policies/credit-policy-engine.ts": "1cdc3e2617b05effbac500a88d6d92c3704667363e89b730eccb27250bf56027",
+      "src/credit-policies/dispatch-credit-snapshots.responses.ts": "431392b66df96954f0cbb20839715f77a1f7e3d29294ec8c178d70e340eb3f7c",
+      "src/credit-policies/dispatch-credit-snapshots.ts": "63749fa8eee0e643af2791d6a77673f0f6bbd7769cf94e2ef932ee9e63a5373e",
+      "src/credits/admin-credits.controller.ts": "1ea55624bb1ebb3b4ce3bd24922cfc7f0f76e91e6ca61d61d983c411ff658eb8",
+      "src/credits/award-boundary.ts": "17a3c2dc7ce40d9752a750529767a626c90f5b9884c9254142a517cf09007962",
+      "src/credits/credit-accounts.service.ts": "b29cf6dae2b178d61e577f6f7cb1415d9250bf45bded740da4aa278b4e35e0db",
+      "src/credits/credit-policy.ts": "8e7a13ad36abea4683468435bc23142c25cfa496af769986f296aed0706c58cc",
+      "src/credits/credits.dto.ts": "02d9ba1c5505c77ed2c28c024974823c70e33d0c25ca01779032c50e19c5524e",
+      "src/credits/credits.http.ts": "3ba1ab23e6b624ec73dc6a958fe52e6fabeb9cb2a6e965e2fd3db3eaa191b029",
+      "src/credits/credits.module.ts": "3d8d49d0a653d5580a008bde7386c59338002eab290d429f6bb1d70ac16242ee",
+      "src/credits/credits.responses.ts": "1291792956ab2be6477a970f7b0ddc6acfb27c75dc4ea1522c44dfef8e3497b2",
+      "src/credits/credits.select.ts": "30fda2ffe77cefb39aa31ab9e9dcdea0f04e2300f3dce1ccc2cbed1c08160438",
+      "src/credits/owner-credits.controller.ts": "5ec0272d2d916c10d082f76579e132bfb094288536e4d4fe74fc76c19de8b56e",
+      "src/credits/service-award.ts": "40f62d621560316f15c6484bfb0e2b9f094643bfd21430c228b7426ac267f56a",
+      "src/credits/service-refund.ts": "40aa80cf13366905c853616cc13c1909a3aa82a9af3fb6b4720bb5e78f373125",
+      "src/deliveries/delivery-completion.ts": "32a4a7f1b6bf547afda49e6593af4a2ad6c22da76d8229d028843d413d7ae1d0",
+      "src/deliveries/delivery-status.ts": "0fd3a55aedeac3a6606ec7afd0f6591700335241f1bd1d133f0c5676ac3acea9",
+      "src/delivery-assignments/admin-assignments.controller.ts": "a104722e729cc486b624213f679440aeb96c910ad276a9a001aaf22b764c1cf0",
+      "src/delivery-assignments/assignment-policy.ts": "05dd9baff4aea112642abfc0fd1077a4f5839cb33664864d82924ef589863ceb",
+      "src/delivery-assignments/collection-instructions.responses.ts": "4b3ece8cc5954e588fd2afc64f76f07f2ecb0a0873ba163138d481cf7d39dab9",
+      "src/delivery-assignments/collection-instructions.ts": "325488595d57e0d03c5671d4de65ab01615078ecf11d2ff2d98e611be226a15a",
+      "src/delivery-assignments/delivery-assignments.dto.ts": "a3ab8be15c0c6143c80f0ef6fcfaeca210b83e6b09efb67ef76f5e111e37d99d",
+      "src/delivery-assignments/delivery-assignments.module.ts": "fdf091daa624842b67f49cff91e00bf071b6e9c29d1d2f74c728bbdd46bc6904",
+      "src/delivery-assignments/delivery-assignments.responses.ts": "91f192b7d582b938a8fbadb0f2d85ab9cc0cfaf4809eaec640e842d3d55be8d1",
+      "src/delivery-assignments/delivery-assignments.service.ts": "a19c96452c3bee000cec7f9390f415bbc2f475032aeb97f6746b8e12be39c333",
+      "src/delivery-assignments/provider-assignments.controller.ts": "71f5eb230f70622bcd3329afc1f448fe3712009d5b6fccd94d594998ffadd54b",
+      "src/delivery-prequotes/consumption-policy.ts": "7772c88c8773ef1036d13e8122063fa545510ab127694c7461420ca88023e44b",
+      "src/delivery-prequotes/durable-prequote-consumption.ts": "b726ba247441d993d55db31a7df084aa80d4f9be58b91fc3b2a9727e0a20e435",
+      "src/delivery-prequotes/prequote-conditions.ts": "350b8c46cd35f136101b208add12d1c327f4ae76b0761c6e97ca5afdcf422796",
+      "src/delivery-prequotes/prequote-consumption.ts": "bfb086a7141051637bb6fac15d456126e0de1ce4da434691c26ac3ec412eab7d",
+      "src/delivery-prequotes/prequote-conversion.controller.ts": "cd515ff1c66614525799ae04e96fde6dbb30c2adc36ee88a434027b8d162c287",
+      "src/delivery-prequotes/prequote-conversion.dto.ts": "8db7be7f8ddfe6eb84adff64891228e2af0f9894080d1c29353e0a48464cb0d6",
+      "src/delivery-prequotes/prequote-conversion.service.ts": "0a89fb73af824f684bc98d291d1e21705005e65a9bba90011ef3d427259bd907",
+      "src/delivery-prequotes/prequote-errors.ts": "085f1d7024f82def13c856a34704fe88d564bfc3426233f930e8fd1b6bbc4a2d",
+      "src/delivery-prequotes/prequote-origin.ts": "6df2534fc9fe477a6a51d0a81e1d682a7a249514318ad4dcf767777da9067712",
+      "src/delivery-prequotes/prequote-persistence.service.ts": "d68c515b3c54505c89dc9009c3d35057b3222a98cccd6d4ef0c57156633b079f",
+      "src/delivery-prequotes/prequotes.controller.ts": "14590d942e5bff9ec1de3ef19b8eb4f86606f443f972afa83a6f468b94e1a649",
+      "src/delivery-prequotes/prequotes.dto.ts": "07ba01ff56730baaa4c3a0290c796e65e179b356c210af845e183d8dc0ba2f67",
+      "src/delivery-prequotes/prequotes.module.ts": "cf24649cbfd50e77afdeca3d209139684aa3350b44a4a642108c7d3c14fa103c",
+      "src/delivery-prequotes/prequotes.service.ts": "b6f7cedcb11be1d9d2ef87f2bc7b441a1e9b2aa3a3295857b7a5474fb31f21e8",
+      "src/delivery-quotes/admin-delivery-quotes.controller.ts": "daf8263bbed5e6441e9f0d8c07013b892f46488fbda003e7977ea72e1806c9b4",
+      "src/delivery-quotes/authorized-acceptance.dto.ts": "5b93a6c9850929e7c87a129ba3402b01218b0a5f3bc1cf07bf336e2e6b14a6c7",
+      "src/delivery-quotes/authorized-acceptance.service.ts": "2dfa9c81e5cff5d94e695aaaaa8cc34472f768d41842a9a36870c832279f8f63",
+      "src/delivery-quotes/delivery-quotes.controller.ts": "30ef337e0517e66daec55aeb2eb24102b795e3d8de29e41e1e5be97b1048d1f3",
+      "src/delivery-quotes/delivery-quotes.dto.ts": "d40041a138ddabdf2158b6ad2a768ce5050434e783e9afa95ca454ad88c816fc",
+      "src/delivery-quotes/delivery-quotes.module.ts": "7d63538e779bf63fd13361218193d1733a7be3d1298bb073dd5f586703095e87",
+      "src/delivery-quotes/delivery-quotes.responses.ts": "17966b76d0634e0fec0a7e5bfdf23fe1a7d9a0a8db6f8a3c6cbd842558292dc0",
+      "src/delivery-quotes/delivery-quotes.service.ts": "253da0bfff1d8b9d4a72f21b5338270f1f2bc88564fceff62d7da654a70714d9",
+      "src/delivery-requests/admin-delivery-requests.controller.ts": "dfd73c604f33e30f15e0b7fb5ac476b831e7391ce60f5be18442d788620fb017",
+      "src/delivery-requests/delivery-request.select.ts": "50ba46443a16a54609e2a51f5217f7b015e27446e7ac2533012e325ba3321a5a",
+      "src/delivery-requests/delivery-requests.controller.ts": "d0dcb84d014ae7818e9a03881a5cf930b4bc2d664ada9310c1e1b54e01ae3f60",
+      "src/delivery-requests/delivery-requests.dto.ts": "b7f78637317a37a309e2852eb59a36530e132b394d363776a3092591cd21b6c9",
+      "src/delivery-requests/delivery-requests.module.ts": "91e88ac78bfc57c44784485b63f49c6e6aa0c8032e0de975356e3dfe33887b72",
+      "src/delivery-requests/delivery-requests.responses.ts": "9406fb37f1992453eb248acf4f7c503d06871b3e33a6fdcdee33dfceb50c793c",
+      "src/delivery-requests/delivery-requests.service.ts": "053cd975b58b995e4909dbaf7df60653d1aba7a7df793b12f620f9e4eb933d84",
+      "src/delivery-requests/delivery-status.responses.ts": "99a26f9cdcb4f2ee7c1509ea83509423dee4082f13a51e1070585a3c3975ffa0",
+      "src/dispatch/admin-dispatches.controller.ts": "ced7e41504ec745001ec81c2f8f9bc5befaf9c55d47a36d94fb7822624667f9f",
+      "src/dispatch/dispatch-policy.ts": "70308e9aeb9db9786ef9c2783ba6fe47e453c0623d2c536f1d126f59a6dd78e5",
+      "src/dispatch/dispatch-search.ts": "a334f1d407d7e5838d4956360069f9841eda7cda6dc41b8a867e615c12fd96be",
+      "src/dispatch/dispatch-search.worker.ts": "5cb22267c9220537f7438911b162f3bef7cd99f3643f4d89f233307d5c9e9ad8",
+      "src/dispatch/dispatch.dto.ts": "30fbcb9801c2cba83db859deadab4a2aa9e4220f0b8f443e910d28ebd6360617",
+      "src/dispatch/dispatch.module.ts": "b08b2d67c9de3599c683273efddaf1821db9cf2a36ea815c8521ba0386adf50a",
+      "src/dispatch/dispatch.responses.ts": "3543d9afa3c18f2e3b7ee6c699d9bdba0011db9685a9b57ae11e58fb53cf0d8b",
+      "src/dispatch/dispatch.select.ts": "77708ac8d505a85c4cbaad10eff0d5593777dc5e34b1d3244f21b7f1f257fe86",
+      "src/dispatch/dispatch.service.ts": "afc7e993771e1e9d6f1efbd78b3c865ced69d3d6a6b3c752b1b55171fa04569d",
+      "src/dispatch/operational-tracking.ts": "447fe7fcb8c0cc77404d369eae5a3e574725285902c682822c24426027fb1faa",
+      "src/dispatch/provider-coverages.service.ts": "6c16042d8ba4fab18a6122fa8eb91a8f2c72735c9925b9b3cb2a217e838c9f98",
+      "src/dispatch/provider-dispatches.controller.ts": "e53c896f48fbbe58ae771a31a6a649c877e24205dc9d7eda785104a5456c8a33",
+      "src/drivers/admin-drivers.controller.ts": "712b5906bfcea590341cd09ca90541d81c32ba25a58b537fcfeddee3868d6eda",
+      "src/drivers/driver-self.controller.ts": "7549b44f267b2c99bc9d466316f3b3c2e4aeec39a859f75c868aafa48da741d4",
+      "src/drivers/driver.select.ts": "fbe4d2b3f3a5ca7150aab3a38ddce69b8c5930a9b355d359bb0ffd386c050e77",
+      "src/drivers/drivers.dto.ts": "62924529dd10c8600c9f721aee626f3a3cafa220a83faa09d1899b0d7b436079",
+      "src/drivers/drivers.module.ts": "512b3fa1705968bc64640ca1c2cf306e6907487be076fe1f51b7199b1f376681",
+      "src/drivers/drivers.service.ts": "0c4f02a2af80ed719db4b0294261727f6b871893f4450997143f7b6d4299bfbd",
+      "src/drivers/logistics.responses.ts": "8560aefb8eb7d18e728b2c420ce3fcbec16571d488092a9e0adb36e144bd818e",
+      "src/drivers/provider-drivers.controller.ts": "c77cc5ed90d1eb1e5533782fd79e5ede31013c53dcf4a889fc1042c493f191e5",
+      "src/geo/geometry.ts": "855fbfc55767a7c2206b98088e0f71f8ed832d01aed2b8ba47b6e64045e10147",
+      "src/health/health.controller.ts": "52b2f62e2677748a8713a400b762ed38a9028fd19e691c458a5bbf3f65e9dadf",
+      "src/health/health.module.ts": "995092f61097402834a5b7adb075e1d13965199e60979632f30606809b482921",
+      "src/idempotency/idempotency.service.ts": "5c8586ede62835dc67f5148602fc816d905fe4b98b36a99cf8d9cd9055bce36a",
+      "src/independent-drivers/admin-independent-drivers.controller.ts": "2cb1231cc1a4f6b3dcc14278e3c51c453027b2e7bedf02601810258e2fac2f02",
+      "src/independent-drivers/driver-dispatches.controller.ts": "7c18451193438222791804e1f55babd4687f25c534c2dbe5ceee4e660af1e5d1",
+      "src/independent-drivers/independent-dispatch.select.ts": "644eabb987b538590e79e618378b7f9ea3efbcd59a19858428b76b3a359ed213",
+      "src/independent-drivers/independent-dispatches.service.ts": "7e76bb41a22f6a9bbb2d8d1910fbc7909b48f4f15059a67161bc3a5f0c2381b4",
+      "src/independent-drivers/independent-driver-policy.ts": "64544b42e902db015247d30d9f676c18929e474c46951031ae641618383d6f76",
+      "src/independent-drivers/independent-drivers.dto.ts": "8eaeefd5778a34323bcb7fdfd3b91dd61cc65554228d59d60f1cea62da695a88",
+      "src/independent-drivers/independent-drivers.module.ts": "7924d41e2405f8fad013160dc8b484565b7f60d38e171b4b607618ff01513b5c",
+      "src/independent-drivers/independent-drivers.responses.ts": "e132f340df12a973af6c10a5a1c2b7fe15491f2746325e4ffd47c0360dda7f8e",
+      "src/independent-drivers/independent-drivers.select.ts": "97cda1d1c9b5c58e948ad3ba724cc1939fdfc34e841c9e283ebd3f65b58b6df5",
+      "src/independent-drivers/independent-drivers.service.ts": "ffd63ba0af51262069e56a08dc2bcb40ca0a66f576302d13fda0aa22dd3fbcd7",
+      "src/integrations/admin-integrations.controller.ts": "f64b4f151ec1f0fb50768e77c3e20f091d3d8028fd12a0f54e736b60c02e1efd",
+      "src/integrations/integration-auth.service.ts": "12de3df13cde30b4a79ed064fb0fe58207c7219533ac88f9a5ef57a41d8b2d3b",
+      "src/integrations/integration-scopes.ts": "474a955b58ccd4290c595690ca6146bbffec37fd887498b35eb1aadd115a0f4d",
+      "src/integrations/integration.guard.ts": "df8b22d695721e51ab4c9b6497adbd369b65166c5893d06b5b46fe020e23f39d",
+      "src/integrations/integration.select.ts": "35f619969a26602042a8a9a922dad062b2a8213428e02f9a35f1d112a045647f",
+      "src/integrations/integrations.controller.ts": "e005b2bc04bc58fd78a4bfd3f131ae3b967df26c5b34e9ce1888f08be287fdc3",
+      "src/integrations/integrations.dto.ts": "c062ebd5b79c2bf0a34bfeb4985f0df3b28c1128f5395297b014151b065fd1c9",
+      "src/integrations/integrations.module.ts": "72b9674efe2d3b43b4370dbf40a5a5d875ab3eddd3d78d15d9e2392ff5407491",
+      "src/integrations/integrations.service.ts": "0a9a47c5ed9a2b83e311a2f0bfc29cf2c79f4189c6e5158de48adb8b756484ab",
+      "src/invitations/account-activation.controller.ts": "d0eb27bde8edd906b51b1163be01c5907de30d2d89c4ca69ec4f8de31c5c3172",
+      "src/invitations/admin-invitations.controller.ts": "40664cd83332309c1606e6173c598265aef02c5548b594c7a09e97a1ecbce5fd",
+      "src/invitations/invitation-docs.ts": "43c79990b873625a38a01dba4bbefbe08a5f7c57f991e4fc46547c2dcc47250d",
+      "src/invitations/invitation-policy.ts": "d39025d1a1a89b3366b0613bfcdf86943e4f344a0f5de24bb697f9b9680b4938",
+      "src/invitations/invitations.dto.ts": "ae4132b5b2382f0d18c4cff70a629e8e826d93d536fc6ebe799378855dd2148d",
+      "src/invitations/invitations.module.ts": "d9fe3eade445aab96fddee92f7aca8db53cbc89881342a14cd17ea0967cc87f0",
+      "src/invitations/invitations.responses.ts": "e80afa849a8624d2b3b7474ce46904e446ded63f503f2e86d2e1fb19dd1845b8",
+      "src/invitations/invitations.service.ts": "7aad1a69736f91568b4a56d17ba3342680b27667a1b107c33e08566584fc658b",
+      "src/invitations/provider-invitations.controller.ts": "76b68298cbd1cc000173721982c238994da6675d2bd237c5fb6cd07e963d60ea",
+      "src/mail/local-outbox-mail.provider.ts": "8c8bd25f25a73765563578ee46ac5730bac7d6ada4747c39d0bc07483953acd7",
+      "src/mail/mail-templates.ts": "4f317d212d7f80f8cec7d9c6b02f48d3875882bb6e67616db1f9f9f003bbf373",
+      "src/mail/mail.module.ts": "5712f0a0dd081b86757edbc684c2255818bf201644da575335b46b0b4865f2f0",
+      "src/mail/mail.types.ts": "6b731e99ea49d1493895d69492e1bd3e7791519d8bcc10440b0d9c51681a6974",
+      "src/mail/resend-mail.provider.ts": "f2038d509f3a1b8232826a7ced2af6f40128ceca13361eb1c4d168de349b46e2",
+      "src/main.ts": "412c1107277237bd786e3aa949041906bd0743ea34eacfd9a174ae3814274f91",
+      "src/openapi.cli.ts": "9d2a85f392fd06c689e651c7172ef607a4f5af96cf9718bc0d90b36dc07a89c8",
+      "src/partner-applications/admin-partner-applications.controller.ts": "e067c81d2e6242e066276f9693bf789c65c13b5386bde79cc8a95bd63e28c04c",
+      "src/partner-applications/honeypot.interceptor.ts": "01bb4af1ea93858736b29accf28e8c4a19493b8a0d778d64f9c8329e1f3e2d3d",
+      "src/partner-applications/partner-application-policy.ts": "02973c1d7fd6b4d21fa8da66038ea6dc5f48d960c8bc1a44b01491bb495c689f",
+      "src/partner-applications/partner-applications.dto.ts": "8a53ce06af28ad609b6d9ea37e15d4cf6fd06c4af39d1eeab5996be8fa920659",
+      "src/partner-applications/partner-applications.module.ts": "f0df813332b742463800db8a06814615955b5c2987632ae43296dd92449e16a7",
+      "src/partner-applications/partner-applications.responses.ts": "295045db13e04f6c5a3e414b107216da26ea6facc6e28855995d45cc89c53288",
+      "src/partner-applications/partner-applications.service.ts": "db5cd90b4595f4deb607a502fd716d35bbdf8f62b190ad4d91d759b04b3c66a3",
+      "src/partner-applications/public-partner-applications.controller.ts": "788c591bc1432916e98fe5eaad2fb11028595a560c9549e43f3191d29428392d",
+      "src/pricing/quote-pricing.ts": "6bf15dd03195e93472353e7881e2a3035c2c23721b6d594c56ac41c0e97fb0ce",
+      "src/prisma/prisma.module.ts": "b18b0e1b0eb73e4cc078d2bf9f57a213b77c873148481d275f0c6a7da8054eb9",
+      "src/prisma/prisma.service.ts": "3a368ef03bd21b01dc19d120c9aa7aa111686a255484d0b24574cf731005f785",
+      "src/providers/admin-providers.controller.ts": "6bc70646c27c5a6a66dfad8ecdeb0e246f2dd864ac0e99d82d14fe86636b45a4",
+      "src/providers/provider-access.service.ts": "6528ac0907821e036ed77ffc0c94e10cb8a90197c3a56acf2165a3202c8c74ad",
+      "src/providers/provider-capacity.ts": "c1c1bc82885f6cd678ecae974cb84bd9e36b49197eed7ab7c8b3c5953afe0bb9",
+      "src/providers/provider-members.service.ts": "0b29acd60a60d1cbb928f1ec49c38e957795d821e609969dd75e3a794fd94df7",
+      "src/providers/provider-membership.guard.ts": "58338a8436e00f88696bcb26c5912f297454ae816be3fab3b2ff5f4d4408cc2c",
+      "src/providers/provider.controller.ts": "d5e441cfabe210c025bf981df0b35c690a0678e5785cc797ed328352f38a1c9e",
+      "src/providers/provider.select.ts": "1bff5dc1ecd670dc1ef940d906c87882136d4624aa3e4c4969e9f2d846ff37da",
+      "src/providers/providers.dto.ts": "992e0e8bcdc205fbeca99f0ee3e637d7aca517b5f2493611485b7b0055a32520",
+      "src/providers/providers.module.ts": "9ea1aebeec21ac1bcc33210aedf4ba2cc1bb4e95074f70509a2d95cc84522bb6",
+      "src/providers/providers.responses.ts": "641ff2d2f935369542e92ecda376c05c9e666441cb4c11ad5cf303e35049fef9",
+      "src/providers/providers.service.ts": "02d89a4dc8036a3dbba552e7de0632d2aa49f0bcc5f2f7be80d760362cce98c2",
+      "src/rate-plans/admin-rate-plans.controller.ts": "6bd9508ecbff9b59a0787be6b8def7715dbf97156b7ae15ab47bbfc0da2131cf",
+      "src/rate-plans/rate-bands.ts": "3ac07c82b64ad4c2ff0d72dc719b8e02a90220e4026046b02a3a8cbda7cbd0a3",
+      "src/rate-plans/rate-plans.dto.ts": "72f47974e127fd39d1bbc54e32e4b3a924de0a5372ccff413e2dbfd6629148e8",
+      "src/rate-plans/rate-plans.module.ts": "f83d3f20d4cc9ad4f4ea056b5dd9de4838e5d546406b10c6abb42579fc24246d",
+      "src/rate-plans/rate-plans.responses.ts": "00b68de7680ff39fb20c887d24fad9498bf12688b95f1acf25343dafb38e0aca",
+      "src/rate-plans/rate-plans.service.ts": "c2802dcf784d1d9c79cdab035a6cc2024ea119d292b93ab35169f2f1bdb532f5",
+      "src/routing/google-routing.provider.ts": "4dcbcf3a7238abaf8904dd5c8012ddc40872b12ebe624dd879be68262371ba8c",
+      "src/routing/local-fake-routing.provider.ts": "4cda706f79748ae79d00847b1e04fa3cc4025745017f504b4e67144718f3eac8",
+      "src/routing/routing.module.ts": "711e4b25c9180a24345fcf632625b035318965458f85ac579208279e424d3c97",
+      "src/routing/routing.types.ts": "b31c96d1f1833e8323f0625918569af00b195897dbffb172ae81c3dc5f2f0bfa",
+      "src/service-zones/admin-service-zones.controller.ts": "dac3dd26ee877d029647f3189ce1271751ba3e371d09fd371e273b36b65230d3",
+      "src/service-zones/service-zones.dto.ts": "3177870892b670ecc1f5f10f1efa33f561cffd352225ba647cad5891f8c93016",
+      "src/service-zones/service-zones.module.ts": "f2232060c6ca95d2576f582c177b241315e208046fb9634af0b14556c0076441",
+      "src/service-zones/service-zones.responses.ts": "09b51fd3a2329b38284f7f84c301b3ad3b44c0a684e999fef5a2d2c994d363ca",
+      "src/service-zones/service-zones.service.ts": "f372af6fc8912d0caf044055d358cbae1cbcf66e99d69d9b50a6238ce3e7173f",
+      "src/setup.ts": "fba9e2f57e10da5fe7933965e9e072e06952dfefaff394c7a620f31b58a340bf",
+      "src/users/users.controller.ts": "a07be07ddf46f6239e005c04718f138b2ccfb23b0cd294ff387d1413c183d245",
+      "src/users/users.module.ts": "3598caa3e0818e072e41092ce1f807c7d6921323cd2ebec577cad3554cd0a802",
+      "src/users/users.service.ts": "f8a7c6607a0ae84ab72bc7cef4b6a50c6f016293d05746e81034ee0126b398c2",
+      "src/vehicles/admin-vehicles.controller.ts": "28bcff41f0f7a1cf5fac8fe20e004b0749739745893111bd20407b48300fb30a",
+      "src/vehicles/provider-vehicles.controller.ts": "892e54b1b82e7d581fedcedc03c9e12dcf6cda0288f08b55170062308d041add",
+      "src/vehicles/vehicle.select.ts": "be5581a495891500a0cfd90f9827c2a6f3ac5120ba03afab4d4b445a5e5a741e",
+      "src/vehicles/vehicles.dto.ts": "6645ffcc111e24281f96a285d0c214fe85c8e86afd176e9f33507bbfca69b427",
+      "src/vehicles/vehicles.service.ts": "19b88e5b3308b67443c7820ee3dfcd47860eef5fc6804d711951e6cd48919d76"
+    },
+    "webHashes": {
+      "BITACORA.md": "ce68d8cc286207817f6cedc241a3d94f79fb465aa2dc66daaeed9d20d4c77b18",
+      "docs/DRIVER-VERIFICATION-MAIN-COMPATIBILITY.md": "ec563548d256544e1614089da9e9fcea2d08f6e35a9e064aa89d84ce4d99306f",
+      "docs/DRIVER-VERIFICATION-WEB.md": "4d2ff2e15142b3a35403dd265fabdb91e5f0021bf59c4aba7bfcaa4f0b8c223e",
+      "scripts/verify-documentary-upload.mjs": "cba0ca2b36aa7803a7c7f3081e54f71629f1009315410b03260627436fb8db82",
+      "scripts/verify-documentary-web.mjs": "e8f4be77b2994da17c28ebf985893863abad9d9bfd1a40d074c78355165c8623",
+      "src/test/verification-fixtures.ts": "6dba52be238b00476e33cc42f033027313253a035d97efcf09ef15993d0c15b3",
+      "src/test/verification-pages.test.tsx": "e999b9e3dd1dbbf3b1e0f9fc037287d2e29e2ed106b986da88a97acef92ff075",
+      "src/test/verification-recovery.test.ts": "5051ec005e6a67fee4182400b322f229e0b5c9785c92b132f5d955d390601e4a",
+      "src/test/verification-service.test.ts": "9a8d5124f1b827f0bd36bde66d34572648a3b5b2ff6b0892c24151d04e3ac2ba",
+      "src/test/verification-upload.test.tsx": "653c945f917a177d97ced7de8052af8a9ff41861dfddf16f10632f1d4f02715a",
+      "src/verification/common.tsx": "641cc21cba4b3a7a13b1b628c3bd8460ce5cab6568c491e9743f211f2569c1e4",
+      "src/verification/evidence.tsx": "2b94bea2be7f87354f6f3833ff63263717dade2fcf1714942ad8f31e18ea3163",
+      "src/verification/format.ts": "0e4cafc44ed015a2e55ab1ff2e458eb851e4df46302248e32dd55b5f1479e495",
+      "src/verification/forms.tsx": "762dbf025c8ff625d37fc06f72881e1f325e2cf859e972b6943c2bc7070105f1",
+      "src/verification/hooks.ts": "c7dece30e01dc1f22f9da818c64cb36f5f5fbb5f54f8fe238613a6eebc346fe3",
+      "src/verification/identity.tsx": "c3c1f223512d4692558c167b6e998133fd94e16392211c7036b02191f0a438cc",
+      "src/verification/legacy.tsx": "e3f85aff081d5b4bd703faef841bfbae5d3471aa758085743b7baa743b3d6444",
+      "src/verification/pages.tsx": "fcf6c034e349e7e9e48e8b59ad8e92e1d9b4cc5577657907ff8408c6cd275ac9",
+      "src/verification/pending.ts": "5cbadcd73e58e7fa99a00bdfe5cfa4f2b6f25d72917e342c5900cf510f2d886a",
+      "src/verification/service.ts": "5d9cdc2e99a6d075dd29a39f78022e757b4acd0e5b6209958ba12fc33ccbb0e4",
+      "src/verification/types.ts": "bfb772435f907add6e8f34649068b2b8bcfce88e09d493cace2a01f7b0110238",
+      "src/verification/verification.css": "e6ab95a14c4b7ae565ab8ff7f6c438a9c30f14236c937d886d1945751af6cfec",
+      ".dockerignore": "2be9b0b5c8a1ae7c8f4ab37b144667e5563c6ae709c15222000bc5f1f570ee22",
+      ".env.example": "3892828789d007e789305ab00aafd36e9180020d05040bd44467e4e24e0238fc",
+      ".gitignore": "9f0b057f4e5061dc2697e5d26dfd6fae01a8301106ee3c60e159ddf9e313fd45",
+      ".prettierignore": "68e230f74b2ee6a180edfe9d1c7fa715bc324242e3cd2df346e4a2e00d31af79",
+      ".prettierrc.json": "9afc005b92f8d3466b315ea3a153509fe4dda91fe58401c334113f0cb2b73dd3",
+      "Dockerfile": "c491d472fce11808d51390f85bd34a1228035f508661f1edd34308b946c79f22",
+      "README.md": "befd053e9d1c39c66d2bc57f01a335512098dc0666484d54895643cdccdc7dca",
+      "VERIFICATION.md": "54c6edf744e4a588eb440713a581a8d60195e111855bd2530bce9ab56efda474",
+      "docs/API-CONTRACT.md": "779c6a164ba123aed005f46b9c1a7a60f82d325e6642760cff6b189b7e8932e4",
+      "docs/B2B-CREDENTIAL-SCOPES.md": "09a8de963847983a5425990dd52db30acf774449e17d670c524f321aeb3fa5f2",
+      "docs/CHECK_FINAL_V1_10.md": "7e769dfd8b84a456a9dcfcade1baabeecb2ad971cc96e0afb9e6331a12f55c28",
+      "docs/CHECK_FINAL_V1_11.md": "b80cb3c4e0877f5d410a3e12f011b986bba69f183b5b253ec081baf70e6938e8",
+      "docs/DETAILED-EXECUTION.md": "cd981411b5315337e047e5dc0d496c18142c8fa190dc07bd5456190f7d9bc410",
+      "docs/EXECUTION-REAL-INTEGRATION.md": "59ea4ec4e830e94b23826d4569a4b5ca0cf268b2de8bb8b735d459f599c25758",
+      "docs/EXECUTION-RECONCILIATION.md": "db8f060a4f4b202a191cb0fb13bd59cb1a1b206559b799db70272020f0202a8e",
+      "docs/PROVIDER-ADMIN-VALIDATION.md": "af60a1646360ab37c00ccfaec2adc9a589e3d51357b0d19132bb66d44e015861",
+      "docs/V1.10-F.md": "cdaad3e7c43b81e9ac26087a4fbd07d2eb2a2f6c9c2d0bbb06cb7f2b9a5d5ec8",
+      "docs/V1.11-B.md": "7e74edf4849f51394d1a67ea227d95425da53d3a5486c78af6f4fdae87a9c989",
+      "docs/V1.4-B.md": "2fa4fd6c6f0af7cf1c360b988358504e38087e1d4685039347b14d732aae9f72",
+      "docs/V1.5-B.md": "2c05dd36c8a7fd702ab0db472cbd2a354169fa4aca551fe78f65a9b0af3ed4c0",
+      "docs/V1.6-B.md": "fe9b2d4ea5e738162b385e1ec916627fd3fdcd3c463d6a5cb829766c632f966b",
+      "docs/V1.6.1-B.md": "b2fa2145347ba2035700cf6df8c04bfe2e6e9f54a61cd8dd31b397ae12935653",
+      "docs/V1.7-B.md": "f9b849d6bd78f02af0785bfd554cca3a5b2673d29d218417de185c1896d37d69",
+      "docs/V1.8-B.md": "4d951dfb795493be2a03b8b2311a6b281cc0c61186e243838c8d555dc384cf65",
+      "docs/V1.9-B.md": "0a17828f9a36b4fa3b98ec59d4cf59dbb32f14314f98fe64e16dd4fb77233bd6",
+      "docs/V1.9-C.md": "dc221aeb32d1c32d3fde449ae0647508ed2f9dd4f9b290edadff580db070cf18",
+      "docs/checks/execution-real-integration.json": "8f582b4db070c3ca02e6a5a2ed8c6f52b9b4924fab8e3315eb86355356c90ac1",
+      "docs/checks/f01-closure.json": "011e03ad045bbd72af76747bbf87e75c3bc2bbaaef18c473e0052706c560eef2",
+      "docs/checks/v1.10-final-evidence.json": "63bc6f3b6add041d3d756420d7ad1523d47421a01ec9565ae594b289490efd48",
+      "docs/checks/v1.11-final-evidence.json": "20e6fa9e4a3ce80e41bb2982e195580c6dc8e049d6618d700065348631414997",
+      "eslint.config.js": "f19395caf80173ffbd41ab74f8eef4fc26c042f84a937de4a6286ec5c13ad401",
+      "index.html": "41432e9084848bdb187506087973f0e592c8e6e5361ca1546377931baaf1400f",
+      "nginx.conf": "481f649468aad387e01ae04fe03b3a397df96fabc4d96b90c10de8f8743e360f",
+      "package-lock.json": "989eff0c5a0d0de85dc2d5fe225f797dffde274beefd96863d0a3eda2a738a00",
+      "package.json": "84e72cb1cdf4ea0c46d695d841148e239057f2d7b44fd2b1c3f7a99c279cbc70",
+      "public/developers/assets/B2B-PUBLIC-GUIDE.md": "aa3e7c08a785fd714fcf9a4489a90ecf0b7d697dd5092115329c0ca6ee83e2dc",
+      "public/developers/assets/B2B-WEBHOOKS.md": "0403200acc31afac0e0fc8156f116841ee2de1761edbfd190f498c967f66104a",
+      "public/developers/assets/examples/b2b-flow.json": "9bca117e6f49f6861c05b272c51a30aed8b4c6e5f34b1e4d641a8f5ad50033e9",
+      "public/developers/assets/examples/verify-mandaria-webhook.mjs": "eba7f01219649a920719bf34b98979062dd5beefa13212fe579742b25d6f8b5a",
+      "public/developers/assets/manifest.json": "6cacaccb1923339dfd92d7422294d882d08dbd132c6b4ab21e852f1f5027fbec",
+      "public/developers/assets/openapi-b2b.json": "aeb57ccfe1b4253e74e600d3db3f03166dd76e05d4ad276869ae70c6bd195a67",
+      "public/mandaria.svg": "c0d85ff7ea9b5515d3f96e029cf2dcfdce9bb86a1a82be9a88f52c239fcb8dae",
+      "scripts/check-developers-entry.test.mjs": "10fa2c9e2c99726b365bf818867678a593b84e7227b6696e5f1d56e816603b93",
+      "scripts/check-swagger-policy.mjs": "568d913f8c4995c96a3cff021f31321ca21a3550d6d92f5358b959b986716687",
+      "scripts/sync-public-b2b.mjs": "fb4a34fa84843eb3c2a25e097274fe82de52fc897dc89fdea38dab3941eae83a",
+      "scripts/verify-assignment.mjs": "c715c81079a3b1f87d771b6bfc4ca253e7cbf3b1946de82b4101f507bee76480",
+      "scripts/verify-b2b-scope-contract.mjs": "8f80ecffaee45f799983e84493116290ee145b6913048220303840d864652918",
+      "scripts/verify-browser.mjs": "ffb917b55aa8f346aa0527021cad9bc664b47c31248ba1ce2e719fa8d9059b2b",
+      "scripts/verify-credits.mjs": "e1e05becda4daf31e2e6f4b059c163f34c306fec3bfb3ee230edcd1dc8900ad1",
+      "scripts/verify-delivery-requests.mjs": "8886d65e67bbc2e7c30cc4d5eee3ea1a0aa0179a40b8d1816435cce3c93bce97",
+      "scripts/verify-developer-tracking.mjs": "c5e92467c623eabf3e8272f20ae49ef3ad050544f01f32b5cc4b79f05b9f8e31",
+      "scripts/verify-dispatch.mjs": "1412f0e272c291dec71067c4be7726b324b3441415d36569ff315b96365fd324",
+      "scripts/verify-driver-authority.mjs": "b1a60eb5c6277daa43eb61e3641a26ff95deec51dd9d4d727d791f689f96d8c2",
+      "scripts/verify-invitations.mjs": "61f735c679f86c6aa941b059ca02b4c354b393432aef6e8407d1b52eeb3dfc5b",
+      "scripts/verify-logistics.mjs": "635692b4b0e783fb922e426463e6f0101d09e9b0eb1ec887daa8239eaf99aef4",
+      "scripts/verify-patches-web.mjs": "3b3ff73a938dff73529c195085c0684c19e771f9860bf2460305206699e576db",
+      "scripts/verify-pricing.mjs": "6bdc1048d96badc8a0daa6d7d9499fb49b58b1d66088b75901b35d78c2815c0e",
+      "scripts/verify-provider-admin.mjs": "d44dec499b1e7b519d729f5ecb658d62a5ab2b9c76decec35af1d6090fe12a5f",
+      "src/app/App.tsx": "422854913eceb3541216cb2bbf0f018c921dc56ffab24b70e93a49fb2dd4e486",
+      "src/app/Root.tsx": "fab82a9a29416a8d2e91dd8dc0bbaeb652b172cc92c5ada71df035e786977a33",
+      "src/assignments/components.tsx": "108a905fc8f153c782e8be443b9b95cf4f6fc592b78fd173c7b2ecc2b18bf7b1",
+      "src/assignments/service.ts": "c371abdd1ff72d25979d020b88ec36c957de4a29f6b2ff398f4ee3eda3cc8e46",
+      "src/auth/ActivateAccount.tsx": "57e1e6f9b725114cb657102ea70c5f5431901a673af7c12038a5c6ab85e5a2a7",
+      "src/auth/AuthProvider.tsx": "9d77b9f49e68a4d745cb0965dcd9cba2dddeaa07e7d83831d7986abbc81fe952",
+      "src/auth/Login.tsx": "ab88a073b5b7d3af5d094322cf6d8e533a36891699c50ab0361cb481cecf55d2",
+      "src/auth/context.ts": "7cbf17db2f3907c73cdbc1a88f6745fe373adc061939b6a0d3ea113aaeb3b3e6",
+      "src/collection-instructions/CollectionInstructionsBlock.tsx": "08132b538f220dc211117d5fa7b48aec83834bc77abc9137ed272f963ddc3b64",
+      "src/collection-instructions/types.ts": "4bd6331bb99ee1cc865b3be339fae30f76fe0d37bdb3d7d44c755a56acf4015c",
+      "src/collection-instructions/validation.ts": "0800348b6c63e188c30e5cf3c86151131afeb0a669f9bacea2812527a9660698",
+      "src/components/Feedback.tsx": "1255fc7244d9a02e6cb096bcae19a646235265f28af0f674899cc00fb21e678d",
+      "src/components/feedback-context.ts": "eb2d94b5afdfa030831cf519a9f37a3617507bc3fded02855c85c6798b097839",
+      "src/components/ui.tsx": "16a4bce10374d9fd1e81f7db75b17c6a199d0fdd06f574abc7309d41457be3b0",
+      "src/config/env.ts": "1769604c2796d5b154b2595e96b0da62b60adfabc869c083841020e34db27709",
+      "src/credit-policies/format.ts": "99dd4f7215434b7e3ae9de757c9581f3258fc98404741afa6132860508248a48",
+      "src/credit-policies/pages.tsx": "6005209e1a518a21af481256e63c2068927abb316ebf73c2f9b47f731e00ac0e",
+      "src/credit-policies/queries.ts": "5a773a4643456841ee1ab1dc2bf248dc1dc737614f1fc1c9b1fae2485c949f37",
+      "src/credit-policies/service.ts": "5a7a380c1c375d831391cbbb91d3cde8ff821dc3cbf4fe7550450eaf086130e6",
+      "src/credit-policies/types.ts": "845c0427e77063fbed4b322fadce48bfa059eba4b6c6e476896a8624f7279e7b",
+      "src/credits/components.tsx": "ff9a02b075e8c82a1130eca7bd1467e045483ed21be8d5a8e0aa2b4c2b0f4c5f",
+      "src/credits/format.ts": "c8dbb0c60ebdcdba456ee29eee29c37334c3e73920e99520a1bbba6be5b855a7",
+      "src/credits/pages.tsx": "00916c73cb4893cb40b335bff4c6dc63f48a8810190e481468b31b66588a3cb5",
+      "src/credits/queries.ts": "fe8c6e8b98ebcc8bda4d36a9f387cc2fab772ef6e8a759e65bf3b730a07ef0a1",
+      "src/credits/service.ts": "be5e121c61e2ff03477c88aac771097a085b216e45d86223d42331cb16043107",
+      "src/credits/types.ts": "9ee3d72e10713226efaaf3d1fa9bfbe62792bee72856fb2bc68ed6623015ef63",
+      "src/dashboard/Dashboard.tsx": "f9962db26bc405cd9c7b57f2933edf394ce6aa6a338b38b7f3e4e0aef6076adf",
+      "src/delivery-assignments/components.tsx": "b58da6625e56a82bc9b7c723e5839f22599e25167d890448911001ce2ea76792",
+      "src/delivery-assignments/format.ts": "21ffdd7ae11ca19e23a2404921649bc1d3210a54ceef9fe7f9845abd7f54499b",
+      "src/delivery-assignments/panel.tsx": "9434b22653757f46cf3b26cbf9cdda03388a7c9692057da49be1038f2985a63d",
+      "src/delivery-assignments/queries.ts": "df4f533c222bc60df3b03328ba86b61faa9ffa8a1a908daf67a806c2d9ab5e43",
+      "src/delivery-assignments/service.ts": "398e6e95a40fe84ba7e8bf38d3295a7f175d570d1994be828f487479fb14ac83",
+      "src/delivery-assignments/types.ts": "0e62852f4f789a5da2c66c95332aa5adb0716c0082fd1da7eb265955bbf16988",
+      "src/delivery-assignments/use-assignments.ts": "05dbcc94967c0a8b086ef7ea04b6c77b2f365d40f2ba4eb12b090b19f7601079",
+      "src/delivery-requests/format.ts": "1d26eb0fe564aa0aa3ada99d07ff998865db5efcd6155b83cae0d0360bc89519",
+      "src/delivery-requests/pages.tsx": "9c710faaebc34111028e745785b8e45ef4dd2824a6fbdc979abee4627b6f7799",
+      "src/delivery-requests/queries.ts": "3a6bd5aaee71ec68cbd9376bc83c3387ad5998dcbcf05693b50ba5724063b693",
+      "src/delivery-requests/service.ts": "e10c0bc85e873f0af0b60be42d0df7974acaa1d45cfae4ad0a1e02ed80ea0819",
+      "src/delivery-requests/types.ts": "81bbcf00e920c72704ac8badc3db6c21505c8cafa4fde341013197d484101f1e",
+      "src/developers/pages.tsx": "7be77eefa043f44a83c626f7db6f32c6c28519b570bced272c1dd16180a264da",
+      "src/developers/tracking.md": "bff4497da8776c644a179280243c46e16de0ef88b03e90364a34222a57a7b869",
+      "src/dispatch/SearchStatus.tsx": "a7d30872fea1f199f7d0f89013e10216dfa384c7cf22d47c3eb7c828137c859a",
+      "src/dispatch/admin.tsx": "bbfc268dfa162f21c882f825e20121a17d726337c84acf32a510c8b7526fb47e",
+      "src/dispatch/components.tsx": "b4fad6a8936672477900959bf1510b0f31b519ef0554e6d098ec280b4c3929d7",
+      "src/dispatch/format.ts": "ab32c4601b010b7ac615570e271364aa1792d590e8c8400e4b8b1a04407cdf04",
+      "src/dispatch/pages.tsx": "0b7d4d89492b2d211e963151692d6c5e6595999793a49f8db452a75e94810108",
+      "src/dispatch/queries.ts": "a83a46e00f171165359711fa7fe36cae915b6c1bbe40f1e8b36577cb1c1d793c",
+      "src/dispatch/rules.ts": "583ca8e638fdd13cbdd6028f071d5d5339c5521e7122f464230f6c431f5c8257",
+      "src/dispatch/search.ts": "d3ac1f2707a0edd8623b6e1e129c6fa9e31f78df5dafdc3990cfaca9a1d05089",
+      "src/dispatch/service.ts": "c388598ea6c5f27302a81af6b5fa272c6d27cee0984f152f7cb939e74aa742a1",
+      "src/dispatch/types.ts": "4aa5e9366d9d75e746376ab5d9a48b0eac31cbe4e515fb0790d086343703a1d7",
+      "src/dispatch/use-now.ts": "45c011decf98be76f58142c968f74ba557afac556ce8faab536be5d4a7df4873",
+      "src/driver-portal/format.ts": "bcd3163cad2b4f69f19b8ec4d32d99dd0c71c0af1aa99986bce6a2349cc0461a",
+      "src/driver-portal/pages.tsx": "61a7a6de851636e51efa66daae0292315b772217b853c574081b0753f7ba28c4",
+      "src/driver-portal/queries.ts": "50c68516167fc4e9c853bde4cea05967f59f610e21adb54aa4d3330fa563ce30",
+      "src/driver-portal/service.ts": "c7915f46933e002f47df6a1e2c694e54f73ccaa12a2948d596d40bf066f00bf6",
+      "src/driver-portal/types.ts": "87e9253f07cd6b17f1cfd7f3f01f851869507400e5df2054380c5ed370f2c6a5",
+      "src/drivers/pages.tsx": "b1c059cbf4661603636f0a97045f3a7cf3977bf4283a5e90108c6ea3db2f5074",
+      "src/drivers/service.ts": "bede7e8fc1c43ebc4a971cb86ddf445790c9dd967a0de77b483e29a3260608e6",
+      "src/execution/commands.ts": "f9f8a463d0ba3cf34d3f2421cd369a793a3e2155437210982619d06837577e2e",
+      "src/execution/components.tsx": "c39964bddf77718cd355e5fa790b7351f435cea90482fa98cfe3ba3519479a0c",
+      "src/execution/format.ts": "7b4cca5875bf5a678392dc46b3b7695768c37cafe267814283fd96b822112c49",
+      "src/execution/historical-recovery.tsx": "5045b0165786ad298835d5203b984882ea85f540bf2f4ee89ed6d34c6ec5df8e",
+      "src/execution/historical-store.ts": "ccf276fcb169f7713b1bf5e7243f6db2de3ec08a503242586af2831e9594d6bc",
+      "src/execution/incidents.tsx": "12bd40530e4969104f740ce8328a35f5542c31facb1d06c76ee1024a9919489b",
+      "src/execution/payment.tsx": "1b74816810593c2f868e0e5b8d51babfe19565ab84c5bd8f542ffd7b2f089d5e",
+      "src/execution/reconcile.ts": "805b1e6851f062d37f6edaac85e1fb3a3886c95cf67932cf48155643d9a7949e",
+      "src/execution/reconciliation-store.ts": "ad1dd2a6719d342172e92c43cf8f038d10b84f34671fea6f30c6eb0d5455b6e2",
+      "src/execution/service.ts": "ce8f9a3a5ad0f09ea36e0c309b9e2b26a2373e63bd7e2b352f873dc518efc231",
+      "src/execution/types.ts": "18d4862252235f99a74e3e2304c9bc81af0f7a0f668a45a43504f5f5204a1ccc",
+      "src/independent-drivers/format.ts": "37a77c31371e3a5bf9024e0e0d42342df90a056aaad62211fab9ef96d51abc53",
+      "src/independent-drivers/pages.tsx": "7d1ee51e13a9c83cbb70dad809456e288f69e1d839943f6332e88043c431449a",
+      "src/independent-drivers/queries.ts": "4940e87ddcee85bfd1c70a4118c52b364dd2254e5a9526b3509b68040e78f028",
+      "src/independent-drivers/service.ts": "47586260462a3cee032592c5e5b4fbca80b38dfc6723f6268e78d1d746470486",
+      "src/independent-drivers/types.ts": "f3acd73a10a060792146b93beee4b2bb9b727d184afc03578150e8da5ed66cc4",
+      "src/index.css": "8049f7d1944e21c4dd83bf0c912dc9b35c7d5edec4ba4579bfae99bc9d9abcad",
+      "src/integrations/pages.tsx": "0bcbdde5b6e4d382a420ac5c500e0e04f672665674f6a9a752b348d6f12576c2",
+      "src/integrations/service.ts": "e476bea19e218ce878a9b4fb8a45392f88f216fe905750d4290ab787e9520eed",
+      "src/invitations/components.tsx": "0abf4127269c671a543dff17b52ebe5f119b0983ba77d49d5651faad72775d25",
+      "src/invitations/format.ts": "271973eb91c2898063d9bc92e134a96e9651e9d47c248ae870f067d805cecd19",
+      "src/invitations/pages.tsx": "b91dc9ee96bf49fabd39e6c8e26dfaf30df76b7de2a124adc4d15695690619a3",
+      "src/invitations/queries.ts": "0dbcac91fea5351d1f75ae95d6ca1c9de26414a9b59f35bfb4feb44a65eebfa0",
+      "src/invitations/service.ts": "e25b65ea6ee252bdf3faae0510644842f66677a365f97c2257a545a8ff77016b",
+      "src/invitations/types.ts": "39463eb2a367dfca47e0c24c466c200999b5c4c2d6bde43a19cc668f10ebfb0e",
+      "src/layouts/AdminLayout.tsx": "0ef805e6deae54fec9ed6bed1d001250a11abd897383cd98830e71ff71c2c459",
+      "src/logistics/components.tsx": "cf835e2204eb82b4bcef66aaf543ce9411a7f100ed3529aaa61869e2621ca731",
+      "src/logistics/navigation.ts": "8856e010de1af990e5e761db0d8d050a0915cfe58756e23dc4df7970f7502282",
+      "src/logistics/queries.ts": "3b049d7a19c29240e66457748664ec8ceec073ca6e55fae7227ddc7d8f72c061",
+      "src/logistics/service.ts": "527b663cf3913f5cd075927a998f8c7ea6cd8950fe98a0b4a22b5a1456b03781",
+      "src/logistics/types.ts": "dae8444358d85602f1af1d15d353b9c40a9f06e75b4f90c0d142be56fab4088e",
+      "src/main.tsx": "e75acedcedf306e098852fe9180387a2edf076dd4904cb194773977f47e2a8ab",
+      "src/partner-applications/format.ts": "dfdb72fc33335e3ba28315a3c8c3b4b42e2c7895f539d3e05162d3d009392965",
+      "src/partner-applications/pages.tsx": "cb2e246edd4e0cd17ee19f28c3d26a77457b36efaf5008e0b41a5832f79284d6",
+      "src/partner-applications/queries.ts": "1276ad36a04b51f17ad73475ed897c34005e67eaad6e51d466a97b8c2063e4b6",
+      "src/partner-applications/service.ts": "f737a1309a7d676e36980628758a54731f8f9e3c85c7bab37137f64a77f91a8b",
+      "src/partner-applications/types.ts": "5e53c0db99b1b68e8b06a35d13b264b0b880a613b3dfe5abd5908ec49eefd99c",
+      "src/pricing/format.ts": "b11ae0b76614c628f4fce4060aedb008d0616b582e8f9ab960598d62ea3cb06d",
+      "src/pricing/queries.ts": "d3b5661466594418de008ca26dcdeb756e358ece9acb267ab5468c077aa3f519",
+      "src/pricing/rate-plans.tsx": "02bd990dbf9a33b926f571176bd7ad8d075d2895a6795d66cbb921408f93ec09",
+      "src/pricing/service.ts": "919e36da597618d446e0ab1e26bca0b1affeb271cd7f51f00dafcde0ff7dcae3",
+      "src/pricing/types.ts": "ffe4d42f4b00ba7bd05809e1d376395c3c7391112e337d85abaf4d14897c34e7",
+      "src/pricing/zones.tsx": "e9baf0016eeec51f8cf64e382faaad63bdb694daf2c76771c48304fcec539b72",
+      "src/providers/pages.tsx": "0f7a0f764b5906b9b83473a5bdeabd97917be4808a39b2e3c2f02a9f505f47e3",
+      "src/providers/service.ts": "73c3d66e25114343fbef72ba3e9c085a31ab833f806d24a07a65f775206e80ae",
+      "src/quotes/format.ts": "5c645233ca4fbcb9ac7d3f27a54242fac3dfa0c110dade24d824e6cd67fa785f",
+      "src/quotes/pages.tsx": "e14e5ca8b54b7f25a1ec3d1ec880f4610402dd3fdb92b72b9d9652cf09a764de",
+      "src/quotes/queries.ts": "09d349b3fa1db156257721b9a034e186c0a94bb19c061af18126faba823f2bcb",
+      "src/quotes/service.ts": "3b54b1d19dd6b52899cbd29a60b10afe198811b4a46dbb9da94aeedb2a547279",
+      "src/quotes/types.ts": "844ac3a27168bedc432cd0977c940bf0ebb79eb9a9d7bebd24ca8f155f33c3b9",
+      "src/service-coverage/format.ts": "76e6ec2641e44deb2c0706a85feb7ec9d98f25334c91d8c96ed17d1d3de3e686",
+      "src/service-coverage/pages.tsx": "19c998dcb3e5d9905a69040716dc96e5d392f9797036fa16fa759150770c58bc",
+      "src/service-coverage/queries.ts": "4e7fade64e6bea8c2e88b87b6cab42b0b3d486e244dae12d0f4c076d5391166e",
+      "src/service-coverage/service.ts": "9206d418b7ece00e98fef0d82466741e0b3245886bfbd86e9c16f08acb78286c",
+      "src/service-coverage/types.ts": "1dd383fb4c6fa2ca0644eaf1e95959c80435de2f44c152f31d82db6d1d2ebe40",
+      "src/services/api.ts": "75cdbd80d0919e4eda196c5207186def206256de4c01b49309a22b97bf728c35",
+      "src/services/errors.ts": "89112b4a00b913278105477421144ec235ba21356931db9beccd94001bbd45f0",
+      "src/services/query.ts": "1db40360c72af2e01979c478fd4ac286a54d11951f19b91b469e5370dbfe2f9d",
+      "src/test/api.test.ts": "1cae6fd6f6c587f15c52388d5d64086e38a93c59c5f932f2ca2cb050b931264f",
+      "src/test/collection-fixture.ts": "43b599f3bbda147a73615f075535e6929acdcc89affbd236bf5bd043585c982c",
+      "src/test/collection-instructions.test.tsx": "04b03f13b603943a7ac00257308b1044cf1127d383c697b5764f68fb9f0afade",
+      "src/test/credits-api.test.ts": "65d7807d644f67c062e7a32737b72ee6b345d8de3b4e647889a1e8607ee25e51",
+      "src/test/credits.test.tsx": "c08d821480fb5398c0b0e9c4825fb40d9cd5475ed350c2258757e07a31e88d41",
+      "src/test/delivery-assignments-api.test.ts": "7ffeee0e87d9d66afb4e26c630e2a62fd8980e3bacae46aab15b3e9e814547f9",
+      "src/test/delivery-assignments.test.tsx": "e98f5ef70c2ee1c47d51f288e7ad6cafdcab3a4c0f28e9ed0f5836367ede8418",
+      "src/test/delivery-completion.test.tsx": "3da108eb27ee980e284e03fc584c93d1f538cf43c288fb3f76d6bc58b320d8f9",
+      "src/test/delivery-requests-api.test.ts": "d8ec2507e529a508ca2078411998d4da0990facb68c26d3b2d47bb49a3310693",
+      "src/test/delivery-requests.test.tsx": "ee50949960046374728b886546caa18619ead310d1a2f63d61d40c8ac2b9247f",
+      "src/test/developers.test.tsx": "f9de49a9b06418b91eb80d1b02e8aab72adebedba222d5d7fa58e6a5d37d094b",
+      "src/test/dispatch-api.test.ts": "ee6f21f511a4db47540a44d84a4a2a4fc5f1561353c644078efd7ca8e7352ae8",
+      "src/test/dispatch-search.test.tsx": "45149a23823caa13ff1e84f15138f769a4840bddd72b495660ab7dae1ecc3f7b",
+      "src/test/dispatch.test.tsx": "099b45eacb2fe9f514b5ac1adaddf16bfb4b053930d5ba918d58a3b82a624c14",
+      "src/test/driver-portal.test.tsx": "ec8bd7d172d45b7a688f957a9eedd301ae9508594b95249be59a21c4c0dd35ef",
+      "src/test/execution-attempt-service.test.ts": "739f6ad06a39f4e7eb1a38fed0e64475ccfd8f47850dfeee714e7c122946257b",
+      "src/test/execution-fixture.ts": "4865d64242614bbe773f0eb7a1660d24564f0d8ff083f5776eadb39928ee754c",
+      "src/test/execution-reconciliation.test.ts": "6dd183dcb93db855d5db4f2296b59f9ec11c081895a69ee17abb03df52e38fec",
+      "src/test/execution.test.tsx": "784d1a42ade4f386dfc7df1dc4b9bbd34ee791e44cbe24465775584ffb306abb",
+      "src/test/flows.test.tsx": "a06a173a27f50e24484b671ea9de6306039b65ed833ef62f3d6139e3af5d198f",
+      "src/test/independent-drivers-api.test.ts": "0e7b77a5e6bb0fc1efb5c607b9568a7f506d06d3922b1ed883999401d6d624c2",
+      "src/test/integration-credentials-api.test.ts": "54d64dfa8824702577f90a2e0492aec53c6d5a6193021ed8197a89cefd8e5870",
+      "src/test/invitations-api.test.ts": "1fed713f5e10dade8c0c9e77d80156a91dcf90d92a7542cee4ff8d3c6df48792",
+      "src/test/invitations.test.tsx": "6b185f6c0139e0683f4667af40f4855dac02d599bdf20666fcc5acda6f9a2d3d",
+      "src/test/logistics-api.test.ts": "6cee2d04833a087e20275dea3529e5480fc18fd12249864a662336aed92aacfa",
+      "src/test/logistics.test.tsx": "5c9ea648cb560e6b194c0782b535058326ef816b664d7e360e81a50d2e922d96",
+      "src/test/partner-applications.test.tsx": "ed926f6e072755e244f2834f1c4cb54ab30f043dc3400b123989d6fce57ed7ec",
+      "src/test/pricing-api.test.ts": "76034377a49f53c3e6d91e75ce6b68eaa1693861175dfb0a17efbd665fb9343f",
+      "src/test/pricing.test.tsx": "ab1bd93dab801b807f158f1fab0b57977dc292e2a5ee2314ae1b3e79744ec297",
+      "src/test/provider-historical-attempt.test.tsx": "af4a0b1d097e59af1242cf7caf487726376cbf5b514aca09796f354c61053d3e",
+      "src/test/quotes-api.test.ts": "cf6924a8aa6edeb7e4711773c754778bf466abc9a18d68a7a9b463328a647114",
+      "src/test/quotes.test.tsx": "b056f1d40aabe013f558b99c9f1417fcc260415d81dc570056da32daadf6b975",
+      "src/test/service-coverage-api.test.ts": "371225ec097cf6a1b8ebeed2cefa820eec3705bed64bb6a1b4c2a99ba6422cbc",
+      "src/test/service-coverage.test.tsx": "6aa9c4e28f330c57ac210762d459e35ab97ef3ebe973a9cee4cb4564568fac64",
+      "src/test/setup.ts": "9ecb539c8ee39e81f4289b7e7734836962556f2f2ed42de962a20ee8c0f8c265",
+      "src/test/webhooks-api.test.ts": "9c2852a5898de4d83e770c1600a5d07f74e435f6de047f4419737af12d146aa4",
+      "src/test/webhooks.test.tsx": "0ecee34e23e58ac2a1ec112f2196b36d9543a022fae1899eb56022cda301fcd8",
+      "src/types/api.ts": "2f3b3d6ecc66b37c0c5a0cee21ac5c83695ed6c1fe86809b3058436bd332f5fa",
+      "src/users/pages.tsx": "1a29111187f849fb7854c3ea140d76140165505a9c69109effe6a2c5fce0e2fe",
+      "src/users/service.ts": "d69a4ac026df93b4080def41c0454a33d75a858ff8d55f05d87928089c1f1937",
+      "src/utils/format.ts": "deaa028904315b169b9ff7c5097b3d08918b923b71b7dae00f38b376ceba1465",
+      "src/vehicles/pages.tsx": "5377f663501e5a1c17eef68c427d4e4b8b22385754cee003e563858984ded8f8",
+      "src/vehicles/service.ts": "2ec356f2a85840c60e5f9ce84ad4cdb0515a9198246b95eb06f374f8ad196780",
+      "src/webhooks/format.ts": "37b0538f42ac9302ce16cb1e9bba81e5280ff24590c99de5f2d35559cec1bb49",
+      "src/webhooks/pages.tsx": "4184e299083eb27966fb37ab9e98354df481592a139e93aa8323be12ca2c4eb5",
+      "src/webhooks/queries.ts": "0dd60a7d1696f5c89649cc9c9bf55b2d2e60344833a5376b8990a1e8680ec410",
+      "src/webhooks/service.ts": "17db6436c3f2de8c7c72ad4bb6d9d42fdb0a5bbdfb9c901c9d22e601afd54143",
+      "src/webhooks/settings.tsx": "6ade4bf2efdf48a2bc7b4477f46294799cebe897ad39b3a55e5c828063fb8783",
+      "src/webhooks/types.ts": "6fcd737c2411698a68837f7eac36526dc90f3a222d8d5a07d5a4a30e07ce33b4",
+      "tsconfig.app.json": "9a067bb2e1d674e600aab5017ad4b8f0b94171ed2d532118238dd21f6f254457",
+      "tsconfig.json": "ad28d132ee48d6e23917cf5827cace785d0fc01a44ca68b0dda51cc8c3fd3f52",
+      "tsconfig.node.json": "a9e6c7f6fd3ec455a6fe1d4fbb83091e774b62fe116008ab6d8c5e1e88af4629",
+      "tsconfig.test.json": "55e11a2c1eb7627b4adb9c572dd054658b617f1ffad5c102f176c4ede4d2fc33",
+      "vite.config.ts": "f58edcc886dbf642f0aad60dce0c36a378df3022aa88cec76592532b12d529cc",
+      "vitest.config.ts": "2e61b5e56af629bf601c3d36ab4e1675ae8b0d4de4f03010647e13e033657769"
+    }
+  },
+  "executedHashes": {
+    "main": {
+      "scripts/driver-verification-integration/account-recovery.mjs": "4b01107e8f033838d9221e0b742667aeb326c2bf9e438df435b3560c723e9d81",
+      "scripts/driver-verification-integration/environment.mjs": "4417f1359781fadb0ec9182347f1a741db36407dfb2cc71f705694fe0a651eb8",
+      "scripts/driver-verification-integration/operational.mjs": "a600c6a9935572abacda213ebd9ae76ee5c24a77b2a110f9dd54bcb78672602b",
+      "scripts/driver-verification-integration/revalidation.mjs": "885edc37a23ca588058cbe8aa4226861921b184630c737e2796b09a933bd2e80",
+      "scripts/driver-verification-integration/run.mjs": "7716759972b33efa5b0296c73b947173cf0b8ee686dd81f05602bcf161e1851c",
+      "scripts/driver-verification-integration/scenarios.mjs": "7a15ee75c1074c57c1e40605372e141b012b44023c5455c733999355714ff863"
+    },
+    "terms": {
+      "scripts/driver-verification-integration/account-recovery.mjs": "4b01107e8f033838d9221e0b742667aeb326c2bf9e438df435b3560c723e9d81",
+      "scripts/driver-verification-integration/environment.mjs": "4417f1359781fadb0ec9182347f1a741db36407dfb2cc71f705694fe0a651eb8",
+      "scripts/driver-verification-integration/operational.mjs": "a600c6a9935572abacda213ebd9ae76ee5c24a77b2a110f9dd54bcb78672602b",
+      "scripts/driver-verification-integration/revalidation.mjs": "4f659bb091b96dfba6f6e58b3f85cf794613a3681b0bb68b8c382edf39526941",
+      "scripts/driver-verification-integration/run.mjs": "7716759972b33efa5b0296c73b947173cf0b8ee686dd81f05602bcf161e1851c",
+      "scripts/driver-verification-integration/scenarios.mjs": "7a15ee75c1074c57c1e40605372e141b012b44023c5455c733999355714ff863",
+      "scripts/driver-verification-integration/terms-revalidation.mjs": "3a9d578fdbb533201d5ac485bcdb64274774655f26bab6776ac9cd7a787f311d"
+    },
+    "take": {
+      "scripts/driver-verification-integration/account-recovery.mjs": "4b01107e8f033838d9221e0b742667aeb326c2bf9e438df435b3560c723e9d81",
+      "scripts/driver-verification-integration/environment.mjs": "4417f1359781fadb0ec9182347f1a741db36407dfb2cc71f705694fe0a651eb8",
+      "scripts/driver-verification-integration/operational.mjs": "a600c6a9935572abacda213ebd9ae76ee5c24a77b2a110f9dd54bcb78672602b",
+      "scripts/driver-verification-integration/revalidation.mjs": "b25db5e12210d560cd74e41f7338fe79e10e72fdf0e3d9021ba3942278d740d0",
+      "scripts/driver-verification-integration/run.mjs": "7716759972b33efa5b0296c73b947173cf0b8ee686dd81f05602bcf161e1851c",
+      "scripts/driver-verification-integration/scenarios.mjs": "7a15ee75c1074c57c1e40605372e141b012b44023c5455c733999355714ff863",
+      "scripts/driver-verification-integration/take-revalidation.mjs": "5e2e11ddedbc3f58b42c6ca61d869f538f652246bf9eb1bcdce7e7de5545426d",
+      "scripts/driver-verification-integration/terms-revalidation.mjs": "3a9d578fdbb533201d5ac485bcdb64274774655f26bab6776ac9cd7a787f311d"
+    }
+  },
+  "fourUtilities": [
+    {
+      "file": "scripts/driver-verification-integration/environment.mjs",
+      "historical": "beab2356a541f8356fdb4d47ce1b58bed7b8247d5ece0dbb672d7940a074a3b5",
+      "taskBaseline": "4417f1359781fadb0ec9182347f1a741db36407dfb2cc71f705694fe0a651eb8",
+      "executed": "4417f1359781fadb0ec9182347f1a741db36407dfb2cc71f705694fe0a651eb8",
+      "final": "4417f1359781fadb0ec9182347f1a741db36407dfb2cc71f705694fe0a651eb8"
+    },
+    {
+      "file": "scripts/driver-verification-integration/run.mjs",
+      "historical": "2899e1f77ab682f8c77a9da8aee952ca2802b469df744ca0adf428b08bf9b37c",
+      "taskBaseline": "f156a280782b8c22f04e3b5b60eabbf3a82b23ee0d9202da53da710e5989c7e9",
+      "executed": "7716759972b33efa5b0296c73b947173cf0b8ee686dd81f05602bcf161e1851c",
+      "final": "7716759972b33efa5b0296c73b947173cf0b8ee686dd81f05602bcf161e1851c"
+    },
+    {
+      "file": "scripts/driver-verification-integration/scenarios.mjs",
+      "historical": "7d23756c73ba89ce110a4efcc28993b167982caf9c39f887c18679bd74d600ff",
+      "taskBaseline": "d841eb2756bd09557b5e5239c744874b28b483ef36dfcae60c562aa66dde53e7",
+      "executed": "7a15ee75c1074c57c1e40605372e141b012b44023c5455c733999355714ff863",
+      "final": "7a15ee75c1074c57c1e40605372e141b012b44023c5455c733999355714ff863"
+    },
+    {
+      "file": "scripts/driver-verification-integration/operational.mjs",
+      "historical": "5759f0905c57712e1edf2db55087c29a352706392b33b664778f9e33a8a9a8c4",
+      "taskBaseline": "a600c6a9935572abacda213ebd9ae76ee5c24a77b2a110f9dd54bcb78672602b",
+      "executed": "a600c6a9935572abacda213ebd9ae76ee5c24a77b2a110f9dd54bcb78672602b",
+      "final": "a600c6a9935572abacda213ebd9ae76ee5c24a77b2a110f9dd54bcb78672602b"
+    }
+  ],
+  "webUnchanged": true,
+  "stopped": true,
+  "driftSinceMain": [
+    "scripts/driver-verification-integration/revalidation.mjs"
+  ],
+  "w01": {
+    "sameName": true,
+    "sameSize": 873,
+    "sameLastModified": 1700000000000,
+    "sourceHashes": [
+      "4bb3161b1303e646c61ce5677a9485985d99b076cb8479fe515594fb2af1d0a5",
+      "860029151b33ed609f5c511c92ee4771efd4aeeb7ec08bacc1fc3f07a44150aa"
+    ],
+    "rows": [
+      {
+        "id": "f0aec957-1834-4f91-a3f8-6b35312be830",
+        "caseId": "54e7f6d9-9792-4abd-9e16-dc15240868cb",
+        "status": "VALIDATED",
+        "sourceHash": "4bb3161b1303e646c61ce5677a9485985d99b076cb8479fe515594fb2af1d0a5",
+        "hash": "388efda5e67648402ce08dcdaad8d9fc394d7414033940fdb5cca1577e30b347"
+      },
+      {
+        "id": "63745fec-4ffa-440d-8ab1-2fb4e0ccc498",
+        "caseId": "54e7f6d9-9792-4abd-9e16-dc15240868cb",
+        "status": "VALIDATED",
+        "sourceHash": "860029151b33ed609f5c511c92ee4771efd4aeeb7ec08bacc1fc3f07a44150aa",
+        "hash": "ca7c3fc25fb4bb0f6809f4ab29f5880ebfad6dc75f25c1acbfafc424340a0132"
+      }
+    ],
+    "preview": "No selection preview exists in product; selected File bytes checked; server evidence preview remains separate."
+  },
+  "independentTake": {
+    "dispatchId": "3069eb56-c90c-451b-aeb4-04fb1951d63e",
+    "driverId": "ee64a5ad-005f-4497-bfd2-bcfadc11a84e",
+    "vehicleId": "ff0ec708-5139-4399-8782-01fc890b9ef7",
+    "assignmentId": "1774ab99-8d45-403e-9307-e49e78ea0707",
+    "ledgerDelta": 1
+  },
+  "termsV2": {
+    "version": "DRIVER-LOCAL-TEST-2-INTEGRATION",
+    "hash": "82b89b1d74915701bced9cf2d3a03d24bd0882fc1d4eedf77ceb8e57b28ef5da",
+    "receiptId": "d45999a0-5a2e-4312-b545-d98be5d3a65d",
+    "actor": "533e948b-f8b6-441d-bbfc-ed440d4a570f",
+    "scope": "DRIVER",
+    "publication": "SQL fixture only in dedicated temporary cluster; no publication endpoint"
+  },
+  "limits": [
+    "Storage HTTP simulated; mail locally captured.",
+    "No preupload preview in Web: selected File bytes hashed; no fabricated preview.",
+    "Historical source text of four utilities not archived; old hash difference proven, not a reconstructed textual diff.",
+    "Full search16/public33 suites historical, not rerun: no product/public/search changes.",
+    "main failed V2 due premature reload; only corrected V2 repeated. Take repeated for stable UI screenshot."
+  ]
+}

@@ -1,3 +1,4 @@
+import type { DriverVerificationMail } from './mail.types.js';
 import {
   renderPartnerApplicationNotice,
   renderUserInvitation,
@@ -27,9 +28,23 @@ export class ResendMailProvider implements MailProvider {
     return this.send(mail.to, renderPartnerApplicationNotice(mail));
   }
 
+  sendDriverVerification(mail: DriverVerificationMail) {
+    const text =
+      mail.kind !== 'DECISION'
+        ? 'Registro Mandaria de prueba local. Token de confirmación: ' +
+          mail.token
+        : 'Mandaria: existe una decisión documental. Consulta tu cuenta. Referencia: ' +
+          mail.reference;
+    return this.send(
+      mail.to,
+      { subject: 'Mandaria — verificación documental', text },
+      mail.idempotencyKey,
+    );
+  }
   private async send(
     to: string,
-    content: { subject: string; text: string; html: string },
+    content: { subject: string; text: string; html?: string },
+    idempotencyKey?: string,
   ) {
     const signal = AbortSignal.timeout(20_000);
     try {
@@ -40,6 +55,7 @@ export class ResendMailProvider implements MailProvider {
         headers: {
           Authorization: `Bearer ${this.settings.apiKey}`,
           'Content-Type': 'application/json',
+          ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
         },
         body: JSON.stringify({
           from: this.settings.from,

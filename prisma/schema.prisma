@@ -22,6 +22,13 @@ enum CredentialStatus {
 /// Account state is derived (V1.6.1): active = ACTIVE; inactive without passwordHash = INVITED
 /// (never activated); inactive with passwordHash = DISABLED. A CHECK forbids active without password.
 model User {
+  driverVerificationChallenges DriverRegistrationChallenge[]
+  verificationCommands VerificationCommand[]
+  verificationAcceptances VerificationAcceptance[]
+  verificationCases VerificationCase[] @relation("VerificationPresenter")
+  verificationReviews VerificationCase[] @relation("VerificationReviewer")
+  verificationEvents VerificationEvent[]
+  verificationNotices VerificationNotice[]
   id String @id @default(uuid()) @db.Uuid
   email String @unique
   /// null only while the account is INVITED; set exclusively by the account owner on activation.
@@ -108,6 +115,8 @@ enum ProviderMemberRole {
   ADMIN
 }
 model DeliveryProvider {
+  verificationSubjects VerificationSubject[]
+  verificationAcceptances VerificationAcceptance[]
   id String @id @default(uuid()) @db.Uuid
   name String
   code String @unique
@@ -170,8 +179,9 @@ enum VehicleStatus {
 }
 /// Logistic profile of a User with global role DRIVER. Authentication stays in User.
 model Driver {
+  verificationSubjects VerificationSubject[]
   id String @id @default(uuid()) @db.Uuid
-  providerId String @db.Uuid
+  providerId String? @db.Uuid
   userId String @unique @db.Uuid
   name String
   /// Explicitly configured public presentation identity; never derived from name or User.
@@ -180,7 +190,7 @@ model Driver {
   availability DriverAvailability @default(OFFLINE)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  provider DeliveryProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  provider DeliveryProvider? @relation(fields: [providerId], references: [id], onDelete: Restrict)
   user User @relation(fields: [userId], references: [id], onDelete: Restrict)
   assignments DriverVehicleAssignment[]
   deliveryAssignments DeliveryAssignment[]
@@ -196,6 +206,8 @@ model Driver {
 /// V1.4 assignments; an independent driver uses its own vehicles directly. The composite keys are
 /// what stops a provider from assigning an independent vehicle (and the reverse) in SQL.
 model Vehicle {
+  verificationOnboardingPending Boolean @default(false)
+  verificationSubjects VerificationSubject[]
   id String @id @default(uuid()) @db.Uuid
   providerId String? @db.Uuid
   /// V1.9: set exactly when providerId is null; the vehicle belongs to this independent driver.
@@ -252,6 +264,7 @@ enum IndependentDriverStatus {
 /// keeps one identity (User → Driver) and gains a second execution context. Nothing that already
 /// belongs to Driver (name, status, availability, provider) is duplicated here.
 model IndependentDriverProfile {
+  verificationSubjects VerificationSubject[]
   id String @id @default(uuid()) @db.Uuid
   driverId String @unique @db.Uuid
   status IndependentDriverStatus @default(PENDING)
@@ -1349,4 +1362,144 @@ model DispatchSearchRound {
   providerIds String[] @db.Uuid
   dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Restrict)
   @@id([dispatchId, attempt])
+}
+
+/// Local test-only policy. Activation is durable and serializes with admission in SQL.
+model VerificationPolicy {
+ id Int @id @default(1)
+ enabled Boolean @default(false)
+ revision Int @default(1)
+ environment String @default("LOCAL_TEST")
+ driverTermsVersion String @default("DRIVER-LOCAL-TEST-1")
+ fleetTermsVersion String @default("FLEET-LOCAL-TEST-1")
+ updatedAt DateTime @updatedAt
+}
+model VerificationTerms {
+ version String @id
+ scope String
+ environment String
+ text String
+ hash String
+ createdAt DateTime @default(now())
+ acceptances VerificationAcceptance[]
+}
+model VerificationAcceptance {
+ id String @id @default(uuid()) @db.Uuid
+ userId String @db.Uuid
+ providerId String? @db.Uuid
+ scope String
+ version String
+ acceptedAt DateTime @default(now())
+ method String @default("WEB_CHECKBOX_BUTTON")
+ user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+ provider DeliveryProvider? @relation(fields:[providerId],references:[id],onDelete:Restrict)
+ terms VerificationTerms @relation(fields:[version],references:[version],onDelete:Restrict)
+ @@index([userId, version])
+ @@index([providerId, version])
+}
+model VerificationSubject {
+ id String @id @default(uuid()) @db.Uuid
+ driverId String? @db.Uuid
+ vehicleId String? @unique @db.Uuid
+ providerId String? @db.Uuid
+ independentProfileId String? @db.Uuid
+ driver Driver? @relation(fields:[driverId],references:[id],onDelete:Restrict)
+ vehicle Vehicle? @relation(fields:[vehicleId],references:[id],onDelete:Restrict)
+ provider DeliveryProvider? @relation(fields:[providerId],references:[id],onDelete:Restrict)
+ independentProfile IndependentDriverProfile? @relation(fields:[independentProfileId],references:[id],onDelete:Restrict)
+ createdAt DateTime @default(now())
+ cases VerificationCase[]
+ @@index([driverId])
+}
+model VerificationCase {
+ id String @id @default(uuid()) @db.Uuid
+ subjectId String @db.Uuid
+ presenterId String @db.Uuid
+ revision Int @default(1)
+ status String @default("DRAFT")
+ environment String @default("LOCAL_TEST")
+ policyVersion String @default("LOCAL-TEST-1")
+ data Json @default("{}")
+ materialSnapshot Json @default("{}")
+ submittedAt DateTime?
+ decidedAt DateTime?
+ reviewerId String? @db.Uuid
+ publicReason String?
+ internalNote String?
+ checklist Json?
+ validUntil DateTime?
+ licenseValidUntil DateTime?
+ licenseVehicleTypes String[] @default([])
+ createdAt DateTime @default(now())
+ subject VerificationSubject @relation(fields:[subjectId],references:[id],onDelete:Restrict)
+ presenter User @relation("VerificationPresenter", fields:[presenterId],references:[id],onDelete:Restrict)
+ reviewer User? @relation("VerificationReviewer",fields:[reviewerId],references:[id],onDelete:Restrict)
+ attachments VerificationAttachment[]
+ notices VerificationNotice[]
+ @@index([subjectId, createdAt])
+ @@index([status, createdAt, id])
+}
+model VerificationAttachment {
+ id String @id @default(uuid()) @db.Uuid
+ caseId String @db.Uuid
+ category String
+ quarantineKey String @unique
+ objectKey String @unique
+ status String @default("CREATED")
+ expiresAt DateTime
+ bytes Int?
+ mime String?
+ hash String?
+ sourceHash String?
+ createdAt DateTime @default(now())
+ case VerificationCase @relation(fields:[caseId],references:[id],onDelete:Restrict)
+ @@index([caseId, status])
+}
+model VerificationCommand {
+ id String @id @default(uuid()) @db.Uuid
+ actorId String @db.Uuid
+ key String @db.Uuid
+ operation String
+ target String
+ hash String
+ result Json
+ state String @default("APPLIED")
+ createdAt DateTime @default(now())
+ actor User @relation(fields:[actorId],references:[id],onDelete:Restrict)
+ @@unique([actorId,key])
+}
+model VerificationEvent {
+ actor User @relation(fields:[actorId],references:[id],onDelete:Restrict)
+ id String @id @default(uuid()) @db.Uuid
+ actorId String @db.Uuid
+ target String
+ kind String
+ createdAt DateTime @default(now())
+ @@index([target,createdAt])
+}
+model VerificationNotice {
+ id String @id @default(uuid()) @db.Uuid
+ caseId String @db.Uuid
+ recipientId String @db.Uuid
+ status String @default("PENDING")
+ attempts Int @default(0)
+ leaseUntil DateTime?
+ retryAt DateTime @default(now())
+ errorCode String?
+ createdAt DateTime @default(now())
+ case VerificationCase @relation(fields:[caseId],references:[id],onDelete:Restrict)
+ recipient User @relation(fields:[recipientId],references:[id],onDelete:Restrict)
+ @@unique([caseId,recipientId])
+ @@index([status,retryAt])
+}
+model DriverRegistrationChallenge {
+ userId String? @db.Uuid
+ user User? @relation(fields:[userId],references:[id],onDelete:Restrict)
+ id String @id @default(uuid()) @db.Uuid
+ email String
+ tokenHash String @unique
+ expiresAt DateTime
+ consumedAt DateTime?
+ createdAt DateTime @default(now())
+ @@index([email,createdAt])
 }

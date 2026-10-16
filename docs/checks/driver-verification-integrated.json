@@ -1,0 +1,337 @@
+{
+  "date": "2026-10-13",
+  "scope": "Real Web/API/PostgreSQL; local captured mail and HTTP storage double. No production qualification.",
+  "versions": {
+    "node": "v24.15.0",
+    "backend": {
+      "head": "90b72433f8a5476ece5fda4437dc15a0a6a314f2",
+      "branch": "feature/driver-verification",
+      "status": "M BITACORA.md\n M README.md\n M VERIFICATION.md\n M docs/API_ACCESS.md\n M docs/DEPENDENCIES-DRIVER-VERIFICATION.md\n M docs/INDEPENDENT-ONBOARDING-PROMPT-APP.md\n M docs/INDEPENDENT-ONBOARDING-PROMPT-WEB.md\n M docs/INDEPENDENT-ONBOARDING-PROPOSAL.md\n M docs/openapi.json\n M package-lock.json\n M package.json\n M prisma/schema.prisma\n M src/app.module.ts\n M src/assignments/assignments.service.ts\n M src/config/environment.ts\n M src/delivery-assignments/delivery-assignments.service.ts\n M src/drivers/drivers.service.ts\n M src/drivers/logistics.responses.ts\n M src/independent-drivers/independent-dispatches.service.ts\n M src/independent-drivers/independent-drivers.responses.ts\n M src/mail/local-outbox-mail.provider.ts\n M src/mail/mail.types.ts\n M src/mail/resend-mail.provider.ts\n M test/delivery-assignments.e2e-spec.ts\n M test/delivery-assignments.spec.ts\n M test/independent-drivers.spec.ts\n M test/invitations.spec.ts\n M test/logistics.spec.ts\n M test/partner-applications.spec.ts\n?? docs/DRIVER-TERMS-DRAFT.md\n?? docs/DRIVER-VERIFICATION-BACKEND-DESIGN.md\n?? docs/DRIVER-VERIFICATION-IMPLEMENTATION.md\n?? docs/DRIVER-VERIFICATION-TERMS-REVIEW.md\n?? docs/FLEET-REPRESENTATIVE-TERMS-DRAFT.md\n?? docs/checks/driver-verification-evidence.json\n?? docs/checks/driver-verification-http-examples.json\n?? prisma/migrations/20261013000100_driver_verification/\n?? scripts/driver-verification-integration/\n?? scripts/verify-driver-verification-migrations.mjs\n?? src/verification/\n?? test/driver-verification.e2e-spec.ts\n?? test/driver-verification.spec.ts",
+      "changedFileHashes": {
+        "docs/DRIVER-TERMS-DRAFT.md": "fb71fc8f0aab0d015cf7147c73ddff498a023407ff023d085511d92107367b3e",
+        "docs/DRIVER-VERIFICATION-BACKEND-DESIGN.md": "1e369edb14f24c455ead60df88e2c83d25a08309cfdb35995eff3499be2be234",
+        "docs/DRIVER-VERIFICATION-IMPLEMENTATION.md": "2ccf04353b76148b082cdff970ce0c82025a7f0b9744785dd1c26887d22c7843",
+        "docs/DRIVER-VERIFICATION-TERMS-REVIEW.md": "7e831303c406c49253c57d83488d50c6207a17ddd9a23fd94ba4eef1c993abb3",
+        "docs/FLEET-REPRESENTATIVE-TERMS-DRAFT.md": "a2088b2fe469362f04e94a4a77fc8a6fcc57dc0c2960ff1dc087467660e163a6",
+        "docs/checks/driver-verification-evidence.json": "10567665aa96b28052ffc1d0e48d1c6ecf3b598d8ca0687332a4795eb58da159",
+        "docs/checks/driver-verification-http-examples.json": "6f22c89e49f18aca77a91adb8dc830776bc3aa886223df1fe05766c84af1b9de",
+        "prisma/migrations/20261013000100_driver_verification/migration.sql": "4f55ca24d4076982a020f285c9c35834104882dc93ec181957e27e75a9f47b80",
+        "scripts/driver-verification-integration/environment.mjs": "8d9ccffb29d1100f45be94b1a7f1e85d9daef26ebc8ae0d97d7de3f88cffa574",
+        "scripts/driver-verification-integration/operational.mjs": "3e19766ce6d05982c2456f80245fbd99e285e21875f660bada5cdb1abf47435e",
+        "scripts/driver-verification-integration/run.mjs": "ac2282c68a3772dfc8b999bd82724df262b63167668b07da04742c0c000e931f",
+        "scripts/driver-verification-integration/scenarios.mjs": "95789edbeb1150b24c887e621002d289d55b823f90a6b9cb936890c2bcbb1330",
+        "scripts/verify-driver-verification-migrations.mjs": "72f9e2b9b23427af3a4261a7496da07121ded88d89f6c0188df4022ea29ed7a2",
+        "src/verification/verification-error.ts": "24f829e1a228d169b1c1311369b6103ee874ee87a4a459b28a512af0248b6328",
+        "src/verification/verification-notifications.ts": "444cbf75a10fa17f4c493896f460b85fdc5952b54cc0036dcc0a71e9b4cdff0e",
+        "src/verification/verification-policy.ts": "7d139baf57bc98caadfd0878db156cc47a9dae9ee16bc688ea80387e2cfc3950",
+        "src/verification/verification-rules.ts": "23bfe55de5fe68c0ce4ec906148f421ffd6a30a38ffacce8df28ce96934291af",
+        "src/verification/verification-storage.ts": "897ac35e8ce66da360a082d8a9cfc279b9f21479bc691cbf5e3badb1cd2b04d5",
+        "src/verification/verification.controller.ts": "dd9d91cddb2e75cbf0d7c4d628c79d0e94b00fdf8aa4679dfc6ae84b3a39b612",
+        "src/verification/verification.dto.ts": "105ee522fe5eca993c25cd0540b7c7a9ca824c061fb77df83513291404ccc1eb",
+        "src/verification/verification.module.ts": "a6a9b4012d40083b3a722a71b857d1f0095b5a960b372e238ee0309376b54a7b",
+        "src/verification/verification.responses.ts": "683622b6bc4a32a910fde5aedad2e66bbacfe1d167c72b36a37bf6ef4ce92f7f",
+        "src/verification/verification.service.ts": "70858d94a2e389a2d8b5ad26f7e4fa730586973add98f7e728f62faf4bed4037",
+        "test/driver-verification.e2e-spec.ts": "3515ee92864bf45ed826cdb7bbbcf0d04feb9a027cf405bf0d748aca4a5c77b8",
+        "test/driver-verification.spec.ts": "a7a5c300aa49faaeb4b549a270d0d16035bb1bb000b9a4af091d3a47d4fccc93",
+        "README.md": "953bbb2f85ef80c654058dca18024725bac558fea3df210c1398fd2b488231a0",
+        "VERIFICATION.md": "911e7298b25ea89847cbe49ab237eeffffe10d161e3089b847e6f163e072e5bf",
+        "docs/API_ACCESS.md": "86d565fafc5445fd1e2f7a03efd0ffa96d9801d563273810ba30c59f5be243c7",
+        "docs/DEPENDENCIES-DRIVER-VERIFICATION.md": "7e161b22325f40e3eb602e27fc6e12b7b46b2beee8d9d719bea703ce3e2d74e4",
+        "docs/INDEPENDENT-ONBOARDING-PROMPT-APP.md": "7976a3fea119c1b0e215c27a014ea0a02b59368ce50c3d7e2a211f31527403d8",
+        "docs/INDEPENDENT-ONBOARDING-PROMPT-WEB.md": "e05b271e761d6c4658c989c7edae7903b22ec3e6bafd9cc062986ebfecbb6a44",
+        "docs/INDEPENDENT-ONBOARDING-PROPOSAL.md": "4bb4b710b7b10aa2e3877862e058f15157a44766c78a2429d5c36c6737142859",
+        "docs/openapi.json": "0ec2eae0fa7413d2098ce14ad5408b824e16e3aef3ec36a7910988c563536e52",
+        "package-lock.json": "60818e9db7d486e09ae1cff917723b65880cca48ec34525fe6dfab9f24f381e8",
+        "package.json": "fe31de370fec43e5ea6745788b1292e558627f0f48c8844d33cc6b20f55f5c2a",
+        "prisma/schema.prisma": "77ac6aa739ed0520c9a648d7099714f82520176e60b174ab4283129c0822173b",
+        "src/app.module.ts": "325aa68f4083da1c19f186d2c4450a3132259edf3620351495b51a21dba00d9e",
+        "src/assignments/assignments.service.ts": "7af202e769b5c1f6ce588be2b589e35694b7ea4134e47ce224dabb9d5768cefd",
+        "src/config/environment.ts": "9bef9398f297444609edd34adf8add065bc29970841cf0f8f86ad0969d392d78",
+        "src/delivery-assignments/delivery-assignments.service.ts": "a19c96452c3bee000cec7f9390f415bbc2f475032aeb97f6746b8e12be39c333",
+        "src/drivers/drivers.service.ts": "0c4f02a2af80ed719db4b0294261727f6b871893f4450997143f7b6d4299bfbd",
+        "src/drivers/logistics.responses.ts": "8560aefb8eb7d18e728b2c420ce3fcbec16571d488092a9e0adb36e144bd818e",
+        "src/independent-drivers/independent-dispatches.service.ts": "7e76bb41a22f6a9bbb2d8d1910fbc7909b48f4f15059a67161bc3a5f0c2381b4",
+        "src/independent-drivers/independent-drivers.responses.ts": "e132f340df12a973af6c10a5a1c2b7fe15491f2746325e4ffd47c0360dda7f8e",
+        "src/mail/local-outbox-mail.provider.ts": "8c8bd25f25a73765563578ee46ac5730bac7d6ada4747c39d0bc07483953acd7",
+        "src/mail/mail.types.ts": "6b731e99ea49d1493895d69492e1bd3e7791519d8bcc10440b0d9c51681a6974",
+        "src/mail/resend-mail.provider.ts": "f2038d509f3a1b8232826a7ced2af6f40128ceca13361eb1c4d168de349b46e2",
+        "test/delivery-assignments.e2e-spec.ts": "fc58717d3f41e253d61b10c0985c7161db9fc6208f61a097f62627f2ee5d35e5",
+        "test/delivery-assignments.spec.ts": "a5ab51f89474977bdc9a9c9473cb894caba21f4ff300fe0d1014b48cf7119128",
+        "test/independent-drivers.spec.ts": "8e28a5a50dd31667f028733a3a31969d5b45fe3aa2b26abace7f948a7d33c7a3",
+        "test/invitations.spec.ts": "b03601c2df0da91f7d5d05a5c07ab1722de8c41ed7c6fd1c2baa02d195e6f2f8",
+        "test/logistics.spec.ts": "36efa437f5f4281afebfdfb0753ccc777ccdef042c5c8afa993a43c51273e9ce",
+        "test/partner-applications.spec.ts": "7f832fe09fed17c908dc57f0eac96928d2dffead9d995806bdfa0babfaeb7995"
+      },
+      "allNonIgnoredFilesDigest": "b8686a47c29c0f576bd949cbf46f3230d27f25da20e5707d9e2277a7c59063c2"
+    },
+    "web": {
+      "head": "06d976619322d9811b5325fc73cd16d15e00d829",
+      "branch": "feature/driver-verification",
+      "status": "M README.md\n M VERIFICATION.md\n M src/app/App.tsx\n M src/auth/Login.tsx\n M src/driver-portal/pages.tsx\n M src/driver-portal/types.ts\n M src/independent-drivers/types.ts\n M src/layouts/AdminLayout.tsx\n M src/services/api.ts\n M src/services/errors.ts\n M src/test/driver-portal.test.tsx\n M src/test/flows.test.tsx\n?? BITACORA.md\n?? docs/DRIVER-VERIFICATION-MAIN-COMPATIBILITY.md\n?? docs/DRIVER-VERIFICATION-WEB.md\n?? scripts/verify-documentary-web.mjs\n?? src/test/verification-fixtures.ts\n?? src/test/verification-pages.test.tsx\n?? src/test/verification-recovery.test.ts\n?? src/test/verification-service.test.ts\n?? src/verification/",
+      "changedFileHashes": {
+        "BITACORA.md": "5f7dc77eb6cb26e41db0aaf8da82bab2b0d628129bc064d9a4142a439f2d3a81",
+        "docs/DRIVER-VERIFICATION-MAIN-COMPATIBILITY.md": "ec563548d256544e1614089da9e9fcea2d08f6e35a9e064aa89d84ce4d99306f",
+        "docs/DRIVER-VERIFICATION-WEB.md": "394e4525327ae862c4cad4c3935c5997404ac4c4005cccda81d3af6b96a55291",
+        "scripts/verify-documentary-web.mjs": "e8f4be77b2994da17c28ebf985893863abad9d9bfd1a40d074c78355165c8623",
+        "src/test/verification-fixtures.ts": "6dba52be238b00476e33cc42f033027313253a035d97efcf09ef15993d0c15b3",
+        "src/test/verification-pages.test.tsx": "e999b9e3dd1dbbf3b1e0f9fc037287d2e29e2ed106b986da88a97acef92ff075",
+        "src/test/verification-recovery.test.ts": "5051ec005e6a67fee4182400b322f229e0b5c9785c92b132f5d955d390601e4a",
+        "src/test/verification-service.test.ts": "9a8d5124f1b827f0bd36bde66d34572648a3b5b2ff6b0892c24151d04e3ac2ba",
+        "src/verification/common.tsx": "ba2335f674f65befd1e05a47e637f368186fe467f0cc2ecc6d2ee4bc3438cc82",
+        "src/verification/evidence.tsx": "11a1b28779f6ca34a3af464b45832b57d1b19182acd6e0d599730308a91484a2",
+        "src/verification/format.ts": "0e4cafc44ed015a2e55ab1ff2e458eb851e4df46302248e32dd55b5f1479e495",
+        "src/verification/forms.tsx": "762dbf025c8ff625d37fc06f72881e1f325e2cf859e972b6943c2bc7070105f1",
+        "src/verification/hooks.ts": "c7dece30e01dc1f22f9da818c64cb36f5f5fbb5f54f8fe238613a6eebc346fe3",
+        "src/verification/identity.tsx": "c3c1f223512d4692558c167b6e998133fd94e16392211c7036b02191f0a438cc",
+        "src/verification/legacy.tsx": "e3f85aff081d5b4bd703faef841bfbae5d3471aa758085743b7baa743b3d6444",
+        "src/verification/pages.tsx": "fcf6c034e349e7e9e48e8b59ad8e92e1d9b4cc5577657907ff8408c6cd275ac9",
+        "src/verification/pending.ts": "5cbadcd73e58e7fa99a00bdfe5cfa4f2b6f25d72917e342c5900cf510f2d886a",
+        "src/verification/service.ts": "5d9cdc2e99a6d075dd29a39f78022e757b4acd0e5b6209958ba12fc33ccbb0e4",
+        "src/verification/types.ts": "bfb772435f907add6e8f34649068b2b8bcfce88e09d493cace2a01f7b0110238",
+        "src/verification/verification.css": "e6ab95a14c4b7ae565ab8ff7f6c438a9c30f14236c937d886d1945751af6cfec",
+        "VERIFICATION.md": "eeb40b7d67a6c45f012d5ed9a8921fa1e695c3e886db5a45af9135f7a3146133",
+        "src/app/App.tsx": "422854913eceb3541216cb2bbf0f018c921dc56ffab24b70e93a49fb2dd4e486",
+        "src/auth/Login.tsx": "ab88a073b5b7d3af5d094322cf6d8e533a36891699c50ab0361cb481cecf55d2",
+        "src/driver-portal/pages.tsx": "61a7a6de851636e51efa66daae0292315b772217b853c574081b0753f7ba28c4",
+        "src/driver-portal/types.ts": "87e9253f07cd6b17f1cfd7f3f01f851869507400e5df2054380c5ed370f2c6a5",
+        "src/independent-drivers/types.ts": "f3acd73a10a060792146b93beee4b2bb9b727d184afc03578150e8da5ed66cc4",
+        "src/layouts/AdminLayout.tsx": "0ef805e6deae54fec9ed6bed1d001250a11abd897383cd98830e71ff71c2c459",
+        "src/services/api.ts": "75cdbd80d0919e4eda196c5207186def206256de4c01b49309a22b97bf728c35",
+        "src/services/errors.ts": "89112b4a00b913278105477421144ec235ba21356931db9beccd94001bbd45f0",
+        "src/test/driver-portal.test.tsx": "ec8bd7d172d45b7a688f957a9eedd301ae9508594b95249be59a21c4c0dd35ef",
+        "src/test/flows.test.tsx": "a06a173a27f50e24484b671ea9de6306039b65ed833ef62f3d6139e3af5d198f"
+      },
+      "allNonIgnoredFilesDigest": "2c11e164e16f8a393b749c4445dee71e221abdeccf1525928d3dc0d302592606"
+    }
+  },
+  "mainEnvironment": {
+    "temp": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-e9MR4p",
+    "data": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-e9MR4p\\pgdata",
+    "database": "documentary_integration_test",
+    "pgPort": 62184,
+    "api": "http://127.0.0.1:62185",
+    "apiProxy": "http://127.0.0.1:62186",
+    "web": "http://127.0.0.1:62187",
+    "storage": "http://127.0.0.1:62188",
+    "migrations": 33,
+    "identityVerified": true
+  },
+  "recoveryEnvironment": {
+    "temp": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-woA5I7",
+    "data": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-woA5I7\\pgdata",
+    "database": "documentary_integration_test",
+    "pgPort": 49680,
+    "api": "http://127.0.0.1:49681",
+    "apiProxy": "http://127.0.0.1:49682",
+    "web": "http://127.0.0.1:49683",
+    "storage": "http://127.0.0.1:49684",
+    "migrations": 33,
+    "identityVerified": true
+  },
+  "searchRegressionEnvironment": {
+    "temp": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-QSfa2C",
+    "data": "C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-QSfa2C\\pgdata",
+    "database": "documentary_integration_test",
+    "pgPort": 64997,
+    "api": "http://127.0.0.1:64998",
+    "apiProxy": "http://127.0.0.1:64999",
+    "web": "http://127.0.0.1:65000",
+    "storage": "http://127.0.0.1:65001",
+    "migrations": 33,
+    "identityVerified": true
+  },
+  "checks": [
+    {
+      "id": "A-registration-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "B-terms-committed-response-lost-reload",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "C-identity-license-browser-JPEG-PNG",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "G-submit-committed-response-lost-reload",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-admin-browser-review-evidence",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "G-decision-committed-response-lost-reload",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "C-unit-OWNED-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "C-unit-RENTED-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "C-unit-BORROWED-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-concurrency-and-decision-permissions-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "H-mail-failure-and-retry-real-outbox",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "D-fleet-representative-terms-and-invitation",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "D-fleet-identity-browser-independent-of-unit",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "D-fleet-unit-owned-by-organization",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-fleet-B-isolation-HTTP-and-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "F-browser-storage-error-and-file-validation",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "F-expired-missing-manipulated-uploads-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "G-absent-close-late-command-and-actor-isolation-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "G-historical-submit-separated-from-current-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "B-terms-version-conflict-historical-receipt-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "F-reject-disallowed-MIME-with-image-bytes-browser",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-driver-B-and-logout-browser-isolation",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "E-mobile-keyboard-and-private-storage",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-existing-resources-control-off-and-on-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-committed-service-preparation-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-identity-only-unit-only-and-local-positive",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-failed-reassignment-preserves-legacy-service-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-documentary-read-preserves-search-and-claim",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-license-category-and-expiry-HTTP",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "I-legacy-delivery-browser-after-activation",
+      "status": "PASS",
+      "detail": "Verified by real browser/HTTP and dedicated PostgreSQL as specified in scenario."
+    },
+    {
+      "id": "G-pending-marker-user-change-and-reload-browser",
+      "status": "PASS",
+      "detail": "Real committed terms acceptance, response withheld, actor switch, foreign HTTP403, reload, original actor recovery; exactly one receipt and command."
+    }
+  ],
+  "regressions": {
+    "dispatchSearch": {
+      "tests": 16,
+      "files": 1,
+      "exit": 0,
+      "log": ".tmp/documentary-integrated/dispatch-search-approved.txt"
+    },
+    "publicB2B": {
+      "tests": 33,
+      "files": 2,
+      "exit": 0
+    }
+  },
+  "quality": {
+    "build": "PASS: npm run build",
+    "types": "PASS: tsc -p tsconfig.build.json --noEmit",
+    "lint": "PASS: oxlint scripts/driver-verification-integration; no warnings",
+    "syntax": "PASS: node --check for all five new mjs files"
+  },
+  "webUnchanged": true,
+  "uncaughtBrowserErrorsInMain": [],
+  "ownServicesStopped": true,
+  "notRun": [
+    "Actual terms version replacement followed by new consent (only stale version/hash rejection tested).",
+    "Full keyboard/screen reader accessibility audit; only keyboard smoke and mobile viewport tested.",
+    "Browser UI for invitation activation (HTTP real used).",
+    "Independent take of a new dispatch after documentary approval (SQL eligibility tested; fleet pairing HTTP tested).",
+    "Browser UI for ABSENT close; backend close and subsequent late POST were tested via HTTP.",
+    "Spaces real, real mail inbox, mobile app, production rollout."
+  ],
+  "handoffWeb": {
+    "id": "W-01",
+    "summary": "Choosing next file while previous upload/refetch is pending can be cleared by previous Form completion.",
+    "modified": false,
+    "evidence": ".tmp/documentary-integrated/C-identity-license-browser-JPEG-PNG-actor-0.png"
+  },
+  "productBackendChangesThisTask": []
+}

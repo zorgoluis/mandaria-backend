@@ -1,0 +1,39 @@
+11:45:08 p.m. [vite] (client) Re-optimizing dependencies because vite config has changed
+ISOLATED_READY {"temp":"C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-G3BMAR","data":"C:\\Users\\zorgl\\AppData\\Local\\Temp\\mandaria-doc-integrated-G3BMAR\\pgdata","database":"documentary_integration_test","pgPort":54929,"api":"http://127.0.0.1:54930","apiProxy":"http://127.0.0.1:54931","web":"http://127.0.0.1:54932","storage":"http://127.0.0.1:54933","migrations":33,"identityVerified":true}
+A-registration-browser PASS
+B-terms-committed-response-lost-reload PASS
+C-identity-license-browser-JPEG-PNG PASS
+G-submit-committed-response-lost-reload PASS
+E-admin-browser-review-evidence PASS
+G-decision-committed-response-lost-reload PASS
+C-unit-OWNED-browser PASS
+C-unit-RENTED-browser PASS
+C-unit-BORROWED-browser PASS
+E-concurrency-and-decision-permissions-HTTP PASS
+H-mail-failure-and-retry-real-outbox PASS
+D-fleet-representative-terms-and-invitation PASS
+D-fleet-identity-browser-independent-of-unit PASS
+D-fleet-unit-owned-by-organization PASS
+E-fleet-B-isolation-HTTP-and-browser PASS
+F-browser-storage-error-and-file-validation PASS
+F-expired-missing-manipulated-uploads-HTTP PASS
+G-absent-close-late-command-and-actor-isolation-HTTP PASS
+G-historical-submit-separated-from-current-HTTP PASS
+B-terms-version-conflict-historical-receipt-HTTP PASS
+F-reject-disallowed-MIME-with-image-bytes-browser PASS
+E-driver-B-and-logout-browser-isolation PASS
+E-mobile-keyboard-and-private-storage PASS
+R-W01-success-real-confirmation PASS
+R-W01-failed-A-preserves-B PASS
+R-ABSENT-real-modal PASS
+I-existing-resources-control-off-and-on-HTTP PASS
+I-committed-service-preparation-HTTP PASS
+I-identity-only-unit-only-and-local-positive PASS
+I-failed-reassignment-preserves-legacy-service-HTTP PASS
+I-documentary-read-preserves-search-and-claim PASS
+I-license-category-and-expiry-HTTP PASS
+I-legacy-delivery-browser-after-activation PASS
+J-five-search-rounds-complete-file NOT RUN
+R-independent-positive-take-browser PASS
+R-terms-effective-V2-browser FAIL
+RESULT {"checks":[{"id":"A-registration-browser","status":"PASS"},{"id":"B-terms-committed-response-lost-reload","status":"PASS"},{"id":"C-identity-license-browser-JPEG-PNG","status":"PASS"},{"id":"G-submit-committed-response-lost-reload","status":"PASS"},{"id":"E-admin-browser-review-evidence","status":"PASS"},{"id":"G-decision-committed-response-lost-reload","status":"PASS"},{"id":"C-unit-OWNED-browser","status":"PASS"},{"id":"C-unit-RENTED-browser","status":"PASS"},{"id":"C-unit-BORROWED-browser","status":"PASS"},{"id":"E-concurrency-and-decision-permissions-HTTP","status":"PASS"},{"id":"H-mail-failure-and-retry-real-outbox","status":"PASS"},{"id":"D-fleet-representative-terms-and-invitation","status":"PASS"},{"id":"D-fleet-identity-browser-independent-of-unit","status":"PASS"},{"id":"D-fleet-unit-owned-by-organization","status":"PASS"},{"id":"E-fleet-B-isolation-HTTP-and-browser","status":"PASS"},{"id":"F-browser-storage-error-and-file-validation","status":"PASS"},{"id":"F-expired-missing-manipulated-uploads-HTTP","status":"PASS"},{"id":"G-absent-close-late-command-and-actor-isolation-HTTP","status":"PASS"},{"id":"G-historical-submit-separated-from-current-HTTP","status":"PASS"},{"id":"B-terms-version-conflict-historical-receipt-HTTP","status":"PASS"},{"id":"F-reject-disallowed-MIME-with-image-bytes-browser","status":"PASS"},{"id":"E-driver-B-and-logout-browser-isolation","status":"PASS"},{"id":"E-mobile-keyboard-and-private-storage","status":"PASS"},{"id":"R-W01-success-real-confirmation","status":"PASS"},{"id":"R-W01-failed-A-preserves-B","status":"PASS"},{"id":"R-ABSENT-real-modal","status":"PASS"},{"id":"I-existing-resources-control-off-and-on-HTTP","status":"PASS"},{"id":"I-committed-service-preparation-HTTP","status":"PASS"},{"id":"I-identity-only-unit-only-and-local-positive","status":"PASS"},{"id":"I-failed-reassignment-preserves-legacy-service-HTTP","status":"PASS"},{"id":"I-documentary-read-preserves-search-and-claim","status":"PASS"},{"id":"I-license-category-and-expiry-HTTP","status":"PASS"},{"id":"I-legacy-delivery-browser-after-activation","status":"PASS"},{"id":"J-five-search-rounds-complete-file","status":"NOT RUN"},{"id":"R-independent-positive-take-browser","status":"PASS"},{"id":"R-terms-effective-V2-browser","status":"FAIL"}],"errors":0,"webUnchanged":true,"stopped":true}

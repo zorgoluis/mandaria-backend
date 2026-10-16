@@ -470,13 +470,28 @@ describe('PartnerApplicationsService.submit deduplication', () => {
       ),
       $queryRawUnsafe: vi.fn(() => Promise.resolve([{ value: 42n }])),
       partnerApplication: {
-        findFirst: vi.fn(() => Promise.resolve(existing)),
+        findFirst: vi.fn(
+          (_args: {
+            where: {
+              status: { in: string[] };
+              OR: unknown[];
+              createdAt: { gte: Date };
+            };
+          }) => {
+            void _args;
+            return Promise.resolve(existing);
+          },
+        ),
         update: vi.fn(() =>
           Promise.resolve({ publicId: 'SOC-000007', submissionCount: 2 }),
         ),
-        create: vi.fn(() =>
-          Promise.resolve({ publicId: 'SOC-000042', submissionCount: 1 }),
-        ),
+        create: vi.fn((args: { data: Record<string, unknown> }) => {
+          void args;
+          return Promise.resolve({
+            publicId: 'SOC-000042',
+            submissionCount: 1,
+          });
+        }),
       },
     };
     const prisma = {

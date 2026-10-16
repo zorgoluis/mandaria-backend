@@ -1,0 +1,277 @@
+{
+  "source": "Real local HTTP with synthetic fixtures; no credentials persisted",
+  "examples": [
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/verification-requirements"
+      },
+      "status": 200,
+      "body": {
+        "policyVersion": "LOCAL-TEST-1",
+        "environment": "LOCAL_TEST",
+        "formats": [
+          "image/jpeg",
+          "image/png"
+        ],
+        "maxBytes": 10485760,
+        "maxPixels": 20000000,
+        "maxFiles": 10,
+        "malwareScan": false,
+        "pdfSupported": false,
+        "identity": {
+          "required": [
+            "FACE_PHOTO",
+            "INE_FRONT",
+            "INE_BACK"
+          ],
+          "motorizedLicense": "LICENSE",
+          "checks": [
+            "IDENTITY_MATCH",
+            "LEGIBLE",
+            "LICENSE_HOLDER",
+            "LICENSE_VALIDITY",
+            "LICENSE_CATEGORY"
+          ]
+        },
+        "vehicle": {
+          "required": [
+            "REGISTRATION_CARD"
+          ],
+          "OWNED": "OWNERSHIP_PROOF",
+          "RENTED": "RENTAL_CONTRACT",
+          "BORROWED": "OWNER_AUTHORIZATION",
+          "checks": [
+            "UNIT_MATCH",
+            "LEGIBLE",
+            "AUTHORIZED_USE"
+          ]
+        },
+        "licenseCompatibility": "Reviewer confirms declared exact vehicle types; no automatic legal category mapping",
+        "productionReady": false
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/driver/onboarding"
+      },
+      "status": 200,
+      "body": {
+        "driver": {
+          "id": "59d686f5-9fdd-43bb-a7fa-9efef96d611b",
+          "providerId": null,
+          "status": "ACTIVE",
+          "availability": "OFFLINE",
+          "independentProfile": {
+            "id": "7811993b-372b-48f4-8425-2b92ed16fb7a",
+            "status": "APPROVED",
+            "vehicles": [
+              {
+                "id": "a8450592-70c4-4384-a9d2-82a596a8c3e9",
+                "identifier": "2B1F4325-13DA-4AB6-B",
+                "status": "ACTIVE",
+                "type": "BICYCLE"
+              },
+              {
+                "id": "88ca1287-b3ca-4c8f-aa2a-7eb791435d5d",
+                "identifier": "BORROW-F0B4BECB-A",
+                "status": "MAINTENANCE",
+                "type": "BICYCLE"
+              }
+            ]
+          }
+        },
+        "subjects": [
+          {
+            "id": "b0df1462-3243-4aa3-bd23-888c33971a93",
+            "driverId": "59d686f5-9fdd-43bb-a7fa-9efef96d611b",
+            "vehicleId": null,
+            "cases": [
+              {
+                "id": "d2e41881-d767-4263-8a9c-e9323cfb6e82",
+                "status": "APPROVED",
+                "revision": 10,
+                "decidedAt": "2026-10-13T20:15:05.891Z",
+                "validUntil": null,
+                "licenseValidUntil": null
+              },
+              {
+                "id": "d21de9b4-7511-4d78-af58-3219ca374171",
+                "status": "APPROVED",
+                "revision": 10,
+                "decidedAt": "2026-10-13T20:15:03.684Z",
+                "validUntil": null,
+                "licenseValidUntil": null
+              }
+            ]
+          },
+          {
+            "id": "82f665f4-9486-4e82-92e7-723ca8457aea",
+            "driverId": null,
+            "vehicleId": "a8450592-70c4-4384-a9d2-82a596a8c3e9",
+            "cases": [
+              {
+                "id": "f0320955-0d47-4343-ab1b-1aab0631856f",
+                "status": "APPROVED",
+                "revision": 8,
+                "decidedAt": "2026-10-13T20:15:03.870Z",
+                "validUntil": null,
+                "licenseValidUntil": null
+              }
+            ]
+          },
+          {
+            "id": "ae65e43d-34fa-46c3-8552-ed66f77b20d3",
+            "driverId": null,
+            "vehicleId": "88ca1287-b3ca-4c8f-aa2a-7eb791435d5d",
+            "cases": [
+              {
+                "id": "e45a894c-5749-4d0b-a38a-4601411741c7",
+                "status": "APPROVED",
+                "revision": 8,
+                "decidedAt": "2026-10-13T20:15:05.687Z",
+                "validUntil": null,
+                "licenseValidUntil": null
+              }
+            ]
+          }
+        ],
+        "terms": {
+          "requiredVersion": "DRIVER-LOCAL-TEST-1",
+          "acceptance": {
+            "id": "156c34fc-3045-4bd2-85a5-b8d550dd38be",
+            "version": "DRIVER-LOCAL-TEST-1",
+            "acceptedAt": "2026-10-13T20:15:03.249Z"
+          }
+        },
+        "environment": "LOCAL_TEST",
+        "contractuallyEffective": false,
+        "enforcementEnabled": false,
+        "productionReady": false
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/verification-cases/d2e41881-d767-4263-8a9c-e9323cfb6e82"
+      },
+      "status": 200,
+      "body": {
+        "id": "d2e41881-d767-4263-8a9c-e9323cfb6e82",
+        "subjectId": "b0df1462-3243-4aa3-bd23-888c33971a93",
+        "presenterId": "56686631-3f24-43cb-ad74-49daf713a75f",
+        "revision": 10,
+        "status": "APPROVED",
+        "environment": "LOCAL_TEST",
+        "policyVersion": "LOCAL-TEST-1",
+        "data": {
+          "fullName": "Persona Sintética",
+          "contactPhone": "0000000000",
+          "documentType": "INE",
+          "operatingCity": "Ciudad sintética"
+        },
+        "materialSnapshot": {
+          "name": "Synthetic independent"
+        },
+        "submittedAt": "2026-10-13T20:15:05.878Z",
+        "decidedAt": "2026-10-13T20:15:05.891Z",
+        "publicReason": null,
+        "checklist": {
+          "passed": [
+            "IDENTITY_MATCH",
+            "LEGIBLE"
+          ],
+          "version": "LOCAL-TEST-1"
+        },
+        "validUntil": null,
+        "licenseValidUntil": null,
+        "licenseVehicleTypes": [],
+        "createdAt": "2026-10-13T20:15:05.713Z",
+        "verificationStatus": "APPROVED",
+        "scope": {
+          "providerId": null,
+          "independentProfileId": "7811993b-372b-48f4-8425-2b92ed16fb7a"
+        },
+        "subjectType": "DRIVER_IDENTITY",
+        "resourceId": "59d686f5-9fdd-43bb-a7fa-9efef96d611b",
+        "attachments": [
+          {
+            "id": "3603809a-ebe1-4f2f-827c-a6ee647c7345",
+            "category": "FACE_PHOTO",
+            "status": "VALIDATED",
+            "bytes": 103,
+            "mime": "image/png",
+            "hash": "b6182921ec2c94529f2d0fa37e154e7e88840fc8cf1b57535f98e898261addd4",
+            "createdAt": "2026-10-13T20:15:05.747Z"
+          },
+          {
+            "id": "4bca2f21-265e-4a1b-8396-0ea142260ebd",
+            "category": "INE_FRONT",
+            "status": "VALIDATED",
+            "bytes": 103,
+            "mime": "image/png",
+            "hash": "b6182921ec2c94529f2d0fa37e154e7e88840fc8cf1b57535f98e898261addd4",
+            "createdAt": "2026-10-13T20:15:05.797Z"
+          },
+          {
+            "id": "fa1355ea-fa82-4fdb-8957-6f59101b0be2",
+            "category": "INE_BACK",
+            "status": "VALIDATED",
+            "bytes": 103,
+            "mime": "image/png",
+            "hash": "b6182921ec2c94529f2d0fa37e154e7e88840fc8cf1b57535f98e898261addd4",
+            "createdAt": "2026-10-13T20:15:05.845Z"
+          }
+        ],
+        "events": [
+          {
+            "id": "b4891fa9-9ad7-41b9-8855-61a6e2702f7f",
+            "kind": "UPDATE_CASE",
+            "createdAt": "2026-10-13T20:15:05.727Z"
+          },
+          {
+            "id": "c2bf1504-f77c-4efd-a8c6-5a9eb6652b32",
+            "kind": "CREATE_UPLOAD",
+            "createdAt": "2026-10-13T20:15:05.750Z"
+          },
+          {
+            "id": "0f0d46eb-8ff4-4e30-aa4a-6befbce84bd9",
+            "kind": "COMPLETE_UPLOAD",
+            "createdAt": "2026-10-13T20:15:05.775Z"
+          },
+          {
+            "id": "53dea8ef-1776-4d20-a1a7-bdc9a417e825",
+            "kind": "CREATE_UPLOAD",
+            "createdAt": "2026-10-13T20:15:05.801Z"
+          },
+          {
+            "id": "5862e1c8-29f8-45ad-bb3a-a6e6faa9953f",
+            "kind": "COMPLETE_UPLOAD",
+            "createdAt": "2026-10-13T20:15:05.823Z"
+          },
+          {
+            "id": "707f0655-6eec-4b34-8551-a22d0d85b066",
+            "kind": "CREATE_UPLOAD",
+            "createdAt": "2026-10-13T20:15:05.848Z"
+          },
+          {
+            "id": "663dd24c-384f-4c9a-a104-ea00539f69c4",
+            "kind": "COMPLETE_UPLOAD",
+            "createdAt": "2026-10-13T20:15:05.869Z"
+          },
+          {
+            "id": "ab8ffba2-b6b4-42a5-bc9c-931b97a6385a",
+            "kind": "SUBMIT",
+            "createdAt": "2026-10-13T20:15:05.888Z"
+          },
+          {
+            "id": "7924a633-07b3-4135-b892-70c91cde7f5d",
+            "kind": "DECIDE",
+            "createdAt": "2026-10-13T20:15:05.904Z"
+          }
+        ]
+      }
+    }
+  ]
+}

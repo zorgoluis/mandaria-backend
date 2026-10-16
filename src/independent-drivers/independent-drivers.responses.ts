@@ -33,9 +33,10 @@ class IndependentDriverRefResponse {
   @ApiProperty({
     format: 'uuid',
     description:
-      'Proveedor del que el Driver forma parte en V1.4. No otorga ningún permiso en el contexto independiente: ambos contextos están separados.',
+      'Proveedor de flotilla, o null para registro independiente sin proveedor. No otorga permisos independientes.',
+    nullable: true,
   })
-  providerId!: string;
+  providerId!: string | null;
 }
 export class IndependentDriverProfileResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;

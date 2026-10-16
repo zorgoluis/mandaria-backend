@@ -2331,3 +2331,19 @@ En la VM configurar MAIL_PROVIDER=resend, RESEND_API_KEY con una clave propia ha
 Después de llevar este código al servidor, reconstruir y recrear sólo el backend. Configurar las variables antes del arranque: MAIL_PROVIDER=smtp ahora se rechaza. No hay migración de base de datos. El .env local del propietario no se modifica automáticamente.
 
 La aceptación requiere una respuesta HTTP exitosa con id de Resend. emailDelivery=SENT significa aceptación del proveedor, no entrega a la bandeja. Un fallo mantiene la invitación para reenvío manual, sin cambiar su contrato. Sólo se registran códigos RESEND_HTTP_<status>, RESEND_TIMEOUT, RESEND_NETWORK o RESEND_INVALID_RESPONSE; nunca el cuerpo de error, API key o enlace de activación. Validar en despliegue con una invitación a una cuenta controlada y revisar recepción/activación.
+
+
+## Diseño separado de validación documental — 2026-10-13
+
+Base main1fa2cb1 en feature/driver-verification. [Propuesta](docs/INDEPENDENT-ONBOARDING-PROPOSAL.md), prompts [Web](docs/INDEPENDENT-ONBOARDING-PROMPT-WEB.md) y [Android](docs/INDEPENDENT-ONBOARDING-PROMPT-APP.md), [dependencias respecto a QA](docs/DEPENDENCIES-DRIVER-VERIFICATION.md). Sólo documentación; no habilita nuevas funciones ni integra QA.
+
+
+Diseño sobre main: [contrato backend candidato de validación documental](docs/DRIVER-VERIFICATION-BACKEND-DESIGN.md). No implementado; no sustituye el OpenAPI publicado. Incluye bloqueos previos a desarrollo.
+
+## Borradores de términos para revisión — 2026-10-13
+
+Propuesta documental, sin aprobación final ni implementación: [conductores](docs/DRIVER-TERMS-DRAFT.md), [representantes de flotilla](docs/FLEET-REPRESENTATIVE-TERMS-DRAFT.md) y [pendientes de revisión](docs/DRIVER-VERIFICATION-TERMS-REVIEW.md). Aceptación Web personal y representativa separadas; no sustituye autorización de uso ni revisión SUPER_ADMIN. Aviso/consentimientos de privacidad separados. No modifica operación, cobros ni derechos legales.
+
+## Verificación documental — sólo prueba local (2026-10-13)
+
+Implementada desde main en feature/driver-verification, desactivada por defecto. Registro sin proveedor, aceptación de borradores sin vigencia contractual, expedientes separados, revisión manual y bloqueo transaccional de nuevas asignaciones. Los términos locales nunca habilitan producción. No habilitar datos reales: baja/purga y decisiones de privacidad siguen pendientes. [Contrato implementado y handoff](docs/DRIVER-VERIFICATION-IMPLEMENTATION.md), [validación focalizada](VERIFICATION.md). No integra QA ni modifica cinco intentos, precios, créditos o B2B.

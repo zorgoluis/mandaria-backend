@@ -11,9 +11,19 @@ import type { PrismaService } from '../dist/prisma/prisma.service.js';
 /** Minimal transaction double: raw row-lock queries return the queued rows in order. */
 function prismaDouble(rawRows: unknown[][], tx: Record<string, unknown> = {}) {
   const queryRaw = vi.fn<(...args: unknown[]) => Promise<unknown[]>>(
-    async () => rawRows.shift() ?? [],
+    async (...args) =>
+      String(args[0]).includes('verification_eligibility')
+        ? [{ code: null }]
+        : (rawRows.shift() ?? []),
   );
-  const client = { $queryRaw: queryRaw, ...tx };
+  const client = {
+    $queryRaw: queryRaw,
+    $executeRaw: vi.fn().mockResolvedValue(1),
+    verificationPolicy: {
+      findUniqueOrThrow: vi.fn().mockResolvedValue({ enabled: false }),
+    },
+    ...tx,
+  };
   return {
     queryRaw,
     prisma: {
@@ -122,7 +132,11 @@ describe('V1.4 service rules', () => {
             findUnique: vi
               .fn()
               .mockResolvedValueOnce({ id: 'd', providerId: 'p' })
-              .mockResolvedValue({ assignments: [], independentProfile: null }),
+              .mockResolvedValue({
+                assignments: [],
+                independentProfile: null,
+                provider: { id: 'p' },
+              }),
             update,
           },
           // V1.9: self() also reports the delivery assignment the driver is executing, if any.

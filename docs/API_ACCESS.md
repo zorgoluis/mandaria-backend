@@ -105,6 +105,9 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/admin/user-invitations/{invitationId} | bearer | SUPER_ADMIN | — | Consultar invitación |
 | POST | /api/v1/admin/user-invitations/{invitationId}/resend | bearer | SUPER_ADMIN | — | Reenviar invitación |
 | POST | /api/v1/admin/user-invitations/{invitationId}/revoke | bearer | SUPER_ADMIN | — | Revocar invitación pendiente |
+| GET | /api/v1/admin/verification-cases | bearer | SUPER_ADMIN | — | VerificationController_adminCases |
+| POST | /api/v1/admin/verification-cases/{id}/decision | bearer | SUPER_ADMIN | — | VerificationController_decision |
+| POST | /api/v1/admin/verification-policy | bearer | SUPER_ADMIN | — | LOCAL TEST ONLY: durable admission cut. Does not cancel active assignments. |
 | GET | /api/v1/admin/webhooks/health | bearer | SUPER_ADMIN | — | Cuánto trabajo de webhooks queda, y qué hace esta instancia |
 | POST | /api/v1/auth/activate-account | Pública | — | — | Activar cuenta invitada |
 | POST | /api/v1/auth/login | Pública | — | — | AuthController_login |
@@ -132,7 +135,15 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | POST | /api/v1/driver/dispatches/{dispatchId}/take | bearer | DRIVER | — | Tomar un servicio |
 | GET | /api/v1/driver/dispatches/available | bearer | DRIVER | — | Servicios que puedo tomar |
 | GET | /api/v1/driver/me | bearer | DRIVER | — | Consultar mi perfil de repartidor |
+| GET | /api/v1/driver/onboarding | bearer | DRIVER | — | VerificationController_onboarding |
+| POST | /api/v1/driver/onboarding/vehicles | bearer | DRIVER | — | VerificationController_vehicle |
 | GET | /api/v1/driver/vehicles | bearer | DRIVER | — | Mis vehículos como repartidor independiente |
+| GET | /api/v1/driver/verification-cases | bearer | DRIVER | — | VerificationController_driverCases |
+| POST | /api/v1/driver/verification-cases | bearer | DRIVER | — | VerificationController_driverCase |
+| GET | /api/v1/driver/verification-notifications | bearer | DRIVER | — | VerificationController_notifications |
+| POST | /api/v1/independent-driver-registrations | Pública | — | — | LOCAL TEST ONLY: request an independent registration email |
+| POST | /api/v1/independent-driver-registrations/confirm | Pública | — | — | DriverRegistrationController_confirm |
+| POST | /api/v1/independent-driver-registrations/resend | Pública | — | — | DriverRegistrationController_resend |
 | GET | /api/v1/integrations | bearer | SUPER_ADMIN | — | List up to 100 clients; /integrations administrative routes are compatibility aliases |
 | POST | /api/v1/integrations | bearer | SUPER_ADMIN | — | AdminIntegrationsController_create[1] |
 | GET | /api/v1/integrations/{id} | bearer | SUPER_ADMIN | — | AdminIntegrationsController_get[1] |
@@ -180,6 +191,26 @@ Los roles y scopes se obtienen de los decorators del backend. El perfil del prov
 | GET | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Consultar vehículo de mi proveedor |
 | PATCH | /api/v1/provider/vehicles/{vehicleId} | bearer | PROVIDER_ADMIN | — | Editar vehículo de mi proveedor |
 | GET | /api/v1/provider/vehicles/{vehicleId}/assignments | bearer | PROVIDER_ADMIN | — | Historial de Drivers del vehículo |
+| GET | /api/v1/provider/verification-cases | bearer | PROVIDER_ADMIN | — | VerificationController_providerCases |
+| POST | /api/v1/provider/verification-cases | bearer | PROVIDER_ADMIN | — | VerificationController_providerCase |
+| GET | /api/v1/provider/verification-notifications | bearer | PROVIDER_ADMIN | — | VerificationController_providerNotifications |
 | POST | /api/v1/public/partner-applications | Pública | — | — | Enviar solicitud de socio (landing) |
 | GET | /api/v1/users | bearer | SUPER_ADMIN | — | Listar usuarios |
+| GET | /api/v1/verification-cases/{id} | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_get |
+| PATCH | /api/v1/verification-cases/{id} | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_update |
+| GET | /api/v1/verification-cases/{id}/attachments | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_attachments |
+| DELETE | /api/v1/verification-cases/{id}/attachments/{attachmentId} | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_remove |
+| POST | /api/v1/verification-cases/{id}/attachments/{attachmentId}/access | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_access |
+| POST | /api/v1/verification-cases/{id}/submit | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_submit |
+| POST | /api/v1/verification-cases/{id}/uploads | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | Create private upload; PUT bytes to returned URL as application/octet-stream, then complete. Only JPEG/PNG supported. |
+| POST | /api/v1/verification-cases/{id}/uploads/{uploadId}/complete | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_complete |
+| POST | /api/v1/verification-cases/{id}/withdraw | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_withdraw |
+| GET | /api/v1/verification-command-attempts/{key} | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_attempt |
+| POST | /api/v1/verification-command-attempts/{key}/close | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_close |
+| POST | /api/v1/verification-email/confirm | bearer | DRIVER, PROVIDER_ADMIN | — | VerificationController_confirmEmail |
+| POST | /api/v1/verification-email/request | bearer | DRIVER, PROVIDER_ADMIN | — | VerificationController_requestEmail |
+| GET | /api/v1/verification-requirements | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_requirements |
+| GET | /api/v1/verification-terms | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_terms |
+| POST | /api/v1/verification-terms/accept | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_accept |
+| GET | /api/v1/verification-terms/acceptances/{id} | bearer | DRIVER, PROVIDER_ADMIN, SUPER_ADMIN | — | VerificationController_receipt |
 | GET | /health | Pública | — | — | HealthController_check |

@@ -26,6 +26,7 @@ export interface PartnerApplicationNoticeMail {
  */
 export interface MailProvider {
   readonly name: string;
+  sendDriverVerification?(mail: DriverVerificationMail): Promise<void>;
   sendUserInvitation(mail: UserInvitationMail): Promise<void>;
   sendPartnerApplicationNotice(
     mail: PartnerApplicationNoticeMail,
@@ -39,4 +40,12 @@ export class MailDeliveryError extends Error {
   constructor(readonly reason: string) {
     super(`MAIL_DELIVERY_FAILED: ${reason}`);
   }
+}
+
+export interface DriverVerificationMail {
+  to: string;
+  kind: 'REGISTRATION' | 'DECISION' | 'EMAIL_VERIFICATION';
+  reference: string;
+  token?: string;
+  idempotencyKey?: string;
 }
