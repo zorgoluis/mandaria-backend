@@ -1,5 +1,11 @@
 # Bitácora de Mandaria
 
+## Estado actual — publicación exclusiva de feature, 2026-10-15
+
+Solicitud: publicar únicamente feature/driver-verification para merge manual del propietario, sin publicar ni deshacer main local. Verificado: implementación y documentación en a43fddce144d46c77012090910fdb69f5446b43c; main local f58bfbb8f6f8827ba16d63c2b668914f11b73a2c intacto. Fetch: origin/main 1fa2cb1e36887181dc6a55a8c0938bdd8172c772; feature remota 90b72433f8a5476ece5fda4437dc15a0a6a314f2, ancestro sin divergencia. Worktree feature limpio antes de esta entrada. Revisados 64 archivos del cambio, sin rutas temporales ni patrones de secretos detectados; git diff --check correcto. Pruebas de producto anteriores son históricas, no reejecutadas en esta tarea de publicación.
+
+Único cambio nuevo: esta continuidad documental. Publicación prevista con refspec explícito refs/heads/feature/driver-verification:refs/heads/feature/driver-verification, sin force; el resultado y SHA remoto se verificarán después del push. No publicar main/QA/tags, no merge ni despliegue. Temporales ignorados conservados. Pendientes productivos anteriores siguen vigentes.
+
 ## Estado actual — revalidación integrada local completada, 2026-10-13
 
 35 escenarios únicos PASS:30 reejecutados y5 adicionales, sin sumar resultados históricos. W-01, modal ABSENT, toma independiente y términos V2 acreditados con Web/API/PostgreSQL reales; correo capturado y storage simulado. Sólo arnés/documentación backend, Web/producto intactos. Fallo de sincronización del arnés corregido mediante repetición focalizada; huellas por intento conservadas. Tres clústeres propios detenidos. No aptitud productiva, QA, commit, push ni despliegue. Detalle y límites al final de [DRIVER-VERIFICATION-INTEGRATION.md](docs/DRIVER-VERIFICATION-INTEGRATION.md). Estados anteriores se conservan como historial.
@@ -2228,3 +2234,7 @@ Cambios: run/scenarios conectan casos nuevos, revalidation y runners focalizados
 Nuevo build, sintaxis de ocho módulos, Oxlint final y diff check correctos. No suite general, tipos ni OpenAPI nuevos por ausencia de cambios de producto;16 búsqueda/33 públicos permanecen históricos. Tres clústeres nuevos detenidos, temporales conservados. Correo capturado/storage HTTP simulado; no Spaces ni correo reales. Pendientes productivos de privacidad, términos, baja/purga e infraestructura siguen abiertos. Sin QA, .env, base principal, commit, push ni despliegue.
 
 Informe: docs/DRIVER-VERIFICATION-INTEGRATION.md; manifiesto: docs/checks/driver-verification-revalidation.json.
+
+### Historial — 2026-10-15 — preparación de publicación exclusiva
+
+Solicitud, revisión y resultado previo al push descritos en el estado actual. Se conserva el merge local existente y toda la historia; sólo se guarda esta actualización documental. La confirmación remota posterior se entrega al propietario, sin afirmar aquí un push aún no ejecutado.
